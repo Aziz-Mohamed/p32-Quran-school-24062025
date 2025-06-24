@@ -1,0 +1,91 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+🟩 Quran School App – Design System
+🎨 Color Palette (Spiritual, Joyful, Child-Friendly)
+js
+Copy
+Edit
+const colors = {
+  primary: "#1D976C",    // Emerald Green – spiritual growth & trust
+  secondary: "#FFD166",  // Warm Yellow – optimism, energy, youth
+  accent: "#EF476F",     // Rosy Red – gamification highlights & fun
+  background: "#F9FAFB", // Soft White – calm, clean
+  surface: "#FFFFFF",    // Cards & surfaces
+  textPrimary: "#1F2937", // Deep Gray – high readability
+  textSecondary: "#6B7280", // Soft Gray – secondary info
+  success: "#06D6A0",     // Positive feedback (e.g. recited correctly)
+  warning: "#FFA41B",     // For reminders, not harsh errors
+  error: "#D9534F",       // Minimal use – discouragement avoided
+}
+✨ Visual Style
+Border Radius: 16px for cards, 9999px (full) for avatars and badges
+
+Shadow: Soft shadow 0 4px 12px rgba(0, 0, 0, 0.08) for cards
+
+Spacing Unit: Use 4px grid system (i.e. 4, 8, 12, 16, 24, 32, etc.)
+
+Typography:
+
+Headings: Rounded Arabic-friendly fonts (e.g., Cairo, Poppins)
+
+Body Text: Clear, sans-serif (Inter, Open Sans)
+
+Font Sizes:
+
+Title: 24–32px
+
+Subheading: 18–20px
+
+Body: 14–16px
+
+Captions: 12px
+
+Icons: Rounded, friendly style (e.g., Lucide, Phosphor)
+
+Animations: Use Lottie or smooth fade/scale-in for:
+
+Recitation success
+
+Badge unlock
+
+Weekly champion reveal
+
+🧱 Components UX Rules
+Buttons:
+
+Primary: Solid green (primary)
+
+Secondary: Outlined yellow (secondary)
+
+Rounded corners (8px)
+
+Cards:
+
+Background: surface
+
+Elevation: soft shadow
+
+Padding: 16px
+
+Use icons + title + subtitle for clarity
+
+Gamified Elements:
+
+Use bright colors (e.g. accent, yellow, green)
+
+Badges & avatars should include Islamic motifs (stars, crescents, lanterns, books)
+
+Weekly Sahaba reward has spiritual tone (golden border, calligraphy icon)
+
+🌍 Language & Layout
+Multi-language support: Use logical key mapping (e.g. t("home.title"))
+
+RTL support: Automatically mirror layout when lang is Arabic
+
+Font fallback: Arabic fonts for RTL users (e.g., Noto Naskh Arabic, Cairo)
+
+This system ensures your app stays usable, fun, spiritual, and age-appropriate, while being developer- and designer-friendly.
+

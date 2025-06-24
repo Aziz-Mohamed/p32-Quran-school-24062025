@@ -1,0 +1,55 @@
+{
+  "home": {
+    "welcome": "مرحباً بك في مدرسة القرآن",
+    "title": "مدرسة القرآن",
+    "subtitle": "تعلم وحفظ القرآن الكريم",
+    "getStarted": "ابدأ الآن",
+    "explore": "استكشف"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "explore": "استكشف",
+    "lessons": "الدروس",
+    "profile": "الملف الشخصي"
+  },
+  "common": {
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ",
+    "retry": "إعادة المحاولة",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "close": "إغلاق",
+    "next": "التالي",
+    "previous": "السابق",
+    "finish": "إنهاء"
+  },
+  "lessons": {
+    "title": "الدروس",
+    "noLessons": "لا توجد دروس متاحة",
+    "startLesson": "ابدأ الدرس",
+    "continueLesson": "استمر في الدرس",
+    "lessonComplete": "تم إكمال الدرس",
+    "progress": "التقدم"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "language": "اللغة",
+    "theme": "المظهر",
+    "notifications": "الإشعارات",
+    "about": "حول",
+    "version": "الإصدار"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "register": "التسجيل",
+    "logout": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "signIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب"
+  }
+}

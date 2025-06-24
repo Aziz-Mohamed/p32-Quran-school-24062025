@@ -1,4 +1,13 @@
+|-- .cursor
+    |-- rules
+        |-- quran-school.mdc
+|-- .expo
+    |-- README.md
+    |-- devices.json
+    |-- types
+        |-- router.d.ts
 |-- .gitignore
+|-- I18N_README.md
 |-- README.md
 |-- app
     |-- (tabs)
@@ -25,6 +34,8 @@
     |-- ExternalLink.tsx
     |-- HapticTab.tsx
     |-- HelloWave.tsx
+    |-- I18nExample.tsx
+    |-- LanguageSwitcher.tsx
     |-- ParallaxScrollView.tsx
     |-- ThemedText.tsx
     |-- ThemedView.tsx
@@ -35,11 +46,19 @@
         |-- TabBarBackground.tsx
 |-- constants
     |-- Colors.ts
+    |-- i18n
+        |-- locales
+            |-- ar.json
+            |-- en.json
 |-- eslint.config.js
+|-- expo-env.d.ts
 |-- hooks
     |-- useColorScheme.ts
     |-- useColorScheme.web.ts
+    |-- useI18n.ts
+    |-- useRTL.ts
     |-- useThemeColor.ts
+    |-- useTranslation.ts
 |-- package-lock.json
 |-- package.json
 |-- scripts

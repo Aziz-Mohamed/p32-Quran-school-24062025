@@ -1,0 +1,55 @@
+{
+  "home": {
+    "welcome": "Welcome to Quran School",
+    "title": "Quran School",
+    "subtitle": "Learn and memorize the Holy Quran",
+    "getStarted": "Get Started",
+    "explore": "Explore"
+  },
+  "navigation": {
+    "home": "Home",
+    "explore": "Explore",
+    "lessons": "Lessons",
+    "profile": "Profile"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish"
+  },
+  "lessons": {
+    "title": "Lessons",
+    "noLessons": "No lessons available",
+    "startLesson": "Start Lesson",
+    "continueLesson": "Continue Lesson",
+    "lessonComplete": "Lesson Complete",
+    "progress": "Progress"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "notifications": "Notifications",
+    "about": "About",
+    "version": "Version"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "signIn": "Sign In",
+    "signUp": "Sign Up"
+  }
+}
