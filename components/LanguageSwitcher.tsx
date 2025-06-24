@@ -1,3 +1,4 @@
+import { useRTLStyles } from "@/hooks/useRTLStyles";
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, TouchableOpacity } from "react-native";
@@ -6,6 +7,7 @@ import { ThemedView } from "./ThemedView";
 
 export const LanguageSwitcher: React.FC = () => {
   const { i18n, t } = useTranslation();
+  const { rtlStyles } = useRTLStyles();
 
   const toggleLanguage = () => {
     const newLang = i18n.language === "en" ? "ar" : "en";
@@ -13,14 +15,16 @@ export const LanguageSwitcher: React.FC = () => {
   };
 
   return (
-    <ThemedView style={styles.container}>
-      <ThemedText style={styles.label}>{t("settings.language")}</ThemedText>
+    <ThemedView style={[styles.container, rtlStyles.row]}>
+      <ThemedText style={[styles.label, rtlStyles.textDirection]}>
+        {t("settings.language")}
+      </ThemedText>
       <TouchableOpacity
         style={styles.button}
         onPress={toggleLanguage}
         activeOpacity={0.7}
       >
-        <ThemedText style={styles.buttonText}>
+        <ThemedText style={[styles.buttonText, rtlStyles.textDirection]}>
           {i18n.language === "en" ? "العربية" : "English"}
         </ThemedText>
       </TouchableOpacity>

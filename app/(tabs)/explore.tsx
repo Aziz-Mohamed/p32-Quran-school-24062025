@@ -5,6 +5,7 @@ import { Collapsible } from "@/components/Collapsible";
 import { ExternalLink } from "@/components/ExternalLink";
 import { I18nExample } from "@/components/I18nExample";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
+import { RTLExample } from "@/components/RTLExample";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -52,6 +53,23 @@ export default function TabTwoScreen() {
         </ThemedText>
         <ThemedView style={styles.i18nExample}>
           <I18nExample />
+        </ThemedView>
+      </Collapsible>
+
+      <Collapsible title="🔄 RTL Layout Support">
+        <ThemedText>
+          This app supports Right-to-Left (RTL) layouts for Arabic language. RTL
+          features include:
+        </ThemedText>
+        <ThemedText>• Automatic RTL detection based on locale</ThemedText>
+        <ThemedText>• RTL-aware styling utilities</ThemedText>
+        <ThemedText>• Proper text direction and alignment</ThemedText>
+        <ThemedText>• Flexible layout components</ThemedText>
+        <ThemedText style={{ marginTop: 8 }}>
+          Examples of RTL-aware layouts:
+        </ThemedText>
+        <ThemedView style={styles.rtlExample}>
+          <RTLExample />
         </ThemedView>
       </Collapsible>
 
@@ -156,6 +174,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   i18nExample: {
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: "rgba(0, 0, 0, 0.1)",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  rtlExample: {
     marginTop: 16,
     borderWidth: 1,
     borderColor: "rgba(0, 0, 0, 0.1)",

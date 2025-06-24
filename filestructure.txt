@@ -9,6 +9,7 @@
 |-- .gitignore
 |-- I18N_README.md
 |-- README.md
+|-- RTL_README.md
 |-- app
     |-- (tabs)
         |-- _layout.tsx
@@ -37,6 +38,7 @@
     |-- I18nExample.tsx
     |-- LanguageSwitcher.tsx
     |-- ParallaxScrollView.tsx
+    |-- RTLExample.tsx
     |-- ThemedText.tsx
     |-- ThemedView.tsx
     |-- ui
@@ -57,6 +59,7 @@
     |-- useColorScheme.web.ts
     |-- useI18n.ts
     |-- useRTL.ts
+    |-- useRTLStyles.ts
     |-- useThemeColor.ts
     |-- useTranslation.ts
 |-- package-lock.json
