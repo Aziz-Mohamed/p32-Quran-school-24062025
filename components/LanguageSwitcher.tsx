@@ -1,17 +1,58 @@
+import { forceRTLReload } from "@/hooks/useRTL";
 import { useRTLStyles } from "@/hooks/useRTLStyles";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, TouchableOpacity } from "react-native";
+import { Alert, StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
+
+const LANGUAGE_KEY = "@quran_school_language";
 
 export const LanguageSwitcher: React.FC = () => {
   const { i18n, t } = useTranslation();
   const { rtlStyles } = useRTLStyles();
 
-  const toggleLanguage = () => {
+  const toggleLanguage = async () => {
     const newLang = i18n.language === "en" ? "ar" : "en";
-    i18n.changeLanguage(newLang);
+    const isArabic = newLang === "ar";
+
+    // Show alert to inform user about app reload
+    Alert.alert(
+      "Language Change",
+      `Switching to ${
+        isArabic ? "Arabic" : "English"
+      } will reload the app to apply RTL layout changes.`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Continue",
+          onPress: async () => {
+            try {
+              // Store the language preference first
+              await AsyncStorage.setItem(LANGUAGE_KEY, newLang);
+              console.log(`Stored language preference: ${newLang}`);
+
+              // Change language
+              i18n.changeLanguage(newLang);
+              console.log(`Changed language to: ${newLang}`);
+
+              // Force RTL reload
+              await forceRTLReload(isArabic);
+            } catch (error) {
+              console.error("Error changing language:", error);
+              Alert.alert(
+                "Error",
+                "Failed to change language. Please try again."
+              );
+            }
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -34,7 +75,6 @@ export const LanguageSwitcher: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,

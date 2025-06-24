@@ -31,16 +31,24 @@
         |-- react-logo@3x.png
         |-- splash-icon.png
 |-- components
+    |-- AggressiveRTL.tsx
+    |-- ArabicTextDemo.tsx
     |-- Collapsible.tsx
     |-- ExternalLink.tsx
+    |-- ForceRTLButton.tsx
     |-- HapticTab.tsx
     |-- HelloWave.tsx
     |-- I18nExample.tsx
     |-- LanguageSwitcher.tsx
+    |-- ManualRTLToggle.tsx
     |-- ParallaxScrollView.tsx
+    |-- RTLDebug.tsx
+    |-- RTLEnforcer.tsx
     |-- RTLExample.tsx
+    |-- SimpleRTLTest.tsx
     |-- ThemedText.tsx
     |-- ThemedView.tsx
+    |-- UltimateRTLFix.tsx
     |-- ui
         |-- IconSymbol.ios.tsx
         |-- IconSymbol.tsx

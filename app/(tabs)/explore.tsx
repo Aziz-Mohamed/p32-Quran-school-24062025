@@ -1,14 +1,22 @@
 import { Image } from "expo-image";
 import { Platform, StyleSheet } from "react-native";
 
+import { AggressiveRTL } from "@/components/AggressiveRTL";
+import { ArabicTextDemo } from "@/components/ArabicTextDemo";
 import { Collapsible } from "@/components/Collapsible";
 import { ExternalLink } from "@/components/ExternalLink";
+import { ForceRTLButton } from "@/components/ForceRTLButton";
 import { I18nExample } from "@/components/I18nExample";
+import { ManualRTLToggle } from "@/components/ManualRTLToggle";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
+import { RTLDebug } from "@/components/RTLDebug";
+import { RTLEnforcer } from "@/components/RTLEnforcer";
 import { RTLExample } from "@/components/RTLExample";
+import { SimpleRTLTest } from "@/components/SimpleRTLTest";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { UltimateRTLFix } from "@/components/UltimateRTLFix";
 import { useTranslation } from "@/hooks/useTranslation";
 
 export default function TabTwoScreen() {
@@ -70,6 +78,32 @@ export default function TabTwoScreen() {
         </ThemedText>
         <ThemedView style={styles.rtlExample}>
           <RTLExample />
+        </ThemedView>
+      </Collapsible>
+
+      <Collapsible title="📖 Arabic Text Demo">
+        <ThemedText>
+          This shows how Arabic text should look with proper RTL layout:
+        </ThemedText>
+        <ArabicTextDemo />
+      </Collapsible>
+
+      <Collapsible title="🧪 Simple RTL Test">
+        <ThemedText>Simple test to verify RTL is working correctly:</ThemedText>
+        <SimpleRTLTest />
+      </Collapsible>
+
+      <Collapsible title="🐛 RTL Debug Information">
+        <ThemedText>
+          Debug information to help troubleshoot RTL issues:
+        </ThemedText>
+        <UltimateRTLFix />
+        <AggressiveRTL />
+        <RTLEnforcer />
+        <ForceRTLButton />
+        <ManualRTLToggle />
+        <ThemedView style={styles.debugExample}>
+          <RTLDebug />
         </ThemedView>
       </Collapsible>
 
@@ -181,6 +215,13 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   rtlExample: {
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: "rgba(0, 0, 0, 0.1)",
+    borderRadius: 8,
+    overflow: "hidden",
+  },
+  debugExample: {
     marginTop: 16,
     borderWidth: 1,
     borderColor: "rgba(0, 0, 0, 0.1)",

@@ -2,49 +2,49 @@
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
+## 🚀 RTL & Multi-language Best Practices
+
+This app is built for both Arabic (RTL) and English (LTR) users. To ensure consistency and sustainability:
+
+### 1. **Always use ThemedText for all text**
+
+- ThemedText automatically applies correct text direction and alignment based on the current language (RTL for Arabic, LTR for English).
+- Never use <Text> directly unless you have a special case.
+
+### 2. **Always use ThemedView for all layouts**
+
+- ThemedView supports a `row` prop: `<ThemedView row>...</ThemedView>`
+- This will automatically set `flexDirection` to `row` or `row-reverse` based on the current language.
+- Never use <View style={{ flexDirection: 'row' }}> directly.
+
+### 3. **Never hardcode LTR styles**
+
+- Do not use `textAlign: 'left'` or `flexDirection: 'row'` unless you are using the RTL utilities from `useRTLStyles`.
+
+### 4. **All new UI code must use ThemedText and ThemedView**
+
+- This ensures your app will always look correct in both Arabic and English, with no extra work.
+
+### 5. **Code Review Rule**
+
+- Reject any PR that does not use ThemedText or ThemedView for UI.
+
+### Example Usage
+
+```tsx
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+
+<ThemedView row>
+  <Icon />
+  <ThemedText>مرحبا بك</ThemedText>
+</ThemedView>;
+```
+
 ## Get started
 
 1. Install dependencies
 
-   ```bash
-   npm install
    ```
 
-2. Start the app
-
-   ```bash
-   npx expo start
    ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
