@@ -22,19 +22,60 @@
     |-- _layout.tsx
     |-- admin
         |-- _layout.tsx
+        |-- attendance.tsx
+        |-- classes.tsx
+        |-- dashboard.tsx
+        |-- reports.tsx
+        |-- students
+            |-- [id].tsx
+            |-- add.tsx
+            |-- edit.tsx
+            |-- index.tsx
+        |-- teachers
+            |-- [id].tsx
+            |-- add.tsx
+            |-- edit.tsx
+            |-- index.tsx
+        |-- wifi-config.tsx
     |-- auth
         |-- forgot-password.tsx
         |-- login.tsx
         |-- onboarding.tsx
+        |-- register.tsx
     |-- parent
         |-- _layout.tsx
+        |-- attendance.tsx
+        |-- children.tsx
+        |-- class-standing.tsx
+        |-- dashboard.tsx
+        |-- messaging.tsx
+        |-- sessions.tsx
+        |-- settings.tsx
     |-- shared
         |-- notifications.tsx
+        |-- profile.tsx
         |-- settings.tsx
     |-- student
         |-- _layout.tsx
+        |-- dashboard.tsx
+        |-- leaderboard.tsx
+        |-- lessons.tsx
+        |-- profile.tsx
+        |-- sessions.tsx
+        |-- stickers.tsx
     |-- teacher
         |-- _layout.tsx
+        |-- award-sticker.tsx
+        |-- class-progress.tsx
+        |-- dashboard.tsx
+        |-- messaging.tsx
+        |-- needs-support.tsx
+        |-- profile.tsx
+        |-- session-log.tsx
+        |-- students
+            |-- [id].tsx
+            |-- index.tsx
+        |-- top-performers.tsx
 |-- app.json
 |-- assets
     |-- fonts
