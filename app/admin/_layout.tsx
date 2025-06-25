@@ -1,4 +1,5 @@
 import React from "react";
+import { StyleSheet, View } from "react-native";
 
 export default function AdminLayout({
   children,
@@ -6,9 +7,21 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <View style={styles.container}>
       {/* TODO: Admin navigation/sidebar goes here */}
-      <main style={{ flex: 1, padding: 24 }}>{children}</main>
-    </div>
+      <View style={styles.content}>{children}</View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    flexDirection: "row",
+    minHeight: "100%",
+  },
+  content: {
+    flex: 1,
+    padding: 24,
+  },
+});

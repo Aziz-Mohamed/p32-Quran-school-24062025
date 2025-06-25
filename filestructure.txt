@@ -15,9 +15,6 @@
 |-- RTL_README.md
 |-- app
     |-- (tabs)
-        |-- _layout.tsx
-        |-- explore.tsx
-        |-- index.tsx
     |-- +not-found.tsx
     |-- _layout.tsx
     |-- admin
@@ -42,6 +39,7 @@
         |-- login.tsx
         |-- onboarding.tsx
         |-- register.tsx
+    |-- index.tsx
     |-- parent
         |-- _layout.tsx
         |-- attendance.tsx
