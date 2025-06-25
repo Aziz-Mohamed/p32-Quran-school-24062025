@@ -1,5 +1,6 @@
 |-- .cursor
     |-- rules
+        |-- quran-school-gemeni.mdc
         |-- quran-school.mdc
 |-- .expo
     |-- README.md
@@ -77,4 +78,11 @@
 |-- package.json
 |-- scripts
     |-- reset-project.js
+|-- supabase
+    |-- .branches
+        |-- _current_branch
+    |-- .gitignore
+    |-- .temp
+        |-- cli-latest
+    |-- config.toml
 |-- tsconfig.json
