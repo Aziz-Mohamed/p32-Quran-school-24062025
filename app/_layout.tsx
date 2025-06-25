@@ -74,6 +74,10 @@ export default function RootLayout() {
     return null;
   }
 
+  // TODO: Insert role-based layout switching here in the future.
+  // For example: if (role === 'admin') return <AdminLayout>{children}</AdminLayout>
+  // else if (role === 'teacher') ... etc.
+
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>

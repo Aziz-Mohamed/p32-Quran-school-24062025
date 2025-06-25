@@ -20,6 +20,21 @@
         |-- index.tsx
     |-- +not-found.tsx
     |-- _layout.tsx
+    |-- admin
+        |-- _layout.tsx
+    |-- auth
+        |-- forgot-password.tsx
+        |-- login.tsx
+        |-- onboarding.tsx
+    |-- parent
+        |-- _layout.tsx
+    |-- shared
+        |-- notifications.tsx
+        |-- settings.tsx
+    |-- student
+        |-- _layout.tsx
+    |-- teacher
+        |-- _layout.tsx
 |-- app.json
 |-- assets
     |-- fonts
