@@ -8,18 +8,8 @@ alwaysApply: false
 js
 Copy
 Edit
-const colors = {
-  primary: "#1D976C",    // Emerald Green – spiritual growth & trust
-  secondary: "#FFD166",  // Warm Yellow – optimism, energy, youth
-  accent: "#EF476F",     // Rosy Red – gamification highlights & fun
-  background: "#F9FAFB", // Soft White – calm, clean
-  surface: "#FFFFFF",    // Cards & surfaces
-  textPrimary: "#1F2937", // Deep Gray – high readability
-  textSecondary: "#6B7280", // Soft Gray – secondary info
-  success: "#06D6A0",     // Positive feedback (e.g. recited correctly)
-  warning: "#FFA41B",     // For reminders, not harsh errors
-  error: "#D9534F",       // Minimal use – discouragement avoided
-}
+always use the color palette in the [Colors.ts](mdc:constants/Colors.ts) 
+
 ✨ Visual Style
 Border Radius: 16px for cards, 9999px (full) for avatars and badges
 

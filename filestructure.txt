@@ -6,7 +6,9 @@
     |-- devices.json
     |-- types
         |-- router.d.ts
+    |-- web
 |-- .gitignore
+|-- DARK_MODE_README.md
 |-- I18N_README.md
 |-- README.md
 |-- RTL_README.md
@@ -34,6 +36,7 @@
     |-- AggressiveRTL.tsx
     |-- ArabicTextDemo.tsx
     |-- Collapsible.tsx
+    |-- DarkModeDemo.tsx
     |-- ExternalLink.tsx
     |-- ForceRTLButton.tsx
     |-- HapticTab.tsx

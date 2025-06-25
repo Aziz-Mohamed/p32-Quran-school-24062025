@@ -4,22 +4,15 @@ import { useRTLStyles } from "@/hooks/useRTLStyles";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
 export type ThemedViewProps = ViewProps & {
-  lightColor?: string;
-  darkColor?: string;
   row?: boolean;
 };
 
 export function ThemedView({
   style,
-  lightColor,
-  darkColor,
   row = false,
   ...otherProps
 }: ThemedViewProps) {
-  const backgroundColor = useThemeColor(
-    { light: lightColor, dark: darkColor },
-    "background"
-  );
+  const backgroundColor = useThemeColor("background");
   const { rtlStyles } = useRTLStyles();
 
   return (
