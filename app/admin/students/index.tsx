@@ -1,5 +1,6 @@
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -21,8 +22,10 @@ interface Student {
   age: number;
   grade: string;
   parentName: string;
+  parentPhone: string;
   attendance: number;
   status: "active" | "inactive" | "pending";
+  enrollmentDate: string;
   avatar?: string;
 }
 
@@ -33,8 +36,10 @@ const mockStudents: Student[] = [
     age: 12,
     grade: "Grade 6",
     parentName: "Mohammed Hassan",
+    parentPhone: "+966-50-123-4567",
     attendance: 95,
     status: "active",
+    enrollmentDate: "September 2023",
   },
   {
     id: "2",
@@ -42,8 +47,10 @@ const mockStudents: Student[] = [
     age: 10,
     grade: "Grade 4",
     parentName: "Ali Al-Zahra",
+    parentPhone: "+966-50-234-5678",
     attendance: 88,
     status: "active",
+    enrollmentDate: "September 2023",
   },
   {
     id: "3",
@@ -51,8 +58,10 @@ const mockStudents: Student[] = [
     age: 14,
     grade: "Grade 8",
     parentName: "Khalil Omar",
+    parentPhone: "+966-50-345-6789",
     attendance: 92,
     status: "active",
+    enrollmentDate: "August 2023",
   },
   {
     id: "4",
@@ -60,8 +69,10 @@ const mockStudents: Student[] = [
     age: 11,
     grade: "Grade 5",
     parentName: "Rahman Ali",
+    parentPhone: "+966-50-456-7890",
     attendance: 78,
     status: "inactive",
+    enrollmentDate: "October 2023",
   },
   {
     id: "5",
@@ -69,8 +80,10 @@ const mockStudents: Student[] = [
     age: 13,
     grade: "Grade 7",
     parentName: "Ibrahim Yusuf",
+    parentPhone: "+966-50-567-8901",
     attendance: 96,
     status: "active",
+    enrollmentDate: "September 2023",
   },
 ];
 
@@ -113,7 +126,11 @@ const StudentCard: React.FC<{ student: Student; onPress: () => void }> = ({
           <View
             style={[styles.avatar, { backgroundColor: colors.primary + "20" }]}
           >
-            <Ionicons name="person" size={20} color={colors.primary} />
+            <Ionicons
+              name="person"
+              size={normalize(20)}
+              color={colors.primary}
+            />
           </View>
           <View style={styles.studentDetails}>
             <Text style={[styles.studentName, { color: colors.textPrimary }]}>
@@ -149,10 +166,10 @@ const StudentCard: React.FC<{ student: Student; onPress: () => void }> = ({
         </View>
         <View style={styles.statItem}>
           <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-            Parent
+            Enrolled
           </Text>
           <Text style={[styles.statValue, { color: colors.textPrimary }]}>
-            {student.parentName}
+            {student.enrollmentDate}
           </Text>
         </View>
         <View style={styles.statItem}>
@@ -161,6 +178,29 @@ const StudentCard: React.FC<{ student: Student; onPress: () => void }> = ({
           </Text>
           <Text style={[styles.statValue, { color: getAttendanceColor() }]}>
             {student.attendance}%
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.studentContact}>
+        <View style={styles.contactItem}>
+          <Ionicons
+            name="person"
+            size={normalize(14)}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.contactText, { color: colors.textSecondary }]}>
+            {student.parentName}
+          </Text>
+        </View>
+        <View style={styles.contactItem}>
+          <Ionicons
+            name="call"
+            size={normalize(14)}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.contactText, { color: colors.textSecondary }]}>
+            {student.parentPhone}
           </Text>
         </View>
       </View>
@@ -199,11 +239,17 @@ export default function StudentsScreen() {
   const filteredStudents = mockStudents.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.grade.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.parentName.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter =
       selectedFilter === "all" || student.status === selectedFilter;
     return matchesSearch && matchesFilter;
   });
+
+  const averageAttendance = (
+    mockStudents.reduce((sum, student) => sum + student.attendance, 0) /
+    mockStudents.length
+  ).toFixed(1);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -221,9 +267,52 @@ export default function StudentsScreen() {
           style={[styles.addButton, { backgroundColor: colors.primary }]}
           onPress={() => router.push("/admin/students/add")}
         >
-          <Ionicons name="add" size={20} color="#fff" />
+          <Ionicons name="add" size={normalize(20)} color="#fff" />
           <Text style={styles.addButtonText}>Add Student</Text>
         </TouchableOpacity>
+      </View>
+
+      {/* Overview Stats */}
+      <View style={styles.overviewSection}>
+        <View
+          style={[
+            styles.overviewCard,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <View style={styles.overviewItem}>
+            <Text style={[styles.overviewValue, { color: colors.textPrimary }]}>
+              {mockStudents.length}
+            </Text>
+            <Text
+              style={[styles.overviewLabel, { color: colors.textSecondary }]}
+            >
+              Total Students
+            </Text>
+          </View>
+          <View style={styles.overviewDivider} />
+          <View style={styles.overviewItem}>
+            <Text style={[styles.overviewValue, { color: colors.success }]}>
+              {mockStudents.filter((s) => s.status === "active").length}
+            </Text>
+            <Text
+              style={[styles.overviewLabel, { color: colors.textSecondary }]}
+            >
+              Active Students
+            </Text>
+          </View>
+          <View style={styles.overviewDivider} />
+          <View style={styles.overviewItem}>
+            <Text style={[styles.overviewValue, { color: colors.primary }]}>
+              {averageAttendance}%
+            </Text>
+            <Text
+              style={[styles.overviewLabel, { color: colors.textSecondary }]}
+            >
+              Avg Attendance
+            </Text>
+          </View>
+        </View>
       </View>
 
       {/* Search Bar */}
@@ -233,10 +322,14 @@ export default function StudentsScreen() {
           { backgroundColor: colors.surface, borderColor: colors.border },
         ]}
       >
-        <Ionicons name="search" size={20} color={colors.textSecondary} />
+        <Ionicons
+          name="search"
+          size={normalize(20)}
+          color={colors.textSecondary}
+        />
         <TextInput
           style={[styles.searchInput, { color: colors.textPrimary }]}
-          placeholder="Search students or parents..."
+          placeholder="Search students, grades, or parents..."
           placeholderTextColor={colors.textSecondary}
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -245,7 +338,7 @@ export default function StudentsScreen() {
           <TouchableOpacity onPress={() => setSearchQuery("")}>
             <Ionicons
               name="close-circle"
-              size={20}
+              size={normalize(20)}
               color={colors.textSecondary}
             />
           </TouchableOpacity>
@@ -318,8 +411,8 @@ export default function StudentsScreen() {
         ) : (
           <View style={styles.emptyState}>
             <Ionicons
-              name="people-outline"
-              size={48}
+              name="school-outline"
+              size={normalize(48)}
               color={colors.textSecondary}
             />
             <Text
@@ -350,83 +443,110 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: normalize(24),
   },
   title: {
-    fontSize: 28,
+    fontSize: normalize(28),
     fontWeight: "700",
-    marginBottom: 4,
+    marginBottom: normalize(4),
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: normalize(16),
   },
   addButton: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
-    gap: 8,
+    paddingHorizontal: normalize(16),
+    paddingVertical: normalize(12),
+    borderRadius: normalize(12),
+    gap: normalize(8),
   },
   addButtonText: {
     color: "#fff",
-    fontSize: 14,
+    fontSize: normalize(14),
     fontWeight: "600",
+  },
+  overviewSection: {
+    marginBottom: normalize(24),
+  },
+  overviewCard: {
+    flexDirection: "row",
+    padding: normalize(20),
+    borderRadius: normalize(16),
+    borderWidth: 1,
+  },
+  overviewItem: {
+    flex: 1,
+    alignItems: "center",
+  },
+  overviewValue: {
+    fontSize: normalize(24),
+    fontWeight: "700",
+    marginBottom: normalize(4),
+  },
+  overviewLabel: {
+    fontSize: normalize(12),
+    fontWeight: "500",
+  },
+  overviewDivider: {
+    width: 1,
+    backgroundColor: "#e0e0e0",
+    marginHorizontal: normalize(16),
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: normalize(16),
+    paddingVertical: normalize(12),
+    borderRadius: normalize(12),
     borderWidth: 1,
-    marginBottom: 20,
+    marginBottom: normalize(20),
   },
   searchInput: {
     flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
+    marginLeft: normalize(12),
+    fontSize: normalize(16),
   },
   filtersContainer: {
-    marginBottom: 20,
+    marginBottom: normalize(20),
   },
   filterChip: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    paddingHorizontal: normalize(16),
+    paddingVertical: normalize(8),
+    borderRadius: normalize(20),
     borderWidth: 1,
-    marginRight: 12,
+    marginRight: normalize(12),
   },
   filterText: {
-    fontSize: 14,
+    fontSize: normalize(14),
     fontWeight: "500",
-    marginRight: 8,
+    marginRight: normalize(8),
   },
   filterCount: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 8,
+    paddingHorizontal: normalize(6),
+    paddingVertical: normalize(2),
+    borderRadius: normalize(8),
   },
   filterCountText: {
-    fontSize: 12,
+    fontSize: normalize(12),
     fontWeight: "600",
   },
   studentsList: {
     flex: 1,
   },
   studentCard: {
-    padding: 20,
-    borderRadius: 16,
+    padding: normalize(20),
+    borderRadius: normalize(16),
     borderWidth: 1,
-    marginBottom: 12,
+    marginBottom: normalize(12),
   },
   studentHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: normalize(16),
   },
   studentInfo: {
     flexDirection: "row",
@@ -434,61 +554,75 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: normalize(48),
+    height: normalize(48),
+    borderRadius: normalize(24),
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
+    marginRight: normalize(12),
   },
   studentDetails: {
     flex: 1,
   },
   studentName: {
-    fontSize: 16,
+    fontSize: normalize(16),
     fontWeight: "600",
-    marginBottom: 2,
+    marginBottom: normalize(4),
   },
   studentGrade: {
-    fontSize: 14,
+    fontSize: normalize(14),
   },
   statusBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: normalize(12),
+    paddingVertical: normalize(6),
+    borderRadius: normalize(12),
   },
   statusText: {
-    fontSize: 12,
+    fontSize: normalize(12),
     fontWeight: "600",
   },
   studentStats: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginBottom: normalize(16),
   },
   statItem: {
     alignItems: "center",
   },
   statLabel: {
-    fontSize: 12,
-    marginBottom: 4,
+    fontSize: normalize(12),
+    marginBottom: normalize(4),
   },
   statValue: {
-    fontSize: 14,
+    fontSize: normalize(14),
     fontWeight: "600",
+  },
+  studentContact: {
+    marginBottom: normalize(16),
+  },
+  contactItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: normalize(8),
+  },
+  contactText: {
+    fontSize: normalize(14),
+    marginLeft: normalize(8),
+    flex: 1,
   },
   emptyState: {
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 60,
+    paddingVertical: normalize(60),
   },
   emptyStateTitle: {
-    fontSize: 18,
+    fontSize: normalize(18),
     fontWeight: "600",
-    marginTop: 16,
-    marginBottom: 8,
+    marginTop: normalize(16),
+    marginBottom: normalize(8),
   },
   emptyStateSubtitle: {
-    fontSize: 14,
+    fontSize: normalize(14),
     textAlign: "center",
   },
 });

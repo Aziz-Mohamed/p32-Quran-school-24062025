@@ -1,5 +1,6 @@
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -43,12 +44,12 @@ const StatCard: React.FC<StatCardProps> = ({
     >
       <View style={styles.statHeader}>
         <View style={[styles.iconContainer, { backgroundColor: color + "15" }]}>
-          <Ionicons name={icon} size={20} color={color} />
+          <Ionicons name={icon} size={normalize(20)} color={color} />
         </View>
         <View style={styles.changeContainer}>
           <Ionicons
             name={isPositive ? "trending-up" : "trending-down"}
-            size={12}
+            size={normalize(12)}
             color={isPositive ? colors.success : colors.error}
           />
           <Text
@@ -98,7 +99,7 @@ const QuickAction: React.FC<QuickActionProps> = ({
       onPress={onPress}
     >
       <View style={[styles.actionIcon, { backgroundColor: color + "15" }]}>
-        <Ionicons name={icon} size={24} color={color} />
+        <Ionicons name={icon} size={normalize(24)} color={color} />
       </View>
       <View style={styles.actionContent}>
         <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>
@@ -108,7 +109,11 @@ const QuickAction: React.FC<QuickActionProps> = ({
           {subtitle}
         </Text>
       </View>
-      <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+      <Ionicons
+        name="chevron-forward"
+        size={normalize(20)}
+        color={colors.textSecondary}
+      />
     </TouchableOpacity>
   );
 };
@@ -150,7 +155,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
           { backgroundColor: getTypeColor() + "15" },
         ]}
       >
-        <Ionicons name={icon} size={16} color={getTypeColor()} />
+        <Ionicons name={icon} size={normalize(16)} color={getTypeColor()} />
       </View>
       <View style={styles.activityContent}>
         <Text style={[styles.activityTitle, { color: colors.textPrimary }]}>
@@ -357,153 +362,153 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: normalize(32),
   },
   welcomeTitle: {
-    fontSize: 28,
+    fontSize: normalize(28),
     fontWeight: "700",
-    marginBottom: 4,
+    marginBottom: normalize(4),
   },
   welcomeSubtitle: {
-    fontSize: 16,
-    lineHeight: 22,
+    fontSize: normalize(16),
+    lineHeight: normalize(22),
   },
   dateCard: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 12,
+    paddingHorizontal: normalize(16),
+    paddingVertical: normalize(12),
+    borderRadius: normalize(12),
     borderWidth: 1,
     alignItems: "center",
   },
   dateText: {
-    fontSize: 14,
+    fontSize: normalize(14),
     fontWeight: "600",
   },
   statsSection: {
-    marginBottom: 32,
+    marginBottom: normalize(32),
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: normalize(20),
     fontWeight: "600",
-    marginBottom: 16,
+    marginBottom: normalize(16),
   },
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
+    gap: normalize(12),
   },
   statCard: {
-    width: (width - 72) / 2,
-    padding: 20,
-    borderRadius: 16,
+    width: (width - normalize(72)) / 2 - normalize(6),
+    padding: normalize(20),
+    borderRadius: normalize(16),
     borderWidth: 1,
   },
   statHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 12,
+    marginBottom: normalize(12),
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: normalize(40),
+    height: normalize(40),
+    borderRadius: normalize(12),
     justifyContent: "center",
     alignItems: "center",
   },
   changeContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: normalize(4),
   },
   changeText: {
-    fontSize: 12,
+    fontSize: normalize(12),
     fontWeight: "600",
   },
   statValue: {
-    fontSize: 24,
+    fontSize: normalize(24),
     fontWeight: "700",
-    marginBottom: 4,
+    marginBottom: normalize(4),
   },
   statTitle: {
-    fontSize: 14,
+    fontSize: normalize(14),
     fontWeight: "500",
   },
   actionsSection: {
-    marginBottom: 32,
+    marginBottom: normalize(32),
   },
   actionsGrid: {
-    gap: 12,
+    gap: normalize(12),
   },
   quickActionCard: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 20,
-    borderRadius: 16,
+    padding: normalize(20),
+    borderRadius: normalize(16),
     borderWidth: 1,
   },
   actionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: normalize(48),
+    height: normalize(48),
+    borderRadius: normalize(12),
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 16,
+    marginRight: normalize(16),
   },
   actionContent: {
     flex: 1,
   },
   actionTitle: {
-    fontSize: 16,
+    fontSize: normalize(16),
     fontWeight: "600",
-    marginBottom: 2,
+    marginBottom: normalize(2),
   },
   actionSubtitle: {
-    fontSize: 14,
+    fontSize: normalize(14),
   },
   activitySection: {
-    marginBottom: 32,
+    marginBottom: normalize(32),
   },
   activityHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: normalize(16),
   },
   viewAllText: {
-    fontSize: 14,
+    fontSize: normalize(14),
     fontWeight: "600",
   },
   activityCard: {
-    borderRadius: 16,
+    borderRadius: normalize(16),
     borderWidth: 1,
-    padding: 20,
+    padding: normalize(20),
   },
   activityItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: normalize(12),
   },
   activityIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: normalize(32),
+    height: normalize(32),
+    borderRadius: normalize(8),
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
+    marginRight: normalize(12),
   },
   activityContent: {
     flex: 1,
   },
   activityTitle: {
-    fontSize: 14,
+    fontSize: normalize(14),
     fontWeight: "500",
-    marginBottom: 2,
+    marginBottom: normalize(2),
   },
   activityTime: {
-    fontSize: 12,
+    fontSize: normalize(12),
   },
   bottomSpacing: {
-    height: 24,
+    height: normalize(24),
   },
 });

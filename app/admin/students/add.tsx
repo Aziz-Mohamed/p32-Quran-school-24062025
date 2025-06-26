@@ -1,5 +1,6 @@
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -143,7 +144,9 @@ export default function AddStudentScreen() {
             borderColor: error ? colors.error : colors.border,
             color: colors.textPrimary,
           },
-          multiline && { height: numberOfLines * 24 + 16 },
+          multiline && {
+            height: numberOfLines * normalize(24) + normalize(16),
+          },
         ]}
         value={value}
         onChangeText={onChangeText}
@@ -167,7 +170,11 @@ export default function AddStudentScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          <Ionicons
+            name="arrow-back"
+            size={normalize(24)}
+            color={colors.textPrimary}
+          />
         </TouchableOpacity>
         <Text style={[styles.title, { color: colors.textPrimary }]}>
           Add New Student
@@ -179,7 +186,11 @@ export default function AddStudentScreen() {
         {/* Student Information Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="person" size={20} color={colors.primary} />
+            <Ionicons
+              name="person"
+              size={normalize(20)}
+              color={colors.primary}
+            />
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Student Information
             </Text>
@@ -247,7 +258,7 @@ export default function AddStudentScreen() {
                   </Text>
                   <Ionicons
                     name="chevron-down"
-                    size={20}
+                    size={normalize(20)}
                     color={colors.textSecondary}
                   />
                 </View>

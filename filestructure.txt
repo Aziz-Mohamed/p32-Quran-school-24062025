@@ -1,7 +1,6 @@
 |-- .cursor
     |-- rules
         |-- quran-school-gemeni.mdc
-        |-- quran-school.mdc
 |-- .expo
     |-- README.md
     |-- devices.json
@@ -11,6 +10,7 @@
 |-- .gitignore
 |-- DARK_MODE_README.md
 |-- I18N_README.md
+|-- QuranSchoolDesignRule.md
 |-- README.md
 |-- RTL_README.md
 |-- app
@@ -132,3 +132,5 @@
         |-- cli-latest
     |-- config.toml
 |-- tsconfig.json
+|-- utils
+    |-- normalize.ts
