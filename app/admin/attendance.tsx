@@ -85,7 +85,7 @@ const AttendanceCard: React.FC<{ record: AttendanceRecord }> = ({ record }) => {
       case "late":
         return colors.warning;
       case "excused":
-        return colors.accent;
+        return colors.accentTeal;
       default:
         return colors.textSecondary;
     }
@@ -172,7 +172,7 @@ const CalendarDay: React.FC<{
     <TouchableOpacity
       style={[
         styles.calendarDay,
-        isSelected && { backgroundColor: colors.primary },
+        isSelected && { backgroundColor: colors.accentOrange },
         { borderColor: colors.border },
       ]}
       onPress={onPress}
@@ -189,7 +189,7 @@ const CalendarDay: React.FC<{
         <View
           style={[
             styles.attendanceDot,
-            { backgroundColor: isSelected ? "#fff" : colors.primary },
+            { backgroundColor: isSelected ? "#fff" : colors.accentOrange },
           ]}
         />
       )}
@@ -246,7 +246,9 @@ export default function AttendanceScreen() {
   const calendarDays = Array.from({ length: 31 }, (_, i) => i + 1);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.primaryBackground }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -258,7 +260,10 @@ export default function AttendanceScreen() {
           </Text>
         </View>
         <TouchableOpacity
-          style={[styles.exportButton, { backgroundColor: colors.primary }]}
+          style={[
+            styles.exportButton,
+            { backgroundColor: colors.accentOrange },
+          ]}
           onPress={() => {
             /* Export attendance */
           }}
@@ -277,7 +282,9 @@ export default function AttendanceScreen() {
           ]}
         >
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.success }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {presentCount}
             </Text>
             <Text
@@ -310,7 +317,9 @@ export default function AttendanceScreen() {
           </View>
           <View style={styles.overviewDivider} />
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.primary }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {attendanceRate}%
             </Text>
             <Text
@@ -372,7 +381,7 @@ export default function AttendanceScreen() {
             style={[
               styles.filterChip,
               selectedFilter === filter.key && {
-                backgroundColor: colors.primary + "15",
+                backgroundColor: colors.accentOrange + "15",
               },
               { borderColor: colors.border },
             ]}
@@ -384,7 +393,7 @@ export default function AttendanceScreen() {
                 {
                   color:
                     selectedFilter === filter.key
-                      ? colors.primary
+                      ? colors.accentOrange
                       : colors.textSecondary,
                 },
               ]}

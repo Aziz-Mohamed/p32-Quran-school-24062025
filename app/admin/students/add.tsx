@@ -163,7 +163,9 @@ export default function AddStudentScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.primaryBackground }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -189,7 +191,7 @@ export default function AddStudentScreen() {
             <Ionicons
               name="person"
               size={normalize(20)}
-              color={colors.primary}
+              color={colors.accentOrange}
             />
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Student Information
@@ -275,7 +277,7 @@ export default function AddStudentScreen() {
         {/* Parent Information Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="people" size={20} color={colors.primary} />
+            <Ionicons name="people" size={20} color={colors.accentOrange} />
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Parent Information
             </Text>
@@ -328,7 +330,7 @@ export default function AddStudentScreen() {
             <Ionicons
               name="information-circle"
               size={20}
-              color={colors.primary}
+              color={colors.accentOrange}
             />
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Additional Information
@@ -363,7 +365,10 @@ export default function AddStudentScreen() {
         ]}
       >
         <TouchableOpacity
-          style={[styles.submitButton, { backgroundColor: colors.primary }]}
+          style={[
+            styles.submitButton,
+            { backgroundColor: colors.accentOrange },
+          ]}
           onPress={handleSubmit}
         >
           <Ionicons name="checkmark" size={20} color="#fff" />
@@ -440,7 +445,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderWidth: normalize(1) ,
+    borderWidth: normalize(1),
     borderRadius: normalize(12),
     paddingHorizontal: normalize(16),
     paddingVertical: normalize(12),

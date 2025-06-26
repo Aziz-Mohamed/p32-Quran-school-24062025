@@ -110,11 +110,11 @@ const TeacherCard: React.FC<{ teacher: Teacher; onPress: () => void }> = ({
   const getSubjectColor = () => {
     switch (teacher.subject) {
       case "Quran Studies":
-        return colors.primary;
+        return colors.accentOrange;
       case "Islamic Studies":
-        return colors.secondary;
+        return colors.accentTeal;
       case "Arabic Language":
-        return colors.accent;
+        return colors.accentTeal;
       case "Tajweed":
         return colors.success;
       case "Islamic History":
@@ -177,12 +177,15 @@ const TeacherCard: React.FC<{ teacher: Teacher; onPress: () => void }> = ({
       <View style={styles.teacherHeader}>
         <View style={styles.teacherInfo}>
           <View
-            style={[styles.avatar, { backgroundColor: colors.primary + "20" }]}
+            style={[
+              styles.avatar,
+              { backgroundColor: colors.accentOrange + "20" },
+            ]}
           >
             <Ionicons
               name="person"
               size={normalize(20)}
-              color={colors.primary}
+              color={colors.accentOrange}
             />
           </View>
           <View style={styles.teacherDetails}>
@@ -327,7 +330,9 @@ export default function TeachersScreen() {
   ).toFixed(1);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.primaryBackground }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -339,7 +344,7 @@ export default function TeachersScreen() {
           </Text>
         </View>
         <TouchableOpacity
-          style={[styles.addButton, { backgroundColor: colors.primary }]}
+          style={[styles.addButton, { backgroundColor: colors.accentOrange }]}
           onPress={() => router.push("/admin/teachers/add")}
         >
           <Ionicons name="add" size={normalize(20)} color="#fff" />
@@ -356,7 +361,9 @@ export default function TeachersScreen() {
           ]}
         >
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.textPrimary }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {mockTeachers.length}
             </Text>
             <Text
@@ -367,7 +374,9 @@ export default function TeachersScreen() {
           </View>
           <View style={styles.overviewDivider} />
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.textPrimary }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {totalStudents}
             </Text>
             <Text
@@ -378,7 +387,9 @@ export default function TeachersScreen() {
           </View>
           <View style={styles.overviewDivider} />
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.primary }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {averageRating}
             </Text>
             <Text
@@ -432,7 +443,7 @@ export default function TeachersScreen() {
             style={[
               styles.filterChip,
               selectedFilter === filter.key && {
-                backgroundColor: colors.primary + "15",
+                backgroundColor: colors.accentOrange + "15",
               },
               { borderColor: colors.border },
             ]}
@@ -444,7 +455,7 @@ export default function TeachersScreen() {
                 {
                   color:
                     selectedFilter === filter.key
-                      ? colors.primary
+                      ? colors.accentOrange
                       : colors.textSecondary,
                 },
               ]}

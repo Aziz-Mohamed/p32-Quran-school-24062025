@@ -163,7 +163,9 @@ export default function AddTeacherScreen() {
   );
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.primaryBackground }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -182,7 +184,7 @@ export default function AddTeacherScreen() {
         {/* Personal Information Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="person" size={20} color={colors.primary} />
+            <Ionicons name="person" size={20} color={colors.accentOrange} />
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Personal Information
             </Text>
@@ -236,7 +238,7 @@ export default function AddTeacherScreen() {
         {/* Professional Information Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="school" size={20} color={colors.primary} />
+            <Ionicons name="school" size={20} color={colors.accentOrange} />
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Professional Information
             </Text>
@@ -303,7 +305,7 @@ export default function AddTeacherScreen() {
         {/* Contact Information Section */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Ionicons name="location" size={20} color={colors.primary} />
+            <Ionicons name="location" size={20} color={colors.accentOrange} />
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Contact Information
             </Text>
@@ -334,7 +336,7 @@ export default function AddTeacherScreen() {
             <Ionicons
               name="information-circle"
               size={20}
-              color={colors.primary}
+              color={colors.accentOrange}
             />
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
               Additional Information
@@ -360,7 +362,10 @@ export default function AddTeacherScreen() {
         ]}
       >
         <TouchableOpacity
-          style={[styles.submitButton, { backgroundColor: colors.primary }]}
+          style={[
+            styles.submitButton,
+            { backgroundColor: colors.accentOrange },
+          ]}
           onPress={handleSubmit}
         >
           <Ionicons name="checkmark" size={20} color="#fff" />

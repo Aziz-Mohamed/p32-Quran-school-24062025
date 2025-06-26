@@ -82,7 +82,7 @@ const ProgressCard: React.FC<{
 
   const getProgressColor = () => {
     if (progress >= 90) return colors.success;
-    if (progress >= 80) return colors.primary;
+    if (progress >= 80) return colors.accentOrange;
     if (progress >= 70) return colors.warning;
     return colors.error;
   };
@@ -134,7 +134,7 @@ const AttendanceItem: React.FC<{
       case "late":
         return colors.warning;
       case "excused":
-        return colors.accent;
+        return colors.accentTeal;
       default:
         return colors.textSecondary;
     }
@@ -181,7 +181,9 @@ const AttendanceItem: React.FC<{
         />
       </View>
       <View style={styles.attendanceInfo}>
-        <Text style={[styles.statusText, { color: getStatusColor() }]}>
+        <Text
+          style={[styles.attendanceStatusText, { color: getStatusColor() }]}
+        >
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </Text>
         <Text style={[styles.timeText, { color: colors.textSecondary }]}>
@@ -219,7 +221,9 @@ export default function StudentDetailScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.primaryBackground }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -232,7 +236,11 @@ export default function StudentDetailScreen() {
           Student Details
         </Text>
         <TouchableOpacity style={styles.editButton}>
-          <Ionicons name="create-outline" size={24} color={colors.primary} />
+          <Ionicons
+            name="create-outline"
+            size={24}
+            color={colors.accentOrange}
+          />
         </TouchableOpacity>
       </View>
 
@@ -248,10 +256,10 @@ export default function StudentDetailScreen() {
             <View
               style={[
                 styles.avatar,
-                { backgroundColor: colors.primary + "20" },
+                { backgroundColor: colors.accentOrange + "20" },
               ]}
             >
-              <Ionicons name="person" size={32} color={colors.primary} />
+              <Ionicons name="person" size={32} color={colors.accentOrange} />
             </View>
             <View style={styles.profileInfo}>
               <Text style={[styles.studentName, { color: colors.textPrimary }]}>
@@ -388,13 +396,19 @@ export default function StudentDetailScreen() {
         {/* Action Buttons */}
         <View style={styles.actionSection}>
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.primary }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: colors.accentOrange },
+            ]}
           >
             <Ionicons name="mail" size={20} color="#fff" />
             <Text style={styles.actionButtonText}>Contact Parent</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.secondary }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: colors.accentTeal },
+            ]}
           >
             <Ionicons name="document-text" size={20} color="#fff" />
             <Text style={styles.actionButtonText}>View Report</Text>
@@ -505,7 +519,7 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: normalize(12) ,
+    marginBottom: normalize(12),
   },
   infoLabel: {
     fontSize: normalize(14),
@@ -587,7 +601,7 @@ const styles = StyleSheet.create({
   attendanceInfo: {
     flex: 1,
   },
-  statusText: {
+  attendanceStatusText: {
     fontSize: normalize(14),
     fontWeight: "600",
     marginBottom: normalize(2),

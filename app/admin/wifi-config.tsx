@@ -134,7 +134,7 @@ const NetworkCard: React.FC<{
       case "WPA3":
         return colors.success;
       case "WPA2":
-        return colors.primary;
+        return colors.accentOrange;
       case "Open":
         return colors.error;
       default:
@@ -167,8 +167,13 @@ const NetworkCard: React.FC<{
         <Switch
           value={network.isActive}
           onValueChange={() => onToggle(network.id)}
-          trackColor={{ false: colors.border, true: colors.primary + "40" }}
-          thumbColor={network.isActive ? colors.primary : colors.textSecondary}
+          trackColor={{
+            false: colors.border,
+            true: colors.accentOrange + "40",
+          }}
+          thumbColor={
+            network.isActive ? colors.accentOrange : colors.textSecondary
+          }
         />
       </View>
 
@@ -183,7 +188,7 @@ const NetworkCard: React.FC<{
           </Text>
         </View>
         <View style={styles.statItem}>
-          <Ionicons name="people" size={16} color={colors.accent} />
+          <Ionicons name="people" size={16} color={colors.accentTeal} />
           <Text style={[styles.statValue, { color: colors.textPrimary }]}>
             {network.connectedDevices}/{network.maxDevices}
           </Text>
@@ -211,8 +216,12 @@ const NetworkCard: React.FC<{
           Last updated: {network.lastUpdated}
         </Text>
         <TouchableOpacity style={styles.editButton}>
-          <Ionicons name="settings-outline" size={16} color={colors.primary} />
-          <Text style={[styles.editText, { color: colors.primary }]}>
+          <Ionicons
+            name="settings-outline"
+            size={16}
+            color={colors.accentOrange}
+          />
+          <Text style={[styles.editText, { color: colors.accentOrange }]}>
             Configure
           </Text>
         </TouchableOpacity>
@@ -228,11 +237,11 @@ const DeviceCard: React.FC<{ device: ConnectedDevice }> = ({ device }) => {
   const getDeviceTypeColor = () => {
     switch (device.deviceType) {
       case "student":
-        return colors.primary;
+        return colors.accentOrange;
       case "teacher":
-        return colors.secondary;
+        return colors.accentTeal;
       case "admin":
-        return colors.accent;
+        return colors.accentTeal;
       case "guest":
         return colors.warning;
       default:
@@ -363,7 +372,9 @@ export default function WiFiConfigScreen() {
   const activeNetworks = networks.filter((network) => network.isActive).length;
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.primaryBackground }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -375,7 +386,7 @@ export default function WiFiConfigScreen() {
           </Text>
         </View>
         <TouchableOpacity
-          style={[styles.addButton, { backgroundColor: colors.primary }]}
+          style={[styles.addButton, { backgroundColor: colors.accentOrange }]}
           onPress={() => {
             /* Add new network */
           }}
@@ -394,7 +405,9 @@ export default function WiFiConfigScreen() {
           ]}
         >
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.textPrimary }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {networks.length}
             </Text>
             <Text
@@ -416,7 +429,9 @@ export default function WiFiConfigScreen() {
           </View>
           <View style={styles.overviewDivider} />
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.primary }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {totalDevices}
             </Text>
             <Text
@@ -434,7 +449,7 @@ export default function WiFiConfigScreen() {
           style={[
             styles.tab,
             selectedTab === "networks" && {
-              backgroundColor: colors.primary + "15",
+              backgroundColor: colors.accentOrange + "15",
             },
             { borderColor: colors.border },
           ]}
@@ -444,7 +459,9 @@ export default function WiFiConfigScreen() {
             name="wifi"
             size={20}
             color={
-              selectedTab === "networks" ? colors.primary : colors.textSecondary
+              selectedTab === "networks"
+                ? colors.accentOrange
+                : colors.textSecondary
             }
           />
           <Text
@@ -453,7 +470,7 @@ export default function WiFiConfigScreen() {
               {
                 color:
                   selectedTab === "networks"
-                    ? colors.primary
+                    ? colors.accentOrange
                     : colors.textSecondary,
               },
             ]}
@@ -465,7 +482,7 @@ export default function WiFiConfigScreen() {
           style={[
             styles.tab,
             selectedTab === "devices" && {
-              backgroundColor: colors.primary + "15",
+              backgroundColor: colors.accentOrange + "15",
             },
             { borderColor: colors.border },
           ]}
@@ -475,7 +492,9 @@ export default function WiFiConfigScreen() {
             name="phone-portrait"
             size={20}
             color={
-              selectedTab === "devices" ? colors.primary : colors.textSecondary
+              selectedTab === "devices"
+                ? colors.accentOrange
+                : colors.textSecondary
             }
           />
           <Text
@@ -484,7 +503,7 @@ export default function WiFiConfigScreen() {
               {
                 color:
                   selectedTab === "devices"
-                    ? colors.primary
+                    ? colors.accentOrange
                     : colors.textSecondary,
               },
             ]}
@@ -611,7 +630,7 @@ const styles = StyleSheet.create({
     marginBottom: normalize(16),
   },
   networkCard: {
-      padding: normalize(20),
+    padding: normalize(20),
     borderRadius: normalize(16),
     borderWidth: normalize(1),
     marginBottom: normalize(12),
@@ -685,7 +704,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   deviceIcon: {
-      width: normalize(32),
+    width: normalize(32),
     height: normalize(32),
     borderRadius: normalize(16),
     justifyContent: "center",

@@ -202,10 +202,10 @@ const ClassCard: React.FC<{ classInfo: TeacherDetail["classes"][0] }> = ({
         <View
           style={[
             styles.gradeBadge,
-            { backgroundColor: colors.primary + "15" },
+            { backgroundColor: colors.accentOrange + "15" },
           ]}
         >
-          <Text style={[styles.gradeText, { color: colors.primary }]}>
+          <Text style={[styles.gradeText, { color: colors.accentOrange }]}>
             {classInfo.grade}
           </Text>
         </View>
@@ -259,11 +259,11 @@ const ActivityItem: React.FC<{
   const getActivityColor = () => {
     switch (activity.type) {
       case "class":
-        return colors.primary;
+        return colors.accentOrange;
       case "assessment":
-        return colors.secondary;
+        return colors.accentTeal;
       case "meeting":
-        return colors.accent;
+        return colors.accentTeal;
       case "training":
         return colors.success;
       default:
@@ -359,7 +359,9 @@ export default function TeacherDetailScreen() {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.primaryBackground }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
@@ -372,7 +374,11 @@ export default function TeacherDetailScreen() {
           Teacher Details
         </Text>
         <TouchableOpacity style={styles.editButton}>
-          <Ionicons name="create-outline" size={24} color={colors.primary} />
+          <Ionicons
+            name="create-outline"
+            size={24}
+            color={colors.accentOrange}
+          />
         </TouchableOpacity>
       </View>
 
@@ -388,10 +394,10 @@ export default function TeacherDetailScreen() {
             <View
               style={[
                 styles.avatar,
-                { backgroundColor: colors.primary + "20" },
+                { backgroundColor: colors.accentOrange + "20" },
               ]}
             >
-              <Ionicons name="person" size={32} color={colors.primary} />
+              <Ionicons name="person" size={32} color={colors.accentOrange} />
             </View>
             <View style={styles.profileInfo}>
               <Text style={[styles.teacherName, { color: colors.textPrimary }]}>
@@ -426,7 +432,7 @@ export default function TeacherDetailScreen() {
 
           <View style={styles.profileStats}>
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.textPrimary }]}>
+              <Text style={[styles.statValue, { color: colors.accentOrange }]}>
                 {teacher.experience}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
@@ -434,7 +440,7 @@ export default function TeacherDetailScreen() {
               </Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statValue, { color: colors.primary }]}>
+              <Text style={[styles.statValue, { color: colors.accentOrange }]}>
                 {teacher.totalStudents}
               </Text>
               <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
@@ -548,13 +554,19 @@ export default function TeacherDetailScreen() {
         {/* Action Buttons */}
         <View style={styles.actionSection}>
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.primary }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: colors.accentOrange },
+            ]}
           >
             <Ionicons name="mail" size={20} color="#fff" />
             <Text style={styles.actionButtonText}>Contact Teacher</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: colors.secondary }]}
+            style={[
+              styles.actionButton,
+              { backgroundColor: colors.accentTeal },
+            ]}
           >
             <Ionicons name="document-text" size={20} color="#fff" />
             <Text style={styles.actionButtonText}>View Report</Text>
@@ -635,7 +647,7 @@ const styles = StyleSheet.create({
   },
   statusBadge: {
     alignSelf: "flex-start",
-      paddingHorizontal: normalize(12),
+    paddingHorizontal: normalize(12),
     paddingVertical: normalize(6),
     borderRadius: normalize(12),
   },
@@ -685,7 +697,7 @@ const styles = StyleSheet.create({
     minWidth: normalize(80),
   },
   infoValue: {
-    fontSize: normalize(14) ,
+    fontSize: normalize(14),
     flex: 1,
   },
   performanceGrid: {
@@ -739,7 +751,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   gradeBadge: {
-      paddingHorizontal: normalize(8),
+    paddingHorizontal: normalize(8),
     paddingVertical: normalize(4),
     borderRadius: normalize(8),
   },
@@ -799,7 +811,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-      paddingVertical: normalize(16),
+    paddingVertical: normalize(16),
     borderRadius: normalize(12),
     gap: normalize(8),
   },

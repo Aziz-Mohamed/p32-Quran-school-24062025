@@ -124,12 +124,15 @@ const StudentCard: React.FC<{ student: Student; onPress: () => void }> = ({
       <View style={styles.studentHeader}>
         <View style={styles.studentInfo}>
           <View
-            style={[styles.avatar, { backgroundColor: colors.primary + "20" }]}
+            style={[
+              styles.avatar,
+              { backgroundColor: colors.accentOrange + "20" },
+            ]}
           >
             <Ionicons
               name="person"
               size={normalize(20)}
-              color={colors.primary}
+              color={colors.accentOrange}
             />
           </View>
           <View style={styles.studentDetails}>
@@ -252,7 +255,9 @@ export default function StudentsScreen() {
   ).toFixed(1);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.primaryBackground }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -264,7 +269,7 @@ export default function StudentsScreen() {
           </Text>
         </View>
         <TouchableOpacity
-          style={[styles.addButton, { backgroundColor: colors.primary }]}
+          style={[styles.addButton, { backgroundColor: colors.accentOrange }]}
           onPress={() => router.push("/admin/students/add")}
         >
           <Ionicons name="add" size={normalize(20)} color="#fff" />
@@ -281,7 +286,9 @@ export default function StudentsScreen() {
           ]}
         >
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.textPrimary }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {mockStudents.length}
             </Text>
             <Text
@@ -303,7 +310,9 @@ export default function StudentsScreen() {
           </View>
           <View style={styles.overviewDivider} />
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.primary }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {averageAttendance}%
             </Text>
             <Text
@@ -357,7 +366,7 @@ export default function StudentsScreen() {
             style={[
               styles.filterChip,
               selectedFilter === filter.key && {
-                backgroundColor: colors.primary + "15",
+                backgroundColor: colors.accentOrange + "15",
               },
               { borderColor: colors.border },
             ]}
@@ -369,7 +378,7 @@ export default function StudentsScreen() {
                 {
                   color:
                     selectedFilter === filter.key
-                      ? colors.primary
+                      ? colors.accentOrange
                       : colors.textSecondary,
                 },
               ]}

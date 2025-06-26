@@ -141,7 +141,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
       case "warning":
         return colors.warning;
       case "info":
-        return colors.accent;
+        return colors.accentTeal;
       default:
         return colors.textSecondary;
     }
@@ -181,7 +181,7 @@ export default function AdminDashboard() {
       change: "+12%",
       isPositive: true,
       icon: "people" as const,
-      color: colors.primary,
+      color: colors.accentOrange,
     },
     {
       title: "Active Teachers",
@@ -189,7 +189,7 @@ export default function AdminDashboard() {
       change: "+2",
       isPositive: true,
       icon: "person" as const,
-      color: colors.secondary,
+      color: colors.accentTeal,
     },
     {
       title: "Classes Today",
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
       change: "-1",
       isPositive: false,
       icon: "school" as const,
-      color: colors.accent,
+      color: colors.accentOrange,
     },
     {
       title: "Attendance Rate",
@@ -214,21 +214,21 @@ export default function AdminDashboard() {
       title: "Add New Student",
       subtitle: "Register a new student",
       icon: "person-add" as const,
-      color: colors.primary,
+      color: colors.accentOrange,
       onPress: () => router.push("/admin/students/add"),
     },
     {
       title: "Add New Teacher",
       subtitle: "Hire a new teacher",
       icon: "person-add" as const,
-      color: colors.secondary,
+      color: colors.accentTeal,
       onPress: () => router.push("/admin/teachers/add"),
     },
     {
       title: "View Reports",
       subtitle: "Analytics & insights",
       icon: "bar-chart" as const,
-      color: colors.accent,
+      color: colors.accentOrange,
       onPress: () => router.push("/admin/reports"),
     },
     {
@@ -269,7 +269,7 @@ export default function AdminDashboard() {
 
   return (
     <ScrollView
-      style={[styles.container, { backgroundColor: colors.background }]}
+      style={[styles.container, { backgroundColor: colors.primaryBackground }]}
       showsVerticalScrollIndicator={false}
     >
       {/* Welcome Section */}
@@ -331,7 +331,7 @@ export default function AdminDashboard() {
             Recent Activity
           </Text>
           <TouchableOpacity>
-            <Text style={[styles.viewAllText, { color: colors.primary }]}>
+            <Text style={[styles.viewAllText, { color: colors.accentOrange }]}>
               View All
             </Text>
           </TouchableOpacity>

@@ -138,20 +138,12 @@ export default function ReportsScreen() {
 
   const overviewStats = [
     {
-      title: "Total Attendance",
-      value: "94.2%",
-      change: "+2.1%",
-      isPositive: true,
-      icon: "checkmark-circle" as const,
-      color: colors.success,
-    },
-    {
-      title: "Active Students",
+      title: "Total Students",
       value: "1,247",
       change: "+12",
       isPositive: true,
       icon: "people" as const,
-      color: colors.primary,
+      color: colors.accentOrange,
     },
     {
       title: "Classes Conducted",
@@ -159,7 +151,7 @@ export default function ReportsScreen() {
       change: "+8",
       isPositive: true,
       icon: "school" as const,
-      color: colors.secondary,
+      color: colors.accentTeal,
     },
     {
       title: "Teacher Performance",
@@ -172,13 +164,13 @@ export default function ReportsScreen() {
   ];
 
   const attendanceData: ChartData[] = [
-    { label: "Mon", value: 95, color: colors.primary },
-    { label: "Tue", value: 92, color: colors.primary },
-    { label: "Wed", value: 88, color: colors.primary },
-    { label: "Thu", value: 96, color: colors.primary },
-    { label: "Fri", value: 91, color: colors.primary },
-    { label: "Sat", value: 89, color: colors.primary },
-    { label: "Sun", value: 85, color: colors.primary },
+    { label: "Mon", value: 95, color: colors.accentOrange },
+    { label: "Tue", value: 92, color: colors.accentOrange },
+    { label: "Wed", value: 88, color: colors.accentOrange },
+    { label: "Thu", value: 96, color: colors.accentOrange },
+    { label: "Fri", value: 91, color: colors.accentOrange },
+    { label: "Sat", value: 89, color: colors.accentOrange },
+    { label: "Sun", value: 85, color: colors.accentOrange },
   ];
 
   const gradePerformanceData: ChartData[] = [
@@ -191,15 +183,17 @@ export default function ReportsScreen() {
   ];
 
   const teacherPerformanceData: ChartData[] = [
-    { label: "Ahmed", value: 4.8, color: colors.primary },
-    { label: "Fatima", value: 4.9, color: colors.primary },
-    { label: "Omar", value: 4.6, color: colors.secondary },
-    { label: "Aisha", value: 4.7, color: colors.primary },
-    { label: "Yusuf", value: 4.5, color: colors.secondary },
+    { label: "Ahmed", value: 4.8, color: colors.accentOrange },
+    { label: "Fatima", value: 4.9, color: colors.accentOrange },
+    { label: "Omar", value: 4.6, color: colors.accentTeal },
+    { label: "Aisha", value: 4.7, color: colors.accentOrange },
+    { label: "Yusuf", value: 4.5, color: colors.accentTeal },
   ];
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.primaryBackground }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -211,7 +205,10 @@ export default function ReportsScreen() {
           </Text>
         </View>
         <TouchableOpacity
-          style={[styles.exportButton, { backgroundColor: colors.primary }]}
+          style={[
+            styles.exportButton,
+            { backgroundColor: colors.accentOrange },
+          ]}
         >
           <Ionicons name="download" size={20} color="#fff" />
           <Text style={styles.exportButtonText}>Export</Text>
@@ -230,7 +227,7 @@ export default function ReportsScreen() {
             style={[
               styles.periodChip,
               selectedPeriod === period.key && {
-                backgroundColor: colors.primary + "15",
+                backgroundColor: colors.accentOrange + "15",
               },
               { borderColor: colors.border },
             ]}
@@ -242,7 +239,7 @@ export default function ReportsScreen() {
                 {
                   color:
                     selectedPeriod === period.key
-                      ? colors.primary
+                      ? colors.accentOrange
                       : colors.textSecondary,
                 },
               ]}
@@ -353,10 +350,10 @@ export default function ReportsScreen() {
               <View
                 style={[
                   styles.insightIcon,
-                  { backgroundColor: colors.accent + "15" },
+                  { backgroundColor: colors.accentOrange + "15" },
                 ]}
               >
-                <Ionicons name="star" size={16} color={colors.accent} />
+                <Ionicons name="star" size={16} color={colors.accentOrange} />
               </View>
               <View style={styles.insightContent}>
                 <Text
@@ -446,7 +443,7 @@ const styles = StyleSheet.create({
     gap: normalize(12),
   },
   reportCard: {
-    width: (width - normalize(72) ) / 2,
+    width: (width - normalize(72)) / 2,
     padding: normalize(20),
     borderRadius: normalize(16),
     borderWidth: normalize(1),

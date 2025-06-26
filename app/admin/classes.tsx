@@ -127,11 +127,11 @@ const ClassCard: React.FC<{ classItem: Class; onPress: () => void }> = ({
   const getSubjectColor = () => {
     switch (classItem.subject) {
       case "Quran Studies":
-        return colors.primary;
+        return colors.accentOrange;
       case "Islamic Studies":
-        return colors.secondary;
+        return colors.accentTeal;
       case "Arabic":
-        return colors.accent;
+        return colors.accentTeal;
       default:
         return colors.textSecondary;
     }
@@ -254,7 +254,9 @@ export default function ClassesScreen() {
   const occupancyRate = Math.round((totalStudents / totalCapacity) * 100);
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <View
+      style={[styles.container, { backgroundColor: colors.primaryBackground }]}
+    >
       {/* Header */}
       <View style={styles.header}>
         <View>
@@ -266,7 +268,7 @@ export default function ClassesScreen() {
           </Text>
         </View>
         <TouchableOpacity
-          style={[styles.addButton, { backgroundColor: colors.primary }]}
+          style={[styles.addButton, { backgroundColor: colors.accentOrange }]}
           onPress={() => {
             /* Navigate to add class */
           }}
@@ -285,7 +287,9 @@ export default function ClassesScreen() {
           ]}
         >
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.textPrimary }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {mockClasses.length}
             </Text>
             <Text
@@ -296,7 +300,9 @@ export default function ClassesScreen() {
           </View>
           <View style={styles.overviewDivider} />
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.textPrimary }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {totalStudents}
             </Text>
             <Text
@@ -307,7 +313,9 @@ export default function ClassesScreen() {
           </View>
           <View style={styles.overviewDivider} />
           <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.primary }]}>
+            <Text
+              style={[styles.overviewValue, { color: colors.accentOrange }]}
+            >
               {occupancyRate}%
             </Text>
             <Text
@@ -331,7 +339,7 @@ export default function ClassesScreen() {
             style={[
               styles.filterChip,
               selectedFilter === filter.key && {
-                backgroundColor: colors.primary + "15",
+                backgroundColor: colors.accentOrange + "15",
               },
               { borderColor: colors.border },
             ]}
@@ -343,7 +351,7 @@ export default function ClassesScreen() {
                 {
                   color:
                     selectedFilter === filter.key
-                      ? colors.primary
+                      ? colors.accentOrange
                       : colors.textSecondary,
                 },
               ]}
@@ -475,7 +483,7 @@ const styles = StyleSheet.create({
   filterChip: {
     flexDirection: "row",
     alignItems: "center",
-      paddingHorizontal: normalize(16),
+    paddingHorizontal: normalize(16),
     paddingVertical: normalize(8),
     borderRadius: normalize(20),
     borderWidth: normalize(1),
