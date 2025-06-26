@@ -40,44 +40,76 @@ const applyRTLForLanguage = (language: string) => {
 
 // Initialize i18n with stored language
 const initializeI18n = async () => {
-  // Get stored language or use device locale
-  const storedLanguage = await getStoredLanguage();
-  const deviceLocale = Localization.locale;
-  const isArabicLocale = deviceLocale.startsWith("ar");
-  const defaultLanguage = isArabicLocale ? "ar" : "en";
-  const initialLanguage = storedLanguage || defaultLanguage;
+  try {
+    // Get stored language or use device locale
+    const storedLanguage = await getStoredLanguage();
+    const deviceLocale = Localization.locale;
+    const isArabicLocale = deviceLocale.startsWith("ar");
+    const defaultLanguage = isArabicLocale ? "ar" : "en";
+    const initialLanguage = storedLanguage || defaultLanguage;
 
-  console.log(`Initializing i18n with language: ${initialLanguage}`);
-  console.log(
-    `Device locale: ${deviceLocale}, Stored language: ${storedLanguage}`
-  );
+    console.log(`Initializing i18n with language: ${initialLanguage}`);
+    console.log(
+      `Device locale: ${deviceLocale}, Stored language: ${storedLanguage}`
+    );
 
-  // Apply RTL based on initial language
-  applyRTLForLanguage(initialLanguage);
+    // Apply RTL based on initial language
+    applyRTLForLanguage(initialLanguage);
 
-  i18n.use(initReactI18next).init({
-    lng: initialLanguage,
-    fallbackLng: "en",
-    resources: {
-      en: { translation: en },
-      ar: { translation: ar },
-    },
-    interpolation: { escapeValue: false },
-    react: {
-      useSuspense: false,
-    },
-  });
+    // Initialize i18n with proper configuration
+    await i18n.use(initReactI18next).init({
+      lng: initialLanguage,
+      fallbackLng: "en",
+      resources: {
+        en: { translation: en },
+        ar: { translation: ar },
+      },
+      interpolation: { escapeValue: false },
+      react: {
+        useSuspense: false,
+      },
+      // Add these options for better stability
+      debug: __DEV__,
+      keySeparator: ".",
+      nsSeparator: ":",
+    });
 
-  // Listen for language changes to update RTL and store preference
-  i18n.on("languageChanged", async (lng) => {
-    console.log(`Language changed to: ${lng}`);
+    // Listen for language changes to update RTL and store preference
+    i18n.on("languageChanged", async (lng) => {
+      console.log(`Language changed to: ${lng}`);
 
-    // Apply RTL for the new language
-    applyRTLForLanguage(lng);
+      // Apply RTL for the new language
+      applyRTLForLanguage(lng);
 
-    // Store the language preference
-    await storeLanguage(lng);
-  });
+      // Store the language preference
+      await storeLanguage(lng);
+    });
+
+    console.log("i18n initialization completed successfully");
+  } catch (error) {
+    console.error("Error initializing i18n:", error);
+    // Fallback to English if initialization fails
+    try {
+      await i18n.use(initReactI18next).init({
+        lng: "en",
+        fallbackLng: "en",
+        resources: {
+          en: { translation: en },
+          ar: { translation: ar },
+        },
+        interpolation: { escapeValue: false },
+        react: {
+          useSuspense: false,
+        },
+      });
+      console.log("i18n fallback initialization completed");
+    } catch (fallbackError) {
+      console.error(
+        "Critical error: i18n fallback also failed:",
+        fallbackError
+      );
+    }
+  }
 };
 
 // Initialize immediately

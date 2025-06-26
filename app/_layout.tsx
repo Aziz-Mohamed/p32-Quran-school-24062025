@@ -8,7 +8,7 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { I18nManager } from "react-native";
+import { ActivityIndicator, I18nManager, Text, View } from "react-native";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
@@ -22,9 +22,10 @@ export default function RootLayout() {
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
   const [isI18nReady, setIsI18nReady] = useState(false);
+  const [isRTLReady, setIsRTLReady] = useState(false);
 
   useEffect(() => {
-    const forceRTLIfNeeded = async () => {
+    const initializeApp = async () => {
       try {
         // Get stored language
         const storedLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
@@ -35,43 +36,56 @@ export default function RootLayout() {
         console.log("Should be RTL:", shouldBeRTL);
         console.log("Currently RTL:", I18nManager.isRTL);
 
-        // Force RTL if needed
-        if (shouldBeRTL && !I18nManager.isRTL) {
-          console.log("RootLayout: Forcing RTL...");
-          I18nManager.forceRTL(true);
+        // Only force RTL if there's a mismatch and we have a stored language
+        if (storedLanguage && shouldBeRTL !== I18nManager.isRTL) {
+          console.log("RootLayout: Forcing RTL change...");
+          I18nManager.forceRTL(shouldBeRTL);
 
-          // Show alert to user
-          alert(
-            "RTL mode activated. Please restart the app to see the changes."
-          );
-        } else if (!shouldBeRTL && I18nManager.isRTL) {
-          console.log("RootLayout: Forcing LTR...");
-          I18nManager.forceRTL(false);
-
-          // Show alert to user
-          alert(
-            "LTR mode activated. Please restart the app to see the changes."
-          );
+          // Note: RTL changes require app restart, but we won't show alert here
+          // to avoid navigation issues
         }
+
+        setIsRTLReady(true);
       } catch (error) {
         console.log("Error checking RTL:", error);
+        setIsRTLReady(true); // Continue anyway
       }
     };
 
-    // Force RTL check immediately
-    forceRTLIfNeeded();
+    // Initialize RTL check
+    initializeApp();
 
     // Give i18n time to initialize
     const timer = setTimeout(() => {
       setIsI18nReady(true);
-    }, 1000);
+    }, 300); // Reduced timeout
 
     return () => clearTimeout(timer);
   }, []);
 
-  if (!loaded || !isI18nReady) {
-    // Async font loading and i18n initialization
-    return null;
+  // Show loading screen while initializing
+  if (!loaded || !isI18nReady || !isRTLReady) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "#FAFAF7",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="large" color="#3A7D5D" />
+        <Text
+          style={{
+            marginTop: 16,
+            fontSize: 16,
+            color: "#666",
+          }}
+        >
+          Loading Quran School...
+        </Text>
+      </View>
+    );
   }
 
   // TODO: Insert role-based layout switching here in the future.
@@ -81,7 +95,13 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="admin" options={{ headerShown: false }} />
+        <Stack.Screen name="teacher" options={{ headerShown: false }} />
+        <Stack.Screen name="student" options={{ headerShown: false }} />
+        <Stack.Screen name="parent" options={{ headerShown: false }} />
+        <Stack.Screen name="auth" options={{ headerShown: false }} />
+        <Stack.Screen name="shared" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
       <StatusBar style="auto" />

@@ -14,7 +14,6 @@
 |-- README.md
 |-- RTL_README.md
 |-- app
-    |-- (tabs)
     |-- +not-found.tsx
     |-- _layout.tsx
     |-- admin
@@ -22,6 +21,7 @@
         |-- attendance.tsx
         |-- classes.tsx
         |-- dashboard.tsx
+        |-- index.tsx
         |-- reports.tsx
         |-- students
             |-- [id].tsx
@@ -46,6 +46,7 @@
         |-- children.tsx
         |-- class-standing.tsx
         |-- dashboard.tsx
+        |-- index.tsx
         |-- messaging.tsx
         |-- sessions.tsx
         |-- settings.tsx
@@ -56,6 +57,7 @@
     |-- student
         |-- _layout.tsx
         |-- dashboard.tsx
+        |-- index.tsx
         |-- leaderboard.tsx
         |-- lessons.tsx
         |-- profile.tsx
@@ -66,6 +68,7 @@
         |-- award-sticker.tsx
         |-- class-progress.tsx
         |-- dashboard.tsx
+        |-- index.tsx
         |-- messaging.tsx
         |-- needs-support.tsx
         |-- profile.tsx

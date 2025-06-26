@@ -14,45 +14,52 @@ export const LanguageSwitcher: React.FC = () => {
   const { rtlStyles } = useRTLStyles();
 
   const toggleLanguage = async () => {
-    const newLang = i18n.language === "en" ? "ar" : "en";
-    const isArabic = newLang === "ar";
+    try {
+      const newLang = i18n.language === "en" ? "ar" : "en";
+      const isArabic = newLang === "ar";
 
-    // Show alert to inform user about app reload
-    Alert.alert(
-      "Language Change",
-      `Switching to ${
-        isArabic ? "Arabic" : "English"
-      } will reload the app to apply RTL layout changes.`,
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Continue",
-          onPress: async () => {
-            try {
-              // Store the language preference first
-              await AsyncStorage.setItem(LANGUAGE_KEY, newLang);
-              console.log(`Stored language preference: ${newLang}`);
-
-              // Change language
-              i18n.changeLanguage(newLang);
-              console.log(`Changed language to: ${newLang}`);
-
-              // Force RTL reload
-              await forceRTLReload(isArabic);
-            } catch (error) {
-              console.error("Error changing language:", error);
-              Alert.alert(
-                "Error",
-                "Failed to change language. Please try again."
-              );
-            }
+      // Show alert to inform user about app reload
+      Alert.alert(
+        "Language Change",
+        `Switching to ${
+          isArabic ? "Arabic" : "English"
+        } will reload the app to apply RTL layout changes.`,
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
           },
-        },
-      ]
-    );
+          {
+            text: "Continue",
+            onPress: async () => {
+              try {
+                // Store the language preference first
+                await AsyncStorage.setItem(LANGUAGE_KEY, newLang);
+                console.log(`Stored language preference: ${newLang}`);
+
+                // Change language
+                await i18n.changeLanguage(newLang);
+                console.log(`Changed language to: ${newLang}`);
+
+                // Force RTL reload with a small delay to ensure language change is processed
+                setTimeout(async () => {
+                  await forceRTLReload(isArabic);
+                }, 100);
+              } catch (error) {
+                console.error("Error changing language:", error);
+                Alert.alert(
+                  "Error",
+                  "Failed to change language. Please try again."
+                );
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.error("Error in toggleLanguage:", error);
+      Alert.alert("Error", "Failed to change language. Please try again.");
+    }
   };
 
   return (
@@ -75,23 +82,33 @@ export const LanguageSwitcher: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    marginVertical: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   label: {
     fontSize: 16,
     fontWeight: "500",
+    color: "#333",
   },
   button: {
-    backgroundColor: "#007AFF",
+    backgroundColor: "#3A7D5D",
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   buttonText: {
-    color: "white",
+    color: "#fff",
     fontSize: 14,
     fontWeight: "600",
   },
