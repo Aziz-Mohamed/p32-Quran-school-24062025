@@ -10,7 +10,7 @@ import { ActivityIndicator, Text, View } from "react-native";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
-// import "@/hooks/useI18n"; // Temporarily disabled
+import "@/hooks/useI18n"; // Re-enable i18n initialization
 
 const LANGUAGE_KEY = "@quran_school_language";
 

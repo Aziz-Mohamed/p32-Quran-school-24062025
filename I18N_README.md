@@ -1,21 +1,24 @@
 # 🌐 Internationalization (i18n) Implementation
 
-This Quran School app now supports multiple languages with a complete i18n setup using `i18next` and `react-i18next`.
+This Quran School app supports multiple languages with a complete i18n setup using `i18next` and `react-i18next`.
 
 ## 📁 File Structure
 
 ```
 ├── constants/
 │   └── i18n/
-│       └── locales/
-│           ├── en.json          # English translations
-│           └── ar.json          # Arabic translations
+│       ├── locales/
+│       │   ├── en.json          # English translations
+│       │   └── ar.json          # Arabic translations
+│       └── types.ts             # TypeScript type definitions
 ├── hooks/
 │   ├── useI18n.ts              # i18n initialization
-│   └── useTranslation.ts       # Translation hook wrapper
+│   ├── useTranslation.ts       # Enhanced translation hook
+│   ├── useRTL.ts               # RTL management
+│   └── useRTLStyles.ts         # RTL styling utilities
 └── components/
     ├── LanguageSwitcher.tsx    # Language toggle component
-    └── I18nExample.tsx         # Example usage component
+    └── I18nTest.tsx            # Test component for verification
 ```
 
 ## 🚀 Setup
@@ -26,6 +29,8 @@ The i18n system is automatically initialized in `app/_layout.tsx` and includes:
 - **Fallback to English** if translation is missing
 - **Support for English and Arabic** languages
 - **Language switcher component** for manual language changes
+- **TypeScript support** with type-safe translation keys
+- **RTL support** for Arabic language with automatic layout switching
 
 ## 📝 Usage
 
@@ -50,6 +55,24 @@ function SettingsScreen() {
   return (
     <View>
       <LanguageSwitcher />
+    </View>
+  );
+}
+```
+
+### RTL Styling
+
+```tsx
+import { useRTLStyles } from "@/hooks/useRTLStyles";
+
+function MyComponent() {
+  const { isRTL, rtlStyles } = useRTLStyles();
+
+  return (
+    <View style={[styles.container, rtlStyles.row]}>
+      <Text style={[styles.text, rtlStyles.textDirection]}>
+        {t("common.loading")}
+      </Text>
     </View>
   );
 }
@@ -116,6 +139,15 @@ function SettingsScreen() {
 - `auth.signIn` - Sign in button
 - `auth.signUp` - Sign up button
 
+### Admin Section
+
+- `admin.students.*` - Complete student management translations
+- `admin.students.fields.*` - Form field labels
+- `admin.students.placeholders.*` - Input placeholders
+- `admin.students.validation.*` - Validation messages
+- `admin.students.metrics.*` - Performance metrics
+- `admin.students.achievements.*` - Achievement descriptions
+
 ## 🔧 Adding New Languages
 
 1. Create a new translation file in `constants/i18n/locales/` (e.g., `fr.json`)
@@ -136,14 +168,17 @@ i18n.use(initReactI18next).init({
 ```
 
 3. Update the `LanguageSwitcher` component to include the new language option
+4. Update the TypeScript types in `constants/i18n/types.ts` if needed
 
 ## 🎯 Features
 
 - ✅ **Automatic language detection** based on device locale
 - ✅ **Manual language switching** with UI component
 - ✅ **Fallback language** (English) for missing translations
-- ✅ **Type-safe translations** with JSON structure
-- ✅ **RTL support** for Arabic language
+- ✅ **Type-safe translations** with TypeScript support
+- ✅ **RTL support** for Arabic language with automatic layout switching
+- ✅ **Error handling** for missing translation keys
+- ✅ **Language persistence** using AsyncStorage
 - ✅ **Easy to extend** for additional languages
 
 ## 🧪 Testing
@@ -151,9 +186,28 @@ i18n.use(initReactI18next).init({
 To test the i18n functionality:
 
 1. Run the app: `npm start`
-2. Navigate to the "Explore" tab
-3. Find the "🌐 Internationalization (i18n)" section
+2. Navigate to any screen that uses translations
+3. Use the `I18nTest` component to verify translations are working
 4. Use the language switcher to toggle between English and Arabic
-5. Observe how all text changes dynamically
+5. Observe how all text changes dynamically and RTL layout is applied
 
 The app will automatically detect your device's language on first launch and set the appropriate language.
+
+## 🔍 Troubleshooting
+
+### Common Issues:
+
+1. **Translations not showing**: Make sure `useI18n` is imported in `app/_layout.tsx`
+2. **RTL not working**: Check that `expo-updates` is properly configured
+3. **Type errors**: Ensure you're using the correct translation keys from the types file
+
+### Debug Mode:
+
+Enable debug mode in development by setting `debug: __DEV__` in the i18n configuration (already enabled).
+
+## 📚 Dependencies
+
+- `i18next` (v25.2.1) - Core i18n library
+- `react-i18next` (v15.5.3) - React integration
+- `expo-localization` (v16.1.5) - Device locale detection
+- `@react-native-async-storage/async-storage` (v2.2.0) - Language persistence

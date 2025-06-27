@@ -97,6 +97,7 @@
     |-- ExternalLink.tsx
     |-- HapticTab.tsx
     |-- HelloWave.tsx
+    |-- I18nTest.tsx
     |-- LanguageSwitcher.tsx
     |-- ParallaxScrollView.tsx
     |-- ThemedText.tsx
@@ -120,6 +121,7 @@
         |-- locales
             |-- ar.json
             |-- en.json
+        |-- types.ts
 |-- eslint.config.js
 |-- expo-env.d.ts
 |-- hooks

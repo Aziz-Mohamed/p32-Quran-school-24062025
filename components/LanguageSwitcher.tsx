@@ -1,8 +1,8 @@
 import { forceRTLReload } from "@/hooks/useRTL";
 import { useRTLStyles } from "@/hooks/useRTLStyles";
+import { useTranslation } from "@/hooks/useTranslation";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React from "react";
-import { useTranslation } from "react-i18next";
 import { Alert, StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
