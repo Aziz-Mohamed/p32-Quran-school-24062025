@@ -1,18 +1,16 @@
+import BottomNavBar, { BottomNavItem } from "@/components/ui/BottomNavBar";
 import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
 import { Slot, usePathname, useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
-  Animated,
   Dimensions,
   Platform,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -25,14 +23,12 @@ interface NavItem {
   icon: keyof typeof Ionicons.glyphMap;
 }
 
-const navItems: NavItem[] = [
+const bottomNavItems: NavItem[] = [
   { name: "Dashboard", path: "dashboard", icon: "grid" },
   { name: "Students", path: "students", icon: "school" },
   { name: "Teachers", path: "teachers", icon: "people" },
   { name: "Classes", path: "classes", icon: "library" },
-  { name: "Attendance", path: "attendance", icon: "calendar" },
-  { name: "Reports", path: "reports", icon: "bar-chart" },
-  { name: "WiFi Config", path: "wifi-config", icon: "wifi" },
+  { name: "Attendance", path: "attendance", icon: "checkmark-circle" },
 ];
 
 export default function AdminLayout() {
@@ -40,14 +36,7 @@ export default function AdminLayout() {
   const colors = Colors[colorScheme ?? "light"];
   const router = useRouter();
   const pathname = usePathname();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const sidebarAnimation = useRef(new Animated.Value(0)).current;
-
-  // Add console logs to debug
-  console.log("AdminLayout: Component is rendering");
-  console.log("AdminLayout: Pathname:", pathname);
-  console.log("AdminLayout: ColorScheme:", colorScheme);
-  console.log("AdminLayout: Colors:", colors);
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 
   const isActive = (path: string) => {
     if (path === "dashboard") {
@@ -66,215 +55,155 @@ export default function AdminLayout() {
     } else {
       router.push(`/admin/${path}` as any);
     }
-    closeSidebar();
-  };
-
-  const openSidebar = () => {
-    setIsSidebarOpen(true);
-    Animated.spring(sidebarAnimation, {
-      toValue: 1,
-      useNativeDriver: false,
-      tension: 100,
-      friction: 8,
-    }).start();
-  };
-
-  const closeSidebar = () => {
-    Animated.spring(sidebarAnimation, {
-      toValue: 0,
-      useNativeDriver: false,
-      tension: 100,
-      friction: 8,
-    }).start(() => {
-      setIsSidebarOpen(false);
-    });
   };
 
   const getCurrentPageTitle = () => {
-    const activeItem = navItems.find((item) => isActive(item.path));
+    const activeItem = bottomNavItems.find((item) => isActive(item.path));
     return activeItem?.name || "Admin";
   };
 
+  const navItems: BottomNavItem[] = [
+    {
+      key: "dashboard",
+      label: "Dashboard",
+      icon: "grid",
+      onPress: () => handleNavigation("dashboard"),
+      active: isActive("dashboard"),
+    },
+    {
+      key: "students",
+      label: "Students",
+      icon: "school",
+      onPress: () => handleNavigation("students"),
+      active: isActive("students"),
+    },
+    {
+      key: "teachers",
+      label: "Teachers",
+      icon: "people",
+      onPress: () => handleNavigation("teachers"),
+      active: isActive("teachers"),
+    },
+    {
+      key: "classes",
+      label: "Classes",
+      icon: "library",
+      onPress: () => handleNavigation("classes"),
+      active: isActive("classes"),
+    },
+    {
+      key: "attendance",
+      label: "Attendance",
+      icon: "checkmark-circle",
+      onPress: () => handleNavigation("attendance"),
+      active: isActive("attendance"),
+    },
+  ];
+
+  const handleSettingsPress = () => {
+    setShowSettingsMenu(!showSettingsMenu);
+  };
+
+  const handleWifiConfig = () => {
+    setShowSettingsMenu(false);
+    router.push("/admin/wifi-config" as any);
+  };
+
   return (
-    <>
-      <StatusBar
-        backgroundColor={colors.primaryBackground}
-        barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
-        translucent={false}
-      />
-      <SafeAreaView
-        style={[styles.safeArea, { backgroundColor: colors.primaryBackground }]}
-        edges={["top", "left", "right"]}
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.primaryBackground }}
+    >
+      {/* Top Bar */}
+      <View
+        style={[
+          styles.topBar,
+          {
+            backgroundColor: colors.primaryBackground,
+            borderBottomColor: colors.border,
+          },
+        ]}
       >
-        {/* Overlay */}
-        {isSidebarOpen && (
-          <TouchableWithoutFeedback onPress={closeSidebar}>
-            <View style={styles.overlay} />
-          </TouchableWithoutFeedback>
-        )}
+        <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>
+          {getCurrentPageTitle()}
+        </Text>
 
-        {/* Animated Sidebar */}
-        <Animated.View
-          style={[
-            styles.sidebar,
-            {
-              backgroundColor: colors.surface,
-              transform: [
-                {
-                  translateX: sidebarAnimation.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [-280, 0],
-                  }),
-                },
-              ],
-              opacity: sidebarAnimation,
-            },
-          ]}
+        {/* Settings Menu */}
+        <TouchableOpacity
+          style={[styles.settingsButton, { backgroundColor: colors.surface }]}
+          onPress={handleSettingsPress}
         >
-          {/* Close Button */}
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={closeSidebar}
-            accessibilityLabel="Close menu"
+          <Ionicons
+            name="settings"
+            size={normalize(20)}
+            color={colors.textPrimary}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* Settings Menu Overlay */}
+      {showSettingsMenu && (
+        <TouchableOpacity
+          style={styles.overlay}
+          onPress={() => setShowSettingsMenu(false)}
+        >
+          <View
+            style={[styles.settingsMenu, { backgroundColor: colors.surface }]}
           >
-            <Ionicons name="close" size={24} color={colors.textSecondary} />
-          </TouchableOpacity>
-
-          {/* Profile Section */}
-          <View style={styles.profileSection}>
-            <View
-              style={[
-                styles.profileAvatar,
-                { backgroundColor: colors.accentTeal },
-              ]}
-            >
-              <Text style={styles.profileAvatarText}>A</Text>
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={[styles.profileName, { color: colors.textPrimary }]}>
-                Admin
-              </Text>
-              <Text
-                style={[styles.profileRole, { color: colors.textSecondary }]}
-              >
-                Administrator
-              </Text>
-            </View>
-          </View>
-
-          {/* Navigation Items */}
-          <View style={styles.navSection}>
-            {navItems.map((item) => (
-              <TouchableOpacity
-                key={item.path}
-                style={[
-                  styles.navItem,
-                  isActive(item.path) && {
-                    backgroundColor: colors.cardBackgroundLightOrange,
-                  },
-                ]}
-                onPress={() => handleNavigation(item.path)}
-                accessibilityLabel={item.name}
-              >
-                <View style={styles.navItemContent}>
-                  <Ionicons
-                    name={item.icon}
-                    size={24}
-                    color={
-                      isActive(item.path)
-                        ? colors.accentOrange
-                        : colors.textSecondary
-                    }
-                  />
-                  <Text
-                    style={[
-                      styles.navItemText,
-                      {
-                        color: isActive(item.path)
-                          ? colors.accentOrange
-                          : colors.textSecondary,
-                      },
-                    ]}
-                  >
-                    {item.name}
-                  </Text>
-                </View>
-                {isActive(item.path) && (
-                  <View
-                    style={[
-                      styles.activeIndicator,
-                      { backgroundColor: colors.accentOrange },
-                    ]}
-                  />
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        </Animated.View>
-
-        {/* Top Bar */}
-        <View style={styles.topBarWrap}>
-          <View style={[styles.topBar, { backgroundColor: colors.surface }]}>
             <TouchableOpacity
-              style={styles.hamburgerButton}
-              onPress={openSidebar}
-              accessibilityLabel="Open menu"
+              style={styles.settingsMenuItem}
+              onPress={handleWifiConfig}
             >
-              <Ionicons name="menu" size={24} color={colors.accentOrange} />
+              <Ionicons
+                name="wifi"
+                size={normalize(20)}
+                color={colors.textPrimary}
+              />
+              <Text
+                style={[styles.settingsMenuText, { color: colors.textPrimary }]}
+              >
+                WiFi Configuration
+              </Text>
             </TouchableOpacity>
-            <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>
-              {getCurrentPageTitle()}
-            </Text>
-            <View style={styles.topBarActions}>
-              <TouchableOpacity
-                style={[
-                  styles.actionButton,
-                  { backgroundColor: colors.cardBackgroundLightBlue },
-                ]}
-              >
-                <Ionicons
-                  name="notifications-outline"
-                  size={22}
-                  color={colors.accentTeal}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[
-                  styles.actionButton,
-                  { backgroundColor: colors.cardBackgroundLightBlue },
-                ]}
-              >
-                <Ionicons
-                  name="settings-outline"
-                  size={22}
-                  color={colors.accentTeal}
-                />
-              </TouchableOpacity>
-            </View>
           </View>
-        </View>
+        </TouchableOpacity>
+      )}
 
-        {/* Main Content */}
-        <View style={{ flex: 1 }}>
-          <Slot />
-        </View>
-      </SafeAreaView>
-    </>
+      {/* Main Content */}
+      <View style={{ flex: 1 }}>
+        <Slot />
+      </View>
+
+      {/* Floating Bottom Navigation */}
+      <BottomNavBar items={navItems} />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#FAFAF7",
+  topBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    height: normalize(56),
+    borderBottomWidth: 1,
+    paddingHorizontal: normalize(20),
+    zIndex: 10,
   },
-  hamburgerButton: {
-    width: normalize(40),
-    height: normalize(40),
-    borderRadius: normalize(20),
+  pageTitle: {
+    fontSize: normalize(24),
+    fontWeight: "700",
+    fontFamily: Platform.OS === "ios" ? "Times New Roman" : "serif",
+  },
+  settingsButton: {
+    width: normalize(44),
+    height: normalize(44),
+    borderRadius: normalize(22),
     alignItems: "center",
     justifyContent: "center",
-    marginRight: normalize(12),
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: normalize(8),
+    elevation: 2,
   },
   overlay: {
     position: "absolute",
@@ -285,136 +214,29 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0, 0, 0, 0.3)",
     zIndex: 40,
   },
-  sidebar: {
+  settingsMenu: {
     position: "absolute",
-    top: 0,
-    left: 0,
-    bottom: 0,
-    width: normalize(280),
-    zIndex: 45,
-    paddingTop: normalize(80),
-    paddingHorizontal: normalize(20),
+    top: normalize(70),
+    right: normalize(20),
+    borderRadius: normalize(16),
+    padding: normalize(8),
     shadowColor: "#000",
     shadowOpacity: 0.15,
-    shadowRadius: normalize(16),
-    elevation: 8,
+    shadowRadius: normalize(12),
+    elevation: 4,
+    minWidth: normalize(200),
   },
-  closeButton: {
-    position: "absolute",
-    top: normalize(24),
-    right: normalize(20),
-    width: normalize(40),
-    height: normalize(40),
-    borderRadius: normalize(20),
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.05)",
-  },
-  profileSection: {
+  settingsMenuItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: normalize(32),
-    paddingBottom: normalize(20),
-    borderBottomWidth: normalize(1),
-    borderBottomColor: "rgba(0, 0, 0, 0.08)",
-  },
-  profileAvatar: {
-    width: normalize(48),
-    height: normalize(48),
-    borderRadius: normalize(24),
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: normalize(12),
-  },
-  profileAvatarText: {
-    color: "#fff",
-    fontWeight: "700",
-    fontSize: normalize(20),
-    fontFamily: Platform.OS === "ios" ? "Times New Roman" : "serif",
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontWeight: "700",
-    fontSize: normalize(16),
-    fontFamily: Platform.OS === "ios" ? "Times New Roman" : "serif",
-  },
-  profileRole: {
-    fontWeight: "500",
-    fontSize: normalize(14),
-    opacity: 0.7,
-    marginTop: normalize(2),
-  },
-  navSection: {
-    flex: 1,
-  },
-  navItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: normalize(12),
     paddingHorizontal: normalize(16),
-    marginBottom: normalize(4),
+    paddingVertical: normalize(12),
+    borderRadius: normalize(8),
   },
-  navItemContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
-  navItemText: {
+  settingsMenuText: {
     fontSize: normalize(16),
-    fontWeight: "600",
-    marginLeft: normalize(12),
+    fontWeight: "500",
     fontFamily: Platform.OS === "ios" ? "System" : "sans-serif",
-  },
-  activeIndicator: {
-    width: normalize(4),
-    height: normalize(24),
-    borderRadius: normalize(2),
-  },
-  topBarWrap: {
-    backgroundColor: "#FAFAF7",
-    paddingTop: Platform.OS === "android" ? normalize(8) : 0,
-    paddingBottom: normalize(8),
-    zIndex: 10,
-  },
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: normalize(20),
-    paddingVertical: normalize(8),
-    borderRadius: normalize(24),
-    backgroundColor: "#fff",
-    marginHorizontal: normalize(16),
-    marginTop: normalize(8),
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-  },
-  pageTitle: {
-    fontFamily: Platform.OS === "ios" ? "Times New Roman" : "serif",
-    fontSize: normalize(22),
-    fontWeight: "700",
-    color: "#2D1E10",
-    flex: 1,
-    textAlign: "left",
-  },
-  topBarActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: normalize(8),
-  },
-  actionButton: {
-    backgroundColor: "#F2F8F7",
-    borderRadius: 16,
-    padding: normalize(8),
-    marginLeft: normalize(4),
-  },
-  mainContent: {
-    flex: 1,
-    padding: normalize(20),
+    marginLeft: normalize(12),
   },
 });

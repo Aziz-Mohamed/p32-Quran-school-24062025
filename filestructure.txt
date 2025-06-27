@@ -19,7 +19,11 @@
     |-- admin
         |-- _layout.tsx
         |-- attendance.tsx
-        |-- classes.tsx
+        |-- classes
+            |-- [id].tsx
+            |-- add.tsx
+            |-- edit.tsx
+            |-- index.tsx
         |-- dashboard.tsx
         |-- index.tsx
         |-- reports.tsx
@@ -100,8 +104,13 @@
     |-- ThemedText.tsx
     |-- ThemedView.tsx
     |-- ui
+        |-- BottomNavBar.tsx
+        |-- Card.tsx
         |-- IconSymbol.ios.tsx
         |-- IconSymbol.tsx
+        |-- MinimalCard.tsx
+        |-- MinimalListItem.tsx
+        |-- PrimaryButton.tsx
         |-- TabBarBackground.ios.tsx
         |-- TabBarBackground.tsx
 |-- constants

@@ -1,10 +1,10 @@
-import React from "react";
+import { View } from "react-native";
+import { ThemedText } from "../../../components/ThemedText";
 
-export default function AdminEditTeacher() {
+export default function AdminTeachersEdit() {
   return (
-    <div style={{ padding: 24 }}>
-      <h1>Edit Teacher Profile</h1>
-      {/* TODO: Edit teacher form goes here */}
-    </div>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <ThemedText>Admin Teachers Edit</ThemedText>
+    </View>
   );
 }
