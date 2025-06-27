@@ -22,6 +22,7 @@ interface StatCardProps {
   isPositive: boolean;
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
+  subtitle?: string;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -31,6 +32,7 @@ const StatCard: React.FC<StatCardProps> = ({
   isPositive,
   icon,
   color,
+  subtitle,
 }) => {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
@@ -44,12 +46,12 @@ const StatCard: React.FC<StatCardProps> = ({
     >
       <View style={styles.statHeader}>
         <View style={[styles.iconContainer, { backgroundColor: color + "15" }]}>
-          <Ionicons name={icon} size={normalize(20)} color={color} />
+          <Ionicons name={icon} size={normalize(18)} color={color} />
         </View>
         <View style={styles.changeContainer}>
           <Ionicons
             name={isPositive ? "trending-up" : "trending-down"}
-            size={normalize(12)}
+            size={normalize(10)}
             color={isPositive ? colors.success : colors.error}
           />
           <Text
@@ -68,6 +70,11 @@ const StatCard: React.FC<StatCardProps> = ({
       <Text style={[styles.statTitle, { color: colors.textSecondary }]}>
         {title}
       </Text>
+      {subtitle && (
+        <Text style={[styles.statSubtitle, { color: colors.textSecondary }]}>
+          {subtitle}
+        </Text>
+      )}
     </View>
   );
 };
@@ -78,6 +85,7 @@ interface QuickActionProps {
   icon: keyof typeof Ionicons.glyphMap;
   color: string;
   onPress: () => void;
+  badge?: string;
 }
 
 const QuickAction: React.FC<QuickActionProps> = ({
@@ -86,6 +94,7 @@ const QuickAction: React.FC<QuickActionProps> = ({
   icon,
   color,
   onPress,
+  badge,
 }) => {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
@@ -98,8 +107,17 @@ const QuickAction: React.FC<QuickActionProps> = ({
       ]}
       onPress={onPress}
     >
-      <View style={[styles.actionIcon, { backgroundColor: color + "15" }]}>
-        <Ionicons name={icon} size={normalize(24)} color={color} />
+      <View style={styles.actionHeader}>
+        <View style={[styles.actionIcon, { backgroundColor: color + "15" }]}>
+          <Ionicons name={icon} size={normalize(20)} color={color} />
+        </View>
+        {badge && (
+          <View
+            style={[styles.badge, { backgroundColor: colors.accentOrange }]}
+          >
+            <Text style={styles.badgeText}>{badge}</Text>
+          </View>
+        )}
       </View>
       <View style={styles.actionContent}>
         <Text style={[styles.actionTitle, { color: colors.textPrimary }]}>
@@ -111,7 +129,7 @@ const QuickAction: React.FC<QuickActionProps> = ({
       </View>
       <Ionicons
         name="chevron-forward"
-        size={normalize(20)}
+        size={normalize(16)}
         color={colors.textSecondary}
       />
     </TouchableOpacity>
@@ -121,8 +139,9 @@ const QuickAction: React.FC<QuickActionProps> = ({
 interface ActivityItemProps {
   title: string;
   time: string;
-  type: "success" | "warning" | "info";
+  type: "success" | "warning" | "info" | "error";
   icon: keyof typeof Ionicons.glyphMap;
+  subtitle?: string;
 }
 
 const ActivityItem: React.FC<ActivityItemProps> = ({
@@ -130,6 +149,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
   time,
   type,
   icon,
+  subtitle,
 }) => {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
@@ -140,6 +160,8 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
         return colors.success;
       case "warning":
         return colors.warning;
+      case "error":
+        return colors.error;
       case "info":
         return colors.accentTeal;
       default:
@@ -155,12 +177,19 @@ const ActivityItem: React.FC<ActivityItemProps> = ({
           { backgroundColor: getTypeColor() + "15" },
         ]}
       >
-        <Ionicons name={icon} size={normalize(16)} color={getTypeColor()} />
+        <Ionicons name={icon} size={normalize(14)} color={getTypeColor()} />
       </View>
       <View style={styles.activityContent}>
         <Text style={[styles.activityTitle, { color: colors.textPrimary }]}>
           {title}
         </Text>
+        {subtitle && (
+          <Text
+            style={[styles.activitySubtitle, { color: colors.textSecondary }]}
+          >
+            {subtitle}
+          </Text>
+        )}
         <Text style={[styles.activityTime, { color: colors.textSecondary }]}>
           {time}
         </Text>
@@ -180,90 +209,99 @@ export default function AdminDashboard() {
       value: "1,247",
       change: "+12%",
       isPositive: true,
-      icon: "people" as const,
+      icon: "school" as const,
       color: colors.accentOrange,
+      subtitle: "Active enrollments",
     },
     {
       title: "Active Teachers",
       value: "24",
       change: "+2",
       isPositive: true,
-      icon: "person" as const,
+      icon: "people" as const,
       color: colors.accentTeal,
+      subtitle: "This month",
     },
     {
       title: "Classes Today",
       value: "18",
-      change: "-1",
-      isPositive: false,
-      icon: "school" as const,
-      color: colors.accentOrange,
+      change: "3",
+      isPositive: true,
+      icon: "library" as const,
+      color: colors.success,
+      subtitle: "Scheduled",
     },
     {
       title: "Attendance Rate",
       value: "94.2%",
       change: "+2.1%",
       isPositive: true,
-      icon: "checkmark-circle" as const,
-      color: colors.success,
+      icon: "calendar" as const,
+      color: colors.warning,
+      subtitle: "This week",
     },
   ];
 
   const quickActions = [
     {
-      title: "Add New Student",
-      subtitle: "Register a new student",
+      title: "Add Student",
+      subtitle: "Register new student",
       icon: "person-add" as const,
       color: colors.accentOrange,
-      onPress: () => router.push("/admin/students/add"),
-    },
-    {
-      title: "Add New Teacher",
-      subtitle: "Hire a new teacher",
-      icon: "person-add" as const,
-      color: colors.accentTeal,
-      onPress: () => router.push("/admin/teachers/add"),
-    },
-    {
-      title: "View Reports",
-      subtitle: "Analytics & insights",
-      icon: "bar-chart" as const,
-      color: colors.accentOrange,
-      onPress: () => router.push("/admin/reports"),
+      onPress: () => router.push("/admin/students/add" as any),
+      badge: "New",
     },
     {
       title: "Manage Classes",
-      subtitle: "Schedule & assignments",
+      subtitle: "View & edit classes",
+      icon: "library" as const,
+      color: colors.accentTeal,
+      onPress: () => router.push("/admin/classes" as any),
+    },
+    {
+      title: "Attendance",
+      subtitle: "Track daily attendance",
       icon: "calendar" as const,
+      color: colors.success,
+      onPress: () => router.push("/admin/attendance" as any),
+    },
+    {
+      title: "Reports",
+      subtitle: "Analytics & insights",
+      icon: "bar-chart" as const,
       color: colors.warning,
-      onPress: () => router.push("/admin/classes"),
+      onPress: () => router.push("/admin/reports" as any),
     },
   ];
 
   const recentActivity = [
     {
-      title: "New student registered: Ahmed Hassan",
+      title: "New student enrolled",
+      subtitle: "Ahmed Hassan - Grade 6",
       time: "2 hours ago",
       type: "success" as const,
       icon: "person-add" as const,
     },
     {
-      title: "Teacher Fatima completed session",
+      title: "Class schedule updated",
+      subtitle: "Quran Studies - Room 3",
       time: "4 hours ago",
       type: "info" as const,
-      icon: "checkmark-circle" as const,
+      icon: "calendar" as const,
     },
     {
-      title: "Weekly attendance report generated",
+      title: "Teacher on leave",
+      subtitle: "Fatima Al-Zahra - 3 days",
       time: "1 day ago",
-      type: "info" as const,
-      icon: "document-text" as const,
+      type: "warning" as const,
+      icon: "alert-circle" as const,
     },
     {
-      title: "Low attendance alert: Class 3B",
+      title: "Monthly report generated",
+      subtitle: "December 2024",
       time: "2 days ago",
-      type: "warning" as const,
-      icon: "warning" as const,
+      type: "success" as const,
+      icon: "document-text" as const,
     },
   ];
 
@@ -272,35 +310,32 @@ export default function AdminDashboard() {
       style={[styles.container, { backgroundColor: colors.primaryBackground }]}
       showsVerticalScrollIndicator={false}
     >
-      {/* Welcome Section */}
-      <View style={styles.welcomeSection}>
+      {/* Header */}
+      <View style={styles.header}>
         <View>
-          <Text style={[styles.welcomeTitle, { color: colors.textPrimary }]}>
-            Welcome back, Admin
+          <Text style={[styles.greeting, { color: colors.textSecondary }]}>
+            Welcome back,
           </Text>
-          <Text
-            style={[styles.welcomeSubtitle, { color: colors.textSecondary }]}
-          >
-            Here&apos;s what&apos;s happening at your Quran school today
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            Administrator
           </Text>
         </View>
-        <View
+        <TouchableOpacity
           style={[
-            styles.dateCard,
-            { backgroundColor: colors.surface, borderColor: colors.border },
+            styles.notificationButton,
+            { backgroundColor: colors.surface },
           ]}
+          onPress={() => router.push("/shared/notifications" as any)}
         >
-          <Text style={[styles.dateText, { color: colors.textPrimary }]}>
-            {new Date().toLocaleDateString("en-US", {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-            })}
-          </Text>
-        </View>
+          <Ionicons
+            name="notifications"
+            size={normalize(20)}
+            color={colors.textPrimary}
+          />
+        </TouchableOpacity>
       </View>
 
-      {/* Statistics Grid */}
+      {/* Stats Grid */}
       <View style={styles.statsSection}>
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>
           Overview
@@ -338,7 +373,7 @@ export default function AdminDashboard() {
         </View>
         <View
           style={[
-            styles.activityCard,
+            styles.activityContainer,
             { backgroundColor: colors.surface, borderColor: colors.border },
           ]}
         >
@@ -358,37 +393,35 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  welcomeSection: {
+  header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: normalize(32),
+    paddingHorizontal: normalize(20),
+    paddingTop: normalize(16),
+    paddingBottom: normalize(24),
   },
-  welcomeTitle: {
-    fontSize: normalize(28),
-    fontWeight: "700",
+  greeting: {
+    fontSize: normalize(14),
     marginBottom: normalize(4),
   },
-  welcomeSubtitle: {
-    fontSize: normalize(16),
-    lineHeight: normalize(22),
+  title: {
+    fontSize: normalize(24),
+    fontWeight: "700",
   },
-  dateCard: {
-    paddingHorizontal: normalize(16),
-    paddingVertical: normalize(12),
-    borderRadius: normalize(12),
-    borderWidth: 1,
+  notificationButton: {
+    width: normalize(44),
+    height: normalize(44),
+    borderRadius: normalize(22),
+    justifyContent: "center",
     alignItems: "center",
   },
-  dateText: {
-    fontSize: normalize(14),
-    fontWeight: "600",
-  },
   statsSection: {
+    paddingHorizontal: normalize(20),
     marginBottom: normalize(32),
   },
   sectionTitle: {
-    fontSize: normalize(20),
+    fontSize: normalize(18),
     fontWeight: "600",
     marginBottom: normalize(16),
   },
@@ -398,10 +431,10 @@ const styles = StyleSheet.create({
     gap: normalize(12),
   },
   statCard: {
-    width: (width - normalize(72)) / 2 - normalize(6),
-    padding: normalize(20),
+    width: (width - normalize(52)) / 2,
+    padding: normalize(16),
     borderRadius: normalize(16),
-    borderWidth: 1,
+    borderWidth: normalize(1),
   },
   statHeader: {
     flexDirection: "row",
@@ -410,9 +443,9 @@ const styles = StyleSheet.create({
     marginBottom: normalize(12),
   },
   iconContainer: {
-    width: normalize(40),
-    height: normalize(40),
-    borderRadius: normalize(12),
+    width: normalize(36),
+    height: normalize(36),
+    borderRadius: normalize(18),
     justifyContent: "center",
     alignItems: "center",
   },
@@ -434,39 +467,64 @@ const styles = StyleSheet.create({
     fontSize: normalize(14),
     fontWeight: "500",
   },
+  statSubtitle: {
+    fontSize: normalize(12),
+    marginTop: normalize(2),
+  },
   actionsSection: {
+    paddingHorizontal: normalize(20),
     marginBottom: normalize(32),
   },
   actionsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: normalize(12),
   },
   quickActionCard: {
+    width: (width - normalize(52)) / 2,
+    padding: normalize(16),
+    borderRadius: normalize(16),
+    borderWidth: normalize(1),
     flexDirection: "row",
     alignItems: "center",
-    padding: normalize(20),
-    borderRadius: normalize(16),
-    borderWidth: 1,
+    gap: normalize(12),
+  },
+  actionHeader: {
+    position: "relative",
   },
   actionIcon: {
-    width: normalize(48),
-    height: normalize(48),
-    borderRadius: normalize(12),
+    width: normalize(40),
+    height: normalize(40),
+    borderRadius: normalize(20),
     justifyContent: "center",
     alignItems: "center",
-    marginRight: normalize(16),
+  },
+  badge: {
+    position: "absolute",
+    top: -normalize(4),
+    right: -normalize(4),
+    paddingHorizontal: normalize(6),
+    paddingVertical: normalize(2),
+    borderRadius: normalize(8),
+  },
+  badgeText: {
+    color: "#fff",
+    fontSize: normalize(10),
+    fontWeight: "600",
   },
   actionContent: {
     flex: 1,
   },
   actionTitle: {
-    fontSize: normalize(16),
+    fontSize: normalize(14),
     fontWeight: "600",
     marginBottom: normalize(2),
   },
   actionSubtitle: {
-    fontSize: normalize(14),
+    fontSize: normalize(12),
   },
   activitySection: {
+    paddingHorizontal: normalize(20),
     marginBottom: normalize(32),
   },
   activityHeader: {
@@ -479,23 +537,26 @@ const styles = StyleSheet.create({
     fontSize: normalize(14),
     fontWeight: "600",
   },
-  activityCard: {
+  activityContainer: {
     borderRadius: normalize(16),
-    borderWidth: 1,
-    padding: normalize(20),
+    borderWidth: normalize(1),
+    padding: normalize(16),
   },
   activityItem: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
+    gap: normalize(12),
     paddingVertical: normalize(12),
+    borderBottomWidth: normalize(1),
+    borderBottomColor: "rgba(0,0,0,0.05)",
   },
   activityIcon: {
-    width: normalize(32),
-    height: normalize(32),
-    borderRadius: normalize(8),
+    width: normalize(28),
+    height: normalize(28),
+    borderRadius: normalize(14),
     justifyContent: "center",
     alignItems: "center",
-    marginRight: normalize(12),
+    marginTop: normalize(2),
   },
   activityContent: {
     flex: 1,
@@ -505,10 +566,14 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginBottom: normalize(2),
   },
-  activityTime: {
+  activitySubtitle: {
     fontSize: normalize(12),
+    marginBottom: normalize(2),
+  },
+  activityTime: {
+    fontSize: normalize(11),
   },
   bottomSpacing: {
-    height: normalize(24),
+    height: normalize(20),
   },
 });

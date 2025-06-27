@@ -1,17 +1,17 @@
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { useTranslation } from "@/hooks/useTranslation";
+// import { useTranslation } from "@/hooks/useTranslation";
 import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function LandingPage() {
   const router = useRouter();
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{t("home.title")}</Text>
-      <Text style={styles.subtitle}>{t("home.subtitle")}</Text>
+      <Text style={styles.title}>Quran School</Text>
+      <Text style={styles.subtitle}>Learn and memorize the Holy Quran</Text>
 
       <View style={styles.buttonGroup}>
         <TouchableOpacity

@@ -2,7 +2,7 @@ import Colors from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
-import { usePathname, useRouter } from "expo-router";
+import { Slot, usePathname, useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   Animated,
@@ -35,17 +35,19 @@ const navItems: NavItem[] = [
   { name: "WiFi Config", path: "wifi-config", icon: "wifi" },
 ];
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminLayout() {
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
   const router = useRouter();
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const sidebarAnimation = useRef(new Animated.Value(0)).current;
+
+  // Add console logs to debug
+  console.log("AdminLayout: Component is rendering");
+  console.log("AdminLayout: Pathname:", pathname);
+  console.log("AdminLayout: ColorScheme:", colorScheme);
+  console.log("AdminLayout: Colors:", colors);
 
   const isActive = (path: string) => {
     if (path === "dashboard") {
@@ -253,13 +255,8 @@ export default function AdminLayout({
         </View>
 
         {/* Main Content */}
-        <View
-          style={[
-            styles.mainContent,
-            { backgroundColor: colors.primaryBackground },
-          ]}
-        >
-          {children}
+        <View style={{ flex: 1 }}>
+          <Slot />
         </View>
       </SafeAreaView>
     </>
@@ -419,6 +416,5 @@ const styles = StyleSheet.create({
   mainContent: {
     flex: 1,
     padding: normalize(20),
-    backgroundColor: "#FAFAF7",
   },
 });

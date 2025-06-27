@@ -131,7 +131,7 @@ const StudentCard: React.FC<{ student: Student; onPress: () => void }> = ({
           >
             <Ionicons
               name="person"
-              size={normalize(20)}
+              size={normalize(16)}
               color={colors.accentOrange}
             />
           </View>
@@ -142,7 +142,7 @@ const StudentCard: React.FC<{ student: Student; onPress: () => void }> = ({
             <Text
               style={[styles.studentGrade, { color: colors.textSecondary }]}
             >
-              {student.grade}
+              {student.grade} • Age {student.age}
             </Text>
           </View>
         </View>
@@ -160,53 +160,97 @@ const StudentCard: React.FC<{ student: Student; onPress: () => void }> = ({
 
       <View style={styles.studentStats}>
         <View style={styles.statItem}>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-            Age
-          </Text>
-          <Text style={[styles.statValue, { color: colors.textPrimary }]}>
-            {student.age}
+          <Ionicons
+            name="person"
+            size={normalize(12)}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.statText, { color: colors.textSecondary }]}>
+            {student.parentName}
           </Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-            Enrolled
+          <Ionicons
+            name="call"
+            size={normalize(12)}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.statText, { color: colors.textSecondary }]}>
+            {student.parentPhone}
           </Text>
-          <Text style={[styles.statValue, { color: colors.textPrimary }]}>
+        </View>
+        <View style={styles.statItem}>
+          <Ionicons
+            name="calendar"
+            size={normalize(12)}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.statText, { color: colors.textSecondary }]}>
             {student.enrollmentDate}
-          </Text>
-        </View>
-        <View style={styles.statItem}>
-          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-            Attendance
-          </Text>
-          <Text style={[styles.statValue, { color: getAttendanceColor() }]}>
-            {student.attendance}%
           </Text>
         </View>
       </View>
 
-      <View style={styles.studentContact}>
-        <View style={styles.contactItem}>
-          <Ionicons
-            name="person"
-            size={normalize(14)}
-            color={colors.textSecondary}
-          />
-          <Text style={[styles.contactText, { color: colors.textSecondary }]}>
-            {student.parentName}
+      <View style={styles.attendanceSection}>
+        <View style={styles.attendanceHeader}>
+          <Text
+            style={[styles.attendanceLabel, { color: colors.textSecondary }]}
+          >
+            Attendance
+          </Text>
+          <Text
+            style={[styles.attendanceValue, { color: getAttendanceColor() }]}
+          >
+            {student.attendance}%
           </Text>
         </View>
-        <View style={styles.contactItem}>
-          <Ionicons
-            name="call"
-            size={normalize(14)}
-            color={colors.textSecondary}
+        <View
+          style={[styles.attendanceBar, { backgroundColor: colors.border }]}
+        >
+          <View
+            style={[
+              styles.attendanceProgress,
+              {
+                backgroundColor: getAttendanceColor(),
+                width: `${student.attendance}%`,
+              },
+            ]}
           />
-          <Text style={[styles.contactText, { color: colors.textSecondary }]}>
-            {student.parentPhone}
-          </Text>
         </View>
       </View>
+    </TouchableOpacity>
+  );
+};
+
+const FilterChip: React.FC<{
+  label: string;
+  isActive: boolean;
+  onPress: () => void;
+}> = ({ label, isActive, onPress }) => {
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? "light"];
+
+  return (
+    <TouchableOpacity
+      style={[
+        styles.filterChip,
+        {
+          backgroundColor: isActive ? colors.accentOrange : colors.surface,
+          borderColor: isActive ? colors.accentOrange : colors.border,
+        },
+      ]}
+      onPress={onPress}
+    >
+      <Text
+        style={[
+          styles.filterChipText,
+          {
+            color: isActive ? "#fff" : colors.textSecondary,
+          },
+        ]}
+      >
+        {label}
+      </Text>
     </TouchableOpacity>
   );
 };
@@ -216,27 +260,13 @@ export default function StudentsScreen() {
   const colors = Colors[colorScheme ?? "light"];
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState<
-    "all" | "active" | "inactive" | "pending"
-  >("all");
+  const [selectedFilter, setSelectedFilter] = useState("all");
 
   const filters = [
-    { key: "all", label: "All", count: mockStudents.length },
-    {
-      key: "active",
-      label: "Active",
-      count: mockStudents.filter((s) => s.status === "active").length,
-    },
-    {
-      key: "inactive",
-      label: "Inactive",
-      count: mockStudents.filter((s) => s.status === "inactive").length,
-    },
-    {
-      key: "pending",
-      label: "Pending",
-      count: mockStudents.filter((s) => s.status === "pending").length,
-    },
+    { key: "all", label: "All Students" },
+    { key: "active", label: "Active" },
+    { key: "inactive", label: "Inactive" },
+    { key: "pending", label: "Pending" },
   ];
 
   const filteredStudents = mockStudents.filter((student) => {
@@ -244,15 +274,19 @@ export default function StudentsScreen() {
       student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.grade.toLowerCase().includes(searchQuery.toLowerCase()) ||
       student.parentName.toLowerCase().includes(searchQuery.toLowerCase());
+
     const matchesFilter =
       selectedFilter === "all" || student.status === selectedFilter;
+
     return matchesSearch && matchesFilter;
   });
 
-  const averageAttendance = (
-    mockStudents.reduce((sum, student) => sum + student.attendance, 0) /
-    mockStudents.length
-  ).toFixed(1);
+  const stats = {
+    total: mockStudents.length,
+    active: mockStudents.filter((s) => s.status === "active").length,
+    inactive: mockStudents.filter((s) => s.status === "inactive").length,
+    pending: mockStudents.filter((s) => s.status === "pending").length,
+  };
 
   return (
     <View
@@ -265,142 +299,102 @@ export default function StudentsScreen() {
             Students
           </Text>
           <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-            Manage {mockStudents.length} students
+            Manage student enrollments
           </Text>
         </View>
         <TouchableOpacity
           style={[styles.addButton, { backgroundColor: colors.accentOrange }]}
-          onPress={() => router.push("/admin/students/add")}
+          onPress={() => router.push("/admin/students/add" as any)}
         >
           <Ionicons name="add" size={normalize(20)} color="#fff" />
-          <Text style={styles.addButtonText}>Add Student</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Overview Stats */}
-      <View style={styles.overviewSection}>
+      {/* Stats Row */}
+      <View style={styles.statsRow}>
         <View
-          style={[
-            styles.overviewCard,
-            { backgroundColor: colors.surface, borderColor: colors.border },
-          ]}
+          style={[styles.statsRowItem, { backgroundColor: colors.surface }]}
         >
-          <View style={styles.overviewItem}>
-            <Text
-              style={[styles.overviewValue, { color: colors.accentOrange }]}
-            >
-              {mockStudents.length}
-            </Text>
-            <Text
-              style={[styles.overviewLabel, { color: colors.textSecondary }]}
-            >
-              Total Students
-            </Text>
-          </View>
-          <View style={styles.overviewDivider} />
-          <View style={styles.overviewItem}>
-            <Text style={[styles.overviewValue, { color: colors.success }]}>
-              {mockStudents.filter((s) => s.status === "active").length}
-            </Text>
-            <Text
-              style={[styles.overviewLabel, { color: colors.textSecondary }]}
-            >
-              Active Students
-            </Text>
-          </View>
-          <View style={styles.overviewDivider} />
-          <View style={styles.overviewItem}>
-            <Text
-              style={[styles.overviewValue, { color: colors.accentOrange }]}
-            >
-              {averageAttendance}%
-            </Text>
-            <Text
-              style={[styles.overviewLabel, { color: colors.textSecondary }]}
-            >
-              Avg Attendance
-            </Text>
-          </View>
+          <Text style={[styles.statValue, { color: colors.textPrimary }]}>
+            {stats.total}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+            Total
+          </Text>
+        </View>
+        <View
+          style={[styles.statsRowItem, { backgroundColor: colors.surface }]}
+        >
+          <Text style={[styles.statValue, { color: colors.success }]}>
+            {stats.active}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+            Active
+          </Text>
+        </View>
+        <View
+          style={[styles.statsRowItem, { backgroundColor: colors.surface }]}
+        >
+          <Text style={[styles.statValue, { color: colors.error }]}>
+            {stats.inactive}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+            Inactive
+          </Text>
+        </View>
+        <View
+          style={[styles.statsRowItem, { backgroundColor: colors.surface }]}
+        >
+          <Text style={[styles.statValue, { color: colors.warning }]}>
+            {stats.pending}
+          </Text>
+          <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+            Pending
+          </Text>
         </View>
       </View>
 
-      {/* Search Bar */}
-      <View
-        style={[
-          styles.searchContainer,
-          { backgroundColor: colors.surface, borderColor: colors.border },
-        ]}
-      >
-        <Ionicons
-          name="search"
-          size={normalize(20)}
-          color={colors.textSecondary}
-        />
-        <TextInput
-          style={[styles.searchInput, { color: colors.textPrimary }]}
-          placeholder="Search students, grades, or parents..."
-          placeholderTextColor={colors.textSecondary}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity onPress={() => setSearchQuery("")}>
-            <Ionicons
-              name="close-circle"
-              size={normalize(20)}
-              color={colors.textSecondary}
-            />
-          </TouchableOpacity>
-        )}
+      {/* Search and Filters */}
+      <View style={styles.searchSection}>
+        <View
+          style={[styles.searchContainer, { backgroundColor: colors.surface }]}
+        >
+          <Ionicons
+            name="search"
+            size={normalize(20)}
+            color={colors.textSecondary}
+          />
+          <TextInput
+            style={[styles.searchInput, { color: colors.textPrimary }]}
+            placeholder="Search students..."
+            placeholderTextColor={colors.textSecondary}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+          {searchQuery.length > 0 && (
+            <TouchableOpacity onPress={() => setSearchQuery("")}>
+              <Ionicons
+                name="close-circle"
+                size={normalize(20)}
+                color={colors.textSecondary}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-      {/* Filters */}
       <ScrollView
+        style={styles.filtersContainer}
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={styles.filtersContainer}
       >
         {filters.map((filter) => (
-          <TouchableOpacity
+          <FilterChip
             key={filter.key}
-            style={[
-              styles.filterChip,
-              selectedFilter === filter.key && {
-                backgroundColor: colors.accentOrange + "15",
-              },
-              { borderColor: colors.border },
-            ]}
-            onPress={() => setSelectedFilter(filter.key as any)}
-          >
-            <Text
-              style={[
-                styles.filterText,
-                {
-                  color:
-                    selectedFilter === filter.key
-                      ? colors.accentOrange
-                      : colors.textSecondary,
-                },
-              ]}
-            >
-              {filter.label}
-            </Text>
-            <View
-              style={[
-                styles.filterCount,
-                { backgroundColor: colors.textSecondary + "20" },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.filterCountText,
-                  { color: colors.textSecondary },
-                ]}
-              >
-                {filter.count}
-              </Text>
-            </View>
-          </TouchableOpacity>
+            label={filter.label}
+            isActive={selectedFilter === filter.key}
+            onPress={() => setSelectedFilter(filter.key)}
+          />
         ))}
       </ScrollView>
 
@@ -409,34 +403,35 @@ export default function StudentsScreen() {
         style={styles.studentsList}
         showsVerticalScrollIndicator={false}
       >
-        {filteredStudents.length > 0 ? (
-          filteredStudents.map((student) => (
-            <StudentCard
-              key={student.id}
-              student={student}
-              onPress={() => router.push(`/admin/students/${student.id}`)}
-            />
-          ))
-        ) : (
+        {filteredStudents.length === 0 ? (
           <View style={styles.emptyState}>
             <Ionicons
-              name="school-outline"
+              name="people-outline"
               size={normalize(48)}
               color={colors.textSecondary}
             />
-            <Text
-              style={[styles.emptyStateTitle, { color: colors.textPrimary }]}
-            >
+            <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>
               No students found
             </Text>
             <Text
-              style={[
-                styles.emptyStateSubtitle,
-                { color: colors.textSecondary },
-              ]}
+              style={[styles.emptySubtitle, { color: colors.textSecondary }]}
             >
-              Try adjusting your search or filters
+              {searchQuery
+                ? "Try adjusting your search or filters"
+                : "Add your first student to get started"}
             </Text>
+          </View>
+        ) : (
+          <View style={styles.studentsGrid}>
+            {filteredStudents.map((student) => (
+              <StudentCard
+                key={student.id}
+                student={student}
+                onPress={() =>
+                  router.push(`/admin/students/${student.id}` as any)
+                }
+              />
+            ))}
           </View>
         )}
       </ScrollView>
@@ -452,55 +447,50 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: normalize(24),
+    paddingHorizontal: normalize(20),
+    paddingTop: normalize(16),
+    paddingBottom: normalize(20),
   },
   title: {
-    fontSize: normalize(28),
-    fontWeight: "700",
-    marginBottom: normalize(4),
-  },
-  subtitle: {
-    fontSize: normalize(16),
-  },
-  addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: normalize(16),
-    paddingVertical: normalize(12),
-    borderRadius: normalize(12),
-    gap: normalize(8),
-  },
-  addButtonText: {
-    color: "#fff",
-    fontSize: normalize(14),
-    fontWeight: "600",
-  },
-  overviewSection: {
-    marginBottom: normalize(24),
-  },
-  overviewCard: {
-    flexDirection: "row",
-    padding: normalize(20),
-    borderRadius: normalize(16),
-    borderWidth: 1,
-  },
-  overviewItem: {
-    flex: 1,
-    alignItems: "center",
-  },
-  overviewValue: {
     fontSize: normalize(24),
     fontWeight: "700",
-    marginBottom: normalize(4),
   },
-  overviewLabel: {
+  subtitle: {
+    fontSize: normalize(14),
+    marginTop: normalize(2),
+  },
+  addButton: {
+    width: normalize(44),
+    height: normalize(44),
+    borderRadius: normalize(22),
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  statsRow: {
+    flexDirection: "row",
+    paddingHorizontal: normalize(20),
+    marginBottom: normalize(20),
+    gap: normalize(12),
+  },
+  statsRowItem: {
+    flex: 1,
+    paddingVertical: normalize(12),
+    paddingHorizontal: normalize(8),
+    borderRadius: normalize(12),
+    alignItems: "center",
+  },
+  statValue: {
+    fontSize: normalize(18),
+    fontWeight: "700",
+    marginBottom: normalize(2),
+  },
+  statLabel: {
     fontSize: normalize(12),
     fontWeight: "500",
   },
-  overviewDivider: {
-    width: 1,
-    backgroundColor: "#e0e0e0",
-    marginHorizontal: normalize(16),
+  searchSection: {
+    paddingHorizontal: normalize(20),
+    marginBottom: normalize(16),
   },
   searchContainer: {
     flexDirection: "row",
@@ -508,67 +498,56 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize(16),
     paddingVertical: normalize(12),
     borderRadius: normalize(12),
-    borderWidth: 1,
-    marginBottom: normalize(20),
+    gap: normalize(12),
   },
   searchInput: {
     flex: 1,
-    marginLeft: normalize(12),
     fontSize: normalize(16),
   },
   filtersContainer: {
+    paddingHorizontal: normalize(20),
     marginBottom: normalize(20),
   },
   filterChip: {
-    flexDirection: "row",
-    alignItems: "center",
     paddingHorizontal: normalize(16),
     paddingVertical: normalize(8),
     borderRadius: normalize(20),
-    borderWidth: 1,
-    marginRight: normalize(12),
-  },
-  filterText: {
-    fontSize: normalize(14),
-    fontWeight: "500",
+    borderWidth: normalize(1),
     marginRight: normalize(8),
   },
-  filterCount: {
-    paddingHorizontal: normalize(6),
-    paddingVertical: normalize(2),
-    borderRadius: normalize(8),
-  },
-  filterCountText: {
-    fontSize: normalize(12),
-    fontWeight: "600",
+  filterChipText: {
+    fontSize: normalize(14),
+    fontWeight: "500",
   },
   studentsList: {
     flex: 1,
+    paddingHorizontal: normalize(20),
+  },
+  studentsGrid: {
+    gap: normalize(16),
   },
   studentCard: {
-    padding: normalize(20),
+    padding: normalize(16),
     borderRadius: normalize(16),
-    borderWidth: 1,
-    marginBottom: normalize(12),
+    borderWidth: normalize(1),
   },
   studentHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: normalize(16),
+    marginBottom: normalize(12),
   },
   studentInfo: {
     flexDirection: "row",
     alignItems: "center",
-    flex: 1,
+    gap: normalize(12),
   },
   avatar: {
-    width: normalize(48),
-    height: normalize(48),
-    borderRadius: normalize(24),
+    width: normalize(36),
+    height: normalize(36),
+    borderRadius: normalize(18),
     justifyContent: "center",
     alignItems: "center",
-    marginRight: normalize(12),
   },
   studentDetails: {
     flex: 1,
@@ -576,14 +555,14 @@ const styles = StyleSheet.create({
   studentName: {
     fontSize: normalize(16),
     fontWeight: "600",
-    marginBottom: normalize(4),
+    marginBottom: normalize(2),
   },
   studentGrade: {
     fontSize: normalize(14),
   },
   statusBadge: {
-    paddingHorizontal: normalize(12),
-    paddingVertical: normalize(6),
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(4),
     borderRadius: normalize(12),
   },
   statusText: {
@@ -591,47 +570,57 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   studentStats: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: normalize(16),
+    marginBottom: normalize(12),
+    gap: normalize(8),
   },
   statItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: normalize(8),
+  },
+  statText: {
+    fontSize: normalize(14),
+  },
+  attendanceSection: {
+    gap: normalize(8),
+  },
+  attendanceHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
   },
-  statLabel: {
-    fontSize: normalize(12),
-    marginBottom: normalize(4),
+  attendanceLabel: {
+    fontSize: normalize(14),
+    fontWeight: "500",
   },
-  statValue: {
+  attendanceValue: {
     fontSize: normalize(14),
     fontWeight: "600",
   },
-  studentContact: {
-    marginBottom: normalize(16),
+  attendanceBar: {
+    height: normalize(4),
+    borderRadius: normalize(2),
+    overflow: "hidden",
   },
-  contactItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: normalize(8),
-  },
-  contactText: {
-    fontSize: normalize(14),
-    marginLeft: normalize(8),
-    flex: 1,
+  attendanceProgress: {
+    height: "100%",
+    borderRadius: normalize(2),
   },
   emptyState: {
-    alignItems: "center",
+    flex: 1,
     justifyContent: "center",
+    alignItems: "center",
     paddingVertical: normalize(60),
   },
-  emptyStateTitle: {
+  emptyTitle: {
     fontSize: normalize(18),
     fontWeight: "600",
     marginTop: normalize(16),
     marginBottom: normalize(8),
   },
-  emptyStateSubtitle: {
+  emptySubtitle: {
     fontSize: normalize(14),
     textAlign: "center",
+    paddingHorizontal: normalize(40),
   },
 });

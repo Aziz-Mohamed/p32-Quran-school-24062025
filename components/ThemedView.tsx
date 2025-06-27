@@ -12,7 +12,7 @@ export function ThemedView({
   row = false,
   ...otherProps
 }: ThemedViewProps) {
-  const backgroundColor = useThemeColor("background");
+  const backgroundColor = useThemeColor("primaryBackground");
   const { rtlStyles } = useRTLStyles();
 
   return (
