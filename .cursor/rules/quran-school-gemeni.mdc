@@ -13,6 +13,7 @@ our app is multi languages and have RTL and LTR languages so keep in mind to com
 
 always focus on the user experience and act like expert in it as it is our priority
 
+always use the [ThemedText.tsx](mdc:components/ThemedText.tsx) and [ThemedView.tsx](mdc:components/ThemedView.tsx) to comply with out dark mode feature
 
 ## 🌟 Vision
 A timeless, elegant, and highly usable Quran school app that feels modern, friendly, and deeply accessible—designed to inspire learning and delight users of all agess is on the **minimum features for the simplest, most minimalist, and iconic subtle app experience with a low learning curve.** We commit to following best practices, modularity, and separation of concerns.

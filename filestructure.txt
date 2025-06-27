@@ -10,7 +10,6 @@
 |-- .gitignore
 |-- DARK_MODE_README.md
 |-- I18N_README.md
-|-- QuranSchoolDesignRule.md
 |-- README.md
 |-- RTL_README.md
 |-- app
@@ -37,7 +36,6 @@
             |-- add.tsx
             |-- edit.tsx
             |-- index.tsx
-        |-- wifi-config.tsx
     |-- auth
         |-- forgot-password.tsx
         |-- login.tsx
@@ -108,9 +106,12 @@
         |-- Card.tsx
         |-- IconSymbol.ios.tsx
         |-- IconSymbol.tsx
+        |-- MetricDisplay.tsx
         |-- MinimalCard.tsx
         |-- MinimalListItem.tsx
         |-- PrimaryButton.tsx
+        |-- SearchBar.tsx
+        |-- StudentCard.tsx
         |-- TabBarBackground.ios.tsx
         |-- TabBarBackground.tsx
 |-- constants

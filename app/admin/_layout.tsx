@@ -1,42 +1,13 @@
 import BottomNavBar, { BottomNavItem } from "@/components/ui/BottomNavBar";
-import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { normalize } from "@/utils/normalize";
-import { Ionicons } from "@expo/vector-icons";
+import { useThemeColor } from "@/hooks/useThemeColor";
 import { Slot, usePathname, useRouter } from "expo-router";
-import React, { useState } from "react";
-import {
-  Dimensions,
-  Platform,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
-const { width } = Dimensions.get("window");
-
-interface NavItem {
-  name: string;
-  path: string;
-  icon: keyof typeof Ionicons.glyphMap;
-}
-
-const bottomNavItems: NavItem[] = [
-  { name: "Dashboard", path: "dashboard", icon: "grid" },
-  { name: "Students", path: "students", icon: "school" },
-  { name: "Teachers", path: "teachers", icon: "people" },
-  { name: "Classes", path: "classes", icon: "library" },
-  { name: "Attendance", path: "attendance", icon: "checkmark-circle" },
-];
+import React from "react";
+import { StatusBar, StyleSheet, View } from "react-native";
 
 export default function AdminLayout() {
-  const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? "light"];
   const router = useRouter();
   const pathname = usePathname();
-  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const backgroundColor = useThemeColor("primaryBackground");
 
   const isActive = (path: string) => {
     if (path === "dashboard") {
@@ -55,11 +26,6 @@ export default function AdminLayout() {
     } else {
       router.push(`/admin/${path}` as any);
     }
-  };
-
-  const getCurrentPageTitle = () => {
-    const activeItem = bottomNavItems.find((item) => isActive(item.path));
-    return activeItem?.name || "Admin";
   };
 
   const navItems: BottomNavItem[] = [
@@ -100,143 +66,26 @@ export default function AdminLayout() {
     },
   ];
 
-  const handleSettingsPress = () => {
-    setShowSettingsMenu(!showSettingsMenu);
-  };
-
-  const handleWifiConfig = () => {
-    setShowSettingsMenu(false);
-    router.push("/admin/wifi-config" as any);
-  };
-
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: colors.primaryBackground }}
-    >
-      {/* Top Bar */}
-      <View
-        style={[
-          styles.topBar,
-          {
-            backgroundColor: colors.primaryBackground,
-            borderBottomColor: colors.border,
-          },
-        ]}
-      >
-        <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>
-          {getCurrentPageTitle()}
-        </Text>
+    <View style={[styles.container, { backgroundColor }]}>
+      {/* Status Bar - Matches app background */}
+      <StatusBar
+        backgroundColor={backgroundColor}
+        barStyle="dark-content"
+        translucent={false}
+      />
 
-        {/* Settings Menu */}
-        <TouchableOpacity
-          style={[styles.settingsButton, { backgroundColor: colors.surface }]}
-          onPress={handleSettingsPress}
-        >
-          <Ionicons
-            name="settings"
-            size={normalize(20)}
-            color={colors.textPrimary}
-          />
-        </TouchableOpacity>
-      </View>
+      {/* Main Content - Uses full screen */}
+      <Slot />
 
-      {/* Settings Menu Overlay */}
-      {showSettingsMenu && (
-        <TouchableOpacity
-          style={styles.overlay}
-          onPress={() => setShowSettingsMenu(false)}
-        >
-          <View
-            style={[styles.settingsMenu, { backgroundColor: colors.surface }]}
-          >
-            <TouchableOpacity
-              style={styles.settingsMenuItem}
-              onPress={handleWifiConfig}
-            >
-              <Ionicons
-                name="wifi"
-                size={normalize(20)}
-                color={colors.textPrimary}
-              />
-              <Text
-                style={[styles.settingsMenuText, { color: colors.textPrimary }]}
-              >
-                WiFi Configuration
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      )}
-
-      {/* Main Content */}
-      <View style={{ flex: 1 }}>
-        <Slot />
-      </View>
-
-      {/* Floating Bottom Navigation */}
+      {/* Floating Bottom Navigation - Has its own safe area */}
       <BottomNavBar items={navItems} />
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  topBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    height: normalize(56),
-    borderBottomWidth: 1,
-    paddingHorizontal: normalize(20),
-    zIndex: 10,
-  },
-  pageTitle: {
-    fontSize: normalize(24),
-    fontWeight: "700",
-    fontFamily: Platform.OS === "ios" ? "Times New Roman" : "serif",
-  },
-  settingsButton: {
-    width: normalize(44),
-    height: normalize(44),
-    borderRadius: normalize(22),
-    alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: normalize(8),
-    elevation: 2,
-  },
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.3)",
-    zIndex: 40,
-  },
-  settingsMenu: {
-    position: "absolute",
-    top: normalize(70),
-    right: normalize(20),
-    borderRadius: normalize(16),
-    padding: normalize(8),
-    shadowColor: "#000",
-    shadowOpacity: 0.15,
-    shadowRadius: normalize(12),
-    elevation: 4,
-    minWidth: normalize(200),
-  },
-  settingsMenuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: normalize(16),
-    paddingVertical: normalize(12),
-    borderRadius: normalize(8),
-  },
-  settingsMenuText: {
-    fontSize: normalize(16),
-    fontWeight: "500",
-    fontFamily: Platform.OS === "ios" ? "System" : "sans-serif",
-    marginLeft: normalize(12),
+  container: {
+    flex: 1,
   },
 });
