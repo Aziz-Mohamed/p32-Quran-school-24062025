@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { StudentCard } from "@/components/ui/StudentCard";
+import { useRTLStyles } from "@/hooks/useRTLStyles";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
@@ -61,6 +62,7 @@ const mockStudents = [
 
 export default function AdminStudentsIndex() {
   const router = useRouter();
+  const { rtlStyles } = useRTLStyles();
   const [searchQuery, setSearchQuery] = useState("");
   const accentOrange = useThemeColor("accentOrange");
   const textSecondary = useThemeColor("textSecondary");
@@ -87,10 +89,16 @@ export default function AdminStudentsIndex() {
         >
           {/* Header Section */}
           <ThemedView style={styles.header}>
-            <ThemedText type="title" style={styles.title}>
+            <ThemedText
+              type="title"
+              style={[styles.title, rtlStyles.textDirection]}
+            >
               Students
             </ThemedText>
-            <ThemedText type="subtitle" style={styles.subtitle}>
+            <ThemedText
+              type="subtitle"
+              style={[styles.subtitle, rtlStyles.textDirection]}
+            >
               Manage your students and track their progress
             </ThemedText>
           </ThemedView>
@@ -127,10 +135,16 @@ export default function AdminStudentsIndex() {
                 size={normalize(64)}
                 color={textSecondary}
               />
-              <ThemedText type="subtitle" style={styles.emptyTitle}>
+              <ThemedText
+                type="subtitle"
+                style={[styles.emptyTitle, rtlStyles.textDirection]}
+              >
                 No students found
               </ThemedText>
-              <ThemedText type="default" style={styles.emptySubtitle}>
+              <ThemedText
+                type="default"
+                style={[styles.emptySubtitle, rtlStyles.textDirection]}
+              >
                 {searchQuery
                   ? "Try adjusting your search"
                   : "Add your first student to get started"}
@@ -175,6 +189,7 @@ const styles = StyleSheet.create({
   },
   studentsContainer: {
     paddingHorizontal: normalize(20),
+    paddingTop: normalize(16),
   },
   emptyState: {
     alignItems: "center",

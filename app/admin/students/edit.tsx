@@ -2,7 +2,9 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import Card from "@/components/ui/Card";
 import PrimaryButton from "@/components/ui/PrimaryButton";
+import { useRTLStyles } from "@/hooks/useRTLStyles";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { useTranslation } from "@/hooks/useTranslation";
 import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -30,6 +32,8 @@ const mockStudentData = {
 
 export default function AdminStudentsEdit() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const { rtlStyles } = useRTLStyles();
   const { id } = useLocalSearchParams();
   const surface = useThemeColor("surface");
   const textPrimary = useThemeColor("textPrimary");
@@ -63,30 +67,32 @@ export default function AdminStudentsEdit() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
+      newErrors.firstName = t("admin.students.validation.firstNameRequired");
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required";
+      newErrors.lastName = t("admin.students.validation.lastNameRequired");
     }
 
     if (!formData.grade.trim()) {
-      newErrors.grade = "Grade is required";
+      newErrors.grade = t("admin.students.validation.gradeRequired");
     }
 
     if (!formData.parentName.trim()) {
-      newErrors.parentName = "Parent name is required";
+      newErrors.parentName = t("admin.students.validation.parentNameRequired");
     }
 
     if (!formData.parentPhone.trim()) {
-      newErrors.parentPhone = "Parent phone is required";
+      newErrors.parentPhone = t(
+        "admin.students.validation.parentPhoneRequired"
+      );
     }
 
     if (
       formData.parentEmail.trim() &&
       !/\S+@\S+\.\S+/.test(formData.parentEmail)
     ) {
-      newErrors.parentEmail = "Please enter a valid email";
+      newErrors.parentEmail = t("admin.students.validation.invalidEmail");
     }
 
     setErrors(newErrors);
@@ -95,7 +101,7 @@ export default function AdminStudentsEdit() {
 
   const handleSubmit = () => {
     if (validateForm()) {
-      Alert.alert("Success", "Student updated successfully!", [
+      Alert.alert("Success", t("admin.students.studentUpdatedSuccess"), [
         {
           text: "OK",
           onPress: () => router.back(),
@@ -122,9 +128,13 @@ export default function AdminStudentsEdit() {
           <Ionicons name="school" size={normalize(48)} color={accentOrange} />
           <ThemedText
             type="default"
-            style={[styles.loadingText, { color: textSecondary }]}
+            style={[
+              styles.loadingText,
+              { color: textSecondary },
+              rtlStyles.textDirection,
+            ]}
           >
-            Loading student data...
+            {t("admin.students.loadingStudentData")}
           </ThemedText>
         </ThemedView>
       </SafeAreaView>
@@ -135,7 +145,7 @@ export default function AdminStudentsEdit() {
     <SafeAreaView style={styles.container}>
       <ThemedView style={styles.container}>
         {/* Header */}
-        <ThemedView style={styles.header}>
+        <ThemedView style={[styles.header, rtlStyles.row]}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <Ionicons
               name="arrow-back"
@@ -143,8 +153,11 @@ export default function AdminStudentsEdit() {
               color={textPrimary}
             />
           </TouchableOpacity>
-          <ThemedText type="subtitle" style={styles.headerTitle}>
-            Edit Student
+          <ThemedText
+            type="subtitle"
+            style={[styles.headerTitle, rtlStyles.textDirection]}
+          >
+            {t("admin.students.editStudent")}
           </ThemedText>
           <ThemedView style={styles.placeholder} />
         </ThemedView>
@@ -156,29 +169,36 @@ export default function AdminStudentsEdit() {
         >
           {/* Student Information Section */}
           <Card style={styles.section}>
-            <ThemedView style={styles.sectionHeader}>
+            <ThemedView style={[styles.sectionHeader, rtlStyles.row]}>
               <Ionicons
                 name="person"
                 size={normalize(20)}
                 color={accentOrange}
               />
-              <ThemedText type="subtitle" style={styles.sectionTitle}>
-                Student Information
+              <ThemedText
+                type="subtitle"
+                style={[styles.sectionTitle, rtlStyles.textDirection]}
+              >
+                {t("admin.students.studentInformation")}
               </ThemedText>
             </ThemedView>
 
-            <ThemedView style={styles.inputRow}>
+            <ThemedView style={[styles.inputRow, rtlStyles.row]}>
               <ThemedView
                 style={[
                   styles.inputContainer,
-                  { flex: 1, marginRight: normalize(8) },
+                  { flex: 1, ...rtlStyles.marginEnd(normalize(8)) },
                 ]}
               >
                 <ThemedText
                   type="default"
-                  style={[styles.inputLabel, { color: textSecondary }]}
+                  style={[
+                    styles.inputLabel,
+                    { color: textSecondary },
+                    rtlStyles.textDirection,
+                  ]}
                 >
-                  First Name *
+                  {t("admin.students.fields.firstName")} *
                 </ThemedText>
                 <TextInput
                   style={[
@@ -188,8 +208,9 @@ export default function AdminStudentsEdit() {
                       color: textPrimary,
                       borderColor: errors.firstName ? error : border,
                     },
+                    rtlStyles.textDirection,
                   ]}
-                  placeholder="Enter first name"
+                  placeholder={t("admin.students.placeholders.firstName")}
                   placeholderTextColor={textSecondary}
                   value={formData.firstName}
                   onChangeText={(value) =>
@@ -199,7 +220,11 @@ export default function AdminStudentsEdit() {
                 {errors.firstName && (
                   <ThemedText
                     type="default"
-                    style={[styles.errorText, { color: error }]}
+                    style={[
+                      styles.errorText,
+                      { color: error },
+                      rtlStyles.textDirection,
+                    ]}
                   >
                     {errors.firstName}
                   </ThemedText>
@@ -209,14 +234,18 @@ export default function AdminStudentsEdit() {
               <ThemedView
                 style={[
                   styles.inputContainer,
-                  { flex: 1, marginLeft: normalize(8) },
+                  { flex: 1, ...rtlStyles.marginStart(normalize(8)) },
                 ]}
               >
                 <ThemedText
                   type="default"
-                  style={[styles.inputLabel, { color: textSecondary }]}
+                  style={[
+                    styles.inputLabel,
+                    { color: textSecondary },
+                    rtlStyles.textDirection,
+                  ]}
                 >
-                  Last Name *
+                  {t("admin.students.fields.lastName")} *
                 </ThemedText>
                 <TextInput
                   style={[
@@ -226,8 +255,9 @@ export default function AdminStudentsEdit() {
                       color: textPrimary,
                       borderColor: errors.lastName ? error : border,
                     },
+                    rtlStyles.textDirection,
                   ]}
-                  placeholder="Enter last name"
+                  placeholder={t("admin.students.placeholders.lastName")}
                   placeholderTextColor={textSecondary}
                   value={formData.lastName}
                   onChangeText={(value) => handleInputChange("lastName", value)}
@@ -235,7 +265,11 @@ export default function AdminStudentsEdit() {
                 {errors.lastName && (
                   <ThemedText
                     type="default"
-                    style={[styles.errorText, { color: error }]}
+                    style={[
+                      styles.errorText,
+                      { color: error },
+                      rtlStyles.textDirection,
+                    ]}
                   >
                     {errors.lastName}
                   </ThemedText>
@@ -246,9 +280,13 @@ export default function AdminStudentsEdit() {
             <ThemedView style={styles.inputContainer}>
               <ThemedText
                 type="default"
-                style={[styles.inputLabel, { color: textSecondary }]}
+                style={[
+                  styles.inputLabel,
+                  { color: textSecondary },
+                  rtlStyles.textDirection,
+                ]}
               >
-                Grade *
+                {t("admin.students.fields.grade")} *
               </ThemedText>
               <TextInput
                 style={[
@@ -258,8 +296,9 @@ export default function AdminStudentsEdit() {
                     color: textPrimary,
                     borderColor: errors.grade ? error : border,
                   },
+                  rtlStyles.textDirection,
                 ]}
-                placeholder="e.g., Grade 2"
+                placeholder={t("admin.students.placeholders.grade")}
                 placeholderTextColor={textSecondary}
                 value={formData.grade}
                 onChangeText={(value) => handleInputChange("grade", value)}
@@ -267,58 +306,44 @@ export default function AdminStudentsEdit() {
               {errors.grade && (
                 <ThemedText
                   type="default"
-                  style={[styles.errorText, { color: error }]}
+                  style={[
+                    styles.errorText,
+                    { color: error },
+                    rtlStyles.textDirection,
+                  ]}
                 >
                   {errors.grade}
                 </ThemedText>
               )}
             </ThemedView>
-
-            <ThemedView style={styles.inputContainer}>
-              <ThemedText
-                type="default"
-                style={[styles.inputLabel, { color: textSecondary }]}
-              >
-                Address
-              </ThemedText>
-              <TextInput
-                style={[
-                  styles.input,
-                  {
-                    backgroundColor: surface,
-                    color: textPrimary,
-                    borderColor: border,
-                  },
-                ]}
-                placeholder="Enter address"
-                placeholderTextColor={textSecondary}
-                value={formData.address}
-                onChangeText={(value) => handleInputChange("address", value)}
-                multiline
-                numberOfLines={3}
-              />
-            </ThemedView>
           </Card>
 
           {/* Parent Information Section */}
           <Card style={styles.section}>
-            <ThemedView style={styles.sectionHeader}>
+            <ThemedView style={[styles.sectionHeader, rtlStyles.row]}>
               <Ionicons
                 name="people"
                 size={normalize(20)}
                 color={accentOrange}
               />
-              <ThemedText type="subtitle" style={styles.sectionTitle}>
-                Parent Information
+              <ThemedText
+                type="subtitle"
+                style={[styles.sectionTitle, rtlStyles.textDirection]}
+              >
+                {t("admin.students.contactInformation")}
               </ThemedText>
             </ThemedView>
 
             <ThemedView style={styles.inputContainer}>
               <ThemedText
                 type="default"
-                style={[styles.inputLabel, { color: textSecondary }]}
+                style={[
+                  styles.inputLabel,
+                  { color: textSecondary },
+                  rtlStyles.textDirection,
+                ]}
               >
-                Parent Name *
+                {t("admin.students.fields.parentName")} *
               </ThemedText>
               <TextInput
                 style={[
@@ -328,8 +353,9 @@ export default function AdminStudentsEdit() {
                     color: textPrimary,
                     borderColor: errors.parentName ? error : border,
                   },
+                  rtlStyles.textDirection,
                 ]}
-                placeholder="Enter parent name"
+                placeholder={t("admin.students.placeholders.parentName")}
                 placeholderTextColor={textSecondary}
                 value={formData.parentName}
                 onChangeText={(value) => handleInputChange("parentName", value)}
@@ -337,25 +363,33 @@ export default function AdminStudentsEdit() {
               {errors.parentName && (
                 <ThemedText
                   type="default"
-                  style={[styles.errorText, { color: error }]}
+                  style={[
+                    styles.errorText,
+                    { color: error },
+                    rtlStyles.textDirection,
+                  ]}
                 >
                   {errors.parentName}
                 </ThemedText>
               )}
             </ThemedView>
 
-            <ThemedView style={styles.inputRow}>
+            <ThemedView style={[styles.inputRow, rtlStyles.row]}>
               <ThemedView
                 style={[
                   styles.inputContainer,
-                  { flex: 1, marginRight: normalize(8) },
+                  { flex: 1, ...rtlStyles.marginEnd(normalize(8)) },
                 ]}
               >
                 <ThemedText
                   type="default"
-                  style={[styles.inputLabel, { color: textSecondary }]}
+                  style={[
+                    styles.inputLabel,
+                    { color: textSecondary },
+                    rtlStyles.textDirection,
+                  ]}
                 >
-                  Phone Number *
+                  {t("admin.students.fields.parentPhone")} *
                 </ThemedText>
                 <TextInput
                   style={[
@@ -365,8 +399,9 @@ export default function AdminStudentsEdit() {
                       color: textPrimary,
                       borderColor: errors.parentPhone ? error : border,
                     },
+                    rtlStyles.textDirection,
                   ]}
-                  placeholder="Enter phone number"
+                  placeholder={t("admin.students.placeholders.parentPhone")}
                   placeholderTextColor={textSecondary}
                   value={formData.parentPhone}
                   onChangeText={(value) =>
@@ -377,7 +412,11 @@ export default function AdminStudentsEdit() {
                 {errors.parentPhone && (
                   <ThemedText
                     type="default"
-                    style={[styles.errorText, { color: error }]}
+                    style={[
+                      styles.errorText,
+                      { color: error },
+                      rtlStyles.textDirection,
+                    ]}
                   >
                     {errors.parentPhone}
                   </ThemedText>
@@ -387,14 +426,18 @@ export default function AdminStudentsEdit() {
               <ThemedView
                 style={[
                   styles.inputContainer,
-                  { flex: 1, marginLeft: normalize(8) },
+                  { flex: 1, ...rtlStyles.marginStart(normalize(8)) },
                 ]}
               >
                 <ThemedText
                   type="default"
-                  style={[styles.inputLabel, { color: textSecondary }]}
+                  style={[
+                    styles.inputLabel,
+                    { color: textSecondary },
+                    rtlStyles.textDirection,
+                  ]}
                 >
-                  Email
+                  {t("admin.students.fields.parentEmail")}
                 </ThemedText>
                 <TextInput
                   style={[
@@ -404,8 +447,9 @@ export default function AdminStudentsEdit() {
                       color: textPrimary,
                       borderColor: errors.parentEmail ? error : border,
                     },
+                    rtlStyles.textDirection,
                   ]}
-                  placeholder="Enter email"
+                  placeholder={t("admin.students.placeholders.parentEmail")}
                   placeholderTextColor={textSecondary}
                   value={formData.parentEmail}
                   onChangeText={(value) =>
@@ -417,35 +461,55 @@ export default function AdminStudentsEdit() {
                 {errors.parentEmail && (
                   <ThemedText
                     type="default"
-                    style={[styles.errorText, { color: error }]}
+                    style={[
+                      styles.errorText,
+                      { color: error },
+                      rtlStyles.textDirection,
+                    ]}
                   >
                     {errors.parentEmail}
                   </ThemedText>
                 )}
               </ThemedView>
             </ThemedView>
+
+            <ThemedView style={styles.inputContainer}>
+              <ThemedText
+                type="default"
+                style={[
+                  styles.inputLabel,
+                  { color: textSecondary },
+                  rtlStyles.textDirection,
+                ]}
+              >
+                {t("admin.students.fields.address")}
+              </ThemedText>
+              <TextInput
+                style={[
+                  styles.input,
+                  {
+                    backgroundColor: surface,
+                    color: textPrimary,
+                    borderColor: border,
+                  },
+                  rtlStyles.textDirection,
+                ]}
+                placeholder={t("admin.students.placeholders.address")}
+                placeholderTextColor={textSecondary}
+                value={formData.address}
+                onChangeText={(value) => handleInputChange("address", value)}
+                multiline
+                numberOfLines={3}
+              />
+            </ThemedView>
           </Card>
 
-          {/* Action Buttons */}
-          <ThemedView style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.cancelButton, { backgroundColor: surface }]}
-              onPress={handleBack}
-            >
-              <ThemedText
-                type="defaultSemiBold"
-                style={[styles.cancelButtonText, { color: textSecondary }]}
-              >
-                Cancel
-              </ThemedText>
-            </TouchableOpacity>
-
-            <PrimaryButton
-              title="Update Student"
-              onPress={handleSubmit}
-              style={styles.submitButton}
-            />
-          </ThemedView>
+          {/* Submit Button */}
+          <PrimaryButton
+            title={t("common.save")}
+            onPress={handleSubmit}
+            style={styles.submitButton}
+          />
         </ScrollView>
       </ThemedView>
     </SafeAreaView>
@@ -458,30 +522,29 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: normalize(40),
   },
   loadingText: {
     marginTop: normalize(16),
+    textAlign: "center",
   },
   header: {
-    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     paddingHorizontal: normalize(20),
-    paddingVertical: normalize(16),
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.1)",
+    paddingTop: normalize(20),
+    paddingBottom: normalize(16),
   },
   backButton: {
     width: normalize(40),
     height: normalize(40),
-    borderRadius: normalize(20),
     alignItems: "center",
     justifyContent: "center",
   },
   headerTitle: {
-    fontSize: normalize(20),
+    flex: 1,
+    textAlign: "center",
   },
   placeholder: {
     width: normalize(40),
@@ -490,14 +553,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: normalize(20),
-    paddingBottom: normalize(40),
+    paddingHorizontal: normalize(20),
+    paddingBottom: normalize(100),
   },
   section: {
     marginBottom: normalize(24),
   },
   sectionHeader: {
-    flexDirection: "row",
     alignItems: "center",
     marginBottom: normalize(20),
   },
@@ -505,7 +567,6 @@ const styles = StyleSheet.create({
     marginLeft: normalize(12),
   },
   inputRow: {
-    flexDirection: "row",
     marginBottom: normalize(16),
   },
   inputContainer: {
@@ -513,6 +574,7 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     marginBottom: normalize(8),
+    fontSize: normalize(14),
   },
   input: {
     borderWidth: 1,
@@ -524,24 +586,11 @@ const styles = StyleSheet.create({
     fontFamily: "System",
   },
   errorText: {
+    fontSize: normalize(12),
     marginTop: normalize(4),
   },
-  buttonContainer: {
-    flexDirection: "row",
-    gap: normalize(12),
-    marginTop: normalize(20),
-  },
-  cancelButton: {
-    flex: 1,
-    paddingVertical: normalize(16),
-    borderRadius: normalize(12),
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  cancelButtonText: {
-    fontSize: normalize(16),
-  },
   submitButton: {
-    flex: 2,
+    marginTop: normalize(16),
+    marginBottom: normalize(32),
   },
 });

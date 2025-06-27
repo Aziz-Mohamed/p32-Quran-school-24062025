@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import Card from "@/components/ui/Card";
+import { useRTLStyles } from "@/hooks/useRTLStyles";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
@@ -28,6 +29,7 @@ export function StudentCard({
   trophies,
   onPress,
 }: StudentCardProps) {
+  const { rtlStyles } = useRTLStyles();
   const cardBackground = useThemeColor("card");
   const textSecondary = useThemeColor("textSecondary");
   const accentOrange = useThemeColor("accentOrange");
@@ -47,18 +49,25 @@ export function StudentCard({
       style={styles.container}
     >
       <Card style={styles.card}>
-        <ThemedView row style={styles.header}>
+        <ThemedView style={[styles.header, rtlStyles.row]}>
           <ThemedView style={styles.avatarContainer}>
             <ThemedText style={styles.avatar}>{avatar}</ThemedText>
           </ThemedView>
 
           <ThemedView style={styles.info}>
-            <ThemedText type="defaultSemiBold" style={styles.name}>
+            <ThemedText
+              type="defaultSemiBold"
+              style={[styles.name, rtlStyles.textDirection]}
+            >
               {name}
             </ThemedText>
             <ThemedText
               type="subtitle"
-              style={[styles.grade, { color: textSecondary }]}
+              style={[
+                styles.grade,
+                { color: textSecondary },
+                rtlStyles.textDirection,
+              ]}
             >
               {grade}
             </ThemedText>
@@ -68,7 +77,7 @@ export function StudentCard({
         <ThemedView style={styles.metrics}>
           {/* Attendance */}
           <ThemedView style={styles.metric}>
-            <ThemedView style={styles.metricHeader}>
+            <ThemedView style={[styles.metricHeader, rtlStyles.row]}>
               <Ionicons
                 name="calendar"
                 size={normalize(16)}
@@ -78,19 +87,26 @@ export function StudentCard({
                 style={[
                   styles.metricValue,
                   { color: getMetricColor(attendance) },
+                  rtlStyles.marginStart(normalize(4)),
                 ]}
               >
                 {attendance}%
               </ThemedText>
             </ThemedView>
-            <ThemedText style={[styles.metricLabel, { color: textSecondary }]}>
+            <ThemedText
+              style={[
+                styles.metricLabel,
+                { color: textSecondary },
+                rtlStyles.textDirection,
+              ]}
+            >
               Attendance
             </ThemedText>
           </ThemedView>
 
           {/* Reciting Rate */}
           <ThemedView style={styles.metric}>
-            <ThemedView style={styles.metricHeader}>
+            <ThemedView style={[styles.metricHeader, rtlStyles.row]}>
               <Ionicons
                 name="book"
                 size={normalize(16)}
@@ -100,29 +116,48 @@ export function StudentCard({
                 style={[
                   styles.metricValue,
                   { color: getMetricColor(recitingRate) },
+                  rtlStyles.marginStart(normalize(4)),
                 ]}
               >
                 {recitingRate}%
               </ThemedText>
             </ThemedView>
-            <ThemedText style={[styles.metricLabel, { color: textSecondary }]}>
+            <ThemedText
+              style={[
+                styles.metricLabel,
+                { color: textSecondary },
+                rtlStyles.textDirection,
+              ]}
+            >
               Reciting Rate
             </ThemedText>
           </ThemedView>
 
           {/* Trophies */}
           <ThemedView style={styles.metric}>
-            <ThemedView style={styles.metricHeader}>
+            <ThemedView style={[styles.metricHeader, rtlStyles.row]}>
               <Ionicons
                 name="trophy"
                 size={normalize(16)}
                 color={accentOrange}
               />
-              <ThemedText style={[styles.metricValue, { color: accentOrange }]}>
+              <ThemedText
+                style={[
+                  styles.metricValue,
+                  { color: accentOrange },
+                  rtlStyles.marginStart(normalize(4)),
+                ]}
+              >
                 {trophies}
               </ThemedText>
             </ThemedView>
-            <ThemedText style={[styles.metricLabel, { color: textSecondary }]}>
+            <ThemedText
+              style={[
+                styles.metricLabel,
+                { color: textSecondary },
+                rtlStyles.textDirection,
+              ]}
+            >
               Trophies
             </ThemedText>
           </ThemedView>
@@ -137,7 +172,7 @@ const styles = StyleSheet.create({
     marginBottom: normalize(14),
   },
   card: {
-    padding: normalize(16),
+    padding: normalize(20),
   },
   header: {
     alignItems: "center",
@@ -176,14 +211,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   metricHeader: {
-    flexDirection: "row",
     alignItems: "center",
     marginBottom: normalize(4),
   },
   metricValue: {
     fontSize: normalize(16),
     fontWeight: "600",
-    marginLeft: normalize(4),
   },
   metricLabel: {
     fontSize: normalize(12),

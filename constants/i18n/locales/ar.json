@@ -23,7 +23,13 @@
     "close": "إغلاق",
     "next": "التالي",
     "previous": "السابق",
-    "finish": "إنهاء"
+    "finish": "إنهاء",
+    "back": "رجوع",
+    "add": "إضافة",
+    "search": "بحث",
+    "noResults": "لم يتم العثور على نتائج",
+    "tryAdjustingSearch": "حاول تعديل البحث",
+    "required": "مطلوب"
   },
   "lessons": {
     "title": "الدروس",
@@ -51,5 +57,63 @@
     "forgotPassword": "نسيت كلمة المرور؟",
     "signIn": "تسجيل الدخول",
     "signUp": "إنشاء حساب"
+  },
+  "admin": {
+    "students": {
+      "title": "الطلاب",
+      "subtitle": "إدارة طلابك وتتبع تقدمهم",
+      "searchPlaceholder": "البحث في الطلاب...",
+      "noStudentsFound": "لم يتم العثور على طلاب",
+      "addFirstStudent": "أضف طالبك الأول للبدء",
+      "addNewStudent": "إضافة طالب جديد",
+      "editStudent": "تعديل الطالب",
+      "studentDetails": "تفاصيل الطالب",
+      "studentInformation": "معلومات الطالب",
+      "contactInformation": "معلومات الاتصال",
+      "trophyCabinet": "خزانة الجوائز",
+      "loadingStudentData": "جاري تحميل بيانات الطالب...",
+      "studentAddedSuccess": "تم إضافة الطالب بنجاح!",
+      "studentUpdatedSuccess": "تم تحديث الطالب بنجاح!",
+      "fields": {
+        "firstName": "الاسم الأول",
+        "lastName": "اسم العائلة",
+        "grade": "الصف",
+        "parentName": "اسم الوالد",
+        "parentPhone": "هاتف الوالد",
+        "parentEmail": "بريد الوالد الإلكتروني",
+        "address": "العنوان",
+        "joinDate": "تاريخ الانضمام"
+      },
+      "placeholders": {
+        "firstName": "أدخل الاسم الأول",
+        "lastName": "أدخل اسم العائلة",
+        "grade": "اختر الصف",
+        "parentName": "أدخل اسم الوالد",
+        "parentPhone": "أدخل هاتف الوالد",
+        "parentEmail": "أدخل بريد الوالد الإلكتروني (اختياري)",
+        "address": "أدخل العنوان"
+      },
+      "validation": {
+        "firstNameRequired": "الاسم الأول مطلوب",
+        "lastNameRequired": "اسم العائلة مطلوب",
+        "gradeRequired": "الصف مطلوب",
+        "parentNameRequired": "اسم الوالد مطلوب",
+        "parentPhoneRequired": "هاتف الوالد مطلوب",
+        "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح"
+      },
+      "metrics": {
+        "attendance": "الحضور",
+        "recitingRate": "معدل التلاوة",
+        "trophies": "الجوائز"
+      },
+      "achievements": {
+        "firstLesson": "الدرس الأول",
+        "firstLessonDesc": "إكمال أول درس في القرآن",
+        "perfectAttendance": "الحضور المثالي",
+        "perfectAttendanceDesc": "حضور 10 جلسات متتالية",
+        "fastLearner": "المتعلم السريع",
+        "fastLearnerDesc": "إكمال 5 دروس قبل الموعد المحدد"
+      }
+    }
   }
 }

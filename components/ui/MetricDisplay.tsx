@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import Card from "@/components/ui/Card";
+import { useRTLStyles } from "@/hooks/useRTLStyles";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
@@ -18,6 +19,7 @@ export function MetricDisplay({
   recitingRate,
   trophies,
 }: MetricDisplayProps) {
+  const { rtlStyles } = useRTLStyles();
   const textSecondary = useThemeColor("textSecondary");
   const accentOrange = useThemeColor("accentOrange");
   const success = useThemeColor("success");
@@ -46,11 +48,18 @@ export function MetricDisplay({
               style={[
                 styles.metricValue,
                 { color: getMetricColor(attendance) },
+                rtlStyles.textDirection,
               ]}
             >
               {attendance}%
             </ThemedText>
-            <ThemedText style={[styles.metricLabel, { color: textSecondary }]}>
+            <ThemedText
+              style={[
+                styles.metricLabel,
+                { color: textSecondary },
+                rtlStyles.textDirection,
+              ]}
+            >
               Attendance
             </ThemedText>
           </ThemedView>
@@ -70,11 +79,18 @@ export function MetricDisplay({
               style={[
                 styles.metricValue,
                 { color: getMetricColor(recitingRate) },
+                rtlStyles.textDirection,
               ]}
             >
               {recitingRate}%
             </ThemedText>
-            <ThemedText style={[styles.metricLabel, { color: textSecondary }]}>
+            <ThemedText
+              style={[
+                styles.metricLabel,
+                { color: textSecondary },
+                rtlStyles.textDirection,
+              ]}
+            >
               Reciting Rate
             </ThemedText>
           </ThemedView>
@@ -86,10 +102,22 @@ export function MetricDisplay({
             <Ionicons name="trophy" size={normalize(24)} color={accentOrange} />
           </ThemedView>
           <ThemedView style={styles.metricContent}>
-            <ThemedText style={[styles.metricValue, { color: accentOrange }]}>
+            <ThemedText
+              style={[
+                styles.metricValue,
+                { color: accentOrange },
+                rtlStyles.textDirection,
+              ]}
+            >
               {trophies}
             </ThemedText>
-            <ThemedText style={[styles.metricLabel, { color: textSecondary }]}>
+            <ThemedText
+              style={[
+                styles.metricLabel,
+                { color: textSecondary },
+                rtlStyles.textDirection,
+              ]}
+            >
               Trophies
             </ThemedText>
           </ThemedView>
