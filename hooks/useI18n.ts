@@ -8,6 +8,12 @@ import en from "../constants/i18n/locales/en.json";
 
 const LANGUAGE_KEY = "@quran_school_language";
 
+// --- i18n Initialization Promise for App Readiness ---
+let i18nInitResolve: (() => void) | null = null;
+export const i18nInitPromise: Promise<void> = new Promise((resolve) => {
+  i18nInitResolve = resolve;
+});
+
 // Function to get stored language
 const getStoredLanguage = async (): Promise<string | null> => {
   try {
@@ -85,6 +91,7 @@ const initializeI18n = async () => {
       await storeLanguage(lng);
     });
 
+    if (i18nInitResolve) i18nInitResolve();
     console.log("i18n initialization completed successfully");
   } catch (error) {
     console.error("Error initializing i18n:", error);
@@ -102,12 +109,14 @@ const initializeI18n = async () => {
           useSuspense: false,
         },
       });
+      if (i18nInitResolve) i18nInitResolve();
       console.log("i18n fallback initialization completed");
     } catch (fallbackError) {
       console.error(
         "Critical error: i18n fallback also failed:",
         fallbackError
       );
+      if (i18nInitResolve) i18nInitResolve();
     }
   }
 };

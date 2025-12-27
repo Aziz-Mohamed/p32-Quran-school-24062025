@@ -3,6 +3,7 @@ import { ThemedView } from "@/components/ThemedView";
 import Card from "@/components/ui/Card";
 import { useRTLStyles } from "@/hooks/useRTLStyles";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { useTranslation } from "@/hooks/useTranslation";
 import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
@@ -19,6 +20,7 @@ export function MetricDisplay({
   recitingRate,
   trophies,
 }: MetricDisplayProps) {
+  const { t } = useTranslation();
   const { rtlStyles } = useRTLStyles();
   const textSecondary = useThemeColor("textSecondary");
   const accentOrange = useThemeColor("accentOrange");
@@ -60,7 +62,7 @@ export function MetricDisplay({
                 rtlStyles.textDirection,
               ]}
             >
-              Attendance
+              {String(t("admin.students.metrics.attendance"))}
             </ThemedText>
           </ThemedView>
         </ThemedView>
@@ -91,7 +93,7 @@ export function MetricDisplay({
                 rtlStyles.textDirection,
               ]}
             >
-              Reciting Rate
+              {String(t("admin.students.metrics.recitingRate"))}
             </ThemedText>
           </ThemedView>
         </ThemedView>
@@ -118,7 +120,7 @@ export function MetricDisplay({
                 rtlStyles.textDirection,
               ]}
             >
-              Trophies
+              {String(t("admin.students.metrics.trophies"))}
             </ThemedText>
           </ThemedView>
         </ThemedView>

@@ -1,51 +1,125 @@
+import { I18nTest } from "@/components/I18nTest";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-// import { useTranslation } from "@/hooks/useTranslation";
-import { useRouter } from "expo-router";
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useRTLStyles } from "@/hooks/useRTLStyles";
+import { useTranslation } from "@/hooks/useTranslation";
+import { normalize } from "@/utils/normalize";
+import { router } from "expo-router";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  I18nManager,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 
-export default function LandingPage() {
-  const router = useRouter();
-  // const { t } = useTranslation();
+export default function HomeScreen() {
+  const { t, i18n } = useTranslation();
+  const { isRTL, rtlStyles } = useRTLStyles();
+
+  const navigationButtons = [
+    {
+      title: t("navigation.student"),
+      route: "/student" as const,
+      icon: "👨‍🎓",
+    },
+    {
+      title: t("navigation.teacher"),
+      route: "/teacher" as const,
+      icon: "👨‍🏫",
+    },
+    {
+      title: t("navigation.parent"),
+      route: "/parent" as const,
+      icon: "👨‍👩‍👧‍👦",
+    },
+    {
+      title: t("navigation.admin"),
+      route: "/admin" as const,
+      icon: "⚙️",
+    },
+  ];
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Quran School</Text>
-      <Text style={styles.subtitle}>Learn and memorize the Holy Quran</Text>
+    <ScrollView style={styles.container}>
+      <ThemedView style={styles.header}>
+        <ThemedText style={[styles.title, rtlStyles.textDirection]}>
+          {String(t("home.title"))}
+        </ThemedText>
+        <ThemedText style={[styles.subtitle, rtlStyles.textDirection]}>
+          {String(t("home.subtitle"))}
+        </ThemedText>
+      </ThemedView>
 
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/admin")}
-        >
-          <Text style={styles.buttonText}>Admin</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/teacher")}
-        >
-          <Text style={styles.buttonText}>Teacher</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/student")}
-        >
-          <Text style={styles.buttonText}>Student</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => router.push("/parent")}
-        >
-          <Text style={styles.buttonText}>Parent</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Navigation Buttons Section */}
+      <ThemedView style={styles.section}>
+        <ThemedText style={[styles.sectionTitle, rtlStyles.textDirection]}>
+          {String(t("home.selectRole"))}
+        </ThemedText>
+        <ThemedView style={styles.navigationGrid}>
+          {navigationButtons.map((button, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.navButton,
+                rtlStyles.marginEnd(index % 2 === 0 ? 12 : 0),
+              ]}
+              onPress={() => router.push(button.route)}
+              activeOpacity={0.7}
+            >
+              <ThemedText style={styles.navIcon}>{button.icon}</ThemedText>
+              <ThemedText
+                style={[styles.navButtonText, rtlStyles.textDirection]}
+              >
+                {String(button.title)}
+              </ThemedText>
+            </TouchableOpacity>
+          ))}
+        </ThemedView>
+      </ThemedView>
 
-      {/* Language Switcher for testing */}
-      <View style={styles.languageSection}>
-        <Text style={styles.languageTitle}>Test Multi-Language & RTL</Text>
+      <ThemedView style={styles.section}>
+        <ThemedText style={[styles.sectionTitle, rtlStyles.textDirection]}>
+          Current Status
+        </ThemedText>
+        <ThemedText style={[styles.text, rtlStyles.textDirection]}>
+          Language: {i18n.language}
+        </ThemedText>
+        <ThemedText style={[styles.text, rtlStyles.textDirection]}>
+          RTL Mode: {isRTL ? "Yes" : "No"}
+        </ThemedText>
+        <ThemedText style={[styles.text, rtlStyles.textDirection]}>
+          I18nManager.isRTL: {I18nManager.isRTL ? "Yes" : "No"}
+        </ThemedText>
+      </ThemedView>
+
+      <ThemedView style={styles.section}>
+        <ThemedText style={[styles.sectionTitle, rtlStyles.textDirection]}>
+          Language Settings
+        </ThemedText>
         <LanguageSwitcher />
-      </View>
-    </View>
+      </ThemedView>
+
+      <ThemedView style={styles.section}>
+        <ThemedText style={[styles.sectionTitle, rtlStyles.textDirection]}>
+          Translation Test
+        </ThemedText>
+        <I18nTest />
+      </ThemedView>
+
+      <ThemedView style={styles.section}>
+        <ThemedText style={[styles.sectionTitle, rtlStyles.textDirection]}>
+          RTL Test Text
+        </ThemedText>
+        <ThemedText style={[styles.rtlTest, rtlStyles.textDirection]}>
+          هذا نص تجريبي للاختبار من اليمين إلى اليسار
+        </ThemedText>
+        <ThemedText style={[styles.rtlTest, rtlStyles.textDirection]}>
+          This is test text from left to right
+        </ThemedText>
+      </ThemedView>
+    </ScrollView>
   );
 }
 
@@ -53,49 +127,70 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#FAFAF7",
+  },
+  header: {
+    padding: normalize(24),
+    paddingTop: normalize(60),
     alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
   },
   title: {
-    fontSize: 32,
+    fontSize: normalize(32),
     fontWeight: "700",
-    marginBottom: 8,
+    marginBottom: normalize(8),
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: normalize(18),
     color: "#666",
-    marginBottom: 48,
     textAlign: "center",
   },
-  buttonGroup: {
-    width: 320,
-    maxWidth: "90%",
-    gap: 24,
-    marginBottom: 48,
+  section: {
+    paddingHorizontal: normalize(24),
+    marginBottom: normalize(24),
   },
-  button: {
-    backgroundColor: "#3A7D5D",
-    borderRadius: 8,
-    paddingVertical: 20,
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  buttonText: {
-    color: "#fff",
+  sectionTitle: {
+    fontSize: normalize(20),
     fontWeight: "600",
-    fontSize: 20,
-  },
-  languageSection: {
-    width: 320,
-    maxWidth: "90%",
-    alignItems: "center",
-  },
-  languageTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 16,
+    marginBottom: normalize(16),
     color: "#333",
+  },
+  navigationGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  navButton: {
+    width: "48%",
+    backgroundColor: "#fff",
+    padding: normalize(20),
+    borderRadius: normalize(16),
+    alignItems: "center",
+    marginBottom: normalize(12),
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: normalize(4) },
+    shadowOpacity: 0.08,
+    shadowRadius: normalize(12),
+    elevation: 2,
+  },
+  navIcon: {
+    fontSize: normalize(32),
+    marginBottom: normalize(8),
+  },
+  navButtonText: {
+    fontSize: normalize(16),
+    fontWeight: "600",
+    color: "#333",
+    textAlign: "center",
+  },
+  text: {
+    fontSize: normalize(16),
+    marginBottom: normalize(8),
+    color: "#333",
+  },
+  rtlTest: {
+    fontSize: normalize(16),
+    marginBottom: normalize(8),
+    color: "#333",
+    fontWeight: "500",
   },
 });

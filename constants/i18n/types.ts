@@ -6,12 +6,17 @@ export interface TranslationKeys {
     subtitle: string;
     getStarted: string;
     explore: string;
+    selectRole: string;
   };
   navigation: {
     home: string;
     explore: string;
     lessons: string;
     profile: string;
+    student: string;
+    teacher: string;
+    parent: string;
+    admin: string;
   };
   common: {
     loading: string;

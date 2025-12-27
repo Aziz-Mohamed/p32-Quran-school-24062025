@@ -18,7 +18,7 @@ export const useRTLStyles = () => {
       flexDirection: (isRTL ? "row" : "row-reverse") as "row" | "row-reverse",
     } as ViewStyle,
 
-    // Margin utilities
+    // Margin utilities using logical properties
     marginStart: (value: number): ViewStyle => ({
       marginLeft: isRTL ? undefined : value,
       marginRight: isRTL ? value : undefined,
@@ -28,7 +28,7 @@ export const useRTLStyles = () => {
       marginRight: isRTL ? undefined : value,
     }),
 
-    // Padding utilities
+    // Padding utilities using logical properties
     paddingStart: (value: number): ViewStyle => ({
       paddingLeft: isRTL ? undefined : value,
       paddingRight: isRTL ? value : undefined,
@@ -38,7 +38,7 @@ export const useRTLStyles = () => {
       paddingRight: isRTL ? undefined : value,
     }),
 
-    // Border utilities
+    // Border utilities using logical properties
     borderStart: (value: number, color: string): ViewStyle => ({
       borderLeftWidth: isRTL ? undefined : value,
       borderLeftColor: isRTL ? undefined : color,
@@ -50,6 +50,49 @@ export const useRTLStyles = () => {
       borderLeftColor: isRTL ? color : undefined,
       borderRightWidth: isRTL ? undefined : value,
       borderRightColor: isRTL ? undefined : color,
+    }),
+
+    // Additional RTL utilities
+    alignStart: {
+      alignItems: (isRTL ? "flex-end" : "flex-start") as
+        | "flex-start"
+        | "flex-end",
+    } as ViewStyle,
+    alignEnd: {
+      alignItems: (isRTL ? "flex-start" : "flex-end") as
+        | "flex-start"
+        | "flex-end",
+    } as ViewStyle,
+    justifyStart: {
+      justifyContent: (isRTL ? "flex-end" : "flex-start") as
+        | "flex-start"
+        | "flex-end",
+    } as ViewStyle,
+    justifyEnd: {
+      justifyContent: (isRTL ? "flex-start" : "flex-end") as
+        | "flex-start"
+        | "flex-end",
+    } as ViewStyle,
+
+    // Text alignment utilities
+    textStart: {
+      textAlign: (isRTL ? "right" : "left") as "left" | "right",
+    } as TextStyle,
+    textEnd: {
+      textAlign: (isRTL ? "left" : "right") as "left" | "right",
+    } as TextStyle,
+    textCenter: {
+      textAlign: "center" as const,
+    } as TextStyle,
+
+    // Position utilities
+    positionStart: (value: number): ViewStyle => ({
+      left: isRTL ? undefined : value,
+      right: isRTL ? value : undefined,
+    }),
+    positionEnd: (value: number): ViewStyle => ({
+      left: isRTL ? value : undefined,
+      right: isRTL ? undefined : value,
     }),
   };
 

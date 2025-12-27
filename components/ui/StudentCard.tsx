@@ -3,6 +3,7 @@ import { ThemedView } from "@/components/ThemedView";
 import Card from "@/components/ui/Card";
 import { useRTLStyles } from "@/hooks/useRTLStyles";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { useTranslation } from "@/hooks/useTranslation";
 import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
@@ -29,6 +30,7 @@ export function StudentCard({
   trophies,
   onPress,
 }: StudentCardProps) {
+  const { t } = useTranslation();
   const { rtlStyles } = useRTLStyles();
   const cardBackground = useThemeColor("card");
   const textSecondary = useThemeColor("textSecondary");
@@ -100,7 +102,7 @@ export function StudentCard({
                 rtlStyles.textDirection,
               ]}
             >
-              Attendance
+              {String(t("admin.students.metrics.attendance"))}
             </ThemedText>
           </ThemedView>
 
@@ -129,7 +131,7 @@ export function StudentCard({
                 rtlStyles.textDirection,
               ]}
             >
-              Reciting Rate
+              {String(t("admin.students.metrics.recitingRate"))}
             </ThemedText>
           </ThemedView>
 
@@ -158,7 +160,7 @@ export function StudentCard({
                 rtlStyles.textDirection,
               ]}
             >
-              Trophies
+              {String(t("admin.students.metrics.trophies"))}
             </ThemedText>
           </ThemedView>
         </ThemedView>
@@ -169,17 +171,17 @@ export function StudentCard({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: normalize(14),
+    marginBlockEnd: normalize(14),
   },
   card: {
     padding: normalize(20),
   },
   header: {
     alignItems: "center",
-    marginBottom: normalize(16),
+    marginBlockEnd: normalize(16),
   },
   avatarContainer: {
-    marginRight: normalize(12),
+    marginInlineEnd: normalize(12),
     width: normalize(48),
     height: normalize(48),
     alignItems: "center",
@@ -197,7 +199,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   name: {
-    marginBottom: normalize(4),
+    marginBlockEnd: normalize(4),
+    fontSize: normalize(16),
+    fontWeight: "600",
   },
   grade: {
     fontSize: normalize(14),
@@ -212,7 +216,7 @@ const styles = StyleSheet.create({
   },
   metricHeader: {
     alignItems: "center",
-    marginBottom: normalize(4),
+    marginBlockEnd: normalize(4),
   },
   metricValue: {
     fontSize: normalize(16),

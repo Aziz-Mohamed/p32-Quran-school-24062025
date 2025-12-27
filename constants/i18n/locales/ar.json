@@ -4,13 +4,18 @@
     "title": "مدرسة القرآن",
     "subtitle": "تعلم وحفظ القرآن الكريم",
     "getStarted": "ابدأ الآن",
-    "explore": "استكشف"
+    "explore": "استكشف",
+    "selectRole": "اختر دورك"
   },
   "navigation": {
     "home": "الرئيسية",
     "explore": "استكشف",
     "lessons": "الدروس",
-    "profile": "الملف الشخصي"
+    "profile": "الملف الشخصي",
+    "student": "طالب",
+    "teacher": "معلم",
+    "parent": "ولي أمر",
+    "admin": "مدير"
   },
   "common": {
     "loading": "جاري التحميل...",

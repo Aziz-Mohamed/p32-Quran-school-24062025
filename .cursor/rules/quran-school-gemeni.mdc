@@ -15,6 +15,8 @@ always focus on the user experience and act like expert in it as it is our prior
 
 always use the [ThemedText.tsx](mdc:components/ThemedText.tsx) and [ThemedView.tsx](mdc:components/ThemedView.tsx) to comply with out dark mode feature
 
+ use always the CSS Logical Properties instead of normal css
+
 ## 🌟 Vision
 A timeless, elegant, and highly usable Quran school app that feels modern, friendly, and deeply accessible—designed to inspire learning and delight users of all agess is on the **minimum features for the simplest, most minimalist, and iconic subtle app experience with a low learning curve.** We commit to following best practices, modularity, and separation of concerns.
 
@@ -128,3 +130,34 @@ A timeless, elegant, and highly usable Quran school app that feels modern, frien
 ---
 
 > **This document is the creative foundation for all new UI components, screens, and layouts in the Quran school app. Every design decision must reinforce clarity, friendliness, spiritual reverence, and timeless elegance, with paramount attention to the seamless experience for both LTR and RTL users.**
+
+
+
+RTL Best Practices Checklist for Expo React Native
+1. Leverage I18nManager for RTL
+Use I18nManager.forceRTL(true/false) to toggle RTL.
+Use I18nManager.isRTL to conditionally apply styles and logic.
+In Expo, set extra.supportsRTL: true in app.json for proper support.
+2. Use Logical Properties for Styling
+Always use:
+paddingStart / paddingEnd (not paddingLeft/paddingRight)
+marginStart / marginEnd
+borderStartWidth / borderEndWidth
+For flex layouts:
+Use flexDirection: I18nManager.isRTL ? 'row-reverse' : 'row' when needed.
+For text:
+Use textAlign: I18nManager.isRTL ? 'right' : 'left'.
+3. Localization Library
+Use a robust library (e.g., i18next, react-i18next, or expo-localization) for translations and language switching.
+Sync language changes with RTL state (when switching to Arabic, also enable RTL).
+4. App Reloads for RTL Changes
+After toggling RTL, force a full app reload for layout changes to take effect.
+Use `react-native-restart` or similar for programmatic restarts.
+5. Platform-Specific Considerations
+Android: Ensure android:supportsRtl="true" in AndroidManifest.xml.
+iOS: Sometimes requires a full restart for RTL changes to apply.
+6. Manual Adjustments for Complex UI/Icons
+For directional icons, use:
+Apply to useI18n.ts
+}
+For custom components, always test in both LTR and RTL.

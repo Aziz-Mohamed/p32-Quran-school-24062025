@@ -4,6 +4,7 @@ import Card from "@/components/ui/Card";
 import { MetricDisplay } from "@/components/ui/MetricDisplay";
 import { useRTLStyles } from "@/hooks/useRTLStyles";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { useTranslation } from "@/hooks/useTranslation";
 import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -52,6 +53,7 @@ const mockStudent = {
 
 export default function AdminStudentsDetail() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { rtlStyles } = useRTLStyles();
   const { id } = useLocalSearchParams();
   const accentOrange = useThemeColor("accentOrange");
@@ -81,7 +83,7 @@ export default function AdminStudentsDetail() {
             type="subtitle"
             style={[styles.headerTitle, rtlStyles.textDirection]}
           >
-            Student Details
+            {String(t("admin.students.studentDetails"))}
           </ThemedText>
           <TouchableOpacity onPress={handleEdit} style={styles.editButton}>
             <Ionicons name="create" size={normalize(20)} color={accentOrange} />
@@ -126,7 +128,8 @@ export default function AdminStudentsDetail() {
                     rtlStyles.textDirection,
                   ]}
                 >
-                  Joined {mockStudent.joinDate}
+                  {String(t("admin.students.fields.joinDate"))}:{" "}
+                  {mockStudent.joinDate}
                 </ThemedText>
               </ThemedView>
             </ThemedView>
@@ -142,16 +145,12 @@ export default function AdminStudentsDetail() {
           {/* Contact Information */}
           <Card style={styles.section}>
             <ThemedView style={[styles.sectionHeader, rtlStyles.row]}>
-              <Ionicons
-                name="people"
-                size={normalize(20)}
-                color={accentOrange}
-              />
+              <Ionicons name="call" size={normalize(20)} color={accentOrange} />
               <ThemedText
                 type="subtitle"
                 style={[styles.sectionTitle, rtlStyles.textDirection]}
               >
-                Contact Information
+                {String(t("admin.students.contactInformation"))}
               </ThemedText>
             </ThemedView>
 
@@ -224,7 +223,7 @@ export default function AdminStudentsDetail() {
               type="subtitle"
               style={[styles.championSub, rtlStyles.textDirection]}
             >
-              Your Trophy Cabinet
+              {String(t("admin.students.trophyCabinet"))}
             </ThemedText>
           </ThemedView>
 
@@ -286,157 +285,71 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    paddingInline: normalize(20),
+    paddingBlock: normalize(16),
     alignItems: "center",
-    paddingHorizontal: normalize(20),
-    paddingTop: normalize(20),
-    paddingBottom: normalize(16),
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E5E5",
   },
   backButton: {
-    width: normalize(40),
-    height: normalize(40),
-    alignItems: "center",
-    justifyContent: "center",
+    padding: normalize(8),
   },
   headerTitle: {
     flex: 1,
     textAlign: "center",
   },
   editButton: {
-    width: normalize(40),
-    height: normalize(40),
-    alignItems: "center",
-    justifyContent: "center",
+    padding: normalize(8),
   },
   scrollView: {
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: normalize(20),
-    paddingBottom: normalize(100),
+    paddingBlock: normalize(20),
   },
   profileCard: {
-    marginBottom: normalize(20),
+    marginInline: normalize(20),
+    marginBlockEnd: normalize(20),
   },
   profileHeader: {
     alignItems: "center",
   },
   avatarContainer: {
-    marginRight: normalize(16),
-    width: normalize(80),
-    height: normalize(80),
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: normalize(40),
-    backgroundColor: "rgba(255, 215, 0, 0.1)",
+    marginInlineEnd: normalize(16),
   },
   avatar: {
     fontSize: normalize(48),
-    lineHeight: normalize(48),
-    textAlign: "center",
-    textAlignVertical: "center",
   },
   profileInfo: {
     flex: 1,
   },
   studentName: {
-    marginBottom: normalize(4),
+    marginBlockEnd: normalize(4),
   },
   studentDetails: {
-    marginBottom: normalize(4),
+    marginBlockEnd: normalize(4),
   },
   joinDate: {
     fontSize: normalize(14),
   },
   section: {
-    marginBottom: normalize(20),
+    marginInline: normalize(20),
+    marginBlockEnd: normalize(20),
   },
   sectionHeader: {
     alignItems: "center",
-    marginBottom: normalize(16),
+    marginBlockEnd: normalize(16),
   },
   sectionTitle: {
-    marginLeft: normalize(12),
+    marginInlineStart: normalize(8),
   },
   contactItem: {
     alignItems: "center",
-    marginBottom: normalize(12),
+    marginBlockEnd: normalize(12),
   },
   contactText: {
-    marginLeft: normalize(8),
+    marginInlineStart: normalize(8),
     flex: 1,
-  },
-  trophyGrid: {
-    gap: normalize(16),
-  },
-  trophyItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: normalize(16),
-    backgroundColor: "rgba(255, 215, 0, 0.08)",
-    borderRadius: normalize(16),
-    borderWidth: 1,
-    borderColor: "rgba(255, 215, 0, 0.2)",
-    shadowColor: "#FFD700",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: normalize(8),
-    elevation: 3,
-  },
-  trophyIconContainer: {
-    position: "relative",
-    marginRight: normalize(16),
-  },
-  trophyIcon: {
-    width: normalize(56),
-    height: normalize(56),
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: normalize(28),
-    backgroundColor: "rgba(255, 215, 0, 0.15)",
-    borderWidth: 2,
-    borderColor: "rgba(255, 215, 0, 0.3)",
-  },
-  trophyEmoji: {
-    fontSize: normalize(28),
-  },
-  trophyBadge: {
-    position: "absolute",
-    top: -normalize(4),
-    right: -normalize(4),
-    backgroundColor: "#FFD700",
-    borderRadius: normalize(10),
-    width: normalize(20),
-    height: normalize(20),
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#FFF",
-  },
-  trophyBadgeText: {
-    fontSize: normalize(10),
-    fontWeight: "700",
-    color: "#333",
-  },
-  trophyContent: {
-    flex: 1,
-  },
-  trophyTitle: {
-    marginBottom: normalize(6),
-    color: "#333",
-    fontSize: normalize(16),
-  },
-  trophyDescription: {
-    marginBottom: normalize(8),
-    color: "#666",
-    lineHeight: normalize(20),
-  },
-  trophyDateContainer: {
-    alignItems: "center",
-  },
-  trophyDate: {
-    fontSize: normalize(12),
-    color: "#999",
-    marginLeft: normalize(4),
   },
   championHeadingContainer: {
     alignItems: "center",
@@ -508,6 +421,14 @@ const styles = StyleSheet.create({
     marginBottom: normalize(8),
     textAlign: "center",
     lineHeight: normalize(20),
+  },
+  trophyDateContainer: {
+    alignItems: "center",
+  },
+  trophyDate: {
+    fontSize: normalize(12),
+    color: "#999",
+    marginLeft: normalize(4),
   },
   shelfBar: {
     height: normalize(12),

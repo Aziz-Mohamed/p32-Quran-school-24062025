@@ -1,184 +1,278 @@
-# 🔄 RTL (Right-to-Left) Layout Support
+# RTL (Right-to-Left) Support Guide
 
-This Quran School app now supports Right-to-Left (RTL) layouts for Arabic language with automatic detection and comprehensive styling utilities.
+This document provides comprehensive guidance for implementing RTL support in the Quran School app.
 
-## 📁 File Structure
+## 🌟 Overview
 
+Our app supports both LTR (Left-to-Right) and RTL (Right-to-Left) layouts to accommodate Arabic and English languages. The RTL system is designed to be sustainable and easy to use throughout the development process.
+
+## 🛠️ Core Components
+
+### 1. RTL Hooks
+
+#### `useRTL()` - Basic RTL Detection
+
+```typescript
+import { useRTL } from "@/hooks/useRTL";
+
+// Automatically detects and applies RTL based on device locale
+useRTL();
 ```
-├── hooks/
-│   ├── useRTL.ts              # RTL initialization and detection
-│   └── useRTLStyles.ts        # RTL-aware styling utilities
-├── components/
-│   ├── LanguageSwitcher.tsx   # RTL-aware language switcher
-│   ├── I18nExample.tsx        # RTL-aware i18n example
-│   └── RTLExample.tsx         # Comprehensive RTL examples
-└── app/
-    └── _layout.tsx            # RTL initialization
-```
 
-## 🚀 Setup
+#### `useRTLStyles()` - RTL Style Utilities
 
-The RTL system is automatically initialized in `app/_layout.tsx` and includes:
-
-- **Automatic RTL detection** based on device locale
-- **Dynamic layout switching** when language changes
-- **Comprehensive styling utilities** for RTL-aware components
-- **Proper text direction** and alignment handling
-
-## 📝 Usage
-
-### Basic RTL Detection
-
-```tsx
+```typescript
 import { useRTLStyles } from "@/hooks/useRTLStyles";
 
-function MyComponent() {
-  const { isRTL, rtlStyles } = useRTLStyles();
-
-  return (
-    <View style={[styles.container, rtlStyles.row]}>
-      <Text style={rtlStyles.textDirection}>{isRTL ? "مرحبا" : "Hello"}</Text>
-    </View>
-  );
-}
+const { isRTL, rtlStyles } = useRTLStyles();
 ```
 
-### RTL-Aware Styling
+### 2. Available RTL Style Utilities
 
-```tsx
-import { useRTLStyles } from "@/hooks/useRTLStyles";
+#### Text Direction
 
-function RTLComponent() {
+```typescript
+// Apply RTL text direction
+<ThemedText style={[styles.text, rtlStyles.textDirection]}>
+  {content}
+</ThemedText>
+
+// Text alignment utilities
+<ThemedText style={[styles.text, rtlStyles.textStart]}>Start aligned</ThemedText>
+<ThemedText style={[styles.text, rtlStyles.textEnd]}>End aligned</ThemedText>
+<ThemedText style={[styles.text, rtlStyles.textCenter]}>Center aligned</ThemedText>
+```
+
+#### Layout Direction
+
+```typescript
+// Row direction (reverses in RTL)
+<ThemedView style={[styles.container, rtlStyles.row]}>
+  <Icon />
+  <Text />
+</ThemedView>
+
+// Reverse row direction
+<ThemedView style={[styles.container, rtlStyles.rowReverse]}>
+  <Icon />
+  <Text />
+</ThemedView>
+```
+
+#### Spacing (Logical Properties)
+
+```typescript
+// Margin utilities
+<View style={[styles.item, rtlStyles.marginStart(16)]}>Item with start margin</View>
+<View style={[styles.item, rtlStyles.marginEnd(16)]}>Item with end margin</View>
+
+// Padding utilities
+<View style={[styles.container, rtlStyles.paddingStart(20)]}>Container with start padding</View>
+<View style={[styles.container, rtlStyles.paddingEnd(20)]}>Container with end padding</View>
+```
+
+#### Alignment
+
+```typescript
+// Alignment utilities
+<View style={[styles.container, rtlStyles.alignStart]}>Start aligned content</View>
+<View style={[styles.container, rtlStyles.alignEnd]}>End aligned content</View>
+<View style={[styles.container, rtlStyles.justifyStart]}>Start justified content</View>
+<View style={[styles.container, rtlStyles.justifyEnd]}>End justified content</View>
+```
+
+#### Borders
+
+```typescript
+// Border utilities
+<View style={[styles.card, rtlStyles.borderStart(1, "#ccc")]}>Card with start border</View>
+<View style={[styles.card, rtlStyles.borderEnd(1, "#ccc")]}>Card with end border</View>
+```
+
+#### Positioning
+
+```typescript
+// Position utilities
+<View style={[styles.absolute, rtlStyles.positionStart(16)]}>Positioned at start</View>
+<View style={[styles.absolute, rtlStyles.positionEnd(16)]}>Positioned at end</View>
+```
+
+## 🎨 Design System Integration
+
+### Colors
+
+Always use the Colors system for consistency:
+
+```typescript
+import { Colors } from "@/constants/Colors";
+
+// Use theme-aware colors
+backgroundColor: Colors.light.card, // or Colors.dark.card
+color: Colors.light.textPrimary, // or Colors.dark.textPrimary
+```
+
+### Typography
+
+Use the normalize utility for consistent sizing:
+
+```typescript
+import { normalize } from "@/utils/normalize";
+
+fontSize: normalize(16),
+padding: normalize(20),
+```
+
+### Components
+
+Use themed components for consistency:
+
+```typescript
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+```
+
+## 📱 Implementation Examples
+
+### 1. Navigation Buttons
+
+```typescript
+const NavigationButton = ({ icon, title, onPress }) => {
   const { rtlStyles } = useRTLStyles();
 
   return (
-    <View
-      style={[
-        styles.container,
-        rtlStyles.marginStart(16), // marginLeft in LTR, marginRight in RTL
-        rtlStyles.paddingEnd(20), // paddingRight in LTR, paddingLeft in RTL
-        rtlStyles.borderStart(2, "#007AFF"), // borderLeft in LTR, borderRight in RTL
-      ]}
-    >
-      <Text style={rtlStyles.textDirection}>
-        Content with proper RTL support
-      </Text>
-    </View>
+    <TouchableOpacity style={[styles.button, rtlStyles.row]} onPress={onPress}>
+      <ThemedText style={styles.icon}>{icon}</ThemedText>
+      <ThemedText style={[styles.title, rtlStyles.textDirection]}>
+        {title}
+      </ThemedText>
+    </TouchableOpacity>
   );
-}
+};
 ```
 
-## 🎨 Available RTL Utilities
+### 2. Card Layout
 
-### Text Direction
+```typescript
+const Card = ({ image, title, subtitle }) => {
+  const { rtlStyles } = useRTLStyles();
 
-- `rtlStyles.textDirection` - Sets proper `writingDirection` and `textAlign`
-
-### Flex Direction
-
-- `rtlStyles.row` - `flexDirection: 'row'` in LTR, `'row-reverse'` in RTL
-- `rtlStyles.rowReverse` - `flexDirection: 'row-reverse'` in LTR, `'row'` in RTL
-
-### Margins
-
-- `rtlStyles.marginStart(value)` - `marginLeft` in LTR, `marginRight` in RTL
-- `rtlStyles.marginEnd(value)` - `marginRight` in LTR, `marginLeft` in RTL
-
-### Padding
-
-- `rtlStyles.paddingStart(value)` - `paddingLeft` in LTR, `paddingRight` in RTL
-- `rtlStyles.paddingEnd(value)` - `paddingRight` in LTR, `paddingLeft` in RTL
-
-### Borders
-
-- `rtlStyles.borderStart(width, color)` - `borderLeft` in LTR, `borderRight` in RTL
-- `rtlStyles.borderEnd(width, color)` - `borderRight` in LTR, `borderLeft` in RTL
-
-## 🔧 Best Practices
-
-### 1. Use RTL-Aware Utilities
-
-Instead of hardcoded `marginLeft`/`marginRight`:
-
-```tsx
-// ❌ Avoid
-<View style={{ marginLeft: 16 }}>
-
-// ✅ Use
-<View style={rtlStyles.marginStart(16)}>
+  return (
+    <ThemedView style={styles.card}>
+      <ThemedView style={[styles.content, rtlStyles.row]}>
+        <Image source={image} style={styles.image} />
+        <ThemedView style={styles.textContainer}>
+          <ThemedText style={[styles.title, rtlStyles.textDirection]}>
+            {title}
+          </ThemedText>
+          <ThemedText style={[styles.subtitle, rtlStyles.textDirection]}>
+            {subtitle}
+          </ThemedText>
+        </ThemedView>
+      </ThemedView>
+    </ThemedView>
+  );
+};
 ```
 
-### 2. Use Flex Direction for Layouts
+### 3. Form Fields
 
-Instead of manual positioning:
+```typescript
+const FormField = ({ label, value, onChangeText }) => {
+  const { rtlStyles } = useRTLStyles();
 
-```tsx
-// ❌ Avoid
-<View style={{ flexDirection: 'row' }}>
-
-// ✅ Use
-<View style={rtlStyles.row}>
+  return (
+    <ThemedView style={styles.fieldContainer}>
+      <ThemedText style={[styles.label, rtlStyles.textDirection]}>
+        {label}
+      </ThemedText>
+      <TextInput
+        style={[styles.input, rtlStyles.textDirection]}
+        value={value}
+        onChangeText={onChangeText}
+        textAlign={rtlStyles.textDirection.textAlign}
+      />
+    </ThemedView>
+  );
+};
 ```
 
-### 3. Proper Text Direction
+## 🔄 Language Switching
 
-Always set text direction for mixed content:
+The language switching system automatically handles RTL changes:
 
-```tsx
-// ✅ Good
-<Text style={rtlStyles.textDirection}>Hello - مرحبا</Text>
+```typescript
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+
+// The component automatically:
+// 1. Changes the language
+// 2. Updates RTL layout
+// 3. Reloads the app to apply changes
+<LanguageSwitcher />;
 ```
 
-### 4. Avoid Hardcoded Directions
+## 🧪 Testing RTL
 
-```tsx
-// ❌ Avoid
-<View style={{ alignItems: 'flex-start' }}>
+### Development Testing
 
-// ✅ Use
-<View style={{ alignItems: isRTL ? 'flex-end' : 'flex-start' }}>
-```
+1. Use the language switcher to test RTL layout
+2. Check text alignment and flow
+3. Verify icon positions and navigation
+4. Test form inputs and buttons
 
-## 🎯 Features
+### Common Issues to Check
 
-- ✅ **Automatic RTL detection** based on device locale
-- ✅ **Dynamic layout switching** when language changes
-- ✅ **Comprehensive styling utilities** for all common patterns
-- ✅ **Type-safe RTL styles** with proper TypeScript support
-- ✅ **Performance optimized** with minimal re-renders
-- ✅ **Easy to extend** for additional RTL patterns
+- Text alignment (should be right-aligned in Arabic)
+- Icon positions (should mirror in RTL)
+- Navigation flow (should flow right-to-left)
+- Margins and padding (should use logical properties)
+- Button order in horizontal groups
 
-## 🧪 Testing
+## 📋 Best Practices
 
-To test the RTL functionality:
+### ✅ Do's
 
-1. Run the app: `npm start`
-2. Navigate to the "Explore" tab
-3. Find the "🔄 RTL Layout Support" section
-4. Switch to Arabic language using the language switcher
-5. Observe how layouts automatically adjust for RTL
-6. Test various RTL examples in the demo section
+- Always use `rtlStyles` utilities for layout
+- Use logical properties (start/end instead of left/right)
+- Test both LTR and RTL layouts
+- Use themed components for consistency
+- Apply `textDirection` to all text elements
 
-### Testing Checklist:
+### ❌ Don'ts
 
-- [ ] Text alignment changes from left to right
-- [ ] Icons and text reverse order in rows
-- [ ] Margins and padding adjust correctly
-- [ ] Borders appear on correct sides
-- [ ] Mixed content (LTR + RTL) displays properly
+- Don't use hardcoded `left`/`right` properties
+- Don't assume text alignment
+- Don't forget to test RTL layout
+- Don't use absolute positioning without RTL consideration
 
-## 🔄 How It Works
+## 🔧 Troubleshooting
 
-1. **Detection**: `useRTL.ts` detects if the device locale starts with 'ar'
-2. **Initialization**: `I18nManager.forceRTL()` is called if needed
-3. **Reload**: App reloads to apply RTL changes
-4. **Styling**: `useRTLStyles.ts` provides utilities that adapt to RTL state
-5. **Components**: All components use RTL-aware styling automatically
+### RTL Not Working
 
-## 📱 Platform Support
+1. Check if `I18nManager.isRTL` is set correctly
+2. Verify language is set to Arabic
+3. Ensure app was reloaded after language change
+4. Check console for RTL initialization logs
 
-- ✅ **iOS** - Full RTL support with native layout engine
-- ✅ **Android** - Full RTL support with native layout engine
-- ✅ **Web** - Full RTL support with CSS direction properties
+### Layout Issues
 
-The RTL system works seamlessly across all platforms and automatically adapts to the user's language preferences.
+1. Verify all text elements have `rtlStyles.textDirection`
+2. Check that containers use appropriate RTL utilities
+3. Ensure margins/padding use logical properties
+4. Test with different content lengths
+
+### Performance
+
+1. RTL utilities are optimized for performance
+2. Avoid creating new style objects in render
+3. Use style arrays efficiently
+4. Cache RTL styles when possible
+
+## 📚 Additional Resources
+
+- [React Native RTL Documentation](https://reactnative.dev/docs/0.71/right-to-left)
+- [CSS Logical Properties](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Logical_Properties)
+- [RTL Design Patterns](https://material.io/design/usability/bidirectionality.html)
+
+---
+
+**Remember**: RTL support is not just about text direction - it's about creating a complete mirrored experience that feels natural to Arabic-speaking users. Always test your implementations in both LTR and RTL modes.

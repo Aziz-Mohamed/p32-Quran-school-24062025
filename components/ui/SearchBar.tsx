@@ -1,4 +1,5 @@
 import { ThemedView } from "@/components/ThemedView";
+import { useRTLStyles } from "@/hooks/useRTLStyles";
 import { useThemeColor } from "@/hooks/useThemeColor";
 import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,6 +17,7 @@ export function SearchBar({
   onChangeText,
   placeholder = "Search...",
 }: SearchBarProps) {
+  const { rtlStyles } = useRTLStyles();
   const surface = useThemeColor("surface");
   const textPrimary = useThemeColor("textPrimary");
   const textSecondary = useThemeColor("textSecondary");
@@ -26,10 +28,10 @@ export function SearchBar({
         name="search"
         size={normalize(20)}
         color={textSecondary}
-        style={styles.icon}
+        style={[styles.icon, rtlStyles.marginEnd(normalize(12))]}
       />
       <TextInput
-        style={[styles.input, { color: textPrimary }]}
+        style={[styles.input, { color: textPrimary }, rtlStyles.textDirection]}
         placeholder={placeholder}
         placeholderTextColor={textSecondary}
         value={value}
@@ -44,12 +46,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderRadius: normalize(12),
-    paddingHorizontal: normalize(16),
-    paddingVertical: normalize(12),
-    marginBottom: normalize(20),
+    paddingInline: normalize(16),
+    paddingBlock: normalize(12),
+    marginBlockEnd: normalize(20),
   },
   icon: {
-    marginRight: normalize(12),
+    // margin will be handled by rtlStyles
   },
   input: {
     flex: 1,

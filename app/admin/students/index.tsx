@@ -4,6 +4,7 @@ import { SearchBar } from "@/components/ui/SearchBar";
 import { StudentCard } from "@/components/ui/StudentCard";
 import { useRTLStyles } from "@/hooks/useRTLStyles";
 import { useThemeColor } from "@/hooks/useThemeColor";
+import { useTranslation } from "@/hooks/useTranslation";
 import { normalize } from "@/utils/normalize";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -62,6 +63,7 @@ const mockStudents = [
 
 export default function AdminStudentsIndex() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { rtlStyles } = useRTLStyles();
   const [searchQuery, setSearchQuery] = useState("");
   const accentOrange = useThemeColor("accentOrange");
@@ -93,13 +95,13 @@ export default function AdminStudentsIndex() {
               type="title"
               style={[styles.title, rtlStyles.textDirection]}
             >
-              Students
+              {String(t("admin.students.title"))}
             </ThemedText>
             <ThemedText
               type="subtitle"
               style={[styles.subtitle, rtlStyles.textDirection]}
             >
-              Manage your students and track their progress
+              {String(t("admin.students.subtitle"))}
             </ThemedText>
           </ThemedView>
 
@@ -107,7 +109,7 @@ export default function AdminStudentsIndex() {
           <SearchBar
             value={searchQuery}
             onChangeText={setSearchQuery}
-            placeholder="Search students..."
+            placeholder={String(t("admin.students.searchPlaceholder"))}
           />
 
           {/* Students List */}
@@ -139,15 +141,17 @@ export default function AdminStudentsIndex() {
                 type="subtitle"
                 style={[styles.emptyTitle, rtlStyles.textDirection]}
               >
-                No students found
+                {searchQuery
+                  ? String(t("common.noResults"))
+                  : String(t("admin.students.noStudentsFound"))}
               </ThemedText>
               <ThemedText
                 type="default"
                 style={[styles.emptySubtitle, rtlStyles.textDirection]}
               >
                 {searchQuery
-                  ? "Try adjusting your search"
-                  : "Add your first student to get started"}
+                  ? String(t("common.tryAdjustingSearch"))
+                  : String(t("admin.students.addFirstStudent"))}
               </ThemedText>
             </ThemedView>
           )}
@@ -155,7 +159,14 @@ export default function AdminStudentsIndex() {
 
         {/* Floating Action Button */}
         <TouchableOpacity
-          style={[styles.fab, { backgroundColor: accentOrange }]}
+          style={[
+            styles.fab,
+            {
+              backgroundColor: accentOrange,
+              ...rtlStyles.marginEnd(normalize(20)),
+              ...rtlStyles.marginStart(normalize(20)),
+            },
+          ]}
           onPress={handleAddStudent}
           activeOpacity={0.8}
         >
@@ -174,31 +185,31 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: normalize(100),
+    paddingBlockEnd: normalize(100),
   },
   header: {
-    paddingHorizontal: normalize(20),
-    paddingTop: normalize(20),
-    paddingBottom: normalize(16),
+    paddingInline: normalize(20),
+    paddingBlockStart: normalize(20),
+    paddingBlockEnd: normalize(16),
   },
   title: {
-    marginBottom: normalize(4),
+    marginBlockEnd: normalize(4),
   },
   subtitle: {
     fontSize: normalize(16),
   },
   studentsContainer: {
-    paddingHorizontal: normalize(20),
-    paddingTop: normalize(16),
+    paddingInline: normalize(20),
+    paddingBlockStart: normalize(16),
   },
   emptyState: {
     alignItems: "center",
-    paddingVertical: normalize(60),
-    paddingHorizontal: normalize(40),
+    paddingBlock: normalize(60),
+    paddingInline: normalize(40),
   },
   emptyTitle: {
-    marginTop: normalize(16),
-    marginBottom: normalize(8),
+    marginBlockStart: normalize(16),
+    marginBlockEnd: normalize(8),
   },
   emptySubtitle: {
     textAlign: "center",
@@ -207,7 +218,7 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     bottom: normalize(100),
-    right: normalize(20),
+    insetInlineEnd: normalize(20),
     width: normalize(56),
     height: normalize(56),
     borderRadius: normalize(28),

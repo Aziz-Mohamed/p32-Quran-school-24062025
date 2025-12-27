@@ -44,24 +44,30 @@ export default function AdminStudentsAdd() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.firstName.trim()) {
-      newErrors.firstName = t("admin.students.validation.firstNameRequired");
+      newErrors.firstName = String(
+        t("admin.students.validation.firstNameRequired")
+      );
     }
 
     if (!formData.lastName.trim()) {
-      newErrors.lastName = t("admin.students.validation.lastNameRequired");
+      newErrors.lastName = String(
+        t("admin.students.validation.lastNameRequired")
+      );
     }
 
     if (!formData.grade.trim()) {
-      newErrors.grade = t("admin.students.validation.gradeRequired");
+      newErrors.grade = String(t("admin.students.validation.gradeRequired"));
     }
 
     if (!formData.parentName.trim()) {
-      newErrors.parentName = t("admin.students.validation.parentNameRequired");
+      newErrors.parentName = String(
+        t("admin.students.validation.parentNameRequired")
+      );
     }
 
     if (!formData.parentPhone.trim()) {
-      newErrors.parentPhone = t(
-        "admin.students.validation.parentPhoneRequired"
+      newErrors.parentPhone = String(
+        t("admin.students.validation.parentPhoneRequired")
       );
     }
 
@@ -69,7 +75,9 @@ export default function AdminStudentsAdd() {
       formData.parentEmail.trim() &&
       !/\S+@\S+\.\S+/.test(formData.parentEmail)
     ) {
-      newErrors.parentEmail = t("admin.students.validation.invalidEmail");
+      newErrors.parentEmail = String(
+        t("admin.students.validation.invalidEmail")
+      );
     }
 
     setErrors(newErrors);
@@ -78,7 +86,7 @@ export default function AdminStudentsAdd() {
 
   const handleSubmit = () => {
     if (validateForm()) {
-      Alert.alert("Success", t("admin.students.studentAddedSuccess"), [
+      Alert.alert("Success", String(t("admin.students.studentAddedSuccess")), [
         {
           text: "OK",
           onPress: () => router.back(),
@@ -114,7 +122,7 @@ export default function AdminStudentsAdd() {
             type="subtitle"
             style={[styles.headerTitle, rtlStyles.textDirection]}
           >
-            {t("admin.students.addNewStudent")}
+            {String(t("admin.students.addNewStudent"))}
           </ThemedText>
           <ThemedView style={styles.placeholder} />
         </ThemedView>
@@ -136,7 +144,7 @@ export default function AdminStudentsAdd() {
                 type="subtitle"
                 style={[styles.sectionTitle, rtlStyles.textDirection]}
               >
-                {t("admin.students.studentInformation")}
+                {String(t("admin.students.studentInformation"))}
               </ThemedText>
             </ThemedView>
 
@@ -155,7 +163,7 @@ export default function AdminStudentsAdd() {
                     rtlStyles.textDirection,
                   ]}
                 >
-                  {t("admin.students.fields.firstName")} *
+                  {String(t("admin.students.fields.firstName"))} *
                 </ThemedText>
                 <TextInput
                   style={[
@@ -167,7 +175,9 @@ export default function AdminStudentsAdd() {
                     },
                     rtlStyles.textDirection,
                   ]}
-                  placeholder={t("admin.students.placeholders.firstName")}
+                  placeholder={String(
+                    t("admin.students.placeholders.firstName")
+                  )}
                   placeholderTextColor={textSecondary}
                   value={formData.firstName}
                   onChangeText={(value) =>
@@ -202,7 +212,7 @@ export default function AdminStudentsAdd() {
                     rtlStyles.textDirection,
                   ]}
                 >
-                  {t("admin.students.fields.lastName")} *
+                  {String(t("admin.students.fields.lastName"))} *
                 </ThemedText>
                 <TextInput
                   style={[
@@ -214,7 +224,9 @@ export default function AdminStudentsAdd() {
                     },
                     rtlStyles.textDirection,
                   ]}
-                  placeholder={t("admin.students.placeholders.lastName")}
+                  placeholder={String(
+                    t("admin.students.placeholders.lastName")
+                  )}
                   placeholderTextColor={textSecondary}
                   value={formData.lastName}
                   onChangeText={(value) => handleInputChange("lastName", value)}
@@ -243,7 +255,7 @@ export default function AdminStudentsAdd() {
                   rtlStyles.textDirection,
                 ]}
               >
-                {t("admin.students.fields.grade")} *
+                {String(t("admin.students.fields.grade"))} *
               </ThemedText>
               <TextInput
                 style={[
@@ -255,7 +267,7 @@ export default function AdminStudentsAdd() {
                   },
                   rtlStyles.textDirection,
                 ]}
-                placeholder={t("admin.students.placeholders.grade")}
+                placeholder={String(t("admin.students.placeholders.grade"))}
                 placeholderTextColor={textSecondary}
                 value={formData.grade}
                 onChangeText={(value) => handleInputChange("grade", value)}
@@ -275,11 +287,11 @@ export default function AdminStudentsAdd() {
             </ThemedView>
           </Card>
 
-          {/* Parent Information Section */}
+          {/* Contact Information Section */}
           <Card style={styles.section}>
             <ThemedView style={[styles.sectionHeader, rtlStyles.row]}>
               <Ionicons
-                name="people"
+                name="call"
                 size={normalize(20)}
                 color={useThemeColor("accentOrange")}
               />
@@ -287,7 +299,7 @@ export default function AdminStudentsAdd() {
                 type="subtitle"
                 style={[styles.sectionTitle, rtlStyles.textDirection]}
               >
-                {t("admin.students.contactInformation")}
+                {String(t("admin.students.contactInformation"))}
               </ThemedText>
             </ThemedView>
 
@@ -300,7 +312,7 @@ export default function AdminStudentsAdd() {
                   rtlStyles.textDirection,
                 ]}
               >
-                {t("admin.students.fields.parentName")} *
+                {String(t("admin.students.fields.parentName"))} *
               </ThemedText>
               <TextInput
                 style={[
@@ -312,7 +324,9 @@ export default function AdminStudentsAdd() {
                   },
                   rtlStyles.textDirection,
                 ]}
-                placeholder={t("admin.students.placeholders.parentName")}
+                placeholder={String(
+                  t("admin.students.placeholders.parentName")
+                )}
                 placeholderTextColor={textSecondary}
                 value={formData.parentName}
                 onChangeText={(value) => handleInputChange("parentName", value)}
@@ -346,7 +360,7 @@ export default function AdminStudentsAdd() {
                     rtlStyles.textDirection,
                   ]}
                 >
-                  {t("admin.students.fields.parentPhone")} *
+                  {String(t("admin.students.fields.parentPhone"))} *
                 </ThemedText>
                 <TextInput
                   style={[
@@ -358,7 +372,9 @@ export default function AdminStudentsAdd() {
                     },
                     rtlStyles.textDirection,
                   ]}
-                  placeholder={t("admin.students.placeholders.parentPhone")}
+                  placeholder={String(
+                    t("admin.students.placeholders.parentPhone")
+                  )}
                   placeholderTextColor={textSecondary}
                   value={formData.parentPhone}
                   onChangeText={(value) =>
@@ -394,7 +410,7 @@ export default function AdminStudentsAdd() {
                     rtlStyles.textDirection,
                   ]}
                 >
-                  {t("admin.students.fields.parentEmail")}
+                  {String(t("admin.students.fields.parentEmail"))}
                 </ThemedText>
                 <TextInput
                   style={[
@@ -406,7 +422,9 @@ export default function AdminStudentsAdd() {
                     },
                     rtlStyles.textDirection,
                   ]}
-                  placeholder={t("admin.students.placeholders.parentEmail")}
+                  placeholder={String(
+                    t("admin.students.placeholders.parentEmail")
+                  )}
                   placeholderTextColor={textSecondary}
                   value={formData.parentEmail}
                   onChangeText={(value) =>
@@ -439,7 +457,7 @@ export default function AdminStudentsAdd() {
                   rtlStyles.textDirection,
                 ]}
               >
-                {t("admin.students.fields.address")}
+                {String(t("admin.students.fields.address"))}
               </ThemedText>
               <TextInput
                 style={[
@@ -451,7 +469,7 @@ export default function AdminStudentsAdd() {
                   },
                   rtlStyles.textDirection,
                 ]}
-                placeholder={t("admin.students.placeholders.address")}
+                placeholder={String(t("admin.students.placeholders.address"))}
                 placeholderTextColor={textSecondary}
                 value={formData.address}
                 onChangeText={(value) => handleInputChange("address", value)}
@@ -462,11 +480,12 @@ export default function AdminStudentsAdd() {
           </Card>
 
           {/* Submit Button */}
-          <PrimaryButton
-            title={t("common.save")}
-            onPress={handleSubmit}
-            style={styles.submitButton}
-          />
+          <ThemedView style={styles.buttonContainer}>
+            <PrimaryButton
+              title={String(t("common.save"))}
+              onPress={handleSubmit}
+            />
+          </ThemedView>
         </ScrollView>
       </ThemedView>
     </SafeAreaView>
@@ -478,16 +497,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
+    paddingInline: normalize(20),
+    paddingBlock: normalize(16),
     alignItems: "center",
-    paddingHorizontal: normalize(20),
-    paddingTop: normalize(20),
-    paddingBottom: normalize(16),
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E5E5",
   },
   backButton: {
-    width: normalize(40),
-    height: normalize(40),
-    alignItems: "center",
-    justifyContent: "center",
+    padding: normalize(8),
   },
   headerTitle: {
     flex: 1,
@@ -500,44 +517,43 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: normalize(20),
-    paddingBottom: normalize(100),
+    paddingBlock: normalize(20),
   },
   section: {
-    marginBottom: normalize(24),
+    marginInline: normalize(20),
+    marginBlockEnd: normalize(20),
   },
   sectionHeader: {
     alignItems: "center",
-    marginBottom: normalize(20),
+    marginBlockEnd: normalize(16),
   },
   sectionTitle: {
-    marginLeft: normalize(12),
+    marginInlineStart: normalize(8),
   },
   inputRow: {
-    marginBottom: normalize(16),
+    marginBlockEnd: normalize(16),
   },
   inputContainer: {
-    marginBottom: normalize(16),
+    marginBlockEnd: normalize(16),
   },
   inputLabel: {
-    marginBottom: normalize(8),
+    marginBlockEnd: normalize(8),
     fontSize: normalize(14),
+    fontWeight: "500",
   },
   input: {
     borderWidth: 1,
-    borderRadius: normalize(12),
-    paddingHorizontal: normalize(16),
-    paddingVertical: normalize(12),
+    borderRadius: normalize(8),
+    paddingInline: normalize(12),
+    paddingBlock: normalize(12),
     fontSize: normalize(16),
-    fontWeight: "400",
-    fontFamily: "System",
   },
   errorText: {
     fontSize: normalize(12),
-    marginTop: normalize(4),
+    marginBlockStart: normalize(4),
   },
-  submitButton: {
-    marginTop: normalize(16),
-    marginBottom: normalize(32),
+  buttonContainer: {
+    marginInline: normalize(20),
+    marginBlockStart: normalize(20),
   },
 });

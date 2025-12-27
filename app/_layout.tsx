@@ -6,11 +6,13 @@ import {
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { ActivityIndicator, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, I18nManager, Text, View } from "react-native";
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
-import "@/hooks/useI18n"; // Re-enable i18n initialization
+import { i18nInitPromise } from "@/hooks/useI18n";
+import { initializeRTL } from "@/hooks/useRTL";
 
 const LANGUAGE_KEY = "@quran_school_language";
 
@@ -19,12 +21,38 @@ export default function RootLayout() {
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
+  const [i18nReady, setI18nReady] = useState(false);
+  const [rtlInitialized, setRtlInitialized] = useState(false);
 
-  // Temporarily disable complex initialization
-  console.log("RootLayout: Simplified initialization");
+  // Wait for i18n to be ready and initialize RTL
+  useEffect(() => {
+    const initializeApp = async () => {
+      try {
+        // Wait for i18n to be ready
+        await i18nInitPromise;
+        setI18nReady(true);
+        console.log("i18n ready state:", true);
 
-  // Show loading screen while fonts are loading
-  if (!loaded) {
+        // Initialize RTL based on stored language preference
+        const rtlChanged = await initializeRTL();
+        setRtlInitialized(true);
+
+        console.log("Current RTL state:", I18nManager.isRTL);
+        if (rtlChanged) {
+          console.log("RTL was changed during initialization");
+        }
+      } catch (error) {
+        console.error("Error initializing app:", error);
+        setI18nReady(true);
+        setRtlInitialized(true);
+      }
+    };
+
+    initializeApp();
+  }, []);
+
+  // Show loading screen while fonts, i18n, and RTL are loading
+  if (!loaded || !i18nReady || !rtlInitialized) {
     return (
       <View
         style={{
@@ -44,6 +72,28 @@ export default function RootLayout() {
         >
           Loading Quran School...
         </Text>
+        {!i18nReady && (
+          <Text
+            style={{
+              marginTop: 8,
+              fontSize: 14,
+              color: "#999",
+            }}
+          >
+            Initializing translations...
+          </Text>
+        )}
+        {!rtlInitialized && (
+          <Text
+            style={{
+              marginTop: 8,
+              fontSize: 14,
+              color: "#999",
+            }}
+          >
+            Setting up layout...
+          </Text>
+        )}
       </View>
     );
   }

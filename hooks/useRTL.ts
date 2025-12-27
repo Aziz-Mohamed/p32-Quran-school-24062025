@@ -1,6 +1,9 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Localization from "expo-localization";
 import * as Updates from "expo-updates";
 import { I18nManager } from "react-native";
+
+const LANGUAGE_KEY = "@quran_school_language";
 
 export const useRTL = () => {
   const isArabic = Localization.locale.startsWith("ar");
@@ -68,4 +71,38 @@ export const checkAndFixRTL = (currentLanguage: string) => {
   }
 
   return false; // No change needed
+};
+
+// Function to initialize RTL based on stored language preference
+export const initializeRTL = async () => {
+  try {
+    const storedLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
+    if (storedLanguage) {
+      const shouldBeRTL = storedLanguage === "ar";
+      const isCurrentlyRTL = I18nManager.isRTL;
+
+      console.log(
+        `Initializing RTL: stored=${storedLanguage}, shouldBeRTL=${shouldBeRTL}, isCurrentlyRTL=${isCurrentlyRTL}`
+      );
+
+      if (shouldBeRTL !== isCurrentlyRTL) {
+        console.log("RTL mismatch on app start! Fixing...");
+        I18nManager.forceRTL(shouldBeRTL);
+        return true; // Indicates RTL was changed
+      }
+    }
+  } catch (error) {
+    console.error("Error initializing RTL:", error);
+  }
+
+  return false; // No change needed
+};
+
+// Function to get current RTL state
+export const getCurrentRTLState = () => {
+  return {
+    isRTL: I18nManager.isRTL,
+    isArabic: I18nManager.isRTL,
+    direction: I18nManager.isRTL ? "rtl" : "ltr",
+  };
 };
