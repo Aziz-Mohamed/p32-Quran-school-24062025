@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
-import { Link } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/layout';
@@ -8,19 +7,16 @@ import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
-// ─── Not Found Screen ─────────────────────────────────────────────────────────
+// ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
-export default function NotFoundScreen() {
+export default function AdminDashboard() {
   const { t } = useTranslation();
 
   return (
     <Screen scroll={false}>
       <View style={styles.container}>
-        <Text style={styles.title}>404</Text>
-        <Text style={styles.subtitle}>{t('common.notFound')}</Text>
-        <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>{t('common.goHome')}</Text>
-        </Link>
+        <Text style={styles.title}>{t('admin.dashboard.title')}</Text>
+        <Text style={styles.subtitle}>{t('admin.dashboard.subtitle')}</Text>
       </View>
     </Screen>
   );
@@ -36,23 +32,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   title: {
-    ...typography.heading1,
-    fontSize: 72,
-    color: lightTheme.primary,
+    ...typography.textStyles.heading,
+    color: lightTheme.text,
     marginBlockEnd: spacing.sm,
   },
   subtitle: {
-    ...typography.body,
+    ...typography.textStyles.body,
     color: lightTheme.textSecondary,
     textAlign: 'center',
-    marginBlockEnd: spacing.xl,
-  },
-  link: {
-    paddingVertical: spacing.base,
-    paddingHorizontal: spacing.lg,
-  },
-  linkText: {
-    ...typography.label,
-    color: lightTheme.primary,
   },
 });

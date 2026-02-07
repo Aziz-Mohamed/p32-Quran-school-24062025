@@ -1,0 +1,96 @@
+{
+  "common": {
+    "appName": "مدرسة القرآن",
+    "loading": "جارٍ التحميل...",
+    "error": "حدث خطأ ما",
+    "retry": "إعادة المحاولة",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "back": "رجوع",
+    "next": "التالي",
+    "done": "تمّ",
+    "search": "بحث",
+    "noResults": "لا توجد نتائج",
+    "confirm": "تأكيد"
+  },
+  "auth": {
+    "login": "تسجيل الدخول",
+    "register": "إنشاء حساب",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "fullName": "الاسم الكامل",
+    "signIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "resetPassword": "إعادة تعيين كلمة المرور",
+    "orContinueWith": "أو المتابعة بواسطة",
+    "dontHaveAccount": "ليس لديك حساب؟",
+    "alreadyHaveAccount": "لديك حساب بالفعل؟",
+    "selectRole": "اختر دورك"
+  },
+  "roles": {
+    "student": "طالب",
+    "teacher": "معلّم",
+    "parent": "وليّ أمر",
+    "admin": "مدير"
+  },
+  "navigation": {
+    "dashboard": "لوحة التحكّم",
+    "students": "الطلاب",
+    "teachers": "المعلّمون",
+    "classes": "الفصول",
+    "attendance": "الحضور",
+    "sessions": "الحصص",
+    "lessons": "الدروس",
+    "stickers": "الملصقات",
+    "trophies": "الجوائز",
+    "leaderboard": "لوحة المتصدّرين",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "children": "الأبناء"
+  },
+  "dashboard": {
+    "welcome": "مرحبًا، {{name}}",
+    "quickStats": "إحصائيات سريعة",
+    "totalStudents": "إجمالي الطلاب",
+    "totalTeachers": "إجمالي المعلّمين",
+    "totalClasses": "إجمالي الفصول",
+    "attendanceRate": "نسبة الحضور",
+    "quickActions": "إجراءات سريعة",
+    "recentActivity": "النشاط الأخير"
+  },
+  "student": {
+    "myLessons": "دروسي",
+    "myProgress": "تقدّمي",
+    "myStickers": "ملصقاتي",
+    "trophyRoom": "غرفة الجوائز",
+    "currentLevel": "المستوى الحالي",
+    "points": "النقاط",
+    "streak": "سلسلة الإنجاز"
+  },
+  "teacher": {
+    "checkIn": "تسجيل الحضور",
+    "checkOut": "تسجيل الانصراف",
+    "logSession": "تسجيل حصّة",
+    "awardSticker": "منح ملصق",
+    "todayOverview": "نظرة عامّة على اليوم",
+    "needsSupport": "يحتاج دعمًا",
+    "topPerformers": "الأكثر تميّزًا"
+  },
+  "parent": {
+    "myChildren": "أبنائي",
+    "childProgress": "تقدّم الطفل",
+    "classStanding": "الترتيب في الفصل"
+  },
+  "admin": {
+    "addStudent": "إضافة طالب",
+    "addTeacher": "إضافة معلّم",
+    "addClass": "إضافة فصل",
+    "bulkAttendance": "حضور جماعي",
+    "schoolHealth": "صحّة المدرسة"
+  }
+}

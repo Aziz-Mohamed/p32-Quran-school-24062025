@@ -1,0 +1,16 @@
+import React from 'react';
+import { Stack } from 'expo-router';
+
+// ─── Admin Layout ─────────────────────────────────────────────────────────────
+
+export default function AdminLayout() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="students" />
+      <Stack.Screen name="teachers" />
+      <Stack.Screen name="classes" />
+      <Stack.Screen name="attendance" />
+    </Stack>
+  );
+}

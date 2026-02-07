@@ -1,0 +1,96 @@
+{
+  "common": {
+    "appName": "Quran School",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "search": "Search",
+    "noResults": "No results found",
+    "confirm": "Confirm"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "forgotPassword": "Forgot Password?",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "fullName": "Full Name",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "resetPassword": "Reset Password",
+    "orContinueWith": "Or continue with",
+    "dontHaveAccount": "Don't have an account?",
+    "alreadyHaveAccount": "Already have an account?",
+    "selectRole": "Select your role"
+  },
+  "roles": {
+    "student": "Student",
+    "teacher": "Teacher",
+    "parent": "Parent",
+    "admin": "Admin"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "students": "Students",
+    "teachers": "Teachers",
+    "classes": "Classes",
+    "attendance": "Attendance",
+    "sessions": "Sessions",
+    "lessons": "Lessons",
+    "stickers": "Stickers",
+    "trophies": "Trophies",
+    "leaderboard": "Leaderboard",
+    "reports": "Reports",
+    "settings": "Settings",
+    "profile": "Profile",
+    "children": "Children"
+  },
+  "dashboard": {
+    "welcome": "Welcome, {{name}}",
+    "quickStats": "Quick Stats",
+    "totalStudents": "Total Students",
+    "totalTeachers": "Total Teachers",
+    "totalClasses": "Total Classes",
+    "attendanceRate": "Attendance Rate",
+    "quickActions": "Quick Actions",
+    "recentActivity": "Recent Activity"
+  },
+  "student": {
+    "myLessons": "My Lessons",
+    "myProgress": "My Progress",
+    "myStickers": "My Stickers",
+    "trophyRoom": "Trophy Room",
+    "currentLevel": "Current Level",
+    "points": "Points",
+    "streak": "Streak"
+  },
+  "teacher": {
+    "checkIn": "Check In",
+    "checkOut": "Check Out",
+    "logSession": "Log Session",
+    "awardSticker": "Award Sticker",
+    "todayOverview": "Today's Overview",
+    "needsSupport": "Needs Support",
+    "topPerformers": "Top Performers"
+  },
+  "parent": {
+    "myChildren": "My Children",
+    "childProgress": "Child Progress",
+    "classStanding": "Class Standing"
+  },
+  "admin": {
+    "addStudent": "Add Student",
+    "addTeacher": "Add Teacher",
+    "addClass": "Add Class",
+    "bulkAttendance": "Bulk Attendance",
+    "schoolHealth": "School Health"
+  }
+}
