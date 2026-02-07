@@ -132,12 +132,12 @@ const styles = StyleSheet.create({
     paddingBlockStart: spacing.xl * 2,
   },
   title: {
-    ...typography.heading1,
+    ...typography.textStyles.heading,
     color: lightTheme.text,
     marginBlockEnd: spacing.xs,
   },
   subtitle: {
-    ...typography.body,
+    ...typography.textStyles.body,
     color: lightTheme.textSecondary,
     marginBlockEnd: spacing.xl,
   },
@@ -152,14 +152,14 @@ const styles = StyleSheet.create({
     marginBlockEnd: spacing.base,
   },
   errorText: {
-    ...typography.caption,
+    ...typography.textStyles.caption,
     color: lightTheme.error,
   },
   forgotLink: {
     alignSelf: 'flex-end',
   },
   forgotText: {
-    ...typography.caption,
+    ...typography.textStyles.caption,
     color: lightTheme.primary,
   },
   button: {
@@ -173,11 +173,11 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   footerText: {
-    ...typography.body,
+    ...typography.textStyles.body,
     color: lightTheme.textSecondary,
   },
   signupLink: {
-    ...typography.label,
+    ...typography.textStyles.label,
     color: lightTheme.primary,
   },
 });

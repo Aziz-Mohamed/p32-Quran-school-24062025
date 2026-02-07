@@ -201,12 +201,12 @@ const styles = StyleSheet.create({
     paddingBlockStart: spacing.xl * 2,
   },
   title: {
-    ...typography.heading1,
+    ...typography.textStyles.heading,
     color: lightTheme.text,
     marginBlockEnd: spacing.xs,
   },
   subtitle: {
-    ...typography.body,
+    ...typography.textStyles.body,
     color: lightTheme.textSecondary,
     marginBlockEnd: spacing.xl,
   },
@@ -221,14 +221,14 @@ const styles = StyleSheet.create({
     marginBlockEnd: spacing.base,
   },
   errorText: {
-    ...typography.caption,
+    ...typography.textStyles.caption,
     color: lightTheme.error,
   },
   roleSection: {
     gap: spacing.sm,
   },
   roleLabel: {
-    ...typography.label,
+    ...typography.textStyles.label,
     color: lightTheme.text,
   },
   roleButtons: {
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
     borderColor: lightTheme.primary,
   },
   roleButtonText: {
-    ...typography.caption,
+    ...typography.textStyles.caption,
     color: lightTheme.text,
   },
   roleButtonTextActive: {
@@ -267,11 +267,11 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   footerText: {
-    ...typography.body,
+    ...typography.textStyles.body,
     color: lightTheme.textSecondary,
   },
   loginLink: {
-    ...typography.label,
+    ...typography.textStyles.label,
     color: lightTheme.primary,
   },
 });

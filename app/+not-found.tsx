@@ -36,13 +36,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   title: {
-    ...typography.heading1,
+    ...typography.textStyles.heading,
     fontSize: 72,
     color: lightTheme.primary,
     marginBlockEnd: spacing.sm,
   },
   subtitle: {
-    ...typography.body,
+    ...typography.textStyles.body,
     color: lightTheme.textSecondary,
     textAlign: 'center',
     marginBlockEnd: spacing.xl,
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   linkText: {
-    ...typography.label,
+    ...typography.textStyles.label,
     color: lightTheme.primary,
   },
 });
