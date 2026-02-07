@@ -10,6 +10,7 @@
 |-- .gitignore
 |-- DARK_MODE_README.md
 |-- I18N_README.md
+|-- PRD.md
 |-- README.md
 |-- RTL_README.md
 |-- app
