@@ -1,11 +1,12 @@
 # Product Requirements Document (PRD)
 ## Quran School — Expo React Native
 
-**Version:** 5.0.0  
+**Version:** 6.0.0  
 **Last Updated:** February 2026  
 **Platform:** Expo (React Native) with Expo Router  
 **Backend:** Supabase  
 **Status:** Pre-Development  
+**Multi-Tenant:** Yes — school_id on all tables from day 1  
 
 ---
 
@@ -116,7 +117,7 @@ Goal: The app should feel **alive and responsive**, not **animated and heavy**.
 
 This architecture follows **Expo and React conventions**:
 
-- **File-based routing** via Expo Router (replaces GoRouter)
+- **File-based routing** via Expo Router v6 (replaces GoRouter)
 - **Feature colocation** — each feature keeps its hooks, components, types, and services together
 - **React Query (TanStack Query)** for server state (replaces Bloc for data fetching)
 - **Zustand** for lightweight client state (replaces Bloc for UI state)
@@ -562,13 +563,13 @@ quran-school/
 
 | Category | Library | Purpose |
 |----------|---------|---------|
-| **Framework** | `expo` ~52 | Managed workflow |
-| **Routing** | `expo-router` v4 | File-based navigation |
+| **Framework** | `expo` ~54 | Managed workflow |
+| **Routing** | `expo-router` v6 | File-based navigation |
 | **Server State** | `@tanstack/react-query` | Data fetching, caching, sync |
 | **Client State** | `zustand` | Auth, theme, locale stores |
 | **Backend** | `@supabase/supabase-js` | Auth, DB, Storage, Realtime |
 | **Forms** | `react-hook-form` + `zod` | Form state + validation |
-| **Animations** | `react-native-reanimated` | Smooth layout transitions |
+| **Animations** | `react-native-reanimated` v4 | Smooth layout transitions |
 | **i18n** | `i18next` + `react-i18next` + `expo-localization` | Localization |
 | **Storage** | `expo-secure-store` | Secure token storage |
 | **Async Storage** | `@react-native-async-storage/async-storage` | Preferences, cache |
@@ -679,9 +680,25 @@ const switchLanguage = async (lang: 'en' | 'ar') => {
 ### 7.2 Database Schema (Core Tables)
 
 ```sql
+-- Schools (multi-tenant root entity)
+schools (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  owner_id UUID REFERENCES auth.users(id),
+  address TEXT,
+  phone TEXT,
+  logo_url TEXT,
+  settings JSONB DEFAULT '{}',
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+)
+
 -- Profiles (extends Supabase auth.users)
 profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id),
+  school_id UUID NOT NULL REFERENCES schools(id),
   role TEXT NOT NULL CHECK (role IN ('student', 'teacher', 'parent', 'admin')),
   full_name TEXT NOT NULL,
   avatar_url TEXT,
@@ -694,6 +711,7 @@ profiles (
 -- Classes
 classes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id),
   name TEXT NOT NULL,
   description TEXT,
   teacher_id UUID REFERENCES profiles(id),
@@ -706,6 +724,7 @@ classes (
 -- Students (extended profile)
 students (
   id UUID PRIMARY KEY REFERENCES profiles(id),
+  school_id UUID NOT NULL REFERENCES schools(id),
   class_id UUID REFERENCES classes(id),
   parent_id UUID REFERENCES profiles(id),
   date_of_birth DATE,
@@ -720,6 +739,7 @@ students (
 -- Lessons
 lessons (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id),
   class_id UUID REFERENCES classes(id),
   title TEXT NOT NULL,
   description TEXT,
@@ -745,6 +765,7 @@ lesson_progress (
 -- Sessions (teacher evaluations)
 sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id),
   student_id UUID REFERENCES students(id),
   teacher_id UUID REFERENCES profiles(id),
   class_id UUID REFERENCES classes(id),
@@ -762,6 +783,7 @@ sessions (
 -- Homework
 homework (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id),
   session_id UUID REFERENCES sessions(id),
   student_id UUID REFERENCES students(id),
   description TEXT NOT NULL,
@@ -774,6 +796,7 @@ homework (
 -- Attendance
 attendance (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id),
   student_id UUID REFERENCES students(id),
   class_id UUID REFERENCES classes(id),
   date DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -786,6 +809,7 @@ attendance (
 -- Stickers
 stickers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id),
   name TEXT NOT NULL,
   description TEXT,
   image_url TEXT NOT NULL,
@@ -846,6 +870,7 @@ student_achievements (
 -- Teacher Check-ins
 teacher_checkins (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id),
   teacher_id UUID REFERENCES profiles(id),
   class_id UUID REFERENCES classes(id),
   checked_in_at TIMESTAMPTZ DEFAULT now(),
@@ -856,17 +881,32 @@ teacher_checkins (
 
 ### 7.3 Row Level Security (RLS)
 
-Every table **must** have RLS enabled. Key policies:
+Every table **must** have RLS enabled. **All policies are school-scoped** — users can only access data within their own school.
+
+#### Multi-Tenant RLS Helper
+
+```sql
+-- Helper function: get current user's school_id from their profile
+CREATE OR REPLACE FUNCTION get_user_school_id()
+RETURNS UUID AS $$
+  SELECT school_id FROM profiles WHERE id = auth.uid()
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+```
+
+Every policy includes: `... AND school_id = get_user_school_id()`
+
+#### Role-Based Policies
 
 | Table | Student | Teacher | Parent | Admin |
 |-------|---------|---------|--------|-------|
-| `profiles` | Own only | Own + class students | Own + children | All |
-| `students` | Own data | Class students | Own children | All (CRUD) |
-| `lessons` | Read class lessons | Read/write class lessons | Read children's class | All |
-| `sessions` | Read own | Read/write class | Read children's | All |
-| `attendance` | Read own | Read/write class | Read children's | All (CRUD) |
-| `student_stickers` | Read own | Read/write (award) | Read children's | All |
-| `homework` | Read own | Read/write | Read children's | All |
+| `schools` | Read own school | Read own school | Read own school | Read/update own school |
+| `profiles` | Own only | Own + class students | Own + children | All (school) |
+| `students` | Own data | Class students | Own children | All CRUD (school) |
+| `lessons` | Read class lessons | Read/write class lessons | Read children's class | All (school) |
+| `sessions` | Read own | Read/write class | Read children's | All (school) |
+| `attendance` | Read own | Read/write class | Read children's | All CRUD (school) |
+| `student_stickers` | Read own | Read/write (award) | Read children's | All (school) |
+| `homework` | Read own | Read/write | Read children's | All (school) |
 
 ### 7.4 Supabase Realtime (Optional — Phase 2)
 
@@ -1420,6 +1460,7 @@ export const sessionsService = {
 - English + Arabic with full RTL/LTR
 - Light mode (dark mode Phase 2)
 - Supabase auth + RLS
+- Multi-tenant: `schools` table, `school_id` on all tables, school-scoped RLS
 - Basic design system
 
 ### Phase 2 — Enhancement
@@ -1444,6 +1485,24 @@ export const sessionsService = {
 
 ---
 
+## 16.1 Out of Scope (MVP)
+
+These features are **explicitly excluded** from Phase 1 to maintain focus:
+
+- Push notifications (Phase 2)
+- Payment / billing system
+- Real-time chat / messaging between roles
+- Web admin panel / Progressive Web App (Phase 3)
+- Offline-first sync (Phase 2)
+- Audio recording for recitation (Phase 3)
+- Dark mode (Phase 2)
+- Additional languages beyond EN/AR (Phase 2 — Urdu, Turkish)
+- Custom sticker creation by admin (Phase 3)
+- Export reports as PDF/CSV (Phase 3)
+- School-to-school leaderboard (Phase 3)
+
+---
+
 ## 17. Recommendations & Suggestions
 
 These are optional additions that could enhance the app. Not required for MVP.
@@ -1460,7 +1519,7 @@ These are optional additions that could enhance the app. Not required for MVP.
 | **Attendance streaks** for parents to see | Engagement | Low | 2 |
 | **QR code check-in** for teachers | Convenience | Medium | 3 |
 | **Recitation audio submission** (student records, teacher reviews async) | Core value | High | 3 |
-| **Multi-school support** (one admin manages multiple locations) | Scale | High | 3 |
+| ~~**Multi-school support**~~ | ~~Scale~~ | ~~High~~ | ~~3~~ — **Moved to Phase 1 Core (multi-tenant)** |
 | **Progressive Web App** (admin panel on web via Expo Web) | Convenience | Medium | 3 |
 
 ### 17.2 UX Suggestions
