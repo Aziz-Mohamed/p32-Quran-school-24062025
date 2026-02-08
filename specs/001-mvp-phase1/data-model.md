@@ -402,7 +402,12 @@ levels (global)
 | `get_user_school_id()` | UUID | Returns `school_id` from current user's profile. Used in all school-scoped RLS policies. SECURITY DEFINER, STABLE. |
 | `get_user_role()` | TEXT | Returns `role` from current user's profile. Used in role-gated RLS policies. SECURITY DEFINER, STABLE. |
 | `handle_updated_at()` | TRIGGER | Sets `updated_at = now()` on row update. Applied to: schools, profiles, students. |
-| `handle_new_profile()` | TRIGGER | Creates a `profiles` row from `auth.users.raw_user_meta_data` on signup. Reads: school_id, role, full_name from metadata. |
+| `handle_new_profile()` | TRIGGER | Creates a `profiles` row from `auth.users.raw_user_meta_data` on signup. Reads: school_id, role, full_name, username from metadata. |
+| `handle_session_points()` | TRIGGER | Awards +10 base session points, +5 bonus for recitation >= 4. Checks "High Scorer" achievement (all scores = 5). Fires AFTER INSERT on `sessions`. |
+| `handle_homework_points()` | TRIGGER | Awards +10 (on time) or +5 (late) homework completion points. Fires AFTER UPDATE on `homework` when `is_completed` changes to true. |
+| `handle_sticker_points()` | TRIGGER | Awards sticker's `points_value` to student. Fires AFTER INSERT on `student_stickers`. |
+| `handle_attendance_points()` | TRIGGER | Updates streak counters (`current_streak`, `longest_streak`), awards +3 for streak extension (2+ days), +20 at every 7th consecutive day. Resets streak on absent/excused. Fires AFTER INSERT on `attendance`. |
+| `check_trophy_achievement_awards()` | TRIGGER | Checks all unearned trophies and achievements against current student stats. Awards any whose JSONB criteria are met. Fires AFTER UPDATE OF `total_points`, `current_streak` on `students`. |
 
 All functions have `SET search_path = public` for security compliance.
 
@@ -459,6 +464,18 @@ BEGIN
         ORDER BY level_number DESC LIMIT 1
       )
   WHERE id = NEW.student_id;
+
+  -- Check "High Scorer" achievement: all 3 scores = 5
+  IF NEW.recitation_quality = 5 AND NEW.tajweed_score = 5 AND NEW.memorization_score = 5 THEN
+    INSERT INTO student_achievements (student_id, achievement_id)
+    SELECT NEW.student_id, a.id FROM achievements a
+    WHERE a.criteria->>'type' = 'perfect_scores'
+      AND a.is_active = true
+      AND NOT EXISTS (
+        SELECT 1 FROM student_achievements sa
+        WHERE sa.student_id = NEW.student_id AND sa.achievement_id = a.id
+      );
+  END IF;
 
   RETURN NEW;
 END;
@@ -530,6 +547,197 @@ SET search_path = public;
 CREATE TRIGGER on_sticker_awarded
   AFTER INSERT ON student_stickers
   FOR EACH ROW EXECUTE FUNCTION handle_sticker_points();
+```
+
+### 4. Attendance + Streak trigger
+
+```sql
+-- Award attendance streak points and update streak counters
+CREATE OR REPLACE FUNCTION handle_attendance_points()
+RETURNS TRIGGER AS $$
+DECLARE
+  prev_streak INTEGER;
+  new_streak INTEGER;
+  earned INTEGER := 0;
+BEGIN
+  -- Only award points for present or late status
+  IF NEW.status NOT IN ('present', 'late') THEN
+    -- Break streak on absent/excused
+    UPDATE students
+    SET current_streak = 0
+    WHERE id = NEW.student_id;
+    RETURN NEW;
+  END IF;
+
+  -- Get current streak before this attendance
+  SELECT current_streak INTO prev_streak
+  FROM students WHERE id = NEW.student_id;
+
+  -- Check if yesterday had a present/late attendance
+  IF EXISTS (
+    SELECT 1 FROM attendance
+    WHERE student_id = NEW.student_id
+      AND date = NEW.date - INTERVAL '1 day'
+      AND status IN ('present', 'late')
+      AND id != NEW.id
+  ) THEN
+    new_streak := prev_streak + 1;
+  ELSE
+    new_streak := 1; -- Start new streak
+  END IF;
+
+  -- Award streak bonus (+3) if streak is 2+ days
+  IF new_streak >= 2 THEN
+    earned := 3;
+  END IF;
+
+  -- Award perfect weekly attendance (+20) at every 7th day
+  IF new_streak > 0 AND new_streak % 7 = 0 THEN
+    earned := earned + 20;
+  END IF;
+
+  -- Update student streak and points
+  UPDATE students
+  SET current_streak = new_streak,
+      longest_streak = GREATEST(longest_streak, new_streak),
+      total_points = total_points + earned,
+      current_level = (
+        SELECT level_number FROM levels
+        WHERE points_required <= (total_points + earned)
+        ORDER BY level_number DESC LIMIT 1
+      )
+  WHERE id = NEW.student_id;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public;
+
+CREATE TRIGGER on_attendance_marked
+  AFTER INSERT ON attendance
+  FOR EACH ROW EXECUTE FUNCTION handle_attendance_points();
+```
+
+### 5. Trophy + Achievement auto-award trigger
+
+```sql
+-- Check and auto-award trophies and achievements after points/streak change
+CREATE OR REPLACE FUNCTION check_trophy_achievement_awards()
+RETURNS TRIGGER AS $$
+DECLARE
+  trophy_rec RECORD;
+  achievement_rec RECORD;
+  student_session_count INTEGER;
+  student_sticker_count INTEGER;
+  student_lesson_count INTEGER;
+  student_homework_count INTEGER;
+BEGIN
+  -- Gather student stats
+  SELECT COUNT(*) INTO student_session_count
+  FROM sessions WHERE student_id = NEW.id;
+
+  SELECT COUNT(*) INTO student_sticker_count
+  FROM student_stickers WHERE student_id = NEW.id;
+
+  SELECT COUNT(*) INTO student_lesson_count
+  FROM lesson_progress WHERE student_id = NEW.id AND status = 'completed';
+
+  SELECT COUNT(*) INTO student_homework_count
+  FROM homework WHERE student_id = NEW.id AND is_completed = true;
+
+  -- Check trophies
+  FOR trophy_rec IN
+    SELECT t.id, t.criteria FROM trophies t
+    WHERE t.is_active = true
+      AND NOT EXISTS (
+        SELECT 1 FROM student_trophies st
+        WHERE st.student_id = NEW.id AND st.trophy_id = t.id
+      )
+  LOOP
+    IF trophy_rec.criteria IS NOT NULL AND (
+      (trophy_rec.criteria->>'type' = 'points'
+        AND NEW.total_points >= (trophy_rec.criteria->>'threshold')::int) OR
+      (trophy_rec.criteria->>'type' = 'sticker_count'
+        AND student_sticker_count >= (trophy_rec.criteria->>'threshold')::int) OR
+      (trophy_rec.criteria->>'type' = 'streak'
+        AND NEW.current_streak >= (trophy_rec.criteria->>'threshold')::int) OR
+      (trophy_rec.criteria->>'type' = 'session_count'
+        AND student_session_count >= (trophy_rec.criteria->>'threshold')::int) OR
+      (trophy_rec.criteria->>'type' = 'lesson_count'
+        AND student_lesson_count >= (trophy_rec.criteria->>'threshold')::int)
+    ) THEN
+      INSERT INTO student_trophies (student_id, trophy_id)
+      VALUES (NEW.id, trophy_rec.id)
+      ON CONFLICT (student_id, trophy_id) DO NOTHING;
+    END IF;
+  END LOOP;
+
+  -- Check achievements (excluding perfect_scores — handled in session trigger)
+  FOR achievement_rec IN
+    SELECT a.id, a.criteria, a.points_reward FROM achievements a
+    WHERE a.is_active = true
+      AND a.criteria->>'type' != 'perfect_scores'
+      AND NOT EXISTS (
+        SELECT 1 FROM student_achievements sa
+        WHERE sa.student_id = NEW.id AND sa.achievement_id = a.id
+      )
+  LOOP
+    IF achievement_rec.criteria IS NOT NULL AND (
+      (achievement_rec.criteria->>'type' = 'streak'
+        AND NEW.current_streak >= (achievement_rec.criteria->>'threshold')::int) OR
+      (achievement_rec.criteria->>'type' = 'homework_count'
+        AND student_homework_count >= (achievement_rec.criteria->>'threshold')::int) OR
+      (achievement_rec.criteria->>'type' = 'points'
+        AND NEW.total_points >= (achievement_rec.criteria->>'threshold')::int)
+    ) THEN
+      INSERT INTO student_achievements (student_id, achievement_id)
+      VALUES (NEW.id, achievement_rec.id)
+      ON CONFLICT (student_id, achievement_id) DO NOTHING;
+
+      -- Award achievement points (updates total_points but does NOT re-trigger
+      -- since this trigger fires on the same UPDATE that is already in progress)
+      IF achievement_rec.points_reward > 0 THEN
+        UPDATE students
+        SET total_points = total_points + achievement_rec.points_reward
+        WHERE id = NEW.id;
+      END IF;
+    END IF;
+  END LOOP;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public;
+
+CREATE TRIGGER on_student_stats_changed
+  AFTER UPDATE OF total_points, current_streak ON students
+  FOR EACH ROW EXECUTE FUNCTION check_trophy_achievement_awards();
+```
+
+### 6. Seed initial trophies and achievements
+
+```sql
+-- Initial trophies (global)
+INSERT INTO trophies (name, description, image_url, criteria) VALUES
+  ('First Steps', 'Earn 50 points', 'trophies/first-steps.png',
+    '{"type": "points", "threshold": 50}'),
+  ('Sticker Collector', 'Earn 10 stickers', 'trophies/sticker-collector.png',
+    '{"type": "sticker_count", "threshold": 10}'),
+  ('Streak Master', 'Achieve a 7-day streak', 'trophies/streak-master.png',
+    '{"type": "streak", "threshold": 7}'),
+  ('Dedicated Learner', 'Complete 10 sessions', 'trophies/dedicated-learner.png',
+    '{"type": "session_count", "threshold": 10}'),
+  ('Hafiz Rising', 'Complete 5 lessons', 'trophies/hafiz-rising.png',
+    '{"type": "lesson_count", "threshold": 5}');
+
+-- Initial achievements (global)
+INSERT INTO achievements (name, description, badge_image_url, criteria, points_reward) VALUES
+  ('Perfect Week', '7 consecutive attendance days', 'achievements/perfect-week.png',
+    '{"type": "streak", "threshold": 7}', 25),
+  ('High Scorer', 'Score 5 in all 3 categories in a single session', 'achievements/high-scorer.png',
+    '{"type": "perfect_scores", "threshold": 1}', 15),
+  ('Homework Hero', 'Complete 10 homework assignments', 'achievements/homework-hero.png',
+    '{"type": "homework_count", "threshold": 10}', 20);
 ```
 
 ---

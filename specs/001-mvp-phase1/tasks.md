@@ -16,13 +16,13 @@
 
 **Purpose**: Database migration, Edge Functions, and foundational backend changes that MUST exist before any client work.
 
-- [ ] T001 [US1] Apply migration `00002_add_username_and_points_triggers` — add `username` column to `profiles`, create unique index `(school_id, username)`, update `handle_new_profile()` to include username, create `handle_session_points()`, `handle_homework_points()`, `handle_sticker_points()` triggers. Apply via Supabase MCP `apply_migration`. SQL defined in `specs/001-mvp-phase1/data-model.md` §Schema Changes Required.
+- [ ] T001 [US1] Apply migration `00002_add_username_and_points_triggers` — add `username` column to `profiles`, create unique index `(school_id, username)`, update `handle_new_profile()` to include username, create `handle_session_points()` (with High Scorer achievement check), `handle_homework_points()`, `handle_sticker_points()`, `handle_attendance_points()` (streak tracking + attendance points), and `check_trophy_achievement_awards()` (auto-award trophies/achievements after student stats change) triggers. Seed initial trophies (5) and achievements (3). Apply via Supabase MCP `apply_migration`. SQL defined in `specs/001-mvp-phase1/data-model.md` §Schema Changes Required.
 - [ ] T002 [US1] Deploy Edge Function `create-school` (EF-001) — public endpoint, creates school + admin auth user + session. Contract in `specs/001-mvp-phase1/contracts/api-contracts.md` §EF-001. Deploy via `supabase/functions/create-school/index.ts`.
 - [ ] T003 [US1] Deploy Edge Function `create-member` (EF-002) — admin-only, creates student/teacher/parent auth user. Contract in §EF-002. Deploy via `supabase/functions/create-member/index.ts`.
 - [ ] T004 [US1] Deploy Edge Function `reset-member-password` (EF-003) — admin-only, resets member password. Contract in §EF-003. Deploy via `supabase/functions/reset-member-password/index.ts`.
 - [ ] T005 Regenerate TypeScript types after migration — run `supabase gen types typescript` and update `src/types/database.types.ts`.
 
-**Checkpoint**: Migration applied, 3 Edge Functions deployed, types regenerated. Backend ready for client work.
+**Checkpoint**: Migration applied (username, 5 trigger functions, trophy/achievement seed data), 3 Edge Functions deployed, types regenerated. Backend ready for client work. Points triggers handle: session (+10/+5), homework (+10/+5), stickers (+value), attendance streaks (+3/+20). Trophy/achievement auto-award fires on student stats change.
 
 ---
 
@@ -373,7 +373,7 @@ Tasks marked `[P]` within the same phase can run in parallel:
 
 | Phase | Story | Tasks | Priority |
 |-------|-------|-------|----------|
-| 1 | Setup | 5 | — |
+| 1 | Setup | 5 (expanded scope) | — |
 | 2 | Foundational | 19 | — |
 | 3 | US1 - Auth & Routing | 13 | P1 |
 | 4 | US2 - Teacher Sessions | 15 | P1 |
@@ -395,5 +395,7 @@ Tasks marked `[P]` within the same phase can run in parallel:
 - Each story checkpoint is independently testable
 - Commit after each task or logical group
 - Stop at any checkpoint to validate story independently
-- Points/levels are handled by DB triggers (T001) — no client-side calculation needed
+- Points/levels/streaks are handled by 5 DB triggers (T001) — no client-side calculation needed
+- Trophy/achievement auto-award is handled by `check_trophy_achievement_awards()` trigger on `students` table (T001)
+- "High Scorer" achievement is checked inside `handle_session_points()` (T001)
 - Edge Functions (T002-T004) use `service_role` key — set via `supabase secrets set`

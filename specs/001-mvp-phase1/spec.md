@@ -14,6 +14,8 @@
 - Q: When are gamification points calculated — synchronously or asynchronously? → A: Synchronous. Points update immediately when the triggering action is saved (session created, homework completed, sticker awarded). No background jobs.
 - Q: What does "weekly" mean on the leaderboard — fixed calendar week or rolling window? → A: Rolling 7-day window. Counts points earned in the last 7 days from the current moment.
 - Q: How are usernames generated when admin creates accounts? → A: System auto-generates from full name: lowercase concatenated name + `_` + 3 random digits (e.g., "Ahmed Ali" → `ahmedali_342`). Admin sees the suggestion and can tap refresh to regenerate digits, or edit before saving. Uniqueness is per-school only (synthetic email uses school slug: `username@school-slug.app`).
+- Q: What defines an "activity day" for streak calculation? → A: A day where the student is marked present or late in attendance. Absent/excused days and days with no attendance record break the streak.
+- Q: When are trophies and achievements auto-awarded? → A: Checked after any student stats update (total_points or current_streak change). A DB trigger on `students` evaluates all unearned trophies/achievements against current state and awards any whose criteria are met.
 
 ## Assumptions
 
@@ -217,7 +219,7 @@ A user can switch between English and Arabic from their profile or settings. Whe
 - **FR-010**: Students MUST be able to view their sticker collection as a grid with total count
 - **FR-011**: Students MUST be able to view a trophy room showing earned trophies and locked trophies with criteria
 - **FR-012**: Students MUST be able to view a class leaderboard (top 10 + own rank) with a toggle between "weekly" (rolling 7-day window of points earned) and "all-time" (total cumulative points)
-- **FR-013**: System MUST track student streaks (current and longest consecutive activity days)
+- **FR-013**: System MUST track student streaks (current and longest consecutive attendance days). An "activity day" is defined as any day where the student is marked present or late in attendance. Absent and excused days break the streak. The streak counter resets to 0 on any gap day (no attendance record or absent/excused). Both `current_streak` and `longest_streak` are maintained on the `students` table
 - **FR-014**: System MUST automatically assign the correct level based on total points and the levels table
 
 **Teacher Experience**
@@ -247,11 +249,11 @@ A user can switch between English and Arabic from their profile or settings. Whe
 
 **Gamification**
 
-- **FR-031**: System MUST award points synchronously (immediately upon save) for: session completion (+10), good recitation score 4-5 (+5), on-time homework (+10), late homework (+5), daily streak (+3/day), perfect weekly attendance (+20). The student's total points and level MUST reflect the update before the save operation completes.
+- **FR-031**: System MUST award points synchronously (immediately upon save) for: session completion (+10), good recitation score 4-5 (+5), on-time homework (+10), late homework (+5), daily streak bonus (+3 when attendance extends an active streak to 2+ consecutive days), perfect weekly attendance (+20 when streak reaches a multiple of 7). The student's total points and level MUST reflect the update before the save operation completes.
 - **FR-032**: System MUST support 10 levels from Beginner (0 pts) to Quran Guardian (3500 pts)
 - **FR-033**: System MUST support school-scoped stickers with name, image, category, and point value
-- **FR-034**: System MUST support global trophies auto-awarded based on milestone criteria (sticker counts, streaks, lesson completion)
-- **FR-035**: System MUST support global achievements with badge images and point rewards
+- **FR-034**: System MUST support global trophies auto-awarded based on milestone criteria. Auto-award is triggered after any student stats update (points, streak). The system checks all unearned trophies against current student state and awards any whose criteria are met. Initial trophy criteria: (1) "First Steps" — earn 50+ total points, (2) "Sticker Collector" — earn 10+ stickers, (3) "Streak Master" — achieve 7+ day streak, (4) "Dedicated Learner" — complete 10+ sessions, (5) "Hafiz Rising" — complete 5+ lessons
+- **FR-035**: System MUST support global achievements with badge images and point rewards. Auto-award is checked alongside trophies after student stats updates. Initial achievement criteria: (1) "Perfect Week" — 7 consecutive attendance days (+25 points), (2) "High Scorer" — score 5 in all 3 categories in a single session (+15 points), (3) "Homework Hero" — complete 10+ homework assignments (+20 points)
 
 **Multi-Tenancy & Security**
 

@@ -116,7 +116,7 @@ src/
 supabase/
 ├── migrations/
 │   ├── 00001_initial_schema.sql        # ✅ Exists (18 tables, RLS, triggers, seed)
-│   └── 00002_add_username_field.sql    # New: add username to profiles
+│   └── 00002_add_username_and_points_triggers.sql  # New: username, points/streak/trophy triggers, seed data
 └── types/
     └── database.types.ts               # ✅ Exists (regenerate after schema changes)
 ```
