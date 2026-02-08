@@ -679,85 +679,115 @@ const switchLanguage = async (lang: 'en' | 'ar') => {
 
 ### 7.2 Database Schema (Core Tables)
 
+> **Design principles applied:**
+> - All FKs have explicit `ON DELETE` behaviors (CASCADE for ownership chains, SET NULL for optional references)
+> - All columns with defaults have explicit `NOT NULL` to prevent accidental nulls
+> - CHECK constraints enforce valid ranges on numeric/text columns
+> - `students.current_level` is an INTEGER FK to `levels(level_number)` for referential integrity
+> - `levels` table stores gamification level definitions (see Section 9.2 for seed data)
+> - `updated_at` triggers auto-fire on schools, profiles, and students
+>
+> **`is_active` pattern:** `is_active` is a **status flag** (archived/inactive), not a soft-delete mechanism. RLS policies intentionally do **not** filter by `is_active` — RLS handles security (school-scoping, role access), while the app layer adds `.eq('is_active', true)` on user-facing queries to filter out inactive records. True data removal uses hard delete with `ON DELETE CASCADE`.
+>
+> | Table | `is_active = false` means |
+> |-------|--------------------------|
+> | `schools` | School deactivated/suspended |
+> | `classes` | Class archived (term ended) |
+> | `students` | Student graduated/left |
+> | `stickers` | Sticker retired (no longer awarded) |
+> | `trophies` | Trophy retired |
+> | `achievements` | Achievement retired |
+
 ```sql
 -- Schools (multi-tenant root entity)
 schools (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   slug TEXT UNIQUE NOT NULL,
-  owner_id UUID REFERENCES auth.users(id),
+  owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   address TEXT,
   phone TEXT,
   logo_url TEXT,
   settings JSONB DEFAULT '{}',
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 )
 
 -- Profiles (extends Supabase auth.users)
 profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id),
-  school_id UUID NOT NULL REFERENCES schools(id),
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
   role TEXT NOT NULL CHECK (role IN ('student', 'teacher', 'parent', 'admin')),
   full_name TEXT NOT NULL,
   avatar_url TEXT,
   phone TEXT,
-  preferred_language TEXT DEFAULT 'en',
-  created_at TIMESTAMPTZ DEFAULT now(),
-  updated_at TIMESTAMPTZ DEFAULT now()
+  preferred_language TEXT NOT NULL DEFAULT 'en',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 )
 
 -- Classes
 classes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id UUID NOT NULL REFERENCES schools(id),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
-  teacher_id UUID REFERENCES profiles(id),
+  teacher_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
   schedule JSONB,             -- { days: ['mon','wed','fri'], time: '16:00' }
-  max_students INTEGER DEFAULT 20,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT now()
+  max_students INTEGER NOT NULL DEFAULT 20 CHECK (max_students > 0),
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+)
+
+-- Levels (global, for gamification — see Section 9.2 for seed data)
+levels (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  level_number INTEGER UNIQUE NOT NULL CHECK (level_number > 0),
+  title TEXT NOT NULL,
+  points_required INTEGER NOT NULL CHECK (points_required >= 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 )
 
 -- Students (extended profile)
 students (
-  id UUID PRIMARY KEY REFERENCES profiles(id),
-  school_id UUID NOT NULL REFERENCES schools(id),
-  class_id UUID REFERENCES classes(id),
-  parent_id UUID REFERENCES profiles(id),
+  id UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  class_id UUID REFERENCES classes(id) ON DELETE SET NULL,
+  parent_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
   date_of_birth DATE,
-  enrollment_date DATE DEFAULT CURRENT_DATE,
-  current_level TEXT,
-  total_points INTEGER DEFAULT 0,
-  current_streak INTEGER DEFAULT 0,
-  longest_streak INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true
+  enrollment_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  current_level INTEGER DEFAULT 1 REFERENCES levels(level_number) ON DELETE SET NULL,
+  total_points INTEGER NOT NULL DEFAULT 0 CHECK (total_points >= 0),
+  current_streak INTEGER NOT NULL DEFAULT 0 CHECK (current_streak >= 0),
+  longest_streak INTEGER NOT NULL DEFAULT 0 CHECK (longest_streak >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 )
 
 -- Lessons
 lessons (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id UUID NOT NULL REFERENCES schools(id),
-  class_id UUID REFERENCES classes(id),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  class_id UUID REFERENCES classes(id) ON DELETE SET NULL,
   title TEXT NOT NULL,
   description TEXT,
   surah_name TEXT,
-  ayah_from INTEGER,
-  ayah_to INTEGER,
+  ayah_from INTEGER CHECK (ayah_from > 0),
+  ayah_to INTEGER CHECK (ayah_to > 0),
   lesson_type TEXT CHECK (lesson_type IN ('memorization', 'revision', 'tajweed', 'recitation')),
   order_index INTEGER,
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT valid_ayah_range CHECK (ayah_to IS NULL OR ayah_from IS NULL OR ayah_to >= ayah_from)
 )
 
 -- Lesson Progress
 lesson_progress (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id UUID REFERENCES students(id),
-  lesson_id UUID REFERENCES lessons(id),
-  status TEXT DEFAULT 'not_started' CHECK (status IN ('not_started', 'in_progress', 'completed')),
-  completion_percentage INTEGER DEFAULT 0,
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  lesson_id UUID NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'not_started' CHECK (status IN ('not_started', 'in_progress', 'completed')),
+  completion_percentage INTEGER NOT NULL DEFAULT 0 CHECK (completion_percentage BETWEEN 0 AND 100),
   completed_at TIMESTAMPTZ,
   UNIQUE(student_id, lesson_id)
 )
@@ -765,43 +795,43 @@ lesson_progress (
 -- Sessions (teacher evaluations)
 sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id UUID NOT NULL REFERENCES schools(id),
-  student_id UUID REFERENCES students(id),
-  teacher_id UUID REFERENCES profiles(id),
-  class_id UUID REFERENCES classes(id),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  teacher_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  class_id UUID REFERENCES classes(id) ON DELETE SET NULL,
   session_date DATE NOT NULL DEFAULT CURRENT_DATE,
-  lesson_id UUID REFERENCES lessons(id),
+  lesson_id UUID REFERENCES lessons(id) ON DELETE SET NULL,
   recitation_quality INTEGER CHECK (recitation_quality BETWEEN 1 AND 5),
   tajweed_score INTEGER CHECK (tajweed_score BETWEEN 1 AND 5),
   memorization_score INTEGER CHECK (memorization_score BETWEEN 1 AND 5),
   notes TEXT,
   homework_assigned TEXT,
   homework_due_date DATE,
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 )
 
 -- Homework
 homework (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id UUID NOT NULL REFERENCES schools(id),
-  session_id UUID REFERENCES sessions(id),
-  student_id UUID REFERENCES students(id),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  session_id UUID REFERENCES sessions(id) ON DELETE SET NULL,
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
   description TEXT NOT NULL,
   due_date DATE,
-  is_completed BOOLEAN DEFAULT false,
+  is_completed BOOLEAN NOT NULL DEFAULT false,
   completed_at TIMESTAMPTZ,
-  created_at TIMESTAMPTZ DEFAULT now()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 )
 
 -- Attendance
 attendance (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id UUID NOT NULL REFERENCES schools(id),
-  student_id UUID REFERENCES students(id),
-  class_id UUID REFERENCES classes(id),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  class_id UUID NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
   date DATE NOT NULL DEFAULT CURRENT_DATE,
   status TEXT NOT NULL CHECK (status IN ('present', 'absent', 'late', 'excused')),
-  marked_by UUID REFERENCES profiles(id),
+  marked_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
   notes TEXT,
   UNIQUE(student_id, date)
 )
@@ -809,73 +839,73 @@ attendance (
 -- Stickers
 stickers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id UUID NOT NULL REFERENCES schools(id),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
   image_url TEXT NOT NULL,
   category TEXT,              -- e.g., 'memorization', 'behavior', 'attendance'
-  points_value INTEGER DEFAULT 10,
-  is_active BOOLEAN DEFAULT true
+  points_value INTEGER NOT NULL DEFAULT 10 CHECK (points_value >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT true
 )
 
 -- Awarded Stickers
 student_stickers (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id UUID REFERENCES students(id),
-  sticker_id UUID REFERENCES stickers(id),
-  awarded_by UUID REFERENCES profiles(id),  -- teacher who awarded
-  awarded_at TIMESTAMPTZ DEFAULT now(),
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  sticker_id UUID NOT NULL REFERENCES stickers(id) ON DELETE CASCADE,
+  awarded_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  awarded_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   reason TEXT
 )
 
--- Trophies
+-- Trophies (global, not school-scoped)
 trophies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   description TEXT,
   image_url TEXT NOT NULL,
   criteria JSONB,             -- { type: 'sticker_count', threshold: 50 }
-  is_active BOOLEAN DEFAULT true
+  is_active BOOLEAN NOT NULL DEFAULT true
 )
 
 -- Student Trophies
 student_trophies (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id UUID REFERENCES students(id),
-  trophy_id UUID REFERENCES trophies(id),
-  earned_at TIMESTAMPTZ DEFAULT now(),
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  trophy_id UUID NOT NULL REFERENCES trophies(id) ON DELETE CASCADE,
+  earned_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(student_id, trophy_id)
 )
 
--- Achievements
+-- Achievements (global, not school-scoped)
 achievements (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   description TEXT,
   badge_image_url TEXT,
   criteria JSONB,             -- { type: 'streak_days', threshold: 7 }
-  points_reward INTEGER DEFAULT 0,
-  is_active BOOLEAN DEFAULT true
+  points_reward INTEGER NOT NULL DEFAULT 0 CHECK (points_reward >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT true
 )
 
 -- Student Achievements
 student_achievements (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id UUID REFERENCES students(id),
-  achievement_id UUID REFERENCES achievements(id),
-  earned_at TIMESTAMPTZ DEFAULT now(),
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  achievement_id UUID NOT NULL REFERENCES achievements(id) ON DELETE CASCADE,
+  earned_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(student_id, achievement_id)
 )
 
 -- Teacher Check-ins
 teacher_checkins (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id UUID NOT NULL REFERENCES schools(id),
-  teacher_id UUID REFERENCES profiles(id),
-  class_id UUID REFERENCES classes(id),
-  checked_in_at TIMESTAMPTZ DEFAULT now(),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  teacher_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  class_id UUID REFERENCES classes(id) ON DELETE SET NULL,
+  checked_in_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   checked_out_at TIMESTAMPTZ,
-  date DATE DEFAULT CURRENT_DATE
+  date DATE NOT NULL DEFAULT CURRENT_DATE
 )
 ```
 
