@@ -1,1135 +1,1037 @@
 -- ============================================================================
--- Quran School App — Initial Schema Migration
--- Multi-tenant architecture with Row Level Security
+-- Quran School - Multi-Tenant Schema (PRD-aligned)
+-- Single comprehensive migration for fresh deployment
 -- ============================================================================
 
 -- ============================================================================
--- 1. HELPER FUNCTIONS
+-- SECTION 1: Extensions
 -- ============================================================================
 
--- Returns the school_id for the currently authenticated user.
--- Used in RLS policies to scope all queries to the user's school.
-CREATE OR REPLACE FUNCTION public.get_user_school_id()
-RETURNS UUID
-LANGUAGE sql
-STABLE
-SECURITY DEFINER
-SET search_path = public
-AS $$
-  SELECT school_id FROM public.profiles WHERE id = auth.uid();
-$$;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA extensions;
 
--- Generic trigger function to auto-update the updated_at column.
-CREATE OR REPLACE FUNCTION public.handle_updated_at()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-AS $$
+-- ============================================================================
+-- SECTION 2: Tables (PRD 7.2)
+-- ============================================================================
+
+-- Schools (multi-tenant root entity) - PRD 7.2
+CREATE TABLE schools (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  slug TEXT UNIQUE NOT NULL,
+  owner_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  address TEXT,
+  phone TEXT,
+  logo_url TEXT,
+  settings JSONB DEFAULT '{}',
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Profiles (extends Supabase auth.users) - PRD 7.2
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  role TEXT NOT NULL CHECK (role IN ('student', 'teacher', 'parent', 'admin')),
+  full_name TEXT NOT NULL,
+  avatar_url TEXT,
+  phone TEXT,
+  preferred_language TEXT NOT NULL DEFAULT 'en',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Classes - PRD 7.2
+CREATE TABLE classes (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  teacher_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  schedule JSONB,
+  max_students INTEGER NOT NULL DEFAULT 20 CHECK (max_students > 0),
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Levels (global, for gamification) - PRD 9.2
+-- Created before students so current_level can FK to it
+CREATE TABLE levels (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  level_number INTEGER UNIQUE NOT NULL CHECK (level_number > 0),
+  title TEXT NOT NULL,
+  points_required INTEGER NOT NULL CHECK (points_required >= 0),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Students (extended profile) - PRD 7.2
+CREATE TABLE students (
+  id UUID PRIMARY KEY REFERENCES profiles(id) ON DELETE CASCADE,
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  class_id UUID REFERENCES classes(id) ON DELETE SET NULL,
+  parent_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  date_of_birth DATE,
+  enrollment_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  current_level INTEGER DEFAULT 1 REFERENCES levels(level_number) ON DELETE SET NULL,
+  total_points INTEGER NOT NULL DEFAULT 0 CHECK (total_points >= 0),
+  current_streak INTEGER NOT NULL DEFAULT 0 CHECK (current_streak >= 0),
+  longest_streak INTEGER NOT NULL DEFAULT 0 CHECK (longest_streak >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Lessons - PRD 7.2
+CREATE TABLE lessons (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  class_id UUID REFERENCES classes(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  surah_name TEXT,
+  ayah_from INTEGER CHECK (ayah_from > 0),
+  ayah_to INTEGER CHECK (ayah_to > 0),
+  lesson_type TEXT CHECK (lesson_type IN ('memorization', 'revision', 'tajweed', 'recitation')),
+  order_index INTEGER,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT valid_ayah_range CHECK (ayah_to IS NULL OR ayah_from IS NULL OR ayah_to >= ayah_from)
+);
+
+-- Lesson Progress - PRD 7.2
+CREATE TABLE lesson_progress (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  lesson_id UUID NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
+  status TEXT NOT NULL DEFAULT 'not_started' CHECK (status IN ('not_started', 'in_progress', 'completed')),
+  completion_percentage INTEGER NOT NULL DEFAULT 0 CHECK (completion_percentage BETWEEN 0 AND 100),
+  completed_at TIMESTAMPTZ,
+  UNIQUE(student_id, lesson_id)
+);
+
+-- Sessions (teacher evaluations) - PRD 7.2
+CREATE TABLE sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  teacher_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  class_id UUID REFERENCES classes(id) ON DELETE SET NULL,
+  session_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  lesson_id UUID REFERENCES lessons(id) ON DELETE SET NULL,
+  recitation_quality INTEGER CHECK (recitation_quality BETWEEN 1 AND 5),
+  tajweed_score INTEGER CHECK (tajweed_score BETWEEN 1 AND 5),
+  memorization_score INTEGER CHECK (memorization_score BETWEEN 1 AND 5),
+  notes TEXT,
+  homework_assigned TEXT,
+  homework_due_date DATE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Homework - PRD 7.2
+CREATE TABLE homework (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  session_id UUID REFERENCES sessions(id) ON DELETE SET NULL,
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  description TEXT NOT NULL,
+  due_date DATE,
+  is_completed BOOLEAN NOT NULL DEFAULT false,
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Attendance - PRD 7.2
+CREATE TABLE attendance (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  class_id UUID NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
+  date DATE NOT NULL DEFAULT CURRENT_DATE,
+  status TEXT NOT NULL CHECK (status IN ('present', 'absent', 'late', 'excused')),
+  marked_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  notes TEXT,
+  UNIQUE(student_id, date)
+);
+
+-- Stickers - PRD 7.2
+CREATE TABLE stickers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  description TEXT,
+  image_url TEXT NOT NULL,
+  category TEXT,
+  points_value INTEGER NOT NULL DEFAULT 10 CHECK (points_value >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT true
+);
+
+-- Awarded Stickers - PRD 7.2
+CREATE TABLE student_stickers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  sticker_id UUID NOT NULL REFERENCES stickers(id) ON DELETE CASCADE,
+  awarded_by UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  awarded_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  reason TEXT
+);
+
+-- Trophies (global, not school-scoped) - PRD 7.2
+CREATE TABLE trophies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  description TEXT,
+  image_url TEXT NOT NULL,
+  criteria JSONB,
+  is_active BOOLEAN NOT NULL DEFAULT true
+);
+
+-- Student Trophies - PRD 7.2
+CREATE TABLE student_trophies (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  trophy_id UUID NOT NULL REFERENCES trophies(id) ON DELETE CASCADE,
+  earned_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(student_id, trophy_id)
+);
+
+-- Achievements (global, not school-scoped) - PRD 7.2
+CREATE TABLE achievements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  description TEXT,
+  badge_image_url TEXT,
+  criteria JSONB,
+  points_reward INTEGER NOT NULL DEFAULT 0 CHECK (points_reward >= 0),
+  is_active BOOLEAN NOT NULL DEFAULT true
+);
+
+-- Student Achievements - PRD 7.2
+CREATE TABLE student_achievements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id UUID NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+  achievement_id UUID NOT NULL REFERENCES achievements(id) ON DELETE CASCADE,
+  earned_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(student_id, achievement_id)
+);
+
+-- Teacher Check-ins - PRD 7.2
+CREATE TABLE teacher_checkins (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  school_id UUID NOT NULL REFERENCES schools(id) ON DELETE CASCADE,
+  teacher_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  class_id UUID REFERENCES classes(id) ON DELETE SET NULL,
+  checked_in_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  checked_out_at TIMESTAMPTZ,
+  date DATE NOT NULL DEFAULT CURRENT_DATE
+);
+
+-- ============================================================================
+-- SECTION 3: Helper Functions (created after tables they reference)
+-- ============================================================================
+
+-- Helper: get current user's school_id from their profile (PRD 7.3)
+CREATE OR REPLACE FUNCTION get_user_school_id()
+RETURNS UUID AS $$
+  SELECT school_id FROM public.profiles WHERE id = auth.uid()
+$$ LANGUAGE sql SECURITY DEFINER STABLE
+SET search_path = public;
+
+-- Helper: get current user's role from their profile
+CREATE OR REPLACE FUNCTION get_user_role()
+RETURNS TEXT AS $$
+  SELECT role FROM public.profiles WHERE id = auth.uid()
+$$ LANGUAGE sql SECURITY DEFINER STABLE
+SET search_path = public;
+
+-- Trigger function: auto-update updated_at timestamp
+CREATE OR REPLACE FUNCTION handle_updated_at()
+RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
-$$;
+$$ LANGUAGE plpgsql
+SET search_path = public;
 
--- Trigger function fired after a new profile is created.
--- Can be extended for post-signup setup (e.g. default stickers, welcome message).
-CREATE OR REPLACE FUNCTION public.handle_new_profile()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
+-- Trigger function: create profile after signup
+CREATE OR REPLACE FUNCTION handle_new_profile()
+RETURNS TRIGGER AS $$
 BEGIN
-  -- Placeholder for post-signup setup logic:
-  --   e.g. create default student record, send welcome notification, etc.
+  INSERT INTO public.profiles (id, school_id, role, full_name)
+  VALUES (
+    NEW.id,
+    (NEW.raw_user_meta_data->>'school_id')::UUID,
+    COALESCE(NEW.raw_user_meta_data->>'role', 'student'),
+    COALESCE(NEW.raw_user_meta_data->>'full_name', '')
+  );
   RETURN NEW;
 END;
-$$;
+$$ LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public;
 
 -- ============================================================================
--- 2. TABLES
+-- SECTION 4: Indexes
 -- ============================================================================
 
--- ----------------------------------------------------------------------------
--- schools — Multi-tenant root table
--- ----------------------------------------------------------------------------
-CREATE TABLE public.schools (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name        TEXT NOT NULL,
-  slug        TEXT UNIQUE NOT NULL,
-  owner_id    UUID REFERENCES auth.users(id),
-  address     TEXT,
-  phone       TEXT,
-  logo_url    TEXT,
-  settings    JSONB DEFAULT '{}',
-  is_active   BOOLEAN DEFAULT true,
-  created_at  TIMESTAMPTZ DEFAULT now(),
-  updated_at  TIMESTAMPTZ DEFAULT now()
-);
+-- school_id indexes on all school-scoped tables
+CREATE INDEX idx_profiles_school_id ON profiles(school_id);
+CREATE INDEX idx_classes_school_id ON classes(school_id);
+CREATE INDEX idx_students_school_id ON students(school_id);
+CREATE INDEX idx_lessons_school_id ON lessons(school_id);
+CREATE INDEX idx_sessions_school_id ON sessions(school_id);
+CREATE INDEX idx_homework_school_id ON homework(school_id);
+CREATE INDEX idx_attendance_school_id ON attendance(school_id);
+CREATE INDEX idx_stickers_school_id ON stickers(school_id);
+CREATE INDEX idx_teacher_checkins_school_id ON teacher_checkins(school_id);
 
-COMMENT ON TABLE public.schools IS 'Root tenant table. Every school is an isolated tenant.';
+-- Role-based index for RLS helper queries
+CREATE INDEX idx_profiles_role ON profiles(role);
 
--- ----------------------------------------------------------------------------
--- profiles — Extends auth.users with school membership and role
--- ----------------------------------------------------------------------------
-CREATE TABLE public.profiles (
-  id                  UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  school_id           UUID NOT NULL REFERENCES public.schools(id),
-  role                TEXT NOT NULL CHECK (role IN ('student', 'teacher', 'parent', 'admin')),
-  full_name           TEXT NOT NULL,
-  avatar_url          TEXT,
-  phone               TEXT,
-  preferred_language  TEXT DEFAULT 'en',
-  created_at          TIMESTAMPTZ DEFAULT now(),
-  updated_at          TIMESTAMPTZ DEFAULT now()
-);
+-- FK indexes on relationship columns
+CREATE INDEX idx_classes_teacher_id ON classes(teacher_id);
+CREATE INDEX idx_students_class_id ON students(class_id);
+CREATE INDEX idx_students_parent_id ON students(parent_id);
+CREATE INDEX idx_lessons_class_id ON lessons(class_id);
+CREATE INDEX idx_lesson_progress_student_id ON lesson_progress(student_id);
+CREATE INDEX idx_lesson_progress_lesson_id ON lesson_progress(lesson_id);
+CREATE INDEX idx_sessions_student_id ON sessions(student_id);
+CREATE INDEX idx_sessions_teacher_id ON sessions(teacher_id);
+CREATE INDEX idx_sessions_class_id ON sessions(class_id);
+CREATE INDEX idx_sessions_lesson_id ON sessions(lesson_id);
+CREATE INDEX idx_homework_session_id ON homework(session_id);
+CREATE INDEX idx_homework_student_id ON homework(student_id);
+CREATE INDEX idx_attendance_student_id ON attendance(student_id);
+CREATE INDEX idx_attendance_class_id ON attendance(class_id);
+CREATE INDEX idx_attendance_marked_by ON attendance(marked_by);
+CREATE INDEX idx_student_stickers_student_id ON student_stickers(student_id);
+CREATE INDEX idx_student_stickers_sticker_id ON student_stickers(sticker_id);
+CREATE INDEX idx_student_stickers_awarded_by ON student_stickers(awarded_by);
+CREATE INDEX idx_student_trophies_student_id ON student_trophies(student_id);
+CREATE INDEX idx_student_trophies_trophy_id ON student_trophies(trophy_id);
+CREATE INDEX idx_student_achievements_student_id ON student_achievements(student_id);
+CREATE INDEX idx_student_achievements_achievement_id ON student_achievements(achievement_id);
+CREATE INDEX idx_teacher_checkins_teacher_id ON teacher_checkins(teacher_id);
+CREATE INDEX idx_teacher_checkins_class_id ON teacher_checkins(class_id);
 
-COMMENT ON TABLE public.profiles IS 'User profile extending auth.users. One profile per user per school.';
-
--- ----------------------------------------------------------------------------
--- classes
--- ----------------------------------------------------------------------------
-CREATE TABLE public.classes (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id     UUID NOT NULL REFERENCES public.schools(id),
-  name          TEXT NOT NULL,
-  description   TEXT,
-  teacher_id    UUID REFERENCES public.profiles(id),
-  schedule      JSONB,
-  max_students  INTEGER DEFAULT 20,
-  is_active     BOOLEAN DEFAULT true,
-  created_at    TIMESTAMPTZ DEFAULT now()
-);
-
-COMMENT ON TABLE public.classes IS 'A class/group within a school, led by a teacher.';
-
--- ----------------------------------------------------------------------------
--- students — Extended profile for student-specific data
--- ----------------------------------------------------------------------------
-CREATE TABLE public.students (
-  id              UUID PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
-  school_id       UUID NOT NULL REFERENCES public.schools(id),
-  class_id        UUID REFERENCES public.classes(id),
-  parent_id       UUID REFERENCES public.profiles(id),
-  date_of_birth   DATE,
-  enrollment_date DATE DEFAULT CURRENT_DATE,
-  current_level   TEXT DEFAULT 'Beginner',
-  total_points    INTEGER DEFAULT 0,
-  current_streak  INTEGER DEFAULT 0,
-  longest_streak  INTEGER DEFAULT 0,
-  is_active       BOOLEAN DEFAULT true
-);
-
-COMMENT ON TABLE public.students IS 'Student-specific data linked to a profile.';
-
--- ----------------------------------------------------------------------------
--- lessons
--- ----------------------------------------------------------------------------
-CREATE TABLE public.lessons (
-  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id    UUID NOT NULL REFERENCES public.schools(id),
-  class_id     UUID REFERENCES public.classes(id),
-  title        TEXT NOT NULL,
-  description  TEXT,
-  surah_name   TEXT,
-  ayah_from    INTEGER,
-  ayah_to      INTEGER,
-  lesson_type  TEXT CHECK (lesson_type IN ('memorization', 'revision', 'tajweed', 'recitation')),
-  order_index  INTEGER,
-  created_at   TIMESTAMPTZ DEFAULT now()
-);
-
-COMMENT ON TABLE public.lessons IS 'Quran lessons covering surahs, ayahs, and different lesson types.';
-
--- ----------------------------------------------------------------------------
--- lesson_progress
--- ----------------------------------------------------------------------------
-CREATE TABLE public.lesson_progress (
-  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id            UUID REFERENCES public.students(id) ON DELETE CASCADE,
-  lesson_id             UUID REFERENCES public.lessons(id) ON DELETE CASCADE,
-  status                TEXT DEFAULT 'not_started' CHECK (status IN ('not_started', 'in_progress', 'completed')),
-  completion_percentage INTEGER DEFAULT 0,
-  completed_at          TIMESTAMPTZ,
-  UNIQUE(student_id, lesson_id)
-);
-
-COMMENT ON TABLE public.lesson_progress IS 'Tracks each student''s progress through lessons.';
-
--- ----------------------------------------------------------------------------
--- sessions — Teacher evaluations of student recitation/memorization
--- ----------------------------------------------------------------------------
-CREATE TABLE public.sessions (
-  id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id           UUID NOT NULL REFERENCES public.schools(id),
-  student_id          UUID REFERENCES public.students(id),
-  teacher_id          UUID REFERENCES public.profiles(id),
-  class_id            UUID REFERENCES public.classes(id),
-  session_date        DATE NOT NULL DEFAULT CURRENT_DATE,
-  lesson_id           UUID REFERENCES public.lessons(id),
-  recitation_quality  INTEGER CHECK (recitation_quality BETWEEN 1 AND 5),
-  tajweed_score       INTEGER CHECK (tajweed_score BETWEEN 1 AND 5),
-  memorization_score  INTEGER CHECK (memorization_score BETWEEN 1 AND 5),
-  notes               TEXT,
-  homework_assigned   TEXT,
-  homework_due_date   DATE,
-  created_at          TIMESTAMPTZ DEFAULT now()
-);
-
-COMMENT ON TABLE public.sessions IS 'Teacher evaluation sessions for student recitation and memorization.';
-
--- ----------------------------------------------------------------------------
--- homework
--- ----------------------------------------------------------------------------
-CREATE TABLE public.homework (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id     UUID NOT NULL REFERENCES public.schools(id),
-  session_id    UUID REFERENCES public.sessions(id) ON DELETE CASCADE,
-  student_id    UUID REFERENCES public.students(id) ON DELETE CASCADE,
-  description   TEXT NOT NULL,
-  due_date      DATE,
-  is_completed  BOOLEAN DEFAULT false,
-  completed_at  TIMESTAMPTZ,
-  created_at    TIMESTAMPTZ DEFAULT now()
-);
-
-COMMENT ON TABLE public.homework IS 'Homework assignments linked to sessions and students.';
-
--- ----------------------------------------------------------------------------
--- attendance
--- ----------------------------------------------------------------------------
-CREATE TABLE public.attendance (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id   UUID NOT NULL REFERENCES public.schools(id),
-  student_id  UUID REFERENCES public.students(id) ON DELETE CASCADE,
-  class_id    UUID REFERENCES public.classes(id),
-  date        DATE NOT NULL DEFAULT CURRENT_DATE,
-  status      TEXT NOT NULL CHECK (status IN ('present', 'absent', 'late', 'excused')),
-  marked_by   UUID REFERENCES public.profiles(id),
-  notes       TEXT,
-  UNIQUE(student_id, date)
-);
-
-COMMENT ON TABLE public.attendance IS 'Daily attendance records per student.';
-
--- ----------------------------------------------------------------------------
--- stickers — Reward catalog
--- ----------------------------------------------------------------------------
-CREATE TABLE public.stickers (
-  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id     UUID NOT NULL REFERENCES public.schools(id),
-  name          TEXT NOT NULL,
-  description   TEXT,
-  image_url     TEXT NOT NULL,
-  category      TEXT,
-  points_value  INTEGER DEFAULT 10,
-  is_active     BOOLEAN DEFAULT true
-);
-
-COMMENT ON TABLE public.stickers IS 'Sticker reward catalog per school.';
-
--- ----------------------------------------------------------------------------
--- student_stickers — Awarded stickers
--- ----------------------------------------------------------------------------
-CREATE TABLE public.student_stickers (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id  UUID REFERENCES public.students(id) ON DELETE CASCADE,
-  sticker_id  UUID REFERENCES public.stickers(id) ON DELETE CASCADE,
-  awarded_by  UUID REFERENCES public.profiles(id),
-  awarded_at  TIMESTAMPTZ DEFAULT now(),
-  reason      TEXT
-);
-
-COMMENT ON TABLE public.student_stickers IS 'Stickers awarded to individual students.';
-
--- ----------------------------------------------------------------------------
--- trophies — Trophy catalog
--- ----------------------------------------------------------------------------
-CREATE TABLE public.trophies (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id   UUID NOT NULL REFERENCES public.schools(id),
-  name        TEXT NOT NULL,
-  description TEXT,
-  image_url   TEXT NOT NULL,
-  criteria    JSONB,
-  is_active   BOOLEAN DEFAULT true
-);
-
-COMMENT ON TABLE public.trophies IS 'Trophy catalog per school.';
-
--- ----------------------------------------------------------------------------
--- student_trophies — Earned trophies
--- ----------------------------------------------------------------------------
-CREATE TABLE public.student_trophies (
-  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id  UUID REFERENCES public.students(id) ON DELETE CASCADE,
-  trophy_id   UUID REFERENCES public.trophies(id) ON DELETE CASCADE,
-  earned_at   TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(student_id, trophy_id)
-);
-
-COMMENT ON TABLE public.student_trophies IS 'Trophies earned by students.';
-
--- ----------------------------------------------------------------------------
--- achievements — Achievement catalog
--- ----------------------------------------------------------------------------
-CREATE TABLE public.achievements (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id       UUID NOT NULL REFERENCES public.schools(id),
-  name            TEXT NOT NULL,
-  description     TEXT,
-  badge_image_url TEXT,
-  criteria        JSONB,
-  points_reward   INTEGER DEFAULT 0,
-  is_active       BOOLEAN DEFAULT true
-);
-
-COMMENT ON TABLE public.achievements IS 'Achievement catalog per school.';
-
--- ----------------------------------------------------------------------------
--- student_achievements — Earned achievements
--- ----------------------------------------------------------------------------
-CREATE TABLE public.student_achievements (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  student_id      UUID REFERENCES public.students(id) ON DELETE CASCADE,
-  achievement_id  UUID REFERENCES public.achievements(id) ON DELETE CASCADE,
-  earned_at       TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(student_id, achievement_id)
-);
-
-COMMENT ON TABLE public.student_achievements IS 'Achievements earned by students.';
-
--- ----------------------------------------------------------------------------
--- teacher_checkins — Teacher check-in/check-out log
--- ----------------------------------------------------------------------------
-CREATE TABLE public.teacher_checkins (
-  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  school_id       UUID NOT NULL REFERENCES public.schools(id),
-  teacher_id      UUID REFERENCES public.profiles(id),
-  class_id        UUID REFERENCES public.classes(id),
-  checked_in_at   TIMESTAMPTZ DEFAULT now(),
-  checked_out_at  TIMESTAMPTZ,
-  date            DATE DEFAULT CURRENT_DATE
-);
-
-COMMENT ON TABLE public.teacher_checkins IS 'Tracks teacher check-in and check-out times.';
+-- Composite indexes for common queries
+CREATE INDEX idx_attendance_student_date ON attendance(student_id, date);
+CREATE INDEX idx_lesson_progress_student_lesson ON lesson_progress(student_id, lesson_id);
+CREATE INDEX idx_sessions_session_date ON sessions(session_date);
+CREATE INDEX idx_attendance_date ON attendance(date);
+CREATE INDEX idx_teacher_checkins_date ON teacher_checkins(date);
 
 -- ============================================================================
--- 3. INDEXES
+-- SECTION 5: Row Level Security (PRD 7.3)
 -- ============================================================================
 
--- school_id indexes (tenant isolation — critical for performance)
-CREATE INDEX idx_profiles_school_id          ON public.profiles(school_id);
-CREATE INDEX idx_classes_school_id           ON public.classes(school_id);
-CREATE INDEX idx_students_school_id          ON public.students(school_id);
-CREATE INDEX idx_lessons_school_id           ON public.lessons(school_id);
-CREATE INDEX idx_sessions_school_id          ON public.sessions(school_id);
-CREATE INDEX idx_homework_school_id          ON public.homework(school_id);
-CREATE INDEX idx_attendance_school_id        ON public.attendance(school_id);
-CREATE INDEX idx_stickers_school_id          ON public.stickers(school_id);
-CREATE INDEX idx_trophies_school_id          ON public.trophies(school_id);
-CREATE INDEX idx_achievements_school_id      ON public.achievements(school_id);
-CREATE INDEX idx_teacher_checkins_school_id  ON public.teacher_checkins(school_id);
+-- Enable RLS on all tables
+ALTER TABLE schools ENABLE ROW LEVEL SECURITY;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE classes ENABLE ROW LEVEL SECURITY;
+ALTER TABLE students ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lessons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE lesson_progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE homework ENABLE ROW LEVEL SECURITY;
+ALTER TABLE attendance ENABLE ROW LEVEL SECURITY;
+ALTER TABLE stickers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_stickers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE trophies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_trophies ENABLE ROW LEVEL SECURITY;
+ALTER TABLE achievements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_achievements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE teacher_checkins ENABLE ROW LEVEL SECURITY;
+ALTER TABLE levels ENABLE ROW LEVEL SECURITY;
 
--- Foreign key indexes (frequently queried relationships)
-CREATE INDEX idx_profiles_role               ON public.profiles(role);
-CREATE INDEX idx_classes_teacher_id          ON public.classes(teacher_id);
-CREATE INDEX idx_students_class_id           ON public.students(class_id);
-CREATE INDEX idx_students_parent_id          ON public.students(parent_id);
-CREATE INDEX idx_lessons_class_id            ON public.lessons(class_id);
-CREATE INDEX idx_lesson_progress_student_id  ON public.lesson_progress(student_id);
-CREATE INDEX idx_lesson_progress_lesson_id   ON public.lesson_progress(lesson_id);
-CREATE INDEX idx_sessions_student_id         ON public.sessions(student_id);
-CREATE INDEX idx_sessions_teacher_id         ON public.sessions(teacher_id);
-CREATE INDEX idx_sessions_class_id           ON public.sessions(class_id);
-CREATE INDEX idx_sessions_session_date       ON public.sessions(session_date);
-CREATE INDEX idx_homework_student_id         ON public.homework(student_id);
-CREATE INDEX idx_homework_session_id         ON public.homework(session_id);
-CREATE INDEX idx_attendance_student_id       ON public.attendance(student_id);
-CREATE INDEX idx_attendance_class_id         ON public.attendance(class_id);
-CREATE INDEX idx_attendance_date             ON public.attendance(date);
-CREATE INDEX idx_student_stickers_student_id ON public.student_stickers(student_id);
-CREATE INDEX idx_student_stickers_sticker_id ON public.student_stickers(sticker_id);
-CREATE INDEX idx_student_trophies_student_id ON public.student_trophies(student_id);
-CREATE INDEX idx_student_trophies_trophy_id  ON public.student_trophies(trophy_id);
-CREATE INDEX idx_student_achievements_student_id    ON public.student_achievements(student_id);
-CREATE INDEX idx_student_achievements_achievement_id ON public.student_achievements(achievement_id);
-CREATE INDEX idx_teacher_checkins_teacher_id ON public.teacher_checkins(teacher_id);
-CREATE INDEX idx_teacher_checkins_class_id   ON public.teacher_checkins(class_id);
-
--- ============================================================================
--- 4. ROW LEVEL SECURITY
--- ============================================================================
-
--- Enable RLS on every table
-ALTER TABLE public.schools              ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.profiles             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.classes              ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.students             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.lessons              ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.lesson_progress      ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.sessions             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.homework             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.attendance           ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.stickers             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.student_stickers     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.trophies             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.student_trophies     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.achievements         ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.student_achievements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.teacher_checkins     ENABLE ROW LEVEL SECURITY;
-
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- SCHOOLS
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Admin: full CRUD on their own school
-CREATE POLICY schools_admin_all ON public.schools
-  FOR ALL
-  USING (
-    id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  );
-
--- All authenticated users: read their own school
-CREATE POLICY schools_member_read ON public.schools
-  FOR SELECT
+-- -------------------------------------------------------------------------
+-- schools: Admin read/update own; all members read own
+-- -------------------------------------------------------------------------
+CREATE POLICY "Members can read own school"
+  ON schools FOR SELECT
   USING (id = get_user_school_id());
 
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- PROFILES
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CREATE POLICY "Admin can update own school"
+  ON schools FOR UPDATE
+  USING (id = get_user_school_id() AND get_user_role() = 'admin');
 
--- Admin: full CRUD on profiles within their school
-CREATE POLICY profiles_admin_all ON public.profiles
-  FOR ALL
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  );
-
--- All users: read profiles within their school (needed for names, roles, etc.)
-CREATE POLICY profiles_school_read ON public.profiles
-  FOR SELECT
+-- -------------------------------------------------------------------------
+-- profiles: Admin all (school); all read school; own update
+-- -------------------------------------------------------------------------
+CREATE POLICY "Members can read school profiles"
+  ON profiles FOR SELECT
   USING (school_id = get_user_school_id());
 
--- Users can update their own profile
-CREATE POLICY profiles_own_update ON public.profiles
-  FOR UPDATE
-  USING (id = auth.uid())
+CREATE POLICY "Users can update own profile"
+  ON profiles FOR UPDATE
+  USING (id = auth.uid());
+
+CREATE POLICY "Admin can insert profiles"
+  ON profiles FOR INSERT
+  WITH CHECK (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Admin can delete profiles"
+  ON profiles FOR DELETE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+-- Allow trigger-based profile creation during signup
+CREATE POLICY "Service role can insert profiles"
+  ON profiles FOR INSERT
   WITH CHECK (id = auth.uid());
 
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- CLASSES
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Admin: full CRUD within their school
-CREATE POLICY classes_admin_all ON public.classes
-  FOR ALL
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  );
-
--- Teacher: read/write classes they teach within their school
-CREATE POLICY classes_teacher_read ON public.classes
-  FOR SELECT
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY classes_teacher_update ON public.classes
-  FOR UPDATE
-  USING (
-    school_id = get_user_school_id()
-    AND teacher_id = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND teacher_id = auth.uid()
-  );
-
--- Students & parents: read classes within their school
-CREATE POLICY classes_student_read ON public.classes
-  FOR SELECT
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('student', 'parent')
-  );
-
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- STUDENTS
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Admin: full CRUD within their school
-CREATE POLICY students_admin_all ON public.students
-  FOR ALL
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  );
-
--- Teacher: read students in their school, write students in their classes
-CREATE POLICY students_teacher_read ON public.students
-  FOR SELECT
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY students_teacher_update ON public.students
-  FOR UPDATE
-  USING (
-    school_id = get_user_school_id()
-    AND class_id IN (SELECT id FROM public.classes WHERE teacher_id = auth.uid())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND class_id IN (SELECT id FROM public.classes WHERE teacher_id = auth.uid())
-  );
-
--- Student: read own record
-CREATE POLICY students_own_read ON public.students
-  FOR SELECT
-  USING (
-    id = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'student'
-  );
-
--- Parent: read their children's records
-CREATE POLICY students_parent_read ON public.students
-  FOR SELECT
-  USING (
-    parent_id = auth.uid()
-    AND school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'parent'
-  );
-
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- LESSONS
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Admin: full CRUD within their school
-CREATE POLICY lessons_admin_all ON public.lessons
-  FOR ALL
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  );
-
--- Teacher: read all lessons in school, insert/update lessons for their classes
-CREATE POLICY lessons_teacher_read ON public.lessons
-  FOR SELECT
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY lessons_teacher_insert ON public.lessons
-  FOR INSERT
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND class_id IN (SELECT id FROM public.classes WHERE teacher_id = auth.uid())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY lessons_teacher_update ON public.lessons
-  FOR UPDATE
-  USING (
-    school_id = get_user_school_id()
-    AND class_id IN (SELECT id FROM public.classes WHERE teacher_id = auth.uid())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND class_id IN (SELECT id FROM public.classes WHERE teacher_id = auth.uid())
-  );
-
--- Student: read lessons in their school
-CREATE POLICY lessons_student_read ON public.lessons
-  FOR SELECT
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) IN ('student', 'parent')
-  );
-
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- LESSON_PROGRESS
--- Scoped via student -> school relationship (no direct school_id column)
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Admin: full CRUD for students in their school
-CREATE POLICY lesson_progress_admin_all ON public.lesson_progress
-  FOR ALL
-  USING (
-    student_id IN (SELECT id FROM public.students WHERE school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    student_id IN (SELECT id FROM public.students WHERE school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  );
-
--- Teacher: read/write progress for students in their classes
-CREATE POLICY lesson_progress_teacher_read ON public.lesson_progress
-  FOR SELECT
-  USING (
-    student_id IN (
-      SELECT s.id FROM public.students s
-      JOIN public.classes c ON s.class_id = c.id
-      WHERE c.teacher_id = auth.uid() AND s.school_id = get_user_school_id()
-    )
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY lesson_progress_teacher_write ON public.lesson_progress
-  FOR INSERT
-  WITH CHECK (
-    student_id IN (
-      SELECT s.id FROM public.students s
-      JOIN public.classes c ON s.class_id = c.id
-      WHERE c.teacher_id = auth.uid() AND s.school_id = get_user_school_id()
-    )
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY lesson_progress_teacher_update ON public.lesson_progress
-  FOR UPDATE
-  USING (
-    student_id IN (
-      SELECT s.id FROM public.students s
-      JOIN public.classes c ON s.class_id = c.id
-      WHERE c.teacher_id = auth.uid() AND s.school_id = get_user_school_id()
-    )
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  )
-  WITH CHECK (
-    student_id IN (
-      SELECT s.id FROM public.students s
-      JOIN public.classes c ON s.class_id = c.id
-      WHERE c.teacher_id = auth.uid() AND s.school_id = get_user_school_id()
-    )
-  );
-
--- Student: read own progress
-CREATE POLICY lesson_progress_own_read ON public.lesson_progress
-  FOR SELECT
-  USING (
-    student_id = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'student'
-  );
-
--- Parent: read children's progress
-CREATE POLICY lesson_progress_parent_read ON public.lesson_progress
-  FOR SELECT
-  USING (
-    student_id IN (SELECT id FROM public.students WHERE parent_id = auth.uid() AND school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'parent'
-  );
-
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- SESSIONS
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Admin: full CRUD within their school
-CREATE POLICY sessions_admin_all ON public.sessions
-  FOR ALL
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  );
-
--- Teacher: read sessions in school, insert/update own sessions
-CREATE POLICY sessions_teacher_read ON public.sessions
-  FOR SELECT
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY sessions_teacher_insert ON public.sessions
-  FOR INSERT
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND teacher_id = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY sessions_teacher_update ON public.sessions
-  FOR UPDATE
-  USING (
-    school_id = get_user_school_id()
-    AND teacher_id = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND teacher_id = auth.uid()
-  );
-
--- Student: read own sessions
-CREATE POLICY sessions_student_read ON public.sessions
-  FOR SELECT
-  USING (
-    student_id = auth.uid()
-    AND school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'student'
-  );
-
--- Parent: read children's sessions
-CREATE POLICY sessions_parent_read ON public.sessions
-  FOR SELECT
-  USING (
-    school_id = get_user_school_id()
-    AND student_id IN (SELECT id FROM public.students WHERE parent_id = auth.uid())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'parent'
-  );
-
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- HOMEWORK
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Admin: full CRUD within their school
-CREATE POLICY homework_admin_all ON public.homework
-  FOR ALL
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  );
-
--- Teacher: read/write homework in their school
-CREATE POLICY homework_teacher_read ON public.homework
-  FOR SELECT
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY homework_teacher_insert ON public.homework
-  FOR INSERT
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND session_id IN (SELECT id FROM public.sessions WHERE teacher_id = auth.uid())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY homework_teacher_update ON public.homework
-  FOR UPDATE
-  USING (
-    school_id = get_user_school_id()
-    AND session_id IN (SELECT id FROM public.sessions WHERE teacher_id = auth.uid())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-  );
-
--- Student: read own homework, update completion status
-CREATE POLICY homework_student_read ON public.homework
-  FOR SELECT
-  USING (
-    student_id = auth.uid()
-    AND school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'student'
-  );
-
-CREATE POLICY homework_student_update ON public.homework
-  FOR UPDATE
-  USING (
-    student_id = auth.uid()
-    AND school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'student'
-  )
-  WITH CHECK (
-    student_id = auth.uid()
-    AND school_id = get_user_school_id()
-  );
-
--- Parent: read children's homework
-CREATE POLICY homework_parent_read ON public.homework
-  FOR SELECT
-  USING (
-    school_id = get_user_school_id()
-    AND student_id IN (SELECT id FROM public.students WHERE parent_id = auth.uid())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'parent'
-  );
-
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- ATTENDANCE
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Admin: full CRUD within their school
-CREATE POLICY attendance_admin_all ON public.attendance
-  FOR ALL
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  );
-
--- Teacher: read all attendance in school, insert/update for their classes
-CREATE POLICY attendance_teacher_read ON public.attendance
-  FOR SELECT
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY attendance_teacher_insert ON public.attendance
-  FOR INSERT
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND marked_by = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY attendance_teacher_update ON public.attendance
-  FOR UPDATE
-  USING (
-    school_id = get_user_school_id()
-    AND marked_by = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND marked_by = auth.uid()
-  );
-
--- Student: read own attendance
-CREATE POLICY attendance_student_read ON public.attendance
-  FOR SELECT
-  USING (
-    student_id = auth.uid()
-    AND school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'student'
-  );
-
--- Parent: read children's attendance
-CREATE POLICY attendance_parent_read ON public.attendance
-  FOR SELECT
-  USING (
-    school_id = get_user_school_id()
-    AND student_id IN (SELECT id FROM public.students WHERE parent_id = auth.uid())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'parent'
-  );
-
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- STICKERS
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Admin: full CRUD within their school
-CREATE POLICY stickers_admin_all ON public.stickers
-  FOR ALL
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  );
-
--- All school members: read stickers
-CREATE POLICY stickers_school_read ON public.stickers
-  FOR SELECT
+-- -------------------------------------------------------------------------
+-- classes: Admin all; teacher read school + update own; student/parent read
+-- -------------------------------------------------------------------------
+CREATE POLICY "Members can read school classes"
+  ON classes FOR SELECT
   USING (school_id = get_user_school_id());
 
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- STUDENT_STICKERS
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CREATE POLICY "Admin can insert classes"
+  ON classes FOR INSERT
+  WITH CHECK (school_id = get_user_school_id() AND get_user_role() = 'admin');
 
--- Admin: full CRUD for students in their school
-CREATE POLICY student_stickers_admin_all ON public.student_stickers
-  FOR ALL
+CREATE POLICY "Admin can update classes"
+  ON classes FOR UPDATE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can update own classes"
+  ON classes FOR UPDATE
+  USING (school_id = get_user_school_id() AND teacher_id = auth.uid() AND get_user_role() = 'teacher');
+
+CREATE POLICY "Admin can delete classes"
+  ON classes FOR DELETE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+-- -------------------------------------------------------------------------
+-- students: Admin all; teacher class students; student own; parent children
+-- -------------------------------------------------------------------------
+CREATE POLICY "Admin can read all school students"
+  ON students FOR SELECT
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can read class students"
+  ON students FOR SELECT
   USING (
-    student_id IN (SELECT id FROM public.students WHERE school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    student_id IN (SELECT id FROM public.students WHERE school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
+    school_id = get_user_school_id()
+    AND get_user_role() = 'teacher'
+    AND class_id IN (SELECT id FROM classes WHERE teacher_id = auth.uid())
   );
 
--- Teacher: read stickers in school, award stickers to students in their classes
-CREATE POLICY student_stickers_teacher_read ON public.student_stickers
-  FOR SELECT
+CREATE POLICY "Student can read own record"
+  ON students FOR SELECT
+  USING (id = auth.uid() AND get_user_role() = 'student');
+
+CREATE POLICY "Parent can read children"
+  ON students FOR SELECT
+  USING (parent_id = auth.uid() AND get_user_role() = 'parent');
+
+CREATE POLICY "Admin can insert students"
+  ON students FOR INSERT
+  WITH CHECK (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Admin can update students"
+  ON students FOR UPDATE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Admin can delete students"
+  ON students FOR DELETE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+-- -------------------------------------------------------------------------
+-- lessons: Admin all; teacher read school + write class; student/parent read
+-- -------------------------------------------------------------------------
+CREATE POLICY "Admin can read all school lessons"
+  ON lessons FOR SELECT
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can read school lessons"
+  ON lessons FOR SELECT
+  USING (school_id = get_user_school_id() AND get_user_role() = 'teacher');
+
+CREATE POLICY "Student can read class lessons"
+  ON lessons FOR SELECT
   USING (
-    student_id IN (SELECT id FROM public.students WHERE school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
+    school_id = get_user_school_id()
+    AND get_user_role() = 'student'
+    AND class_id IN (SELECT class_id FROM students WHERE id = auth.uid())
   );
 
-CREATE POLICY student_stickers_teacher_insert ON public.student_stickers
-  FOR INSERT
+CREATE POLICY "Parent can read children class lessons"
+  ON lessons FOR SELECT
+  USING (
+    school_id = get_user_school_id()
+    AND get_user_role() = 'parent'
+    AND class_id IN (SELECT class_id FROM students WHERE parent_id = auth.uid())
+  );
+
+CREATE POLICY "Admin can insert lessons"
+  ON lessons FOR INSERT
+  WITH CHECK (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can insert class lessons"
+  ON lessons FOR INSERT
   WITH CHECK (
-    awarded_by = auth.uid()
+    school_id = get_user_school_id()
+    AND get_user_role() = 'teacher'
+    AND class_id IN (SELECT id FROM classes WHERE teacher_id = auth.uid())
+  );
+
+CREATE POLICY "Admin can update lessons"
+  ON lessons FOR UPDATE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can update class lessons"
+  ON lessons FOR UPDATE
+  USING (
+    school_id = get_user_school_id()
+    AND get_user_role() = 'teacher'
+    AND class_id IN (SELECT id FROM classes WHERE teacher_id = auth.uid())
+  );
+
+CREATE POLICY "Admin can delete lessons"
+  ON lessons FOR DELETE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+-- -------------------------------------------------------------------------
+-- lesson_progress: Admin all; teacher class; student own; parent children
+-- -------------------------------------------------------------------------
+CREATE POLICY "Admin can read all lesson progress"
+  ON lesson_progress FOR SELECT
+  USING (
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
+  );
+
+CREATE POLICY "Teacher can read class lesson progress"
+  ON lesson_progress FOR SELECT
+  USING (
+    get_user_role() = 'teacher'
     AND student_id IN (
-      SELECT s.id FROM public.students s
-      JOIN public.classes c ON s.class_id = c.id
-      WHERE c.teacher_id = auth.uid() AND s.school_id = get_user_school_id()
+      SELECT s.id FROM students s
+      JOIN classes c ON s.class_id = c.id
+      WHERE c.teacher_id = auth.uid()
     )
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
   );
 
--- Student: read own stickers
-CREATE POLICY student_stickers_own_read ON public.student_stickers
-  FOR SELECT
+CREATE POLICY "Student can read own lesson progress"
+  ON lesson_progress FOR SELECT
+  USING (student_id = auth.uid() AND get_user_role() = 'student');
+
+CREATE POLICY "Parent can read children lesson progress"
+  ON lesson_progress FOR SELECT
   USING (
-    student_id = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'student'
+    get_user_role() = 'parent'
+    AND student_id IN (SELECT id FROM students WHERE parent_id = auth.uid())
   );
 
--- Parent: read children's stickers
-CREATE POLICY student_stickers_parent_read ON public.student_stickers
-  FOR SELECT
+CREATE POLICY "Admin can insert lesson progress"
+  ON lesson_progress FOR INSERT
+  WITH CHECK (
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
+  );
+
+CREATE POLICY "Teacher can insert class lesson progress"
+  ON lesson_progress FOR INSERT
+  WITH CHECK (
+    get_user_role() = 'teacher'
+    AND student_id IN (
+      SELECT s.id FROM students s
+      JOIN classes c ON s.class_id = c.id
+      WHERE c.teacher_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Admin can update lesson progress"
+  ON lesson_progress FOR UPDATE
   USING (
-    student_id IN (SELECT id FROM public.students WHERE parent_id = auth.uid() AND school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'parent'
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
   );
 
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- TROPHIES
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CREATE POLICY "Teacher can update class lesson progress"
+  ON lesson_progress FOR UPDATE
+  USING (
+    get_user_role() = 'teacher'
+    AND student_id IN (
+      SELECT s.id FROM students s
+      JOIN classes c ON s.class_id = c.id
+      WHERE c.teacher_id = auth.uid()
+    )
+  );
 
--- Admin: full CRUD within their school
-CREATE POLICY trophies_admin_all ON public.trophies
-  FOR ALL
+CREATE POLICY "Admin can delete lesson progress"
+  ON lesson_progress FOR DELETE
+  USING (
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
+  );
+
+-- -------------------------------------------------------------------------
+-- sessions: Admin all; teacher read school + write own; student own; parent children
+-- -------------------------------------------------------------------------
+CREATE POLICY "Admin can read all school sessions"
+  ON sessions FOR SELECT
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can read school sessions"
+  ON sessions FOR SELECT
+  USING (school_id = get_user_school_id() AND get_user_role() = 'teacher');
+
+CREATE POLICY "Student can read own sessions"
+  ON sessions FOR SELECT
   USING (
     school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
+    AND student_id = auth.uid()
+    AND get_user_role() = 'student'
+  );
+
+CREATE POLICY "Parent can read children sessions"
+  ON sessions FOR SELECT
+  USING (
+    school_id = get_user_school_id()
+    AND get_user_role() = 'parent'
+    AND student_id IN (SELECT id FROM students WHERE parent_id = auth.uid())
+  );
+
+CREATE POLICY "Admin can insert sessions"
+  ON sessions FOR INSERT
+  WITH CHECK (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can insert own sessions"
+  ON sessions FOR INSERT
   WITH CHECK (
     school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
+    AND teacher_id = auth.uid()
+    AND get_user_role() = 'teacher'
   );
 
--- All school members: read trophies
-CREATE POLICY trophies_school_read ON public.trophies
-  FOR SELECT
+CREATE POLICY "Admin can update sessions"
+  ON sessions FOR UPDATE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can update own sessions"
+  ON sessions FOR UPDATE
+  USING (
+    school_id = get_user_school_id()
+    AND teacher_id = auth.uid()
+    AND get_user_role() = 'teacher'
+  );
+
+CREATE POLICY "Admin can delete sessions"
+  ON sessions FOR DELETE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+-- -------------------------------------------------------------------------
+-- homework: Admin all; teacher read school + write own; student read/update own; parent children
+-- -------------------------------------------------------------------------
+CREATE POLICY "Admin can read all school homework"
+  ON homework FOR SELECT
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can read school homework"
+  ON homework FOR SELECT
+  USING (school_id = get_user_school_id() AND get_user_role() = 'teacher');
+
+CREATE POLICY "Student can read own homework"
+  ON homework FOR SELECT
+  USING (
+    school_id = get_user_school_id()
+    AND student_id = auth.uid()
+    AND get_user_role() = 'student'
+  );
+
+CREATE POLICY "Parent can read children homework"
+  ON homework FOR SELECT
+  USING (
+    school_id = get_user_school_id()
+    AND get_user_role() = 'parent'
+    AND student_id IN (SELECT id FROM students WHERE parent_id = auth.uid())
+  );
+
+CREATE POLICY "Admin can insert homework"
+  ON homework FOR INSERT
+  WITH CHECK (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can insert homework"
+  ON homework FOR INSERT
+  WITH CHECK (school_id = get_user_school_id() AND get_user_role() = 'teacher');
+
+CREATE POLICY "Admin can update homework"
+  ON homework FOR UPDATE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can update homework"
+  ON homework FOR UPDATE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'teacher');
+
+CREATE POLICY "Student can update own homework"
+  ON homework FOR UPDATE
+  USING (
+    school_id = get_user_school_id()
+    AND student_id = auth.uid()
+    AND get_user_role() = 'student'
+  );
+
+CREATE POLICY "Admin can delete homework"
+  ON homework FOR DELETE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+-- -------------------------------------------------------------------------
+-- attendance: Admin all; teacher read school + write own; student own; parent children
+-- -------------------------------------------------------------------------
+CREATE POLICY "Admin can read all school attendance"
+  ON attendance FOR SELECT
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can read school attendance"
+  ON attendance FOR SELECT
+  USING (school_id = get_user_school_id() AND get_user_role() = 'teacher');
+
+CREATE POLICY "Student can read own attendance"
+  ON attendance FOR SELECT
+  USING (
+    school_id = get_user_school_id()
+    AND student_id = auth.uid()
+    AND get_user_role() = 'student'
+  );
+
+CREATE POLICY "Parent can read children attendance"
+  ON attendance FOR SELECT
+  USING (
+    school_id = get_user_school_id()
+    AND get_user_role() = 'parent'
+    AND student_id IN (SELECT id FROM students WHERE parent_id = auth.uid())
+  );
+
+CREATE POLICY "Admin can insert attendance"
+  ON attendance FOR INSERT
+  WITH CHECK (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can insert attendance"
+  ON attendance FOR INSERT
+  WITH CHECK (
+    school_id = get_user_school_id()
+    AND marked_by = auth.uid()
+    AND get_user_role() = 'teacher'
+  );
+
+CREATE POLICY "Admin can update attendance"
+  ON attendance FOR UPDATE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can update attendance"
+  ON attendance FOR UPDATE
+  USING (
+    school_id = get_user_school_id()
+    AND marked_by = auth.uid()
+    AND get_user_role() = 'teacher'
+  );
+
+CREATE POLICY "Admin can delete attendance"
+  ON attendance FOR DELETE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+-- -------------------------------------------------------------------------
+-- stickers: Admin all; all members read
+-- -------------------------------------------------------------------------
+CREATE POLICY "Members can read school stickers"
+  ON stickers FOR SELECT
   USING (school_id = get_user_school_id());
 
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- STUDENT_TROPHIES
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CREATE POLICY "Admin can insert stickers"
+  ON stickers FOR INSERT
+  WITH CHECK (school_id = get_user_school_id() AND get_user_role() = 'admin');
 
--- Admin: full CRUD for students in their school
-CREATE POLICY student_trophies_admin_all ON public.student_trophies
-  FOR ALL
+CREATE POLICY "Admin can update stickers"
+  ON stickers FOR UPDATE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Admin can delete stickers"
+  ON stickers FOR DELETE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+-- -------------------------------------------------------------------------
+-- student_stickers: Admin all; teacher read + award class; student own; parent children
+-- -------------------------------------------------------------------------
+CREATE POLICY "Admin can read all school student stickers"
+  ON student_stickers FOR SELECT
   USING (
-    student_id IN (SELECT id FROM public.students WHERE school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
-  WITH CHECK (
-    student_id IN (SELECT id FROM public.students WHERE school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
   );
 
--- Teacher: read trophies in school, award trophies to students in their classes
-CREATE POLICY student_trophies_teacher_read ON public.student_trophies
-  FOR SELECT
+CREATE POLICY "Teacher can read class student stickers"
+  ON student_stickers FOR SELECT
   USING (
-    student_id IN (SELECT id FROM public.students WHERE school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY student_trophies_teacher_insert ON public.student_trophies
-  FOR INSERT
-  WITH CHECK (
-    student_id IN (
-      SELECT s.id FROM public.students s
-      JOIN public.classes c ON s.class_id = c.id
-      WHERE c.teacher_id = auth.uid() AND s.school_id = get_user_school_id()
+    get_user_role() = 'teacher'
+    AND student_id IN (
+      SELECT s.id FROM students s
+      JOIN classes c ON s.class_id = c.id
+      WHERE c.teacher_id = auth.uid()
     )
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
   );
 
--- Student: read own trophies
-CREATE POLICY student_trophies_own_read ON public.student_trophies
-  FOR SELECT
+CREATE POLICY "Student can read own stickers"
+  ON student_stickers FOR SELECT
+  USING (student_id = auth.uid() AND get_user_role() = 'student');
+
+CREATE POLICY "Parent can read children stickers"
+  ON student_stickers FOR SELECT
   USING (
-    student_id = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'student'
+    get_user_role() = 'parent'
+    AND student_id IN (SELECT id FROM students WHERE parent_id = auth.uid())
   );
 
--- Parent: read children's trophies
-CREATE POLICY student_trophies_parent_read ON public.student_trophies
-  FOR SELECT
-  USING (
-    student_id IN (SELECT id FROM public.students WHERE parent_id = auth.uid() AND school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'parent'
-  );
-
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- ACHIEVEMENTS
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Admin: full CRUD within their school
-CREATE POLICY achievements_admin_all ON public.achievements
-  FOR ALL
-  USING (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
+CREATE POLICY "Admin can insert student stickers"
+  ON student_stickers FOR INSERT
   WITH CHECK (
-    school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
   );
 
--- All school members: read achievements
-CREATE POLICY achievements_school_read ON public.achievements
-  FOR SELECT
-  USING (school_id = get_user_school_id());
-
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- STUDENT_ACHIEVEMENTS
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
--- Admin: full CRUD for students in their school
-CREATE POLICY student_achievements_admin_all ON public.student_achievements
-  FOR ALL
-  USING (
-    student_id IN (SELECT id FROM public.students WHERE school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
+CREATE POLICY "Teacher can award stickers to class students"
+  ON student_stickers FOR INSERT
   WITH CHECK (
-    student_id IN (SELECT id FROM public.students WHERE school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  );
-
--- Teacher: read achievements in school, award to students in their classes
-CREATE POLICY student_achievements_teacher_read ON public.student_achievements
-  FOR SELECT
-  USING (
-    student_id IN (SELECT id FROM public.students WHERE school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
-
-CREATE POLICY student_achievements_teacher_insert ON public.student_achievements
-  FOR INSERT
-  WITH CHECK (
-    student_id IN (
-      SELECT s.id FROM public.students s
-      JOIN public.classes c ON s.class_id = c.id
-      WHERE c.teacher_id = auth.uid() AND s.school_id = get_user_school_id()
+    get_user_role() = 'teacher'
+    AND awarded_by = auth.uid()
+    AND student_id IN (
+      SELECT s.id FROM students s
+      JOIN classes c ON s.class_id = c.id
+      WHERE c.teacher_id = auth.uid()
     )
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
   );
 
--- Student: read own achievements
-CREATE POLICY student_achievements_own_read ON public.student_achievements
-  FOR SELECT
+CREATE POLICY "Admin can delete student stickers"
+  ON student_stickers FOR DELETE
   USING (
-    student_id = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'student'
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
   );
 
--- Parent: read children's achievements
-CREATE POLICY student_achievements_parent_read ON public.student_achievements
-  FOR SELECT
+-- -------------------------------------------------------------------------
+-- trophies: All read (global)
+-- -------------------------------------------------------------------------
+CREATE POLICY "Anyone can read trophies"
+  ON trophies FOR SELECT
+  USING (true);
+
+CREATE POLICY "Admin can insert trophies"
+  ON trophies FOR INSERT
+  WITH CHECK (get_user_role() = 'admin');
+
+CREATE POLICY "Admin can update trophies"
+  ON trophies FOR UPDATE
+  USING (get_user_role() = 'admin');
+
+CREATE POLICY "Admin can delete trophies"
+  ON trophies FOR DELETE
+  USING (get_user_role() = 'admin');
+
+-- -------------------------------------------------------------------------
+-- student_trophies: Admin all; teacher read; student own; parent children
+-- -------------------------------------------------------------------------
+CREATE POLICY "Admin can read all school student trophies"
+  ON student_trophies FOR SELECT
   USING (
-    student_id IN (SELECT id FROM public.students WHERE parent_id = auth.uid() AND school_id = get_user_school_id())
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'parent'
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
   );
 
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
--- TEACHER_CHECKINS
--- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CREATE POLICY "Teacher can read student trophies"
+  ON student_trophies FOR SELECT
+  USING (
+    get_user_role() = 'teacher'
+    AND student_id IN (
+      SELECT s.id FROM students s
+      JOIN classes c ON s.class_id = c.id
+      WHERE c.teacher_id = auth.uid()
+    )
+  );
 
--- Admin: full CRUD within their school
-CREATE POLICY teacher_checkins_admin_all ON public.teacher_checkins
-  FOR ALL
+CREATE POLICY "Student can read own trophies"
+  ON student_trophies FOR SELECT
+  USING (student_id = auth.uid() AND get_user_role() = 'student');
+
+CREATE POLICY "Parent can read children trophies"
+  ON student_trophies FOR SELECT
+  USING (
+    get_user_role() = 'parent'
+    AND student_id IN (SELECT id FROM students WHERE parent_id = auth.uid())
+  );
+
+CREATE POLICY "Admin can insert student trophies"
+  ON student_trophies FOR INSERT
+  WITH CHECK (
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
+  );
+
+CREATE POLICY "Admin can delete student trophies"
+  ON student_trophies FOR DELETE
+  USING (
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
+  );
+
+-- -------------------------------------------------------------------------
+-- achievements: All read (global)
+-- -------------------------------------------------------------------------
+CREATE POLICY "Anyone can read achievements"
+  ON achievements FOR SELECT
+  USING (true);
+
+CREATE POLICY "Admin can insert achievements"
+  ON achievements FOR INSERT
+  WITH CHECK (get_user_role() = 'admin');
+
+CREATE POLICY "Admin can update achievements"
+  ON achievements FOR UPDATE
+  USING (get_user_role() = 'admin');
+
+CREATE POLICY "Admin can delete achievements"
+  ON achievements FOR DELETE
+  USING (get_user_role() = 'admin');
+
+-- -------------------------------------------------------------------------
+-- student_achievements: Admin all; teacher read; student own; parent children
+-- -------------------------------------------------------------------------
+CREATE POLICY "Admin can read all school student achievements"
+  ON student_achievements FOR SELECT
+  USING (
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
+  );
+
+CREATE POLICY "Teacher can read student achievements"
+  ON student_achievements FOR SELECT
+  USING (
+    get_user_role() = 'teacher'
+    AND student_id IN (
+      SELECT s.id FROM students s
+      JOIN classes c ON s.class_id = c.id
+      WHERE c.teacher_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Student can read own achievements"
+  ON student_achievements FOR SELECT
+  USING (student_id = auth.uid() AND get_user_role() = 'student');
+
+CREATE POLICY "Parent can read children achievements"
+  ON student_achievements FOR SELECT
+  USING (
+    get_user_role() = 'parent'
+    AND student_id IN (SELECT id FROM students WHERE parent_id = auth.uid())
+  );
+
+CREATE POLICY "Admin can insert student achievements"
+  ON student_achievements FOR INSERT
+  WITH CHECK (
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
+  );
+
+CREATE POLICY "Admin can delete student achievements"
+  ON student_achievements FOR DELETE
+  USING (
+    get_user_role() = 'admin'
+    AND student_id IN (SELECT id FROM students WHERE school_id = get_user_school_id())
+  );
+
+-- -------------------------------------------------------------------------
+-- teacher_checkins: Admin all; teacher own CRUD
+-- -------------------------------------------------------------------------
+CREATE POLICY "Admin can read all school teacher checkins"
+  ON teacher_checkins FOR SELECT
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can read own checkins"
+  ON teacher_checkins FOR SELECT
   USING (
     school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
-  )
+    AND teacher_id = auth.uid()
+    AND get_user_role() = 'teacher'
+  );
+
+CREATE POLICY "Admin can insert teacher checkins"
+  ON teacher_checkins FOR INSERT
+  WITH CHECK (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can insert own checkins"
+  ON teacher_checkins FOR INSERT
   WITH CHECK (
     school_id = get_user_school_id()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
+    AND teacher_id = auth.uid()
+    AND get_user_role() = 'teacher'
   );
 
--- Teacher: read own check-ins, insert/update own check-ins
-CREATE POLICY teacher_checkins_teacher_read ON public.teacher_checkins
-  FOR SELECT
+CREATE POLICY "Admin can update teacher checkins"
+  ON teacher_checkins FOR UPDATE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
+
+CREATE POLICY "Teacher can update own checkins"
+  ON teacher_checkins FOR UPDATE
   USING (
     school_id = get_user_school_id()
     AND teacher_id = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
+    AND get_user_role() = 'teacher'
   );
 
-CREATE POLICY teacher_checkins_teacher_insert ON public.teacher_checkins
-  FOR INSERT
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND teacher_id = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  );
+CREATE POLICY "Admin can delete teacher checkins"
+  ON teacher_checkins FOR DELETE
+  USING (school_id = get_user_school_id() AND get_user_role() = 'admin');
 
-CREATE POLICY teacher_checkins_teacher_update ON public.teacher_checkins
-  FOR UPDATE
+CREATE POLICY "Teacher can delete own checkins"
+  ON teacher_checkins FOR DELETE
   USING (
     school_id = get_user_school_id()
     AND teacher_id = auth.uid()
-    AND (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'teacher'
-  )
-  WITH CHECK (
-    school_id = get_user_school_id()
-    AND teacher_id = auth.uid()
+    AND get_user_role() = 'teacher'
   );
+
+-- -------------------------------------------------------------------------
+-- levels: All read (global)
+-- -------------------------------------------------------------------------
+CREATE POLICY "Anyone can read levels"
+  ON levels FOR SELECT
+  USING (true);
+
+CREATE POLICY "Admin can manage levels"
+  ON levels FOR ALL
+  USING (get_user_role() = 'admin');
 
 -- ============================================================================
--- 5. TRIGGERS
+-- SECTION 6: Triggers
 -- ============================================================================
 
--- Auto-update updated_at on schools
+-- Auto-update updated_at
 CREATE TRIGGER set_schools_updated_at
-  BEFORE UPDATE ON public.schools
-  FOR EACH ROW
-  EXECUTE FUNCTION public.handle_updated_at();
+  BEFORE UPDATE ON schools
+  FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 
--- Auto-update updated_at on profiles
 CREATE TRIGGER set_profiles_updated_at
-  BEFORE UPDATE ON public.profiles
-  FOR EACH ROW
-  EXECUTE FUNCTION public.handle_updated_at();
+  BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 
--- Post-signup setup hook (fires after new profile is created)
-CREATE TRIGGER on_profile_created
-  AFTER INSERT ON public.profiles
-  FOR EACH ROW
-  EXECUTE FUNCTION public.handle_new_profile();
+CREATE TRIGGER set_students_updated_at
+  BEFORE UPDATE ON students
+  FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+
+-- Auto-create profile after signup
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION handle_new_profile();
 
 -- ============================================================================
--- END OF MIGRATION
+-- SECTION 7: Seed Data - Levels (PRD 9.2)
 -- ============================================================================
+
+INSERT INTO levels (level_number, title, points_required) VALUES
+  (1,  'Beginner',        0),
+  (2,  'Seeker',          50),
+  (3,  'Reciter',         150),
+  (4,  'Memorizer',       300),
+  (5,  'Scholar',         500),
+  (6,  'Hafiz Star',      800),
+  (7,  'Master',          1200),
+  (8,  'Champion',        1800),
+  (9,  'Legend',           2500),
+  (10, 'Quran Guardian',  3500);
