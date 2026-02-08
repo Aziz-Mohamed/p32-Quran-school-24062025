@@ -201,8 +201,9 @@
 - [ ] T087 [US4] Create class detail screen — implement `app/(admin)/classes/[id]/index.tsx`: class info, assigned teacher, student roster with add/remove.
 - [ ] T088 [US4] Create class edit screen — implement `app/(admin)/classes/[id]/edit.tsx`: edit name, teacher, schedule, max students, active status.
 - [ ] T089 [US4] Create admin password reset screen — implement `app/(admin)/members/reset-password.tsx`: select user, enter new password. Calls `resetMemberPassword` Edge Function.
+- [ ] T089b [P] [US4] Create sticker catalog management — implement sticker CRUD screens for admin per FR-029b. Add `app/(admin)/stickers/index.tsx` (list), `app/(admin)/stickers/create.tsx` (create: name, image, category, points_value), `app/(admin)/stickers/[id]/edit.tsx` (edit/deactivate). Add sticker management service functions to `src/features/gamification/gamification.service.ts`: `createSticker()`, `updateSticker()`.
 
-**Checkpoint**: US4 complete. Admin can fully manage students, teachers, classes, and reset passwords.
+**Checkpoint**: US4 complete. Admin can fully manage students, teachers, classes, sticker catalog, and reset passwords.
 
 ---
 
@@ -378,13 +379,13 @@ Tasks marked `[P]` within the same phase can run in parallel:
 | 3 | US1 - Auth & Routing | 13 | P1 |
 | 4 | US2 - Teacher Sessions | 15 | P1 |
 | 5 | US3 - Student Progress | 16 | P1 |
-| 6 | US4 - Admin CRUD | 21 | P2 |
+| 6 | US4 - Admin CRUD | 22 | P2 |
 | 7 | US5 - Attendance | 3 | P2 |
 | 8 | US6 - Parent Monitoring | 9 | P2 |
 | 9 | US7 - Teacher Insights | 6 | P3 |
 | 10 | US8 - i18n | 5 | P3 |
 | 11 | Polish | 7 | — |
-| **Total** | | **119** | |
+| **Total** | | **120** | |
 
 ---
 

@@ -32,6 +32,22 @@
 - Gamification points are calculated when sessions are logged or homework is completed, per the defined points table
 - Leaderboards are class-scoped and show top 10 plus the current student's rank
 - Stickers are school-scoped assets; trophies, achievements, and levels are global
+- Login requires username + password + school slug (identifier). The school slug is stored locally after first successful login and pre-filled on subsequent logins
+- Passwords require a minimum of 6 characters. No complexity requirements (uppercase, special chars) in Phase 1
+- Edge Functions implement rollback on partial failure: if any step fails after auth user creation, the created auth user is deleted before returning an error
+- Usernames must use Latin characters only (a-z, 0-9, underscore). Admin enters member's name in Latin script for username generation. Arabic script input is not supported for usernames
+- Lessons are created by admins (any class) and teachers (their own classes)
+- Students mark homework complete by tapping a "Mark Complete" button on the homework item (sets is_completed=true, completed_at=now())
+- Sessions are immutable after creation in Phase 1. Teachers can view session history but cannot edit or delete sessions. This preserves points integrity
+- "Declining scores" for teacher Needs Support view: average of last 3 sessions' scores is lower than the average of the previous 3, OR any score below 3 in the last 2 sessions
+- 10 levels is the canonical count (per database seed data). `src/lib/constants.ts` will be updated to match
+- The `homework_assigned` text field on `sessions` is a display-only convenience field. The `homework` table is the canonical source of truth for tracked homework with completion status
+- A teacher can award the same sticker to the same student multiple times. Each award is a separate event with its own timestamp and reason (no unique constraint on student_id + sticker_id)
+- Deactivating a user (is_active=false) does NOT revoke their auth session. The app checks is_active at login and session restore; deactivated users see a "your account has been deactivated" message and are redirected to login
+- Rate limiting for the public `create-school` endpoint relies on Supabase Edge Function defaults in Phase 1. Custom rate limiting deferred
+- Brute-force login protection relies on Supabase Auth built-in rate limiting (~30 requests/hour/IP) in Phase 1. Custom lockout deferred
+- Confirmation dialogs are required for all destructive actions: deactivate user, remove student from class, reset password
+- Write operation feedback: toast notification for success, inline error messages for validation failures, redirect to list screen after successful create/edit
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -197,6 +213,8 @@ A user can switch between English and Arabic from their profile or settings. Whe
 - What happens when the network is unavailable? Users see appropriate error states on data-fetching screens. No offline mode in Phase 1.
 - What happens when an admin creates a user with a username that already exists in the school? The system rejects the creation and displays a clear message that the username is taken.
 - What happens when a user forgets their password? They contact their school admin, who resets the password in-app. There is no self-service password reset.
+- What happens when a student with no class views the leaderboard? The leaderboard is class-scoped, so the student sees no leaderboard and a message to contact their admin. Sessions can still be logged for classless students.
+- What happens when a teacher awards the same sticker to the same student again? It is allowed — each award is a separate event with its own timestamp and reason.
 
 ## Requirements *(mandatory)*
 
@@ -213,7 +231,7 @@ A user can switch between English and Arabic from their profile or settings. Whe
 
 **Student Experience**
 
-- **FR-007**: Students MUST see a dashboard with their current level, progress overview, current homework, quick actions, and recent achievements
+- **FR-007**: Students MUST see a dashboard with their current level, progress overview (points-to-next-level progress bar, sessions completed this week, homework completion rate), current homework with due date, quick actions, and recent achievements
 - **FR-008**: Students MUST be able to browse lessons grouped by status (not started, in progress, completed)
 - **FR-009**: Students MUST be able to view past session evaluations with date, teacher, scores, and notes
 - **FR-010**: Students MUST be able to view their sticker collection as a grid with total count
@@ -224,7 +242,7 @@ A user can switch between English and Arabic from their profile or settings. Whe
 
 **Teacher Experience**
 
-- **FR-015**: Teachers MUST see a dashboard with today's session count, students seen count, alerts, and quick actions
+- **FR-015**: Teachers MUST see a dashboard with today's session count, students seen count, and quick actions (Log Session, Award Sticker, Check In). Alerts are deferred to Phase 2
 - **FR-016**: Teachers MUST be able to create a session with: student selection, date, lesson reference, recitation/tajweed/memorization scores (1-5), notes, and optional homework assignment
 - **FR-017**: Teachers MUST be able to award stickers to students by selecting a student, picking a sticker, and providing an optional reason
 - **FR-018**: Teachers MUST see only students in classes assigned to them
@@ -245,7 +263,8 @@ A user can switch between English and Arabic from their profile or settings. Whe
 - **FR-027**: Admins MUST be able to create, view, edit, and deactivate teachers. Username generation follows the same pattern as FR-026.
 - **FR-028**: Admins MUST be able to create, edit, and manage classes (assign teacher, set schedule, set max students)
 - **FR-029**: Admins MUST be able to assign and remove students from classes
-- **FR-030**: Admins MUST be able to mark bulk attendance per class (present/absent/late/excused) with "mark all present" shortcut
+- **FR-029b**: Admins MUST be able to manage the school's sticker catalog: create stickers (name, image, category, point value), edit sticker details, and deactivate stickers. Deactivated stickers cannot be newly awarded but remain in students' existing collections
+- **FR-030**: Admins MUST be able to mark bulk attendance per class (present/absent/late/excused) with "mark all present" shortcut. Teachers can also mark attendance for their own classes (per RLS), but the primary bulk attendance UI is admin-facing in Phase 1
 
 **Gamification**
 
