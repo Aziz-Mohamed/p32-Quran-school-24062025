@@ -8,7 +8,7 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { I18nextProvider } from 'react-i18next';
 
-import { useAuthStore } from '@/stores/authStore';
+import { useAuthStore, type Profile } from '@/stores/authStore';
 import { useAuth } from '@/hooks/useAuth';
 import i18n from '@/i18n/config';
 import { supabase } from '@/lib/supabase';
@@ -73,6 +73,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const initialize = useAuthStore((s) => s.initialize);
   const setSession = useAuthStore((s) => s.setSession);
   const setProfile = useAuthStore((s) => s.setProfile);
+  const clearAuth = useAuthStore((s) => s.clearAuth);
 
   // ─── Initialize Auth Listener ───────────────────────────────────────────────
 
@@ -89,7 +90,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
           .single()
           .then(({ data, error }) => {
             if (!error && data) {
-              setProfile(data);
+              setProfile(data as Profile);
             }
             initialize();
           });
@@ -98,13 +99,18 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Listen to auth changes
+    // Listen to auth changes (T116: handle token expiry)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !session) {
+        // Token expired or user signed out — clear auth state
+        clearAuth();
+        return;
+      }
       if (session) {
-        // Fetch profile on sign in
+        // Fetch profile on sign in or token refresh
         supabase
           .from('profiles')
           .select('*')
@@ -112,7 +118,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
           .single()
           .then(({ data, error }) => {
             if (!error && data) {
-              setProfile(data);
+              setProfile(data as Profile);
             }
           });
       } else {
@@ -123,7 +129,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [setSession, setProfile, initialize]);
+  }, [setSession, setProfile, initialize, clearAuth]);
 
   // ─── Auth Guard Logic ────────────────────────────────────────────────────────
 
