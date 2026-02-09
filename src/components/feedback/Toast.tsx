@@ -1,13 +1,5 @@
-import React, { useCallback, useEffect } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withDelay,
-  runOnJS,
-  Easing,
-} from 'react-native-reanimated';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { Animated, Easing, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -43,22 +35,22 @@ interface VariantConfig {
 
 const VARIANT_MAP: Record<ToastVariant, VariantConfig> = {
   success: {
-    backgroundColor: '#ECFDF5', // light green tint
+    backgroundColor: '#ECFDF5',
     textColor: '#065F46',
     icon: 'checkmark-circle',
   },
   error: {
-    backgroundColor: '#FEF2F2', // light red tint
+    backgroundColor: '#FEF2F2',
     textColor: '#991B1B',
     icon: 'close-circle',
   },
   warning: {
-    backgroundColor: '#FFFBEB', // light amber tint
+    backgroundColor: '#FFFBEB',
     textColor: '#92400E',
     icon: 'warning',
   },
   info: {
-    backgroundColor: '#EFF6FF', // light blue tint
+    backgroundColor: '#EFF6FF',
     textColor: '#1E40AF',
     icon: 'information-circle',
   },
@@ -80,8 +72,9 @@ export function Toast({
   duration = DEFAULT_DURATION,
 }: ToastProps) {
   const insets = useSafeAreaInsets();
-  const translateY = useSharedValue(SLIDE_DISTANCE);
-  const opacity = useSharedValue(0);
+  const translateY = useRef(new Animated.Value(SLIDE_DISTANCE)).current;
+  const opacity = useRef(new Animated.Value(0)).current;
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const config = VARIANT_MAP[variant];
 
@@ -90,51 +83,76 @@ export function Toast({
   }, [onDismiss]);
 
   useEffect(() => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+    }
+
     if (visible) {
       // Slide in
-      translateY.value = withTiming(0, {
-        duration: ANIMATION_DURATION,
-        easing: Easing.out(Easing.cubic),
-      });
-      opacity.value = withTiming(1, { duration: ANIMATION_DURATION });
-
-      // Auto-dismiss: slide out, then call dismiss
-      translateY.value = withDelay(
-        duration,
-        withTiming(SLIDE_DISTANCE, {
+      Animated.parallel([
+        Animated.timing(translateY, {
+          toValue: 0,
           duration: ANIMATION_DURATION,
-          easing: Easing.in(Easing.cubic),
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
         }),
-      );
-      opacity.value = withDelay(
-        duration,
-        withTiming(0, { duration: ANIMATION_DURATION }, (finished) => {
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: ANIMATION_DURATION,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Auto-dismiss
+      timerRef.current = setTimeout(() => {
+        Animated.parallel([
+          Animated.timing(translateY, {
+            toValue: SLIDE_DISTANCE,
+            duration: ANIMATION_DURATION,
+            easing: Easing.in(Easing.cubic),
+            useNativeDriver: true,
+          }),
+          Animated.timing(opacity, {
+            toValue: 0,
+            duration: ANIMATION_DURATION,
+            useNativeDriver: true,
+          }),
+        ]).start(({ finished }) => {
           if (finished) {
-            runOnJS(dismiss)();
+            dismiss();
           }
-        }),
-      );
+        });
+      }, duration);
     } else {
       // Immediate hide
-      translateY.value = withTiming(SLIDE_DISTANCE, {
-        duration: ANIMATION_DURATION,
-        easing: Easing.in(Easing.cubic),
-      });
-      opacity.value = withTiming(0, { duration: ANIMATION_DURATION });
+      Animated.parallel([
+        Animated.timing(translateY, {
+          toValue: SLIDE_DISTANCE,
+          duration: ANIMATION_DURATION,
+          easing: Easing.in(Easing.cubic),
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: ANIMATION_DURATION,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
-  }, [visible, duration, translateY, opacity, dismiss]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: opacity.value,
-  }));
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [visible, duration, translateY, opacity, dismiss]);
 
   return (
     <Animated.View
       style={[
         styles.wrapper,
         { paddingTop: insets.top + spacing.xs },
-        animatedStyle,
+        { transform: [{ translateY }], opacity },
       ]}
       pointerEvents={visible ? 'auto' : 'none'}
     >
@@ -183,7 +201,6 @@ const styles = StyleSheet.create({
     paddingStart: spacing.md,
     paddingEnd: spacing.md,
     borderRadius: radius.md,
-    // Subtle shadow
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

@@ -1,13 +1,5 @@
-import React, { useEffect } from 'react';
-import { StyleSheet, type DimensionValue, type ViewStyle } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  Easing,
-  interpolate,
-} from 'react-native-reanimated';
+import React, { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, type DimensionValue, type ViewStyle } from 'react-native';
 
 import { colors } from '@/theme/colors';
 import { radius } from '@/theme/radius';
@@ -28,7 +20,6 @@ interface SkeletonLoaderProps {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const BASE_COLOR = colors.neutral[200];
-const SHIMMER_COLOR = colors.neutral[100];
 const ANIMATION_DURATION = 1200;
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -39,41 +30,32 @@ export function SkeletonLoader({
   borderRadius = radius.sm,
   style,
 }: SkeletonLoaderProps) {
-  const progress = useSharedValue(0);
+  const opacity = useRef(new Animated.Value(0.3)).current;
 
   useEffect(() => {
-    progress.value = withRepeat(
-      withTiming(1, { duration: ANIMATION_DURATION, easing: Easing.inOut(Easing.ease) }),
-      -1, // infinite
-      true, // reverse
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: ANIMATION_DURATION,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.3,
+          duration: ANIMATION_DURATION,
+          useNativeDriver: true,
+        }),
+      ]),
     );
-  }, [progress]);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    backgroundColor: `rgba(${interpolate(
-      progress.value,
-      [0, 1],
-      [229, 245], // neutral[200] → neutral[100] red channel approximation
-    )}, ${interpolate(
-      progress.value,
-      [0, 1],
-      [229, 245],
-    )}, ${interpolate(
-      progress.value,
-      [0, 1],
-      [229, 245],
-    )}, 1)`,
-    // We interpolate all three RGB channels identically because both
-    // neutral[200] (#E5E5E5 = 229,229,229) and neutral[100] (#F5F5F5 = 245,245,245)
-    // are grey tones.
-  }));
+    animation.start();
+    return () => animation.stop();
+  }, [opacity]);
 
   return (
     <Animated.View
       style={[
         styles.base,
-        { width, height, borderRadius },
-        animatedStyle,
+        { width, height, borderRadius, opacity },
         style,
       ]}
     />
