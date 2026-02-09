@@ -26,7 +26,7 @@ export const useAuth = (): UseAuthReturn => {
     profile,
     isLoading,
     isAuthenticated,
-    role: profile?.role ?? null,
+    role: (profile?.role as UserRole) ?? null,
     schoolId: profile?.school_id ?? null,
   };
 };

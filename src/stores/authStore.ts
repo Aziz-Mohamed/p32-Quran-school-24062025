@@ -3,25 +3,18 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Session } from '@supabase/supabase-js';
 
-import type { UserRole, SupportedLocale } from '@/types/common.types';
+import type { Tables } from '@/types/database.types';
 
 // ─── Profile Type ───────────────────────────────────────────────────────────
 
-export interface Profile {
-  id: string;
-  school_id: string;
-  role: UserRole;
-  full_name: string;
-  avatar_url: string | null;
-  phone: string | null;
-  preferred_language: SupportedLocale;
-}
+export type Profile = Tables<'profiles'>;
 
 // ─── Store Shape ────────────────────────────────────────────────────────────
 
 interface AuthState {
   session: Session | null;
   profile: Profile | null;
+  schoolSlug: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
 }
@@ -29,6 +22,7 @@ interface AuthState {
 interface AuthActions {
   setSession: (session: Session | null) => void;
   setProfile: (profile: Profile | null) => void;
+  setSchoolSlug: (slug: string) => void;
   clearAuth: () => void;
   initialize: () => void;
 }
@@ -40,6 +34,7 @@ type AuthStore = AuthState & AuthActions;
 const initialState: AuthState = {
   session: null,
   profile: null,
+  schoolSlug: null,
   isLoading: true,
   isAuthenticated: false,
 };
@@ -61,6 +56,9 @@ export const useAuthStore = create<AuthStore>()(
       setProfile: (profile) =>
         set({ profile }),
 
+      setSchoolSlug: (slug) =>
+        set({ schoolSlug: slug }),
+
       clearAuth: () =>
         set({
           session: null,
@@ -76,10 +74,10 @@ export const useAuthStore = create<AuthStore>()(
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({
-        // Only persist the profile; session is managed by Supabase's own
-        // storage adapter (SecureStore). Persisting the session here would
-        // create a stale duplicate.
+        // Persist profile and schoolSlug for login convenience.
+        // Session is managed by Supabase's own SecureStore adapter.
         profile: state.profile,
+        schoolSlug: state.schoolSlug,
       }),
     },
   ),

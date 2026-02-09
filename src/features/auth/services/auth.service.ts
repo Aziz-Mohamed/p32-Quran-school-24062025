@@ -2,20 +2,31 @@ import { supabase } from '@/lib/supabase';
 import type { Session } from '@supabase/supabase-js';
 import type {
   LoginInput,
-  RegisterInput,
-  ResetPasswordInput,
+  CreateSchoolInput,
+  CreateSchoolResponse,
+  CreateMemberInput,
+  CreateMemberResponse,
+  ResetMemberPasswordInput,
   AuthResult,
   Profile,
 } from '../types/auth.types';
+import { buildSyntheticEmail } from '../types/auth.types';
+
+const FUNCTIONS_URL = process.env.EXPO_PUBLIC_SUPABASE_URL
+  ? `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
+  : '';
 
 class AuthService {
   /**
-   * Sign in with email and password
+   * Sign in with username, password, and school slug.
+   * Builds a synthetic email internally.
    */
   async login(input: LoginInput): Promise<AuthResult<Session>> {
     try {
+      const email = buildSyntheticEmail(input.username, input.schoolSlug);
+
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: input.email,
+        email,
         password: input.password,
       });
 
@@ -30,9 +41,7 @@ class AuthService {
 
       if (!data.session) {
         return {
-          error: {
-            message: 'No session returned',
-          },
+          error: { message: 'No session returned' },
         };
       }
 
@@ -47,40 +56,36 @@ class AuthService {
   }
 
   /**
-   * Register a new user with profile data
+   * Create a new school and admin account via Edge Function.
    */
-  async register(input: RegisterInput): Promise<AuthResult<Session>> {
+  async createSchool(input: CreateSchoolInput): Promise<AuthResult<CreateSchoolResponse>> {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email: input.email,
-        password: input.password,
-        options: {
-          data: {
-            full_name: input.fullName,
-            role: input.role,
-            school_id: input.schoolId,
-          },
-        },
+      const response = await fetch(`${FUNCTIONS_URL}/create-school`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
       });
 
-      if (error) {
+      const result = await response.json();
+
+      if (!response.ok) {
         return {
           error: {
-            message: error.message,
-            code: error.code,
+            message: result.error || 'Failed to create school',
+            code: result.code,
           },
         };
       }
 
-      if (!data.session) {
-        return {
-          error: {
-            message: 'Registration successful, but no session returned. Please check your email for verification.',
-          },
-        };
+      // Set the session in the Supabase client if we got one
+      if (result.session?.access_token) {
+        await supabase.auth.setSession({
+          access_token: result.session.access_token,
+          refresh_token: result.session.refresh_token,
+        });
       }
 
-      return { data: data.session };
+      return { data: result };
     } catch (error) {
       return {
         error: {
@@ -91,17 +96,76 @@ class AuthService {
   }
 
   /**
-   * Sign out the current user
+   * Admin creates a new member via Edge Function.
+   * Requires the caller to be authenticated as an admin.
    */
-  async logout(): Promise<AuthResult> {
+  async createMember(input: CreateMemberInput): Promise<AuthResult<CreateMemberResponse>> {
     try {
-      const { error } = await supabase.auth.signOut();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
 
-      if (error) {
+      if (!token) {
+        return { error: { message: 'Not authenticated', code: 'UNAUTHORIZED' } };
+      }
+
+      const response = await fetch(`${FUNCTIONS_URL}/create-member`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(input),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
         return {
           error: {
-            message: error.message,
-            code: error.code,
+            message: result.error || 'Failed to create member',
+            code: result.code,
+          },
+        };
+      }
+
+      return { data: result };
+    } catch (error) {
+      return {
+        error: {
+          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+        },
+      };
+    }
+  }
+
+  /**
+   * Admin resets a member's password via Edge Function.
+   */
+  async resetMemberPassword(input: ResetMemberPasswordInput): Promise<AuthResult> {
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+
+      if (!token) {
+        return { error: { message: 'Not authenticated', code: 'UNAUTHORIZED' } };
+      }
+
+      const response = await fetch(`${FUNCTIONS_URL}/reset-member-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(input),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        return {
+          error: {
+            message: result.error || 'Failed to reset password',
+            code: result.code,
           },
         };
       }
@@ -117,13 +181,11 @@ class AuthService {
   }
 
   /**
-   * Request password reset email
+   * Sign out the current user
    */
-  async resetPassword(input: ResetPasswordInput): Promise<AuthResult> {
+  async logout(): Promise<AuthResult> {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(input.email, {
-        redirectTo: 'myapp://reset-password',
-      });
+      const { error } = await supabase.auth.signOut();
 
       if (error) {
         return {
@@ -166,9 +228,7 @@ class AuthService {
 
       if (!data) {
         return {
-          error: {
-            message: 'Profile not found',
-          },
+          error: { message: 'Profile not found' },
         };
       }
 
@@ -200,9 +260,7 @@ class AuthService {
 
       if (!data.session) {
         return {
-          error: {
-            message: 'No active session',
-          },
+          error: { message: 'No active session' },
         };
       }
 

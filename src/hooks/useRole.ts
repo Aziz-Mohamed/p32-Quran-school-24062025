@@ -14,7 +14,7 @@ interface UseRoleReturn {
  */
 export const useRole = (): UseRoleReturn => {
   const profile = useAuthStore((state) => state.profile);
-  const role = profile?.role ?? null;
+  const role = (profile?.role as UserRole) ?? null;
 
   return {
     role,

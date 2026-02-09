@@ -5,10 +5,13 @@ import type { LoginInput } from '../types/auth.types';
 
 export const useLogin = () => {
   const queryClient = useQueryClient();
-  const { setSession, setProfile } = useAuthStore();
+  const { setSession, setProfile, setSchoolSlug } = useAuthStore();
 
   return useMutation({
     mutationFn: async (input: LoginInput) => {
+      // Persist school slug for next login
+      setSchoolSlug(input.schoolSlug);
+
       const result = await authService.login(input);
 
       if (result.error) {
@@ -22,17 +25,14 @@ export const useLogin = () => {
       return result.data;
     },
     onSuccess: async (session) => {
-      // Update session in store
       setSession(session);
 
-      // Fetch and update profile
       const profileResult = await authService.getProfile(session.user.id);
-      
+
       if (profileResult.data) {
         setProfile(profileResult.data);
       }
 
-      // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['currentUser'] });
     },
     onError: (error) => {
