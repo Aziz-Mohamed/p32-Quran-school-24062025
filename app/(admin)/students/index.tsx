@@ -1,22 +1,109 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
+import { FlashList } from '@shopify/flash-list';
+import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
+import { Card } from '@/components/ui/Card';
+import { Badge } from '@/components/ui';
+import { Button } from '@/components/ui/Button';
+import { SearchBar } from '@/components/ui';
+import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
+import { useStudents } from '@/features/students/hooks/useStudents';
 import { typography } from '@/theme/typography';
-import { lightTheme } from '@/theme/colors';
+import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
 // ─── Admin Students List ──────────────────────────────────────────────────────
 
 export default function AdminStudentsScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const { data: students = [], isLoading, error, refetch } = useStudents({
+    searchQuery: searchQuery || undefined,
+  });
+
+  if (isLoading) return <LoadingState />;
+  if (error) return <ErrorState description={(error as Error).message} onRetry={refetch} />;
 
   return (
     <Screen scroll={false}>
       <View style={styles.container}>
-        <Text style={styles.title}>{t('admin.students.title')}</Text>
-        <Text style={styles.subtitle}>{t('admin.students.subtitle')}</Text>
+        <View style={styles.header}>
+          <Button
+            title={t('common.back')}
+            onPress={() => router.back()}
+            variant="ghost"
+            size="sm"
+          />
+          <Text style={styles.title}>{t('admin.students.title')}</Text>
+          <Button
+            title={t('admin.addStudent')}
+            onPress={() => router.push('/(admin)/students/create')}
+            variant="primary"
+            size="sm"
+            icon={<Ionicons name="add" size={18} color={colors.white} />}
+          />
+        </View>
+
+        <SearchBar
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onClear={() => setSearchQuery('')}
+          placeholder={t('admin.students.searchPlaceholder')}
+          style={styles.searchBar}
+        />
+
+        {students.length === 0 ? (
+          <EmptyState
+            icon="people-outline"
+            title={t('admin.students.emptyTitle')}
+            description={t('admin.students.emptyDescription')}
+          />
+        ) : (
+          <FlashList
+            data={students}
+            keyExtractor={(item: any) => item.id}
+
+            renderItem={({ item }: { item: any }) => (
+              <Card
+                variant="outlined"
+                style={styles.studentCard}
+                onPress={() => router.push(`/(admin)/students/${item.id}`)}
+              >
+                <View style={styles.studentRow}>
+                  <View style={styles.studentInfo}>
+                    <Text style={styles.studentName}>
+                      {item.profiles?.full_name ?? '—'}
+                    </Text>
+                    <Text style={styles.studentMeta}>
+                      @{item.profiles?.username ?? '—'}
+                      {item.classes?.name ? ` · ${item.classes.name}` : ''}
+                    </Text>
+                  </View>
+                  <View style={styles.studentBadges}>
+                    {item.levels && (
+                      <Badge
+                        label={item.levels.title ?? `Lvl ${item.levels.level_number}`}
+                        variant="info"
+                        size="sm"
+                      />
+                    )}
+                    <Badge
+                      label={item.is_active ? t('common.active') : t('common.inactive')}
+                      variant={item.is_active ? 'success' : 'warning'}
+                      size="sm"
+                    />
+                  </View>
+                </View>
+              </Card>
+            )}
+          />
+        )}
       </View>
     </Screen>
   );
@@ -27,18 +114,46 @@ export default function AdminStudentsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    padding: spacing.lg,
+    gap: spacing.md,
+  },
+  header: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: spacing.xl,
+    justifyContent: 'space-between',
   },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    marginBlockEnd: spacing.sm,
-  },
-  subtitle: {
-    ...typography.textStyles.body,
-    color: lightTheme.textSecondary,
+    flex: 1,
     textAlign: 'center',
+  },
+  searchBar: {
+    marginBottom: spacing.xs,
+  },
+  studentCard: {
+    marginBottom: spacing.sm,
+  },
+  studentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  studentInfo: {
+    flex: 1,
+  },
+  studentName: {
+    ...typography.textStyles.body,
+    color: lightTheme.text,
+    fontFamily: typography.fontFamily.semiBold,
+  },
+  studentMeta: {
+    ...typography.textStyles.caption,
+    color: lightTheme.textSecondary,
+    marginTop: 2,
+  },
+  studentBadges: {
+    flexDirection: 'row',
+    gap: spacing.xs,
   },
 });

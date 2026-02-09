@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
@@ -9,22 +9,31 @@ import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
-import { SearchBar } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
-import { useClasses } from '@/features/classes/hooks/useClasses';
+import { useAuth } from '@/hooks/useAuth';
+import { gamificationService } from '@/features/gamification/services/gamification.service';
+import { useQuery } from '@tanstack/react-query';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
-// ─── Admin Classes List ───────────────────────────────────────────────────────
+// ─── Sticker Catalog Screen ──────────────────────────────────────────────────
 
-export default function AdminClassesScreen() {
+export default function StickerCatalogScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const { profile } = useAuth();
 
-  const { data: classes = [], isLoading, error, refetch } = useClasses({
-    searchQuery: searchQuery || undefined,
+  const { data: stickers = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['stickers', profile?.school_id],
+    queryFn: async () => {
+      if (!profile?.school_id) return [];
+      // Get all stickers (not just active) for admin
+      const { data, error } = await gamificationService.getStickers(profile.school_id);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!profile?.school_id,
   });
 
   if (isLoading) return <LoadingState />;
@@ -40,49 +49,39 @@ export default function AdminClassesScreen() {
             variant="ghost"
             size="sm"
           />
-          <Text style={styles.title}>{t('admin.classes.title')}</Text>
+          <Text style={styles.title}>{t('admin.stickers.title')}</Text>
           <Button
-            title={t('admin.addClass')}
-            onPress={() => router.push('/(admin)/classes/create')}
+            title={t('admin.stickers.add')}
+            onPress={() => router.push('/(admin)/stickers/create')}
             variant="primary"
             size="sm"
             icon={<Ionicons name="add" size={18} color={colors.white} />}
           />
         </View>
 
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onClear={() => setSearchQuery('')}
-          placeholder={t('admin.classes.searchPlaceholder')}
-          style={styles.searchBar}
-        />
-
-        {classes.length === 0 ? (
+        {stickers.length === 0 ? (
           <EmptyState
-            icon="albums-outline"
-            title={t('admin.classes.emptyTitle')}
-            description={t('admin.classes.emptyDescription')}
+            icon="star-outline"
+            title={t('admin.stickers.emptyTitle')}
+            description={t('admin.stickers.emptyDescription')}
           />
         ) : (
           <FlashList
-            data={classes}
+            data={stickers}
             keyExtractor={(item: any) => item.id}
 
             renderItem={({ item }: { item: any }) => (
               <Card
                 variant="outlined"
-                style={styles.classCard}
-                onPress={() => router.push(`/(admin)/classes/${item.id}`)}
+                style={styles.stickerCard}
+                onPress={() => router.push(`/(admin)/stickers/${item.id}/edit`)}
               >
-                <View style={styles.classRow}>
-                  <View style={styles.classInfo}>
-                    <Text style={styles.className}>{item.name}</Text>
-                    <Text style={styles.classMeta}>
-                      {item.profiles?.full_name
-                        ? `${t('admin.classes.teacher')}: ${item.profiles.full_name}`
-                        : t('admin.classes.noTeacher')}
-                      {` · ${item.students?.length ?? 0} ${t('admin.classes.students')}`}
+                <View style={styles.stickerRow}>
+                  <Ionicons name="star" size={28} color={colors.primary[500]} />
+                  <View style={styles.stickerInfo}>
+                    <Text style={styles.stickerName}>{item.name}</Text>
+                    <Text style={styles.stickerMeta}>
+                      {item.category ?? '—'} · {item.points_value} {t('common.pts')}
                     </Text>
                   </View>
                   <Badge
@@ -119,26 +118,23 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
-  searchBar: {
-    marginBottom: spacing.xs,
-  },
-  classCard: {
+  stickerCard: {
     marginBottom: spacing.sm,
   },
-  classRow: {
+  stickerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: spacing.md,
   },
-  classInfo: {
+  stickerInfo: {
     flex: 1,
   },
-  className: {
+  stickerName: {
     ...typography.textStyles.body,
     color: lightTheme.text,
     fontFamily: typography.fontFamily.semiBold,
   },
-  classMeta: {
+  stickerMeta: {
     ...typography.textStyles.caption,
     color: lightTheme.textSecondary,
     marginTop: 2,
