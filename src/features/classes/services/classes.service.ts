@@ -82,7 +82,7 @@ class ClassesService {
     return supabase
       .from('classes')
       .select(
-        '*, profiles!classes_teacher_id_fkey(full_name, username), students(id, profiles!inner(full_name))',
+        '*, profiles!classes_teacher_id_fkey(full_name, username), students(id, profiles!students_id_fkey!inner(full_name))',
       )
       .eq('id', id)
       .single();

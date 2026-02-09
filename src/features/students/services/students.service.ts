@@ -11,7 +11,7 @@ class StudentsService {
     let query = supabase
       .from('students')
       .select(
-        '*, profiles!inner(full_name, username, avatar_url), classes(name), levels!students_current_level_fkey(title, level_number)',
+        '*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name), levels!students_current_level_fkey(title, level_number)',
       );
 
     if (filters?.classId) {
@@ -49,7 +49,7 @@ class StudentsService {
     return supabase
       .from('students')
       .select(
-        '*, profiles!inner(full_name, username, avatar_url, phone), classes(name, id), levels!students_current_level_fkey(title, level_number, points_required), profiles!students_parent_id_fkey(full_name)',
+        '*, profiles!students_id_fkey!inner(full_name, username, avatar_url, phone), classes(name, id), levels!students_current_level_fkey(title, level_number, points_required), profiles!students_parent_id_fkey(full_name)',
       )
       .eq('id', id)
       .single();

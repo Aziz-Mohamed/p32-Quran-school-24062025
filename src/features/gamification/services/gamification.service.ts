@@ -68,7 +68,7 @@ class GamificationService {
     return supabase
       .from('students')
       .select(
-        '*, profiles!inner(full_name, avatar_url), levels!students_current_level_fkey(level_number, title)',
+        '*, profiles!students_id_fkey!inner(full_name, avatar_url), levels!students_current_level_fkey(level_number, title)',
       )
       .eq('class_id', classId)
       .eq('is_active', true)

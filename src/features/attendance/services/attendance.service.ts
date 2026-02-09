@@ -74,7 +74,7 @@ class AttendanceService {
   async getClassAttendance(classId: string, date: string) {
     return supabase
       .from('attendance')
-      .select('*, students!inner(id, profiles!inner(full_name))')
+      .select('*, students!inner(id, profiles!students_id_fkey!inner(full_name))')
       .eq('class_id', classId)
       .eq('date', date)
       .order('student_id');
