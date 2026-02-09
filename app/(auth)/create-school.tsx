@@ -12,6 +12,7 @@ import { Button } from '@/components/ui';
 import { authService } from '@/features/auth/services/auth.service';
 import { useAuthStore, type Profile } from '@/stores/authStore';
 import { supabase } from '@/lib/supabase';
+import { generateUsername } from '@/lib/username';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -45,6 +46,7 @@ export default function CreateSchoolScreen() {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<CreateSchoolFormData>({
     resolver: zodResolver(createSchoolSchema),
@@ -124,23 +126,13 @@ export default function CreateSchoolScreen() {
                 label={t('auth.fullName')}
                 placeholder={t('auth.fullNamePlaceholder')}
                 value={value}
-                onChangeText={onChange}
+                onChangeText={(text) => {
+                  onChange(text);
+                  if (text.trim().length >= 2) {
+                    setValue('username', generateUsername(text), { shouldValidate: true });
+                  }
+                }}
                 error={errors.adminFullName?.message}
-              />
-            )}
-          />
-
-          <Controller
-            control={control}
-            name="username"
-            render={({ field: { onChange, value } }) => (
-              <TextField
-                label={t('auth.username')}
-                placeholder={t('auth.usernamePlaceholder')}
-                value={value}
-                onChangeText={onChange}
-                autoCapitalize="none"
-                error={errors.username?.message}
               />
             )}
           />
