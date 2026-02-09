@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, Pressable, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
-import { FlashList } from '@shopify/flash-list';
-import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
@@ -121,11 +119,9 @@ export default function AwardStickerScreen() {
                   accessibilityState={{ selected: isSelected }}
                   accessibilityLabel={sticker.name}
                 >
-                  <Ionicons
-                    name="star"
-                    size={32}
-                    color={isSelected ? colors.primary[500] : lightTheme.textTertiary}
-                  />
+                  <Text style={styles.stickerEmoji}>
+                    {sticker.image_url || '⭐'}
+                  </Text>
                   <Text
                     style={[
                       styles.stickerName,
@@ -211,6 +207,9 @@ const styles = StyleSheet.create({
   stickerItemSelected: {
     borderColor: colors.primary[500],
     backgroundColor: colors.primary[50],
+  },
+  stickerEmoji: {
+    fontSize: 32,
   },
   stickerName: {
     ...typography.textStyles.caption,

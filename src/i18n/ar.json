@@ -380,6 +380,7 @@
       "namePlaceholder": "أدخل اسم الملصق",
       "category": "التصنيف",
       "categoryPlaceholder": "أدخل التصنيف (اختياري)",
+      "icon": "أيقونة الملصق",
       "pointsValue": "قيمة النقاط",
       "createButton": "إنشاء الملصق",
       "nameRequired": "اسم الملصق مطلوب",

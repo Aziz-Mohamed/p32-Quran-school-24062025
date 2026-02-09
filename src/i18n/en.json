@@ -380,6 +380,7 @@
       "namePlaceholder": "Enter sticker name",
       "category": "Category",
       "categoryPlaceholder": "Enter category (optional)",
+      "icon": "Sticker Icon",
       "pointsValue": "Points Value",
       "createButton": "Create Sticker",
       "nameRequired": "Sticker name is required",

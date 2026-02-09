@@ -77,7 +77,7 @@ export default function StickerCatalogScreen() {
                 onPress={() => router.push(`/(admin)/stickers/${item.id}/edit`)}
               >
                 <View style={styles.stickerRow}>
-                  <Ionicons name="star" size={28} color={colors.primary[500]} />
+                  <Text style={styles.stickerEmoji}>{item.image_url || '⭐'}</Text>
                   <View style={styles.stickerInfo}>
                     <Text style={styles.stickerName}>{item.name}</Text>
                     <Text style={styles.stickerMeta}>
@@ -128,6 +128,9 @@ const styles = StyleSheet.create({
   },
   stickerInfo: {
     flex: 1,
+  },
+  stickerEmoji: {
+    fontSize: 28,
   },
   stickerName: {
     ...typography.textStyles.body,

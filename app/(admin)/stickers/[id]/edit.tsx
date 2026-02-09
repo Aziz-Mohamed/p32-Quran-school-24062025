@@ -7,8 +7,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
+import { EmojiPicker } from '@/components/forms/EmojiPicker';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { gamificationService } from '@/features/gamification/services/gamification.service';
+import { DEFAULT_STICKER_EMOJI } from '@/lib/stickerEmojis';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -35,6 +37,7 @@ export default function EditStickerScreen() {
   const [category, setCategory] = useState('');
   const [pointsValue, setPointsValue] = useState('5');
   const [isActive, setIsActive] = useState(true);
+  const [emoji, setEmoji] = useState(DEFAULT_STICKER_EMOJI);
 
   useEffect(() => {
     if (sticker) {
@@ -42,6 +45,7 @@ export default function EditStickerScreen() {
       setCategory(sticker.category ?? '');
       setPointsValue(String(sticker.points_value));
       setIsActive(sticker.is_active);
+      setEmoji(sticker.image_url || DEFAULT_STICKER_EMOJI);
     }
   }, [sticker]);
 
@@ -52,6 +56,7 @@ export default function EditStickerScreen() {
         category: category.trim() || null,
         points_value: parseInt(pointsValue, 10) || 5,
         is_active: isActive,
+        image_url: emoji,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stickers'] });
@@ -83,6 +88,12 @@ export default function EditStickerScreen() {
         />
 
         <Text style={styles.title}>{t('admin.stickers.editTitle')}</Text>
+
+        <EmojiPicker
+          label={t('admin.stickers.icon')}
+          value={emoji}
+          onChange={setEmoji}
+        />
 
         <TextField
           label={t('admin.stickers.name')}
