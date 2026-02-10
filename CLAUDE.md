@@ -2,6 +2,7 @@
 
 ## Git Commits
 
+- NEVER commit, push, or create PRs unless the user explicitly asks you to. Always wait for user review and approval first.
 - NEVER add "Co-Authored-By: Claude" or any similar attribution line to commit messages.
 - NEVER mention Claude, AI, or any AI assistant in commit messages, PR descriptions, or code comments.
 - Write commit messages as if a human developer wrote them.
