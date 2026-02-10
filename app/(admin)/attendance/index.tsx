@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, Alert, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
@@ -6,10 +6,9 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { Select } from '@/components/forms/Select';
-import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
+import { LoadingState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useClasses } from '@/features/classes/hooks/useClasses';
 import { useStudents } from '@/features/students/hooks/useStudents';
@@ -48,18 +47,27 @@ export default function BulkAttendanceScreen() {
   );
   const markAttendance = useMarkBulkAttendance();
 
-  // Pre-populate statuses from existing attendance records
-  useMemo(() => {
-    if (existingAttendance && existingAttendance.length > 0) {
-      const existing: Record<string, AttendanceStatus> = {};
-      for (const record of existingAttendance) {
-        existing[record.student_id] = record.status as AttendanceStatus;
+  // Track which class+date combo we've already initialized statuses for,
+  // so background refetches don't overwrite the user's local edits.
+  const lastInitRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const key = `${selectedClassId}:${selectedDate}`;
+    if (key === lastInitRef.current) return;
+
+    if (existingAttendance !== undefined) {
+      if (existingAttendance.length > 0) {
+        const existing: Record<string, AttendanceStatus> = {};
+        for (const record of existingAttendance) {
+          existing[record.student_id] = record.status as AttendanceStatus;
+        }
+        setStatuses(existing);
+      } else {
+        setStatuses({});
       }
-      setStatuses(existing);
-    } else if (selectedClassId) {
-      setStatuses({});
+      lastInitRef.current = key;
     }
-  }, [existingAttendance, selectedClassId]);
+  }, [existingAttendance, selectedClassId, selectedDate]);
 
   const classOptions = classes.map((c: any) => ({
     label: c.name,
@@ -94,22 +102,31 @@ export default function BulkAttendanceScreen() {
       return;
     }
 
-    const { error } = await markAttendance.mutateAsync({
-      input: {
-        class_id: selectedClassId,
-        date: selectedDate,
-        records,
-      },
-      schoolId: profile.school_id,
-      markedBy: profile.id,
-    });
+    try {
+      const { error } = await markAttendance.mutateAsync({
+        input: {
+          class_id: selectedClassId,
+          date: selectedDate,
+          records,
+        },
+        schoolId: profile.school_id,
+        markedBy: profile.id,
+      });
 
-    if (error) {
-      Alert.alert(t('common.error'), (error as Error).message);
-      return;
+      if (error) {
+        Alert.alert(t('common.error'), (error as Error).message);
+        return;
+      }
+
+      // Allow re-init from server data after successful submission
+      lastInitRef.current = null;
+      Alert.alert(t('common.success'), t('admin.attendance.submitSuccess'));
+    } catch (error) {
+      Alert.alert(
+        t('common.error'),
+        error instanceof Error ? error.message : 'An unexpected error occurred',
+      );
     }
-
-    Alert.alert(t('common.success'), t('admin.attendance.submitSuccess'));
   };
 
   return (
@@ -134,6 +151,7 @@ export default function BulkAttendanceScreen() {
           onChange={(val) => {
             setSelectedClassId(val);
             setStatuses({});
+            lastInitRef.current = null;
           }}
         />
 

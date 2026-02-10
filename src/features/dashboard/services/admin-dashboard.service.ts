@@ -35,12 +35,14 @@ class AdminDashboardService {
         supabase
           .from('attendance')
           .select('id', { count: 'exact', head: true })
+          .eq('school_id', schoolId)
           .eq('date', today),
 
         // Today's present attendance records
         supabase
           .from('attendance')
           .select('id', { count: 'exact', head: true })
+          .eq('school_id', schoolId)
           .eq('date', today)
           .eq('status', 'present'),
       ]);
