@@ -8,6 +8,7 @@ import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { Select } from '@/components/forms/Select';
+import { DatePicker } from '@/components/forms/DatePicker';
 import { useCreateStudent } from '@/features/students/hooks/useStudents';
 import { useClasses } from '@/features/classes/hooks/useClasses';
 import { generateUsername } from '@/lib/username';
@@ -24,7 +25,7 @@ export default function CreateStudentScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [classId, setClassId] = useState<string | null>(null);
-  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
 
   const createStudent = useCreateStudent();
   const { data: classes = [] } = useClasses({ isActive: true });
@@ -47,7 +48,7 @@ export default function CreateStudentScreen() {
         username: username.trim(),
         password,
         classId: classId ?? undefined,
-        dateOfBirth: dateOfBirth || undefined,
+        dateOfBirth: dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : undefined,
       });
 
       if (result.error) {
@@ -124,11 +125,11 @@ export default function CreateStudentScreen() {
           onChange={setClassId}
         />
 
-        <TextField
+        <DatePicker
           label={t('admin.students.dateOfBirth')}
           value={dateOfBirth}
-          onChangeText={setDateOfBirth}
-          placeholder="YYYY-MM-DD"
+          onChange={setDateOfBirth}
+          maximumDate={new Date()}
         />
 
         <Button
