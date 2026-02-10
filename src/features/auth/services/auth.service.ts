@@ -18,6 +18,31 @@ const FUNCTIONS_URL = process.env.EXPO_PUBLIC_SUPABASE_URL
 
 class AuthService {
   /**
+   * Force-refresh the session and return a fresh access token.
+   * Needed because supabase.functions.invoke() may hold a stale token
+   * even when the REST client has auto-refreshed.
+   */
+  private async getFreshToken(): Promise<string> {
+    const { data, error } = await supabase.auth.refreshSession();
+
+    if (error || !data.session) {
+      if (__DEV__) {
+        console.log('[AuthService] refreshSession failed:', error?.message);
+      }
+      throw new Error('Session expired. Please log in again.');
+    }
+
+    if (__DEV__) {
+      const exp = data.session.expires_at
+        ? new Date(data.session.expires_at * 1000).toISOString()
+        : 'unknown';
+      console.log('[AuthService] Token refreshed, expires:', exp);
+    }
+
+    return data.session.access_token;
+  }
+
+  /**
    * Sign in with username, password, and school slug.
    * Builds a synthetic email internally.
    */
@@ -101,11 +126,11 @@ class AuthService {
    */
   async createMember(input: CreateMemberInput): Promise<AuthResult<CreateMemberResponse>> {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
+      const token = await this.getFreshToken();
 
-      if (!token) {
-        return { error: { message: 'Not authenticated', code: 'UNAUTHORIZED' } };
+      if (__DEV__) {
+        console.log('[AuthService] createMember called for role:', input.role);
+        console.log('[AuthService] token preview:', token.substring(0, 20) + '...');
       }
 
       const response = await fetch(`${FUNCTIONS_URL}/create-member`, {
@@ -113,22 +138,28 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
         },
         body: JSON.stringify(input),
       });
 
       const result = await response.json();
 
+      if (__DEV__) {
+        console.log('[AuthService] createMember response status:', response.status);
+        console.log('[AuthService] createMember response body:', result);
+      }
+
       if (!response.ok) {
         return {
           error: {
-            message: result.error || 'Failed to create member',
+            message: result.error || result.message || 'Failed to create member',
             code: result.code,
           },
         };
       }
 
-      return { data: result };
+      return { data: result as CreateMemberResponse };
     } catch (error) {
       return {
         error: {
@@ -143,28 +174,26 @@ class AuthService {
    */
   async resetMemberPassword(input: ResetMemberPasswordInput): Promise<AuthResult> {
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData.session?.access_token;
-
-      if (!token) {
-        return { error: { message: 'Not authenticated', code: 'UNAUTHORIZED' } };
-      }
+      const token = await this.getFreshToken();
 
       const response = await fetch(`${FUNCTIONS_URL}/reset-member-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+          'apikey': process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '',
         },
         body: JSON.stringify(input),
       });
 
-      const result = await response.json();
-
       if (!response.ok) {
+        const result = await response.json();
+        if (__DEV__) {
+          console.log('[AuthService] resetMemberPassword error:', result);
+        }
         return {
           error: {
-            message: result.error || 'Failed to reset password',
+            message: result.error || result.message || 'Failed to reset password',
             code: result.code,
           },
         };
