@@ -17,13 +17,12 @@ class AdminDashboardService {
           .eq('school_id', schoolId)
           .eq('is_active', true),
 
-        // Total active teachers
+        // Total teachers
         supabase
           .from('profiles')
           .select('id', { count: 'exact', head: true })
           .eq('school_id', schoolId)
-          .eq('role', 'teacher')
-          .eq('is_active', true),
+          .eq('role', 'teacher'),
 
         // Total active classes
         supabase
