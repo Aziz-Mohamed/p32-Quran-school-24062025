@@ -37,18 +37,25 @@ export default function CreateTeacherScreen() {
       return;
     }
 
-    const result = await createTeacher.mutateAsync({
-      fullName: fullName.trim(),
-      username: username.trim(),
-      password,
-    });
+    try {
+      const result = await createTeacher.mutateAsync({
+        fullName: fullName.trim(),
+        username: username.trim(),
+        password,
+      });
 
-    if (result.error) {
-      Alert.alert(t('common.error'), result.error.message);
-      return;
+      if (result.error) {
+        Alert.alert(t('common.error'), result.error.message);
+        return;
+      }
+
+      router.back();
+    } catch (error) {
+      Alert.alert(
+        t('common.error'),
+        error instanceof Error ? error.message : 'An unexpected error occurred',
+      );
     }
-
-    router.back();
   };
 
   return (

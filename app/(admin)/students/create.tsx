@@ -8,8 +8,6 @@ import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { Select } from '@/components/forms/Select';
-import { LoadingState, ErrorState } from '@/components/feedback';
-import { useAuth } from '@/hooks/useAuth';
 import { useCreateStudent } from '@/features/students/hooks/useStudents';
 import { useClasses } from '@/features/classes/hooks/useClasses';
 import { generateUsername } from '@/lib/username';
@@ -22,8 +20,6 @@ import { spacing } from '@/theme/spacing';
 export default function CreateStudentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { profile } = useAuth();
-
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -45,20 +41,27 @@ export default function CreateStudentScreen() {
       return;
     }
 
-    const result = await createStudent.mutateAsync({
-      fullName: fullName.trim(),
-      username: username.trim(),
-      password,
-      classId: classId ?? undefined,
-      dateOfBirth: dateOfBirth || undefined,
-    });
+    try {
+      const result = await createStudent.mutateAsync({
+        fullName: fullName.trim(),
+        username: username.trim(),
+        password,
+        classId: classId ?? undefined,
+        dateOfBirth: dateOfBirth || undefined,
+      });
 
-    if (result.error) {
-      Alert.alert(t('common.error'), result.error.message);
-      return;
+      if (result.error) {
+        Alert.alert(t('common.error'), result.error.message);
+        return;
+      }
+
+      router.back();
+    } catch (error) {
+      Alert.alert(
+        t('common.error'),
+        error instanceof Error ? error.message : 'An unexpected error occurred',
+      );
     }
-
-    router.back();
   };
 
   const classOptions = classes.map((c: any) => ({
