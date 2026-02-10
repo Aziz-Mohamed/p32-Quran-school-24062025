@@ -8,4 +8,4 @@ export { ScoreInput } from './ScoreInput';
 export { DatePicker } from './DatePicker';
 export { Select, type SelectOption } from './Select';
 export { MultiSelect } from './MultiSelect';
-export { EmojiPicker } from './EmojiPicker';
+export { IslamicIconPicker } from './IslamicIconPicker';

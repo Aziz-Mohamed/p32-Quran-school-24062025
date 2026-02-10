@@ -4,11 +4,12 @@ import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
+import { StickerIcon } from '@/components/ui/StickerIcon';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentStickers } from '@/features/gamification/hooks/useStickers';
 import { typography } from '@/theme/typography';
-import { lightTheme } from '@/theme/colors';
+import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
 // ─── Stickers Screen ──────────────────────────────────────────────────────────
@@ -42,9 +43,7 @@ export default function StickersScreen() {
           <View style={styles.grid}>
             {stickers.map((item: any) => (
               <Card key={item.id} variant="outlined" style={styles.stickerCard}>
-                <Text style={styles.stickerEmoji}>
-                  {item.stickers?.image_url || '⭐'}
-                </Text>
+                <StickerIcon value={item.stickers?.image_url} size={36} color={colors.primary[500]} />
                 <Text style={styles.stickerName} numberOfLines={2}>
                   {item.stickers?.name ?? '—'}
                 </Text>
@@ -95,9 +94,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
     gap: spacing.xs,
-  },
-  stickerEmoji: {
-    fontSize: 36,
   },
   stickerName: {
     ...typography.textStyles.caption,

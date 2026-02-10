@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui';
+import { Badge, StickerIcon } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
@@ -77,7 +77,7 @@ export default function StickerCatalogScreen() {
                 onPress={() => router.push(`/(admin)/stickers/${item.id}/edit`)}
               >
                 <View style={styles.stickerRow}>
-                  <Text style={styles.stickerEmoji}>{item.image_url || '⭐'}</Text>
+                  <StickerIcon value={item.image_url} size={28} color={colors.primary[500]} />
                   <View style={styles.stickerInfo}>
                     <Text style={styles.stickerName}>{item.name}</Text>
                     <Text style={styles.stickerMeta}>
@@ -128,9 +128,6 @@ const styles = StyleSheet.create({
   },
   stickerInfo: {
     flex: 1,
-  },
-  stickerEmoji: {
-    fontSize: 28,
   },
   stickerName: {
     ...typography.textStyles.body,

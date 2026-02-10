@@ -6,3 +6,4 @@ export { Badge } from './Badge';
 export { Avatar } from './Avatar';
 export { SearchBar } from './SearchBar';
 export { Divider } from './Divider';
+export { StickerIcon } from './StickerIcon';
