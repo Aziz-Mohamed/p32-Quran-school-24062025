@@ -26,6 +26,8 @@ export default function AdminLayout() {
         <Stack.Screen name="stickers/index" />
         <Stack.Screen name="stickers/create" />
         <Stack.Screen name="stickers/[id]/edit" />
+        <Stack.Screen name="reports/index" />
+        <Stack.Screen name="reports/teacher-activity" />
       </Stack>
     </ErrorBoundary>
   );
