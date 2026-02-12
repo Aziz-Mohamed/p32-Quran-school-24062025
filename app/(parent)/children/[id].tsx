@@ -98,6 +98,13 @@ export default function ChildDetailScreen() {
               style={styles.actionButton}
             />
           )}
+          <Button
+            title={t('reports.viewProgress', 'View Progress')}
+            onPress={() => router.push(`/(parent)/progress/${id}`)}
+            variant="secondary"
+            size="md"
+            style={styles.actionButton}
+          />
         </View>
 
         {/* Recent Sessions */}
