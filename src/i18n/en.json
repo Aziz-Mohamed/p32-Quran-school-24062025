@@ -453,5 +453,96 @@
         "excused": "Excused"
       }
     }
+  },
+  "reports": {
+    "title": "Reports",
+    "errorMessage": "Unable to load report data. Please try again.",
+    "retry": "Retry",
+    "noData": "No data available for this period.",
+    "singleDataPoint": "Only one data point — more data is needed for trend analysis.",
+    "allClasses": "All Classes",
+    "classFilter": "Class",
+    "attendanceTrend": "Attendance Trend",
+    "scoreDistribution": "Score Distribution",
+    "levelDistribution": "Level Distribution",
+    "scoreTrend": "Score Trend",
+    "teacherActivity": "Teacher Activity",
+    "studentsNeedingAttention": "Students Needing Attention",
+    "classProgress": "Class Progress",
+    "childProgress": "Child Progress",
+    "viewProgress": "View Progress",
+    "classComparisonUnavailable": "Class comparison unavailable — student is not assigned to a class.",
+    "noClassesAssigned": "No classes assigned — contact your school admin.",
+    "timePeriod": {
+      "thisWeek": "This Week",
+      "thisMonth": "This Month",
+      "thisTerm": "This Term",
+      "allTime": "All Time"
+    },
+    "kpi": {
+      "activeStudents": "Active Students",
+      "activeTeachers": "Active Teachers",
+      "totalClasses": "Total Classes",
+      "attendanceRate": "Attendance Rate",
+      "averageScore": "Avg Score",
+      "stickersAwarded": "Stickers Awarded"
+    },
+    "empty": {
+      "attendanceTrend": "No attendance data yet — start marking attendance to see trends.",
+      "scoreDistribution": "No session scores recorded in this period.",
+      "levelDistribution": "No students enrolled yet.",
+      "scoreTrend": "No sessions logged yet — scores will appear after sessions are recorded.",
+      "teacherActivity": "No teacher activity in this period.",
+      "studentsNeedingAttention": "No students need attention — all students are on track.",
+      "noTeachers": "No teachers registered yet."
+    },
+    "teacherActivityDetail": {
+      "sessionsLogged": "Sessions Logged",
+      "studentsEvaluated": "Students Evaluated",
+      "stickersAwarded": "Stickers Awarded",
+      "lastActive": "Last Active",
+      "inactiveSection": "Inactive This Period",
+      "zeroSessions": "0 sessions"
+    },
+    "attention": {
+      "declining": "Declining",
+      "lowScores": "Low Scores"
+    },
+    "scoreRange": {
+      "needsImprovement": "Needs Improvement",
+      "developing": "Developing",
+      "proficient": "Proficient",
+      "excellent": "Excellent"
+    },
+    "childAttendance": {
+      "totalDays": "Total Days",
+      "present": "Present",
+      "absent": "Absent",
+      "late": "Late",
+      "excused": "Excused",
+      "rate": "Attendance Rate",
+      "notAvailable": "N/A"
+    },
+    "gamification": {
+      "title": "Rewards & Progress",
+      "totalStickers": "Total Stickers",
+      "achievements": "Achievements",
+      "currentLevel": "Current Level",
+      "currentStreak": "Current Streak",
+      "longestStreak": "Longest Streak",
+      "totalPoints": "Total Points"
+    },
+    "legend": {
+      "memorization": "Memorization",
+      "tajweed": "Tajweed",
+      "recitation": "Recitation",
+      "classAvg": "Class Average"
+    },
+    "a11y": {
+      "attendanceTrend": "Attendance trend chart showing {{rate}}% average attendance over {{count}} periods",
+      "scoreDistribution": "Score distribution chart showing {{count}} students across 4 performance ranges",
+      "levelDistribution": "Level distribution chart showing {{count}} students across {{levels}} levels",
+      "scoreTrend": "Score trend chart showing memorization, tajweed, and recitation scores over {{count}} periods"
+    }
   }
 }

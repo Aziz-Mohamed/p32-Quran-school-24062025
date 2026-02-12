@@ -453,5 +453,96 @@
         "excused": "معذور"
       }
     }
+  },
+  "reports": {
+    "title": "التقارير",
+    "errorMessage": "تعذر تحميل بيانات التقرير. يرجى المحاولة مرة أخرى.",
+    "retry": "إعادة المحاولة",
+    "noData": "لا توجد بيانات متاحة لهذه الفترة.",
+    "singleDataPoint": "نقطة بيانات واحدة فقط — يلزم المزيد من البيانات لتحليل الاتجاه.",
+    "allClasses": "جميع الفصول",
+    "classFilter": "الفصل",
+    "attendanceTrend": "اتجاه الحضور",
+    "scoreDistribution": "توزيع الدرجات",
+    "levelDistribution": "توزيع المستويات",
+    "scoreTrend": "اتجاه الدرجات",
+    "teacherActivity": "نشاط المعلمين",
+    "studentsNeedingAttention": "الطلاب الذين يحتاجون اهتماماً",
+    "classProgress": "تقدم الفصل",
+    "childProgress": "تقدم الطفل",
+    "viewProgress": "عرض التقدم",
+    "classComparisonUnavailable": "مقارنة الفصل غير متاحة — الطالب غير مسجل في فصل.",
+    "noClassesAssigned": "لا توجد فصول مخصصة — تواصل مع إدارة المدرسة.",
+    "timePeriod": {
+      "thisWeek": "هذا الأسبوع",
+      "thisMonth": "هذا الشهر",
+      "thisTerm": "هذا الفصل الدراسي",
+      "allTime": "كل الأوقات"
+    },
+    "kpi": {
+      "activeStudents": "الطلاب النشطون",
+      "activeTeachers": "المعلمون النشطون",
+      "totalClasses": "إجمالي الفصول",
+      "attendanceRate": "نسبة الحضور",
+      "averageScore": "متوسط الدرجات",
+      "stickersAwarded": "الملصقات الممنوحة"
+    },
+    "empty": {
+      "attendanceTrend": "لا توجد بيانات حضور بعد — ابدأ بتسجيل الحضور لرؤية الاتجاهات.",
+      "scoreDistribution": "لم يتم تسجيل درجات جلسات في هذه الفترة.",
+      "levelDistribution": "لا يوجد طلاب مسجلون بعد.",
+      "scoreTrend": "لم يتم تسجيل جلسات بعد — ستظهر الدرجات بعد تسجيل الجلسات.",
+      "teacherActivity": "لا يوجد نشاط للمعلمين في هذه الفترة.",
+      "studentsNeedingAttention": "لا يوجد طلاب يحتاجون اهتماماً — جميع الطلاب على المسار الصحيح.",
+      "noTeachers": "لا يوجد معلمون مسجلون بعد."
+    },
+    "teacherActivityDetail": {
+      "sessionsLogged": "الجلسات المسجلة",
+      "studentsEvaluated": "الطلاب المقيَّمون",
+      "stickersAwarded": "الملصقات الممنوحة",
+      "lastActive": "آخر نشاط",
+      "inactiveSection": "غير نشط في هذه الفترة",
+      "zeroSessions": "0 جلسات"
+    },
+    "attention": {
+      "declining": "في تراجع",
+      "lowScores": "درجات منخفضة"
+    },
+    "scoreRange": {
+      "needsImprovement": "يحتاج تحسين",
+      "developing": "في تطور",
+      "proficient": "كفء",
+      "excellent": "ممتاز"
+    },
+    "childAttendance": {
+      "totalDays": "إجمالي الأيام",
+      "present": "حاضر",
+      "absent": "غائب",
+      "late": "متأخر",
+      "excused": "معذور",
+      "rate": "نسبة الحضور",
+      "notAvailable": "غير متاح"
+    },
+    "gamification": {
+      "title": "المكافآت والتقدم",
+      "totalStickers": "إجمالي الملصقات",
+      "achievements": "الإنجازات",
+      "currentLevel": "المستوى الحالي",
+      "currentStreak": "السلسلة الحالية",
+      "longestStreak": "أطول سلسلة",
+      "totalPoints": "إجمالي النقاط"
+    },
+    "legend": {
+      "memorization": "الحفظ",
+      "tajweed": "التجويد",
+      "recitation": "التلاوة",
+      "classAvg": "متوسط الفصل"
+    },
+    "a11y": {
+      "attendanceTrend": "مخطط اتجاه الحضور يظهر {{rate}}% متوسط حضور خلال {{count}} فترات",
+      "scoreDistribution": "مخطط توزيع الدرجات يظهر {{count}} طالب عبر 4 نطاقات أداء",
+      "levelDistribution": "مخطط توزيع المستويات يظهر {{count}} طالب عبر {{levels}} مستويات",
+      "scoreTrend": "مخطط اتجاه الدرجات يظهر درجات الحفظ والتجويد والتلاوة خلال {{count}} فترات"
+    }
   }
 }
