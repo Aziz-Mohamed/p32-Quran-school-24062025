@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 
+import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { useAuth } from '@/hooks/useAuth';
 import { spacing } from '@/theme/spacing';
@@ -65,70 +66,71 @@ export default function AdminReportsScreen() {
   }, [queryClient]);
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <Text style={styles.title}>{t('reports.title', 'Reports')}</Text>
-
-      <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
-
-      <KPIGrid data={kpis.data} isLoading={kpis.isLoading} />
-
-      <View style={styles.filterRow}>
-        <ClassFilter
-          classes={classes}
-          selectedClassId={selectedClassId}
-          onSelect={setSelectedClassId}
-        />
-      </View>
-
-      <AttendanceTrendChart
-        data={attendanceTrend.data ?? []}
-        isLoading={attendanceTrend.isLoading}
-        isError={attendanceTrend.isError}
-        onRetry={() => attendanceTrend.refetch()}
-      />
-
-      <ScoreDistributionChart
-        data={scoreDistribution.data ?? []}
-        isLoading={scoreDistribution.isLoading}
-        isError={scoreDistribution.isError}
-        onRetry={() => scoreDistribution.refetch()}
-      />
-
-      <LevelDistributionChart
-        data={levelDistribution.data ?? []}
-        isLoading={levelDistribution.isLoading}
-        isError={levelDistribution.isError}
-        onRetry={() => levelDistribution.refetch()}
-      />
-
-      {/* Teacher Activity Navigation Link */}
-      <Card
-        variant="outlined"
-        style={styles.navCard}
-        onPress={() => router.push('/(admin)/reports/teacher-activity')}
+    <Screen scroll={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
-        <View style={styles.navRow}>
-          <Ionicons name="people-outline" size={24} color={colors.primary[500]} />
-          <Text style={styles.navText}>
-            {t('reports.teacherActivity', 'Teacher Activity')}
-          </Text>
-          <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
+        <Text style={styles.title}>{t('reports.title', 'Reports')}</Text>
+
+        <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
+
+        <KPIGrid data={kpis.data} isLoading={kpis.isLoading} />
+
+        <View style={styles.filterRow}>
+          <ClassFilter
+            classes={classes}
+            selectedClassId={selectedClassId}
+            onSelect={setSelectedClassId}
+          />
         </View>
-      </Card>
-    </ScrollView>
+
+        <AttendanceTrendChart
+          data={attendanceTrend.data ?? []}
+          isLoading={attendanceTrend.isLoading}
+          isError={attendanceTrend.isError}
+          onRetry={() => attendanceTrend.refetch()}
+        />
+
+        <ScoreDistributionChart
+          data={scoreDistribution.data ?? []}
+          isLoading={scoreDistribution.isLoading}
+          isError={scoreDistribution.isError}
+          onRetry={() => scoreDistribution.refetch()}
+        />
+
+        <LevelDistributionChart
+          data={levelDistribution.data ?? []}
+          isLoading={levelDistribution.isLoading}
+          isError={levelDistribution.isError}
+          onRetry={() => levelDistribution.refetch()}
+        />
+
+        {/* Teacher Activity Navigation Link */}
+        <Card
+          variant="outlined"
+          style={styles.navCard}
+          onPress={() => router.push('/(admin)/reports/teacher-activity')}
+        >
+          <View style={styles.navRow}>
+            <Ionicons name="people-outline" size={24} color={colors.primary[500]} />
+            <Text style={styles.navText}>
+              {t('reports.teacherActivity', 'Teacher Activity')}
+            </Text>
+            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
+          </View>
+        </Card>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  scroll: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   content: {
     padding: spacing.lg,

@@ -1,8 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text } from 'react-native';
+import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { Screen } from '@/components/layout';
+import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
 import { spacing } from '@/theme/spacing';
 import { lightTheme } from '@/theme/colors';
@@ -15,6 +18,7 @@ import { TeacherActivityList } from '@/features/reports/components/TeacherActivi
 
 export default function TeacherActivityScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const { schoolId } = useAuth();
   const queryClient = useQueryClient();
 
@@ -30,33 +34,41 @@ export default function TeacherActivityScreen() {
   }, [queryClient]);
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <Text style={styles.title}>
-        {t('reports.teacherActivity', 'Teacher Activity')}
-      </Text>
+    <Screen scroll={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <Button
+          title={t('common.back')}
+          onPress={() => router.back()}
+          variant="ghost"
+          size="sm"
+        />
 
-      <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
+        <Text style={styles.title}>
+          {t('reports.teacherActivity', 'Teacher Activity')}
+        </Text>
 
-      <TeacherActivityList
-        teachers={teacherActivity.data ?? []}
-        isLoading={teacherActivity.isLoading}
-        isError={teacherActivity.isError}
-        onRetry={() => teacherActivity.refetch()}
-      />
-    </ScrollView>
+        <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
+
+        <TeacherActivityList
+          teachers={teacherActivity.data ?? []}
+          isLoading={teacherActivity.isLoading}
+          isError={teacherActivity.isError}
+          onRetry={() => teacherActivity.refetch()}
+        />
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  scroll: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   content: {
     padding: spacing.lg,

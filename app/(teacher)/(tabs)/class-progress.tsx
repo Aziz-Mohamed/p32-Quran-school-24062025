@@ -3,6 +3,7 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { Screen } from '@/components/layout';
 import { useAuth } from '@/hooks/useAuth';
 import { spacing } from '@/theme/spacing';
 import { lightTheme } from '@/theme/colors';
@@ -73,92 +74,93 @@ export default function TeacherClassProgressScreen() {
   }
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <Text style={styles.title}>{t('reports.classProgress', 'Class Progress')}</Text>
+    <Screen scroll={false}>
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <Text style={styles.title}>{t('reports.classProgress', 'Class Progress')}</Text>
 
-      {/* Class selector (for teachers with multiple classes) */}
-      {teacherClasses.data.length > 1 && (
-        <View style={styles.filterRow}>
-          <ClassFilter
-            classes={teacherClasses.data}
-            selectedClassId={selectedClassId}
-            onSelect={(id) => setSelectedClassId(id ?? teacherClasses.data![0].id)}
-            showAllOption={false}
+        {/* Class selector (for teachers with multiple classes) */}
+        {teacherClasses.data.length > 1 && (
+          <View style={styles.filterRow}>
+            <ClassFilter
+              classes={teacherClasses.data}
+              selectedClassId={selectedClassId}
+              onSelect={(id) => setSelectedClassId(id ?? teacherClasses.data![0].id)}
+              showAllOption={false}
+            />
+          </View>
+        )}
+
+        <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
+
+        {/* Class Summary KPIs */}
+        <View style={styles.kpiRow}>
+          <KPICard
+            label={t('reports.kpi.attendanceRate', 'Attendance Rate')}
+            value={classAnalytics.data?.attendanceRate ?? 0}
+            format="percentage"
+            isLoading={classAnalytics.isLoading}
+          />
+          <KPICard
+            label={t('reports.legend.memorization', 'Memorization')}
+            value={classAnalytics.data?.averageMemorization ?? 0}
+            format="score"
+            isLoading={classAnalytics.isLoading}
+          />
+          <KPICard
+            label={t('reports.legend.tajweed', 'Tajweed')}
+            value={classAnalytics.data?.averageTajweed ?? 0}
+            format="score"
+            isLoading={classAnalytics.isLoading}
+          />
+          <KPICard
+            label={t('reports.legend.recitation', 'Recitation')}
+            value={classAnalytics.data?.averageRecitation ?? 0}
+            format="score"
+            isLoading={classAnalytics.isLoading}
           />
         </View>
-      )}
 
-      <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
-
-      {/* Class Summary KPIs */}
-      <View style={styles.kpiRow}>
-        <KPICard
-          label={t('reports.kpi.attendanceRate', 'Attendance Rate')}
-          value={classAnalytics.data?.attendanceRate ?? 0}
-          format="percentage"
-          isLoading={classAnalytics.isLoading}
+        <ScoreTrendChart
+          data={scoreTrend.data ?? []}
+          isLoading={scoreTrend.isLoading}
+          isError={scoreTrend.isError}
+          onRetry={() => scoreTrend.refetch()}
         />
-        <KPICard
-          label={t('reports.legend.memorization', 'Memorization')}
-          value={classAnalytics.data?.averageMemorization ?? 0}
-          format="score"
-          isLoading={classAnalytics.isLoading}
+
+        <AttendanceTrendChart
+          data={attendanceTrend.data ?? []}
+          isLoading={attendanceTrend.isLoading}
+          isError={attendanceTrend.isError}
+          onRetry={() => attendanceTrend.refetch()}
         />
-        <KPICard
-          label={t('reports.legend.tajweed', 'Tajweed')}
-          value={classAnalytics.data?.averageTajweed ?? 0}
-          format="score"
+
+        <LevelDistributionChart
+          data={classAnalytics.data?.levelDistribution ?? []}
           isLoading={classAnalytics.isLoading}
+          isError={classAnalytics.isError}
+          onRetry={() => classAnalytics.refetch()}
         />
-        <KPICard
-          label={t('reports.legend.recitation', 'Recitation')}
-          value={classAnalytics.data?.averageRecitation ?? 0}
-          format="score"
-          isLoading={classAnalytics.isLoading}
+
+        <StudentAttentionList
+          students={attention.data ?? []}
+          isLoading={attention.isLoading}
+          isError={attention.isError}
+          onRetry={() => attention.refetch()}
         />
-      </View>
-
-      <ScoreTrendChart
-        data={scoreTrend.data ?? []}
-        isLoading={scoreTrend.isLoading}
-        isError={scoreTrend.isError}
-        onRetry={() => scoreTrend.refetch()}
-      />
-
-      <AttendanceTrendChart
-        data={attendanceTrend.data ?? []}
-        isLoading={attendanceTrend.isLoading}
-        isError={attendanceTrend.isError}
-        onRetry={() => attendanceTrend.refetch()}
-      />
-
-      <LevelDistributionChart
-        data={classAnalytics.data?.levelDistribution ?? []}
-        isLoading={classAnalytics.isLoading}
-        isError={classAnalytics.isError}
-        onRetry={() => classAnalytics.refetch()}
-      />
-
-      <StudentAttentionList
-        students={attention.data ?? []}
-        isLoading={attention.isLoading}
-        isError={attention.isError}
-        onRetry={() => attention.refetch()}
-      />
-    </ScrollView>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  scroll: {
     flex: 1,
-    backgroundColor: lightTheme.background,
   },
   content: {
     padding: spacing.lg,
