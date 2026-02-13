@@ -60,7 +60,7 @@ export default function StudentSessionsScreen() {
                   <View style={styles.sessionInfo}>
                     <Text style={styles.sessionDate}>{item.session_date}</Text>
                     <Text style={styles.teacherName}>
-                      {item.profiles?.full_name ?? '—'}
+                      {item.teacher?.full_name ?? '—'}
                     </Text>
                   </View>
                   <View style={styles.scores}>

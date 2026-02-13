@@ -62,7 +62,7 @@ export default function TrophyRoomScreen() {
                   {earned.map((trophy: any) => (
                     <Card key={trophy.id} variant="elevated" style={styles.trophyCard}>
                       <Ionicons name="trophy" size={40} color={colors.primary[500]} />
-                      <Text style={styles.trophyName}>{trophy.title}</Text>
+                      <Text style={styles.trophyName}>{trophy.name}</Text>
                       <Text style={styles.trophyDate}>
                         {t('student.trophies.earnedOn', {
                           date: earnedMap.get(trophy.id)?.split('T')[0] ?? '',
@@ -82,13 +82,10 @@ export default function TrophyRoomScreen() {
                   {locked.map((trophy: any) => (
                     <Card key={trophy.id} variant="outlined" style={styles.trophyCard}>
                       <Ionicons name="lock-closed-outline" size={40} color={lightTheme.textTertiary} />
-                      <Text style={styles.trophyNameLocked}>{trophy.title}</Text>
-                      {trophy.criteria && (
-                        <Text style={styles.trophyCriteria}>{trophy.criteria}</Text>
+                      <Text style={styles.trophyNameLocked}>{trophy.name}</Text>
+                      {trophy.description && (
+                        <Text style={styles.trophyCriteria}>{trophy.description}</Text>
                       )}
-                      <Text style={styles.trophyPoints}>
-                        {trophy.points_required} {t('common.pts')}
-                      </Text>
                     </Card>
                   ))}
                 </View>
@@ -151,10 +148,5 @@ const styles = StyleSheet.create({
     ...typography.textStyles.caption,
     color: lightTheme.textSecondary,
     textAlign: 'center',
-  },
-  trophyPoints: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textTertiary,
-    fontSize: typography.fontSize.xs,
   },
 });

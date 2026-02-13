@@ -66,7 +66,7 @@ class SessionsService {
     let query = supabase
       .from('sessions')
       .select(
-        '*, profiles!sessions_teacher_id_fkey(full_name, avatar_url), profiles!sessions_student_id_fkey(full_name, avatar_url), lessons(title)',
+        '*, teacher:profiles!sessions_teacher_id_fkey(full_name, avatar_url), student:students!sessions_student_id_fkey(profiles!students_id_fkey(full_name, avatar_url)), lessons(title)',
       );
 
     if (filters.studentId) {
@@ -106,7 +106,7 @@ class SessionsService {
     return supabase
       .from('sessions')
       .select(
-        '*, profiles!sessions_teacher_id_fkey(full_name, avatar_url), profiles!sessions_student_id_fkey(full_name, avatar_url), lessons(title), homework(*)',
+        '*, teacher:profiles!sessions_teacher_id_fkey(full_name, avatar_url), student:students!sessions_student_id_fkey(profiles!students_id_fkey(full_name, avatar_url)), lessons(title), homework(*)',
       )
       .eq('id', id)
       .single();

@@ -32,7 +32,7 @@ class TeacherDashboardService {
         supabase
           .from('sessions')
           .select(
-            '*, profiles!sessions_student_id_fkey(full_name, avatar_url)',
+            '*, student:students!sessions_student_id_fkey(profiles!students_id_fkey(full_name, avatar_url))',
           )
           .eq('teacher_id', teacherId)
           .order('session_date', { ascending: false })
