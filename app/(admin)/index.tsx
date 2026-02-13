@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminDashboard } from '@/features/dashboard/hooks/useAdminDashboard';
+import { supabase } from '@/lib/supabase';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -22,6 +23,10 @@ export default function AdminDashboard() {
   const router = useRouter();
 
   const { data, isLoading, error, refetch } = useAdminDashboard(profile?.school_id);
+
+  const handleSignOut = useCallback(async () => {
+    await supabase.auth.signOut();
+  }, []);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
@@ -137,6 +142,14 @@ export default function AdminDashboard() {
             <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
           </View>
         </Card>
+
+        {/* Sign Out */}
+        <Button
+          title={t('common.signOut')}
+          onPress={handleSignOut}
+          variant="ghost"
+          size="md"
+        />
       </View>
     </Screen>
   );

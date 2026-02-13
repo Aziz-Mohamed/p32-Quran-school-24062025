@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { Screen } from '@/components/layout';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui/Button';
 import { useAuth } from '@/hooks/useAuth';
 import { spacing } from '@/theme/spacing';
@@ -34,7 +34,7 @@ export default function TeacherActivityScreen() {
   }, [queryClient]);
 
   return (
-    <Screen scroll={false}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
       <ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.content}
@@ -62,11 +62,15 @@ export default function TeacherActivityScreen() {
           onRetry={() => teacherActivity.refetch()}
         />
       </ScrollView>
-    </Screen>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: lightTheme.background,
+  },
   scroll: {
     flex: 1,
   },

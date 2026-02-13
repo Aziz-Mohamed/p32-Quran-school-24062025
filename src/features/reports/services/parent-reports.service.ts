@@ -41,12 +41,12 @@ class ParentReportsService {
 
     return (data ?? []).map((row) => ({
       date: row.bucket_date,
-      memorization: Number(row.child_memorization) || 0,
-      tajweed: Number(row.child_tajweed) || 0,
-      recitation: Number(row.child_recitation) || 0,
-      classAvgMemorization: Number(row.class_memorization) || 0,
-      classAvgTajweed: Number(row.class_tajweed) || 0,
-      classAvgRecitation: Number(row.class_recitation) || 0,
+      memorization: Number(row.avg_memorization) || 0,
+      tajweed: Number(row.avg_tajweed) || 0,
+      recitation: Number(row.avg_recitation) || 0,
+      classAvgMemorization: Number(row.class_avg_memorization) || 0,
+      classAvgTajweed: Number(row.class_avg_tajweed) || 0,
+      classAvgRecitation: Number(row.class_avg_recitation) || 0,
     }));
   }
 

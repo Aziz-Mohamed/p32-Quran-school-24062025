@@ -26,7 +26,7 @@ class ChildrenService {
         .single(),
       supabase
         .from('sessions')
-        .select('id, session_date, memorization_score, tajweed_score, recitation_score, notes')
+        .select('id, session_date, memorization_score, tajweed_score, recitation_quality, notes')
         .eq('student_id', studentId)
         .order('session_date', { ascending: false })
         .limit(5),

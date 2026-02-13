@@ -31,8 +31,8 @@ export function KPICard({ label, value, format, isLoading }: KPICardProps) {
     <View style={styles.card}>
       {isLoading ? (
         <>
-          <SkeletonLoader width={48} height={28} borderRadius={radius.xs} />
-          <SkeletonLoader width={64} height={14} borderRadius={radius.xs} style={styles.labelSkeleton} />
+          <SkeletonLoader width={48} height={28} borderRadius={radius.sm} />
+          <SkeletonLoader width={64} height={14} borderRadius={radius.sm} style={styles.labelSkeleton} />
         </>
       ) : (
         <>

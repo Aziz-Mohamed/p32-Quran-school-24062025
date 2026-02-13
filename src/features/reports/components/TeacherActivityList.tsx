@@ -66,7 +66,6 @@ export function TeacherActivityList({
       <View style={styles.listContainer}>
         <FlashList
           data={listData}
-          estimatedItemSize={120}
           scrollEnabled={false}
           renderItem={({ item }) => {
             if (item.type === 'header') {
