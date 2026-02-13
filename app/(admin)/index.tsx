@@ -159,7 +159,6 @@ export default function AdminDashboard() {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: spacing.lg,
     gap: spacing.md,
   },
