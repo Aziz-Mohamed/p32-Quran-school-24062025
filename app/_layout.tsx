@@ -69,7 +69,7 @@ export default function RootLayout() {
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const segments = useSegments();
   const router = useRouter();
-  const { isAuthenticated, isLoading, role } = useAuth();
+  const { isAuthenticated, isLoading, role, profile } = useAuth();
   const initialize = useAuthStore((s) => s.initialize);
   const setSession = useAuthStore((s) => s.setSession);
   const setProfile = useAuthStore((s) => s.setProfile);
@@ -146,6 +146,11 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         router.replace('/(auth)/login');
       }
     } else {
+      // Wait for profile to be fetched before routing by role
+      if (!profile) {
+        return;
+      }
+
       // Authenticated - redirect to role-based dashboard if in auth group
       if (inAuthGroup) {
         switch (role) {
@@ -166,7 +171,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, [isAuthenticated, isLoading, role, segments, router]);
+  }, [isAuthenticated, isLoading, role, profile, segments, router]);
 
   return <>{children}</>;
 }
