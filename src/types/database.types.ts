@@ -338,6 +338,68 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_preferences: {
+        Row: {
+          achievement_unlocked: boolean
+          attendance_marked: boolean
+          created_at: string
+          daily_summary: boolean
+          homework_assigned: boolean
+          homework_reminder: boolean
+          quiet_hours_enabled: boolean
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          session_completed: boolean
+          sticker_awarded: boolean
+          student_alert: boolean
+          trophy_earned: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achievement_unlocked?: boolean
+          attendance_marked?: boolean
+          created_at?: string
+          daily_summary?: boolean
+          homework_assigned?: boolean
+          homework_reminder?: boolean
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          session_completed?: boolean
+          sticker_awarded?: boolean
+          student_alert?: boolean
+          trophy_earned?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achievement_unlocked?: boolean
+          attendance_marked?: boolean
+          created_at?: string
+          daily_summary?: boolean
+          homework_assigned?: boolean
+          homework_reminder?: boolean
+          quiet_hours_enabled?: boolean
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          session_completed?: boolean
+          sticker_awarded?: boolean
+          student_alert?: boolean
+          trophy_earned?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -385,6 +447,44 @@ export type Database = {
           },
         ]
       }
+      push_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_tokens_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schools: {
         Row: {
           address: string | null
@@ -397,6 +497,7 @@ export type Database = {
           phone: string | null
           settings: Json | null
           slug: string
+          timezone: string
           updated_at: string
         }
         Insert: {
@@ -410,6 +511,7 @@ export type Database = {
           phone?: string | null
           settings?: Json | null
           slug: string
+          timezone?: string
           updated_at?: string
         }
         Update: {
@@ -423,6 +525,7 @@ export type Database = {
           phone?: string | null
           settings?: Json | null
           slug?: string
+          timezone?: string
           updated_at?: string
         }
         Relationships: []

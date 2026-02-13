@@ -454,6 +454,40 @@
       }
     }
   },
+  "notifications": {
+    "softAsk": {
+      "title": "ابقَ على اطّلاع",
+      "body": {
+        "student": "احصل على إشعارات عند كسب ملصقات وجوائز وواجبات جديدة.",
+        "teacher": "احصل على ملخّصات صباحية وتنبيهات عندما يحتاج الطلاب اهتمامًا.",
+        "parent": "احصل على تحديثات حول حضور طفلك وواجباته وإنجازاته.",
+        "admin": "احصل على إشعارات حول نشاط المدرسة المهم."
+      },
+      "enable": "تفعيل الإشعارات",
+      "skip": "ليس الآن"
+    },
+    "preferences": {
+      "title": "إعدادات الإشعارات",
+      "subtitle": "اختر الإشعارات التي تريد استقبالها",
+      "quietHours": "ساعات الهدوء",
+      "quietHoursDescription": "إيقاف الإشعارات خلال هذه الساعات",
+      "quietHoursStart": "وقت البداية",
+      "quietHoursEnd": "وقت النهاية",
+      "enabled": "مُفعّل",
+      "disabled": "مُعطّل"
+    },
+    "categories": {
+      "stickerAwarded": "ملصق ممنوح",
+      "trophyEarned": "جائزة مُكتسبة",
+      "achievementUnlocked": "إنجاز مُحقّق",
+      "homeworkAssigned": "واجب مُعيَّن",
+      "attendanceMarked": "حضور مُسجَّل",
+      "sessionCompleted": "حصّة مكتملة",
+      "homeworkReminder": "تذكير بالواجب",
+      "dailySummary": "ملخّص يومي",
+      "studentAlert": "تنبيه طالب"
+    }
+  },
   "reports": {
     "title": "التقارير",
     "errorMessage": "تعذر تحميل بيانات التقرير. يرجى المحاولة مرة أخرى.",
