@@ -1,7 +1,5 @@
 import React from 'react';
 import {
-  Keyboard,
-  Pressable,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -47,26 +45,21 @@ export const Screen: React.FC<ScreenProps> = ({
         backgroundColor={lightTheme.background}
       />
 
-      <Pressable
-        style={styles.pressable}
-        onPress={Keyboard.dismiss}
-        accessible={false}
-      >
-        {scroll ? (
-          <ScrollView
-            style={[styles.scroll, { direction }]}
-            contentContainerStyle={[styles.scrollContent, contentStyle]}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            {children}
-          </ScrollView>
-        ) : (
-          <View style={[styles.container, contentStyle, { direction }]}>
-            {children}
-          </View>
-        )}
-      </Pressable>
+      {scroll ? (
+        <ScrollView
+          style={[styles.scroll, { direction }]}
+          contentContainerStyle={[styles.scrollContent, contentStyle]}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+          showsVerticalScrollIndicator={false}
+        >
+          {children}
+        </ScrollView>
+      ) : (
+        <View style={[styles.container, contentStyle, { direction }]}>
+          {children}
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -77,9 +70,6 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: lightTheme.background,
-  },
-  pressable: {
-    flex: 1,
   },
   scroll: {
     flex: 1,
