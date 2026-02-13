@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { attendanceService } from '../services/attendance.service';
+import { mutationTracker } from '@/features/realtime';
 import type { BulkAttendanceInput } from '../types/attendance.types';
 
 /**
@@ -19,7 +20,12 @@ export function useMarkBulkAttendance() {
       schoolId: string;
       markedBy: string;
     }) => attendanceService.markBulkAttendance(input, schoolId, markedBy),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (Array.isArray(data?.data)) {
+        for (const record of data.data) {
+          if (record.id) mutationTracker.record('attendance', record.id);
+        }
+      }
       queryClient.invalidateQueries({ queryKey: ['attendance'] });
       queryClient.invalidateQueries({ queryKey: ['class-attendance'] });
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });

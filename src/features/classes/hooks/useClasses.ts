@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { classesService } from '../services/classes.service';
+import { mutationTracker } from '@/features/realtime';
 import type { ClassFilters, CreateClassInput } from '../types/classes.types';
 
 /**
@@ -41,7 +42,10 @@ export function useCreateClass() {
   return useMutation({
     mutationFn: ({ input, schoolId }: { input: CreateClassInput; schoolId: string }) =>
       classesService.createClass(input, schoolId),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data?.data?.id) {
+        mutationTracker.record('classes', data.data.id);
+      }
       queryClient.invalidateQueries({ queryKey: ['classes'] });
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
     },
@@ -58,6 +62,7 @@ export function useUpdateClass() {
     mutationFn: ({ id, input }: { id: string; input: Partial<CreateClassInput> & { is_active?: boolean } }) =>
       classesService.updateClass(id, input),
     onSuccess: (_data, variables) => {
+      mutationTracker.record('classes', variables.id);
       queryClient.invalidateQueries({ queryKey: ['classes'] });
       queryClient.invalidateQueries({ queryKey: ['classes', variables.id] });
     },
@@ -73,7 +78,8 @@ export function useAssignStudent() {
   return useMutation({
     mutationFn: ({ studentId, classId }: { studentId: string; classId: string }) =>
       classesService.assignStudentToClass(studentId, classId),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      mutationTracker.record('students', variables.studentId);
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['classes'] });
     },
@@ -89,7 +95,8 @@ export function useRemoveStudent() {
   return useMutation({
     mutationFn: (studentId: string) =>
       classesService.removeStudentFromClass(studentId),
-    onSuccess: () => {
+    onSuccess: (_data, studentId) => {
+      mutationTracker.record('students', studentId);
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['classes'] });
     },

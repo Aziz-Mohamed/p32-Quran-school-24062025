@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentsService } from '../services/students.service';
+import { mutationTracker } from '@/features/realtime';
 import type { StudentFilters } from '../types/students.types';
 import { authService } from '@/features/auth/services/auth.service';
 import type { CreateMemberInput } from '@/features/auth/types/auth.types';
@@ -37,7 +38,10 @@ export function useCreateStudent() {
   return useMutation({
     mutationFn: (input: Omit<CreateMemberInput, 'role'>) =>
       authService.createMember({ ...input, role: 'student' }),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data?.data?.student?.id) {
+        mutationTracker.record('students', data.data.student.id);
+      }
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['admin-dashboard'] });
     },
@@ -54,6 +58,7 @@ export function useUpdateStudent() {
     mutationFn: ({ id, input }: { id: string; input: { classId?: string | null; parentId?: string | null; isActive?: boolean; dateOfBirth?: string } }) =>
       studentsService.updateStudent(id, input),
     onSuccess: (_data, variables) => {
+      mutationTracker.record('students', variables.id);
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['students', variables.id] });
     },

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { checkinService } from '../services/checkin.service';
+import { mutationTracker } from '@/features/realtime';
 
 /**
  * Hook for fetching today's check-in for a teacher.
@@ -26,7 +27,10 @@ export function useCheckIn() {
   return useMutation({
     mutationFn: ({ teacherId, schoolId }: { teacherId: string; schoolId: string }) =>
       checkinService.checkIn(teacherId, schoolId),
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data?.data?.id) {
+        mutationTracker.record('teacher_checkins', data.data.id);
+      }
       queryClient.invalidateQueries({ queryKey: ['teacher-checkin'] });
       queryClient.invalidateQueries({ queryKey: ['teacher-dashboard'] });
     },
@@ -41,7 +45,8 @@ export function useCheckOut() {
 
   return useMutation({
     mutationFn: (checkinId: string) => checkinService.checkOut(checkinId),
-    onSuccess: () => {
+    onSuccess: (data, checkinId) => {
+      mutationTracker.record('teacher_checkins', checkinId);
       queryClient.invalidateQueries({ queryKey: ['teacher-checkin'] });
       queryClient.invalidateQueries({ queryKey: ['teacher-dashboard'] });
     },
