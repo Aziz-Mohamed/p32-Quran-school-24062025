@@ -34,6 +34,8 @@ interface EventQueryMapping {
  *   ['student-stickers', payload.student_id],
  *   ['student-dashboard', payload.student_id],
  *   ['leaderboard'],
+ *   ['parent-dashboard'],
+ *   ['child-detail', payload.student_id],
  * ]
  *
  * attendance INSERT/UPDATE → [
@@ -50,6 +52,8 @@ interface EventQueryMapping {
  *   ['sessions'],
  *   ['student-dashboard', payload.student_id],
  *   ['teacher-dashboard'],
+ *   ['parent-dashboard'],
+ *   ['child-detail', payload.student_id],
  * ]
  *
  * students UPDATE → [
@@ -58,6 +62,8 @@ interface EventQueryMapping {
  *   ['leaderboard'],
  *   ['children'],
  *   ['child-detail', payload.id],
+ *   ['top-performers'],
+ *   ['needs-support'],
  * ]
  *
  * homework INSERT/UPDATE → [

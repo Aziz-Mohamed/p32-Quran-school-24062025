@@ -8,6 +8,7 @@
 - Existing Quran School app on `001-mvp-phase1` branch (fully implemented)
 - Supabase project `zngiszdfdowjvwxqmexl` with all tables and RLS policies
 - No additional Supabase configuration needed (Realtime is enabled by default on all public schema tables)
+- Install `expo-network`: `npx expo install expo-network` (required for `onlineManager` network detection)
 
 ## What This Feature Adds
 

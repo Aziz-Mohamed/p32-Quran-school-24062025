@@ -11,6 +11,7 @@ Add a client-side realtime subscription layer using Supabase Realtime `postgres_
 
 **Language/Version**: TypeScript 5.9 (strict mode)
 **Primary Dependencies**: `@supabase/supabase-js` v2 (Realtime built-in), `@tanstack/react-query` v5, Expo ~54, React Native 0.83
+**New Dependencies**: `expo-network` (for `onlineManager` network state detection in `useRealtimeReconnect`)
 **Storage**: No new storage — subscribes to existing Supabase PostgreSQL tables via Realtime
 **Testing**: Jest + React Native Testing Library (unit/integration), manual two-device testing for realtime verification
 **Target Platform**: iOS + Android (Expo managed workflow)

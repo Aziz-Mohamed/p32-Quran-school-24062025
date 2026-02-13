@@ -125,7 +125,7 @@
 | Student | `student_achievements` | INSERT | `student_id=eq.{studentId}` |
 | Teacher | `students` | UPDATE | `class_id=in.({classIds})` |
 | Teacher | `sessions` | INSERT | `school_id=eq.{schoolId}` |
-| Teacher | `student_stickers` | INSERT | `school_id=eq.{schoolId}` |
+| Teacher | `student_stickers` | INSERT | No direct filter (RLS enforces school scope; table has no `school_id` column) |
 | Teacher | `attendance` | INSERT, UPDATE | `school_id=eq.{schoolId}` |
 | Teacher | `classes` | UPDATE | `teacher_id=eq.{teacherId}` |
 | Parent | `attendance` | INSERT, UPDATE | `student_id=in.({childIds})` |
@@ -136,11 +136,32 @@
 | Admin | `students` | INSERT, UPDATE | `school_id=eq.{schoolId}` |
 | Admin | `sessions` | INSERT | `school_id=eq.{schoolId}` |
 | Admin | `attendance` | INSERT, UPDATE | `school_id=eq.{schoolId}` |
-| Admin | `student_stickers` | INSERT | `school_id=eq.{schoolId}` |
+| Admin | `student_stickers` | INSERT | No direct filter (RLS enforces school scope; table has no `school_id` column) |
 | Admin | `classes` | INSERT, UPDATE | `school_id=eq.{schoolId}` |
 | Admin | `teachers/profiles` | UPDATE | `school_id=eq.{schoolId}` |
 
-Note: `student_stickers` does not have `school_id` directly — teacher/admin subscriptions use `school_id` filter which relies on RLS for correct scoping. Since Supabase Realtime applies RLS to event delivery, the filter is a performance optimization (reducing server-side RLS checks), not a security boundary.
+Note: `student_stickers` does not have `school_id` directly — teacher/admin subscriptions omit the filter on this table and rely on RLS for correct school-scoping. Since Supabase Realtime applies RLS to event delivery, the filter is a performance optimization (reducing server-side RLS checks), not a security boundary.
+
+### Capacity Estimation
+
+| Metric | Estimate | Supabase Free | Supabase Pro |
+|--------|----------|---------------|--------------|
+| Concurrent WebSocket connections per school | <100 users × 1 channel each = <100 | 200 limit | 500 limit |
+| Peak messages/second (morning attendance rush) | 5 classes × 20 students × 1 event = 100 msg over ~60s ≈ ~2 msg/s | 100 msg/s limit | 500 msg/s limit |
+| Mutation tracker memory (worst case) | 20 entries × ~50 bytes = ~1KB | N/A | N/A |
+
+Both Free and Pro tiers comfortably handle the expected load.
+
+### 5-Second SLA Time Budget
+
+| Phase | Duration | Notes |
+|-------|----------|-------|
+| Database write | ~50ms | Supabase PostgreSQL |
+| Realtime event delivery | ~100-500ms | Server-side RLS check + WebSocket push |
+| Debounce window | 300-500ms | Role-dependent trailing-edge |
+| Query refetch (network) | ~200-500ms | API call to Supabase |
+| React re-render | ~50-100ms | TanStack Query state update → component re-render |
+| **Total** | **~700ms–1600ms** | Well within 5-second SLA |
 
 ## R-008: Event-to-Query-Key Invalidation Mapping
 
@@ -150,10 +171,10 @@ Note: `student_stickers` does not have `school_id` directly — teacher/admin su
 
 | Table | Event | Query Keys to Invalidate |
 |-------|-------|-------------------------|
-| `student_stickers` | INSERT | `['student-stickers', studentId]`, `['student-dashboard', studentId]`, `['leaderboard']` |
+| `student_stickers` | INSERT | `['student-stickers', studentId]`, `['student-dashboard', studentId]`, `['leaderboard']`, `['parent-dashboard']`, `['child-detail']` |
 | `attendance` | INSERT/UPDATE | `['attendance']`, `['class-attendance']`, `['attendance-calendar']`, `['attendance-rate']`, `['admin-dashboard']`, `['parent-dashboard']`, `['student-dashboard']` |
-| `sessions` | INSERT | `['sessions']`, `['student-dashboard', studentId]`, `['teacher-dashboard']` |
-| `students` | UPDATE | `['students']`, `['leaderboard']`, `['student-dashboard']`, `['children']`, `['child-detail']` |
+| `sessions` | INSERT | `['sessions']`, `['student-dashboard', studentId]`, `['teacher-dashboard']`, `['parent-dashboard']`, `['child-detail']` |
+| `students` | UPDATE | `['students']`, `['leaderboard']`, `['student-dashboard']`, `['children']`, `['child-detail']`, `['top-performers']`, `['needs-support']` |
 | `homework` | INSERT/UPDATE | `['homework']`, `['student-dashboard']` |
 | `student_trophies` | INSERT | `['student-trophies', studentId]`, `['student-dashboard', studentId]` |
 | `student_achievements` | INSERT | `['student-achievements', studentId]`, `['student-dashboard', studentId]` |

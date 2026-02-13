@@ -22,6 +22,7 @@ A student is viewing their dashboard or stickers page. Meanwhile, their teacher 
 3. **Given** a student earns enough points from a sticker award to cross a level threshold, **When** the sticker is awarded, **Then** the student's displayed level updates to the new level within 5 seconds.
 4. **Given** a student is on the leaderboard screen, **When** any student in the class earns points (via sticker, session, or homework), **Then** the leaderboard rankings update within 5 seconds.
 5. **Given** a student is on the trophy room screen, **When** a trophy or achievement is auto-awarded to them (triggered by a stats update), **Then** the newly earned trophy/achievement appears within 5 seconds.
+6. **Given** a student is viewing their dashboard and the Realtime service is unavailable, **When** a teacher awards them a sticker, **Then** the student does not see an immediate update but encounters no errors. The sticker appears when the student pulls to refresh or after the 5-minute staleTime expires and the query auto-refetches.
 
 ---
 
@@ -109,7 +110,7 @@ Two admins are managing the same school simultaneously. When one admin creates a
 
 1. **User not on an affected screen**: When a realtime event occurs but the user is on an unrelated screen (e.g., profile page), the event is still processed — the relevant query cache is invalidated so data is fresh when the user navigates to the affected screen. No UI toast or alert is shown for background events.
 2. **Subscription disconnects**: When the device loses network connectivity, the realtime subscription disconnects. The app continues to show the last known data. When connectivity is restored, the subscription automatically reconnects. Upon reconnection, all visible queries are refetched to catch any events missed during the disconnection.
-3. **Rapid successive events**: When multiple events arrive within a short window (e.g., admin marking attendance for 20 students in quick succession), the system debounces cache invalidations. Multiple events for the same query key within a 1-second window are coalesced into a single refetch to avoid excessive network requests and UI flicker.
+3. **Rapid successive events**: When multiple events arrive within a short window (e.g., admin marking attendance for 20 students in quick succession), the system debounces cache invalidations using trailing-edge debounce. Multiple events for the same query key within the role's debounce window (300ms for students, 500ms for other roles) are coalesced into a single refetch to avoid excessive network requests and UI flicker.
 4. **User logs out while subscription is active**: When a user logs out, all active realtime subscriptions are cleaned up (channels unsubscribed). No orphan subscriptions persist. On login, new subscriptions are established for the new user's context.
 5. **School-scoping of events**: The subscription must only deliver events for the user's own school. A sticker awarded in School A must not trigger a refetch for a student in School B.
 6. **App backgrounded**: When the app is sent to the background, subscriptions may disconnect (OS behavior). On foregrounding, the app checks subscription status and reconnects if needed, followed by a refetch of visible queries.
@@ -117,6 +118,13 @@ Two admins are managing the same school simultaneously. When one admin creates a
 8. **High-frequency tables**: If a table receives very frequent changes (e.g., attendance during a morning check-in rush across many classes), the subscription filters ensure only relevant events are processed (matching the user's class or student scope). School-wide unfiltered subscriptions on high-frequency tables are avoided.
 9. **Stale subscription after role/class change**: If a teacher's class assignment changes while they are using the app, the subscription scope becomes stale. The realtime system re-establishes subscriptions when the user's profile or class context changes (detected via query invalidation of the profile/classes queries).
 10. **Multiple tabs/devices**: If a user is logged in on multiple devices, each device maintains its own subscription. Events are delivered to all active sessions independently.
+11. **Unassigned student (no class_id)**: When a student has no class assignment, class-scoped subscriptions (e.g., leaderboard for the class) are omitted from their subscription profile. The student still receives their own personal data events (stickers, attendance, sessions, homework, trophies, achievements).
+12. **Parent with zero linked children**: When a parent has no linked children, the subscription profile is created with an empty subscriptions array — no channel is established. Subscriptions are set up when a child is linked (detected via profile/children query invalidation).
+13. **Teacher with zero assigned classes**: When a teacher has no assigned classes, the subscription profile is created with an empty subscriptions array — no channel is established. Subscriptions are set up when a class is assigned.
+14. **Empty event payload due to RLS**: When a realtime event payload is empty (`{}`) because RLS blocks the row data, the system still fires invalidation using broad query keys (without specific record IDs). This ensures data consistency even when the event payload is not readable.
+15. **Debounce timer during backgrounding**: If a debounce timer is pending when the app is backgrounded, the timer fires in the background (JS timers run briefly). The resulting invalidation may or may not complete. On foreground, the reconnect hook invalidates all stale queries regardless, ensuring no events are missed.
+16. **Subscription filter becomes invalid**: If a subscribed filter references a deleted entity (e.g., a class is deleted while a teacher subscribes with that class_id), new events for that entity simply stop matching — this is correct behavior. The teacher's subscription is rebuilt when their class assignment data changes (detected via class/profile query invalidation triggering a profile change).
+17. **Role change while logged in**: Role changes (e.g., teacher promoted to admin) require re-authentication (logout → login). The logout cleanup (FR-002) removes old subscriptions, and login (FR-001) establishes new role-appropriate subscriptions.
 
 ## Requirements *(mandatory)*
 
@@ -125,14 +133,16 @@ Two admins are managing the same school simultaneously. When one admin creates a
 **Subscription Lifecycle**
 
 - **FR-001**: System MUST establish realtime subscriptions when a user authenticates and navigates to a subscribed screen. Subscriptions are scoped to the user's school.
-- **FR-002**: System MUST clean up all active subscriptions when the user logs out, and re-establish subscriptions for the new user on subsequent login.
-- **FR-003**: System MUST automatically reconnect subscriptions when the app returns to the foreground or regains network connectivity. Upon reconnection, all visible queries MUST be refetched.
-- **FR-004**: System MUST debounce realtime events — multiple events for the same query key arriving within 1 second are coalesced into a single cache invalidation and refetch.
-- **FR-005**: System MUST deduplicate realtime events that result from the current user's own mutations. If a local mutation just invalidated a query, an incoming realtime event for the same record within 2 seconds does not trigger an additional refetch.
+- **FR-002**: System MUST clean up all active subscriptions when the user logs out using the following order: (1) remove all Supabase channels via `removeChannel()`, (2) clear TanStack Query cache, (3) clear auth state. If channel removal fails or hangs, the system MUST proceed with cleanup after a 3-second timeout — orphan channels will be garbage collected by the server when the WebSocket disconnects. System MUST re-establish subscriptions for the new user on subsequent login.
+- **FR-003**: System MUST automatically reconnect subscriptions when the app returns to the foreground or regains network connectivity. Upon reconnection, all visible queries MUST be refetched. Reconnection uses the Supabase SDK's built-in exponential backoff strategy (no custom retry logic).
+- **FR-003a**: On initial subscription establishment (channel status becomes SUBSCRIBED), the system MUST invalidate all query keys associated with the channel's listeners to catch any events that occurred between the initial data fetch and subscription activation.
+- **FR-003b**: If the user's profile or role data is not yet loaded when the subscription manager initializes, the system MUST skip subscription setup and retry when the profile becomes available. No errors are shown to the user during this waiting state.
+- **FR-004**: System MUST debounce realtime events using trailing-edge debounce (timer resets on each new event). Debounce windows are role-specific: 300ms for student role (real-time-sensitive views), 500ms for teacher/parent/admin roles (dashboard views). Multiple events for the same query key arriving within the debounce window are coalesced into a single cache invalidation and refetch.
+- **FR-005**: System MUST deduplicate realtime events that result from the current user's own mutations. If a local mutation just invalidated a query, an incoming realtime event for the same record (identified by table name + primary key) within 2 seconds does not trigger an additional refetch.
 
 **Subscribed Data Changes**
 
-- **FR-006**: System MUST subscribe to new sticker awards (`student_stickers` inserts) and invalidate student dashboard, stickers collection, leaderboard, and trophy room queries when a relevant event is received.
+- **FR-006**: System MUST subscribe to new sticker awards (`student_stickers` inserts) and invalidate student dashboard, stickers collection, leaderboard, and trophy room queries when an event matching the user's subscription filter criteria is received. "Relevant event" throughout FR-006–FR-012 means an event that passes both the subscription's server-side filter and RLS policy — events that don't match the user's scope are silently dropped by the server and never reach the client.
 - **FR-007**: System MUST subscribe to attendance changes (`attendance` inserts and updates) and invalidate parent dashboard, attendance calendar, and admin dashboard queries when a relevant event is received.
 - **FR-008**: System MUST subscribe to new session evaluations (`sessions` inserts) and invalidate student dashboard, session history, and teacher dashboard queries when a relevant event is received.
 - **FR-009**: System MUST subscribe to student record changes (`students` updates — specifically points, level, and streak changes) and invalidate leaderboard, student detail, and dashboard queries when a relevant event is received.
@@ -153,12 +163,14 @@ Two admins are managing the same school simultaneously. When one admin creates a
 - **FR-018**: Realtime updates MUST be seamless — no full-screen loading states, flickers, or scroll position resets when data updates in the background. Updated data merges into the existing view.
 - **FR-019**: System MUST NOT show toast notifications or alerts for realtime data changes. Updates appear silently in the UI. Celebratory moments (sticker received, trophy earned) are deferred to a future notification feature.
 - **FR-020**: Existing pull-to-refresh functionality MUST continue to work alongside realtime subscriptions. Pull-to-refresh forces a full refetch regardless of subscription state.
+- **FR-021**: The subscription system MUST handle JWT token refresh transparently. The Supabase SDK's `onAuthStateChange` handles token refresh automatically and passes the updated token to active Realtime connections. No manual token management is required.
+- **FR-022**: The subscription system MUST log channel lifecycle events (connecting, connected, error, timeout, closed) at debug level using `__DEV__` guards so logs are stripped in production builds. Log format: `[Realtime] {channelName}: {status}`.
 
 ### Non-Functional Requirements
 
 - **NFR-001**: Realtime events MUST propagate to the user's screen within 5 seconds of the database change, measured end-to-end (database write → UI update) under normal network conditions.
 - **NFR-002**: The subscription system MUST NOT degrade app performance. Subscription processing (event handling, debouncing, cache invalidation) should add no perceptible delay to UI interactions.
-- **NFR-003**: The system MUST handle graceful degradation — if the realtime service is temporarily unavailable, the app continues to function normally using the existing polling/cache strategy (5-minute staleTime). No error is shown to the user.
+- **NFR-003**: The system MUST handle graceful degradation — if the realtime service is temporarily unavailable, the app continues to function normally using the existing polling/cache strategy (5-minute staleTime). No error is shown to the user. The app does not need to detect or distinguish between temporary blips and sustained outages — TanStack Query's staleTime polling provides automatic catch-up regardless of subscription state.
 - **NFR-004**: Subscription connections MUST use the authenticated user's JWT for authorization, ensuring server-side enforcement that users only receive events they are permitted to see.
 
 ### Key Entities
@@ -173,23 +185,24 @@ Two admins are managing the same school simultaneously. When one admin creates a
 
 - **SC-001**: When a teacher awards a sticker, the student's dashboard reflects the new sticker, updated points, and (if applicable) new level within 5 seconds — verified with two devices side by side.
 - **SC-002**: When an admin marks bulk attendance, a parent viewing their child's attendance calendar sees the updated status within 5 seconds.
-- **SC-003**: The app maintains stable performance (no frame drops below 30fps, no memory leaks) with realtime subscriptions active over a 30-minute session.
+- **SC-003**: The app maintains stable performance (no frame drops below 30fps, no memory leaks) with realtime subscriptions active over a 30-minute session. Measured using React Native Perf Monitor (fps counter) and Xcode Instruments or Android Profiler for memory trending.
 - **SC-004**: After a network disconnection and reconnection, the app resumes receiving realtime events within 10 seconds and refetches all stale data automatically.
-- **SC-005**: Realtime subscriptions do not cause unnecessary battery drain — the app's background power usage does not increase measurably compared to the pre-realtime version.
-- **SC-006**: During a "morning rush" scenario (20 students marked present in rapid succession), the parent's attendance calendar updates correctly and the app does not show flickering or intermediate states.
+- **SC-005**: Realtime subscriptions do not cause unnecessary battery drain — the app maintains a single WebSocket connection when active, disconnects when backgrounded (OS-managed), and does not perform polling or keep-alive pings beyond the Supabase SDK defaults. Battery impact is considered acceptable if no additional wake-ups are observed in the battery usage panel (iOS Settings > Battery > App Activity) during normal usage sessions.
+- **SC-006**: During a "morning rush" scenario (20 students marked present in rapid succession), the parent's attendance calendar updates correctly and the app does not show flickering (defined as: no visible content swap where data momentarily disappears then reappears, and no more than one visible re-render per debounce window) or intermediate states.
 - **SC-007**: Pull-to-refresh continues to work on all screens regardless of subscription state.
+- **SC-008**: If a realtime event does NOT arrive within 5 seconds (e.g., Realtime service degradation), the app continues functioning normally — users can pull-to-refresh for immediate data, and TanStack Query's 5-minute staleTime ensures eventual consistency without user intervention.
 
 ## Assumptions
 
 - **A-001**: Supabase Realtime's postgres_changes feature is used for all subscriptions. The system subscribes to database changes on specific tables with filter criteria. No custom Broadcast or Presence features are needed for this feature.
 - **A-002**: Subscription filters (e.g., `school_id=eq.{schoolId}`) are applied server-side, so the client does not receive events from other schools. Row-level security further enforces this.
-- **A-003**: The number of concurrent subscriptions per user is kept small (estimated 3-6 channels depending on role). This is well within per-connection limits.
+- **A-003**: Each user session uses exactly 1 Supabase Realtime channel with multiple `.on()` listeners (one per subscribed table). This is well within the 100-channel-per-connection limit.
 - **A-004**: Realtime events trigger query cache invalidation (not direct state mutation). The actual data refetch uses the existing service/query layer, ensuring data consistency and reusing existing error handling.
 - **A-005**: No pre-aggregation or denormalization is needed. Realtime events on source tables (student_stickers, attendance, sessions) trigger refetches of the same queries the UI already uses.
 - **A-006**: The subscription system is additive — it enhances the existing data flow without replacing it. If subscriptions fail or are unavailable, the app falls back to the existing 5-minute staleTime polling model.
 - **A-007**: Celebratory UI for receiving stickers/trophies live (confetti, pop-ups, sound effects) is explicitly out of scope. Updates appear as silent data refreshes. A future "live notifications" feature may add in-app celebration moments.
 - **A-008**: Supabase Realtime requires the `replication` role on subscribed tables. This is enabled by default for all tables in the public schema on Supabase-hosted projects.
-- **A-009**: The 1-second debounce window for event coalescing is a starting point. It can be tuned per table if needed without spec changes.
+- **A-009**: Debounce windows are tuned per role: 300ms for student (real-time-sensitive), 500ms for teacher/parent/admin (dashboard views). These values can be further tuned per table if needed without spec changes.
 - **A-010**: Report data (admin reports, teacher class progress, parent child progress) is NOT subscribed to in realtime. Reports are analytical views with a 5-minute cache that is acceptable as-is per the reports spec (A-012).
 
 ## Scope Boundaries
