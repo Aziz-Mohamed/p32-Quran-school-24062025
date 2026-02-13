@@ -16,6 +16,15 @@ import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 
+// ─── Dev Quick Login ──────────────────────────────────────────────────────────
+
+const DEV_ACCOUNTS = [
+  { label: 'Admin', role: 'admin' as const, username: 'aliomar', schoolSlug: 'ahl-elquran', password: 'Test#123', color: '#8B5CF6' },
+  { label: 'Teacher', role: 'teacher' as const, username: 'teacher_123', schoolSlug: 'ahl-elquran', password: 'Test#123', color: '#3B82F6' },
+  { label: 'Student', role: 'student' as const, username: 'student_123', schoolSlug: 'ahl-elquran', password: 'Test#123', color: '#10B981' },
+  { label: 'Parent', role: 'parent' as const, username: 'parent_123', schoolSlug: 'ahl-elquran', password: 'Test#123', color: '#F59E0B' },
+] as const;
+
 // ─── Validation Schema ────────────────────────────────────────────────────────
 
 const loginSchema = z.object({
@@ -38,6 +47,7 @@ export default function LoginScreen() {
   const {
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -47,6 +57,12 @@ export default function LoginScreen() {
       password: '',
     },
   });
+
+  const fillDevAccount = (account: (typeof DEV_ACCOUNTS)[number]) => {
+    setValue('schoolSlug', account.schoolSlug);
+    setValue('username', account.username);
+    setValue('password', account.password);
+  };
 
   const onSubmit = (data: LoginFormData) => {
     setErrorMessage(null);
@@ -134,7 +150,25 @@ export default function LoginScreen() {
             </Pressable>
           </Link>
         </View>
+
       </View>
+
+      {__DEV__ && (
+        <View style={styles.devSection}>
+          <View style={styles.devPills}>
+            {DEV_ACCOUNTS.map((account) => (
+              <Pressable
+                key={account.role}
+                style={[styles.devPill, { borderColor: account.color }]}
+                onPress={() => fillDevAccount(account)}
+              >
+                <View style={[styles.devDot, { backgroundColor: account.color }]} />
+                <Text style={styles.devPillText}>{account.label}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+      )}
     </Screen>
   );
 }
@@ -187,5 +221,32 @@ const styles = StyleSheet.create({
   createLink: {
     ...typography.textStyles.label,
     color: lightTheme.primary,
+  },
+  devSection: {
+    paddingBlockEnd: spacing.base,
+    alignItems: 'center',
+  },
+  devPills: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  devPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingBlock: 6,
+    paddingInline: spacing.md,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: lightTheme.border,
+  },
+  devDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  devPillText: {
+    fontSize: 11,
+    color: lightTheme.textSecondary,
   },
 });
