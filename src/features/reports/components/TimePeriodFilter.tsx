@@ -13,10 +13,10 @@ export function TimePeriodFilter({ value, onChange }: TimePeriodFilterProps) {
   const { t } = useTranslation();
 
   const chips: FilterChip[] = [
-    { label: t('reports.timePeriod.thisWeek', 'This Week'), value: 'this_week' },
-    { label: t('reports.timePeriod.thisMonth', 'This Month'), value: 'this_month' },
-    { label: t('reports.timePeriod.thisTerm', 'This Term'), value: 'this_term' },
-    { label: t('reports.timePeriod.allTime', 'All Time'), value: 'all_time' },
+    { label: t('reports.timePeriod.thisWeek'), value: 'this_week' },
+    { label: t('reports.timePeriod.thisMonth'), value: 'this_month' },
+    { label: t('reports.timePeriod.thisTerm'), value: 'this_term' },
+    { label: t('reports.timePeriod.allTime'), value: 'all_time' },
   ];
 
   return (

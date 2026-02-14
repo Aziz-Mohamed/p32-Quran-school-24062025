@@ -53,7 +53,7 @@ export default function ChildDetailScreen() {
           </Text>
           {(student as any).levels && (
             <Badge
-              label={(student as any).levels.title ?? `Level ${(student as any).levels.level_number}`}
+              label={(student as any).levels.title ?? `${t('common.level')} ${(student as any).levels.level_number}`}
               variant="info"
               size="md"
             />
@@ -99,7 +99,7 @@ export default function ChildDetailScreen() {
             />
           )}
           <Button
-            title={t('reports.viewProgress', 'View Progress')}
+            title={t('reports.viewProgress')}
             onPress={() => router.push(`/(parent)/progress/${id}`)}
             variant="secondary"
             size="md"

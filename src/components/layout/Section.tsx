@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { ViewStyle } from 'react-native';
 
-import { useRTL } from '@/hooks/useRTL';
 import { lightTheme } from '@/theme/colors';
 import { radius } from '@/theme/radius';
 import { spacing } from '@/theme/spacing';
@@ -18,23 +17,12 @@ interface SectionProps {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
+// Text alignment is handled globally by I18nManager.forceRTL() + app reload.
 
 export const Section: React.FC<SectionProps> = ({ title, children, style }) => {
-  const { isRTL } = useRTL();
-
   return (
     <View style={[styles.container, style]}>
-      {title ? (
-        <Text
-          style={[
-            styles.title,
-            { textAlign: isRTL ? 'right' : 'left' },
-          ]}
-        >
-          {title}
-        </Text>
-      ) : null}
-
+      {title ? <Text style={styles.title}>{title}</Text> : null}
       {children}
     </View>
   );

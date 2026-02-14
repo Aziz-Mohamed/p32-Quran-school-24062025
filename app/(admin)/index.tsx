@@ -139,7 +139,7 @@ export default function AdminDashboard() {
         <Card variant="outlined" style={styles.navCard} onPress={() => router.push('/(admin)/reports')}>
           <View style={styles.navRow}>
             <Ionicons name="bar-chart-outline" size={24} color={colors.primary[500]} />
-            <Text style={styles.navText}>{t('reports.title', 'Reports')}</Text>
+            <Text style={styles.navText}>{t('reports.title')}</Text>
             <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
           </View>
         </Card>

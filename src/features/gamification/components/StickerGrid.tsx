@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
   newDot: {
     position: 'absolute',
     top: 0,
-    right: 0,
+    end: 0,
     width: 10,
     height: 10,
     borderRadius: 5,

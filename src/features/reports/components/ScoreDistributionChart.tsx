@@ -45,7 +45,7 @@ export function ScoreDistributionChart({
 
   return (
     <ChartContainer
-      title={t('reports.scoreDistribution', 'Score Distribution')}
+      title={t('reports.scoreDistribution')}
       isLoading={isLoading}
       isEmpty={isEmpty}
       isError={isError}

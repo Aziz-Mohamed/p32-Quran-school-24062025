@@ -29,7 +29,7 @@ export function ChildAttendanceSummary({
   const rateDisplay =
     data && data.rate >= 0
       ? `${data.rate}%`
-      : t('reports.childAttendance.notAvailable', 'N/A');
+      : t('reports.childAttendance.notAvailable');
 
   const rateColor =
     data && data.rate >= 0
@@ -42,7 +42,7 @@ export function ChildAttendanceSummary({
 
   return (
     <ChartContainer
-      title={t('reports.childAttendance.rate', 'Attendance Rate')}
+      title={t('reports.childAttendance.rate')}
       isLoading={isLoading}
       isEmpty={isEmpty}
       isError={isError}
@@ -66,7 +66,7 @@ export function ChildAttendanceSummary({
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{data.totalDays}</Text>
               <Text style={styles.statLabel}>
-                {t('reports.childAttendance.totalDays', 'Total Days')}
+                {t('reports.childAttendance.totalDays')}
               </Text>
             </View>
             <View style={styles.statItem}>
@@ -74,7 +74,7 @@ export function ChildAttendanceSummary({
                 {data.presentDays}
               </Text>
               <Text style={styles.statLabel}>
-                {t('reports.childAttendance.present', 'Present')}
+                {t('reports.childAttendance.present')}
               </Text>
             </View>
             <View style={styles.statItem}>
@@ -82,7 +82,7 @@ export function ChildAttendanceSummary({
                 {data.absentDays}
               </Text>
               <Text style={styles.statLabel}>
-                {t('reports.childAttendance.absent', 'Absent')}
+                {t('reports.childAttendance.absent')}
               </Text>
             </View>
             <View style={styles.statItem}>
@@ -90,13 +90,13 @@ export function ChildAttendanceSummary({
                 {data.lateDays}
               </Text>
               <Text style={styles.statLabel}>
-                {t('reports.childAttendance.late', 'Late')}
+                {t('reports.childAttendance.late')}
               </Text>
             </View>
             <View style={styles.statItem}>
               <Text style={styles.statValue}>{data.excusedDays}</Text>
               <Text style={styles.statLabel}>
-                {t('reports.childAttendance.excused', 'Excused')}
+                {t('reports.childAttendance.excused')}
               </Text>
             </View>
           </View>

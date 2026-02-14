@@ -8,7 +8,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Edge } from 'react-native-safe-area-context';
 
-import { useRTL } from '@/hooks/useRTL';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
@@ -25,6 +24,8 @@ interface ScreenProps {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
+// Layout direction is handled globally by I18nManager.forceRTL() + app reload.
+// No need for manual `direction` style overrides on individual containers.
 
 export const Screen: React.FC<ScreenProps> = ({
   children,
@@ -32,8 +33,6 @@ export const Screen: React.FC<ScreenProps> = ({
   padding = true,
   edges = ['top', 'bottom'],
 }) => {
-  const { direction } = useRTL();
-
   const contentStyle = padding
     ? { paddingStart: spacing.base, paddingEnd: spacing.base }
     : undefined;
@@ -47,7 +46,7 @@ export const Screen: React.FC<ScreenProps> = ({
 
       {scroll ? (
         <ScrollView
-          style={[styles.scroll, { direction }]}
+          style={styles.scroll}
           contentContainerStyle={[styles.scrollContent, contentStyle]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
@@ -56,7 +55,7 @@ export const Screen: React.FC<ScreenProps> = ({
           {children}
         </ScrollView>
       ) : (
-        <View style={[styles.container, contentStyle, { direction }]}>
+        <View style={[styles.container, contentStyle]}>
           {children}
         </View>
       )}

@@ -25,13 +25,13 @@ export function ClassFilter({
 
   const classOptions = classes.map((c) => ({ label: c.name, value: c.id }));
   const options = showAllOption
-    ? [{ label: t('reports.allClasses', 'All Classes'), value: '' }, ...classOptions]
+    ? [{ label: t('reports.allClasses'), value: '' }, ...classOptions]
     : classOptions;
 
   return (
     <Select
-      label={t('reports.classFilter', 'Class')}
-      placeholder={t('reports.allClasses', 'All Classes')}
+      label={t('reports.classFilter')}
+      placeholder={t('reports.allClasses')}
       options={options}
       value={selectedClassId ?? ''}
       onChange={(v) => onSelect(v || undefined)}

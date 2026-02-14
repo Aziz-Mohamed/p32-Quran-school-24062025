@@ -63,7 +63,7 @@ export default function ParentProgressScreen() {
         size="sm"
       />
 
-      <Text style={styles.title}>{t('reports.childProgress', 'Child Progress')}</Text>
+      <Text style={styles.title}>{t('reports.childProgress')}</Text>
 
       <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
 

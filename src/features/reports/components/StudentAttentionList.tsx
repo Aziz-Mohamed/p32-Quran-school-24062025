@@ -27,7 +27,7 @@ export function StudentAttentionList({
 
   return (
     <ChartContainer
-      title={t('reports.studentsNeedingAttention', 'Students Needing Attention')}
+      title={t('reports.studentsNeedingAttention')}
       isLoading={isLoading}
       isEmpty={isEmpty}
       isError={isError}

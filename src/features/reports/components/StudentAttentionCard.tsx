@@ -18,8 +18,8 @@ export function StudentAttentionCard({ student }: StudentAttentionCardProps) {
 
   const reasonLabel =
     student.flagReason === 'declining'
-      ? t('reports.attention.declining', 'Declining')
-      : t('reports.attention.lowScores', 'Low Scores');
+      ? t('reports.attention.declining')
+      : t('reports.attention.lowScores');
 
   const reasonColor =
     student.flagReason === 'declining'

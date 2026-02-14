@@ -42,14 +42,14 @@ export function ScoreTrendChart({
   }));
 
   const legendItems = [
-    { label: t('reports.legend.memorization', 'Memorization'), color: COLORS.memorization, lineStyle: 'solid' as const },
-    { label: t('reports.legend.tajweed', 'Tajweed'), color: COLORS.tajweed, lineStyle: 'dashed' as const },
-    { label: t('reports.legend.recitation', 'Recitation'), color: COLORS.recitation, lineStyle: 'dotted' as const },
+    { label: t('reports.legend.memorization'), color: COLORS.memorization, lineStyle: 'solid' as const },
+    { label: t('reports.legend.tajweed'), color: COLORS.tajweed, lineStyle: 'dashed' as const },
+    { label: t('reports.legend.recitation'), color: COLORS.recitation, lineStyle: 'dotted' as const },
   ];
 
   return (
     <ChartContainer
-      title={t('reports.scoreTrend', 'Score Trend')}
+      title={t('reports.scoreTrend')}
       isLoading={isLoading}
       isEmpty={isEmpty}
       isError={isError}

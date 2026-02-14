@@ -1,8 +1,8 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, View, Text, I18nManager } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
-import * as Updates from 'expo-updates';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 import { useLogout } from '@/features/auth/hooks/useLogout';
-import { useLocaleStore } from '@/stores/localeStore';
+import { useChangeLanguage } from '@/hooks/useChangeLanguage';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -18,27 +18,11 @@ import { spacing } from '@/theme/spacing';
 // ─── Student Profile ──────────────────────────────────────────────────────────
 
 export default function StudentProfile() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const { profile } = useAuth();
   const { logout, isPending: isLoggingOut } = useLogout();
-  const { locale, setLocale } = useLocaleStore();
-
-  const toggleLanguage = useCallback(async () => {
-    const newLocale = locale === 'en' ? 'ar' : 'en';
-    setLocale(newLocale);
-    await i18n.changeLanguage(newLocale);
-    const isRTL = newLocale === 'ar';
-    if (I18nManager.isRTL !== isRTL) {
-      I18nManager.forceRTL(isRTL);
-      I18nManager.allowRTL(isRTL);
-      try {
-        await Updates.reloadAsync();
-      } catch {
-        // In dev mode, reload may not be available
-      }
-    }
-  }, [locale, setLocale, i18n]);
+  const { locale, toggleLanguage } = useChangeLanguage();
 
   const handleSignOut = useCallback(() => {
     logout();
@@ -64,7 +48,7 @@ export default function StudentProfile() {
         >
           <View style={styles.settingRow}>
             <Text style={styles.settingLabel}>{t('notifications.preferences.title')}</Text>
-            <Text style={styles.chevron}>{'>'}</Text>
+            <Ionicons name="chevron-forward" size={20} color={lightTheme.textSecondary} />
           </View>
         </Card>
 
@@ -133,10 +117,5 @@ const styles = StyleSheet.create({
     ...typography.textStyles.body,
     color: lightTheme.text,
     fontFamily: typography.fontFamily.medium,
-  },
-  chevron: {
-    ...typography.textStyles.body,
-    color: lightTheme.textSecondary,
-    fontSize: typography.fontSize.lg,
   },
 });

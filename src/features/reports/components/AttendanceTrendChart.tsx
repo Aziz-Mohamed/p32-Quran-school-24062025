@@ -38,7 +38,7 @@ export function AttendanceTrendChart({
 
   return (
     <ChartContainer
-      title={t('reports.attendanceTrend', 'Attendance Trend')}
+      title={t('reports.attendanceTrend')}
       isLoading={isLoading}
       isEmpty={isEmpty}
       isError={isError}

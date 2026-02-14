@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { I18nextProvider } from 'react-i18next';
 
 import { useAuthStore, type Profile } from '@/stores/authStore';
+import { useLocaleStore } from '@/stores/localeStore';
 import { useAuth } from '@/hooks/useAuth';
 import i18n from '@/i18n/config';
 import { supabase } from '@/lib/supabase';
@@ -30,14 +31,34 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     // Add custom fonts here if needed
   });
+  const [storeHydrated, setStoreHydrated] = useState(false);
+
+  // Wait for Zustand locale store to hydrate from AsyncStorage,
+  // then sync i18n language with the persisted user preference.
+  useEffect(() => {
+    const syncLocale = () => {
+      const { locale } = useLocaleStore.getState();
+      if (i18n.language !== locale) {
+        i18n.changeLanguage(locale);
+      }
+      setStoreHydrated(true);
+    };
+
+    if (useLocaleStore.persist.hasHydrated()) {
+      syncLocale();
+    } else {
+      const unsub = useLocaleStore.persist.onFinishHydration(syncLocale);
+      return unsub;
+    }
+  }, []);
 
   useEffect(() => {
-    if (fontsLoaded) {
+    if (fontsLoaded && storeHydrated) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, storeHydrated]);
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || !storeHydrated) {
     return null;
   }
 
