@@ -2,16 +2,16 @@ import { supabase } from '@/lib/supabase';
 
 class GamificationService {
   /**
-   * GS-001: Get the school's active sticker catalog.
-   * Returns all active stickers for a given school, ordered by name.
+   * GS-001: Get the global heritage sticker catalog.
+   * Returns all active stickers ordered by tier then name.
    */
-  async getStickers(schoolId: string) {
+  async getStickers() {
     return supabase
       .from('stickers')
       .select('*')
-      .eq('school_id', schoolId)
       .eq('is_active', true)
-      .order('name');
+      .order('tier')
+      .order('name_en');
   }
 
   /**
@@ -22,7 +22,7 @@ class GamificationService {
     return supabase
       .from('student_stickers')
       .select(
-        '*, stickers(name, image_url, category, points_value), profiles!student_stickers_awarded_by_fkey(full_name)',
+        '*, stickers(id, name_ar, name_en, tier, image_path, points_value), profiles!student_stickers_awarded_by_fkey(full_name)',
       )
       .eq('student_id', studentId)
       .order('awarded_at', { ascending: false });
@@ -48,6 +48,27 @@ class GamificationService {
       })
       .select()
       .single();
+  }
+
+  /**
+   * GS-003b: Mark stickers as seen (clear is_new flag).
+   */
+  async markStickersAsSeen(studentStickerId: string) {
+    return supabase
+      .from('student_stickers')
+      .update({ is_new: false })
+      .eq('id', studentStickerId);
+  }
+
+  /**
+   * GS-003c: Mark all new stickers as seen for a student.
+   */
+  async markAllStickersAsSeen(studentId: string) {
+    return supabase
+      .from('student_stickers')
+      .update({ is_new: false })
+      .eq('student_id', studentId)
+      .eq('is_new', true);
   }
 
   /**
@@ -118,55 +139,10 @@ class GamificationService {
   }
 
   /**
-   * Get a single sticker by ID (admin use).
+   * Get a single sticker by ID.
    */
   async getStickerById(id: string) {
     return supabase.from('stickers').select('*').eq('id', id).single();
-  }
-
-  /**
-   * Create a new sticker in the catalog (admin use).
-   */
-  async createSticker(input: {
-    name: string;
-    category?: string | null;
-    points_value: number;
-    school_id: string;
-    image_url?: string;
-  }) {
-    return supabase
-      .from('stickers')
-      .insert({
-        name: input.name,
-        category: input.category ?? null,
-        points_value: input.points_value,
-        school_id: input.school_id,
-        image_url: input.image_url ?? '',
-        is_active: true,
-      })
-      .select()
-      .single();
-  }
-
-  /**
-   * Update an existing sticker (admin use).
-   */
-  async updateSticker(
-    id: string,
-    input: {
-      name?: string;
-      category?: string | null;
-      points_value?: number;
-      image_url?: string;
-      is_active?: boolean;
-    },
-  ) {
-    return supabase
-      .from('stickers')
-      .update(input)
-      .eq('id', id)
-      .select()
-      .single();
   }
 }
 

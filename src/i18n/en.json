@@ -162,10 +162,23 @@
     },
     "stickers": {
       "title": "My Stickers",
-      "subtitle": "Your sticker collection",
+      "subtitle": "Your heritage sticker collection",
       "totalCollected": "{{count}} Collected",
+      "uniqueCount": "{{count}} Unique",
       "emptyTitle": "No Stickers Yet",
-      "emptyDescription": "Earn stickers from your teachers"
+      "emptyDescription": "Earn stickers from your teachers",
+      "count": "×{{count}}",
+      "newSticker": "New Sticker!",
+      "points": "points",
+      "tapToDismiss": "Tap to dismiss",
+      "tier": {
+        "common": "Common",
+        "rare": "Rare",
+        "epic": "Epic",
+        "legendary": "Legendary",
+        "seasonal": "Seasonal",
+        "trophy": "Trophy"
+      }
     },
     "trophies": {
       "title": "Trophy Room",
@@ -406,21 +419,10 @@
       "removeStudentMessage": "Remove {{name}} from this class?"
     },
     "stickers": {
-      "title": "Sticker Catalog",
-      "add": "Add Sticker",
-      "emptyTitle": "No Stickers Yet",
-      "emptyDescription": "Create stickers for teachers to award",
-      "createTitle": "Create Sticker",
-      "editTitle": "Edit Sticker",
-      "name": "Sticker Name",
-      "namePlaceholder": "Enter sticker name",
-      "category": "Category",
-      "categoryPlaceholder": "Enter category (optional)",
-      "icon": "Sticker Icon",
-      "pointsValue": "Points Value",
-      "createButton": "Create Sticker",
-      "nameRequired": "Sticker name is required",
-      "notFound": "Sticker not found"
+      "title": "Heritage Stickers",
+      "catalogCount": "{{count}} stickers in catalog",
+      "emptyTitle": "No Stickers",
+      "emptyDescription": "Heritage stickers will appear here"
     },
     "resetPassword": {
       "title": "Reset Password",

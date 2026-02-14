@@ -2,16 +2,18 @@ import React, { useState } from 'react';
 import { StyleSheet, View, Text, Pressable, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
+import { Image } from 'expo-image';
 
 import { Screen } from '@/components/layout';
-import { StickerIcon } from '@/components/ui/StickerIcon';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { Select, type SelectOption } from '@/components/forms/Select';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
+import { useRTL } from '@/hooks/useRTL';
 import { useStudents } from '@/features/students/hooks/useStudents';
 import { useStickers, useAwardSticker } from '@/features/gamification/hooks/useStickers';
+import { getStickerImageUrl } from '@/lib/storage';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -22,14 +24,15 @@ import { radius } from '@/theme/radius';
 export default function AwardStickerScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { profile, schoolId } = useAuth();
+  const { profile } = useAuth();
+  const { isRTL } = useRTL();
 
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
   const [reason, setReason] = useState('');
 
   const { data: students = [] } = useStudents({ isActive: true });
-  const { data: stickers = [], isLoading: stickersLoading } = useStickers(schoolId ?? undefined);
+  const { data: stickers = [], isLoading: stickersLoading } = useStickers();
   const awardSticker = useAwardSticker();
 
   const studentOptions: SelectOption[] = students.map((s: any) => ({
@@ -38,7 +41,7 @@ export default function AwardStickerScreen() {
   }));
 
   const handleAward = () => {
-    if (!selectedStudentId || !selectedStickerId || !profile?.id || !schoolId) {
+    if (!selectedStudentId || !selectedStickerId || !profile?.id) {
       Alert.alert(t('common.error'), t('teacher.awards.selectBothError'));
       return;
     }
@@ -49,7 +52,6 @@ export default function AwardStickerScreen() {
         stickerId: selectedStickerId,
         awardedBy: profile.id,
         reason: reason.trim() || undefined,
-        schoolId,
       },
       {
         onSuccess: () => {
@@ -74,7 +76,6 @@ export default function AwardStickerScreen() {
   return (
     <Screen scroll>
       <View style={styles.container}>
-        {/* Back */}
         <Button
           title={t('common.back')}
           onPress={() => router.back()}
@@ -84,7 +85,6 @@ export default function AwardStickerScreen() {
 
         <Text style={styles.title}>{t('teacher.awards.title')}</Text>
 
-        {/* Student Select */}
         <Select
           label={t('teacher.sessions.student')}
           placeholder={t('teacher.sessions.selectStudent')}
@@ -93,7 +93,6 @@ export default function AwardStickerScreen() {
           onChange={setSelectedStudentId}
         />
 
-        {/* Sticker Grid */}
         <Text style={styles.sectionTitle}>{t('teacher.awards.chooseSticker')}</Text>
         {stickersLoading ? (
           <LoadingState />
@@ -105,8 +104,11 @@ export default function AwardStickerScreen() {
           />
         ) : (
           <View style={styles.stickerGrid}>
-            {stickers.map((sticker: any) => {
+            {stickers.map((sticker) => {
               const isSelected = sticker.id === selectedStickerId;
+              const name = isRTL ? sticker.name_ar : sticker.name_en;
+              const imageUrl = getStickerImageUrl(sticker.image_path);
+
               return (
                 <Pressable
                   key={sticker.id}
@@ -117,12 +119,13 @@ export default function AwardStickerScreen() {
                   ]}
                   accessibilityRole="radio"
                   accessibilityState={{ selected: isSelected }}
-                  accessibilityLabel={sticker.name}
+                  accessibilityLabel={name}
                 >
-                  <StickerIcon
-                    value={sticker.image_url}
-                    size={32}
-                    color={isSelected ? colors.primary[600] : colors.neutral[600]}
+                  <Image
+                    source={{ uri: imageUrl }}
+                    style={styles.stickerImage}
+                    contentFit="contain"
+                    cachePolicy="disk"
                   />
                   <Text
                     style={[
@@ -131,7 +134,7 @@ export default function AwardStickerScreen() {
                     ]}
                     numberOfLines={2}
                   >
-                    {sticker.name}
+                    {name}
                   </Text>
                   <Text style={styles.stickerPoints}>
                     {sticker.points_value} {t('common.pts')}
@@ -142,7 +145,6 @@ export default function AwardStickerScreen() {
           </View>
         )}
 
-        {/* Reason */}
         <TextField
           label={t('teacher.awards.reason')}
           placeholder={t('teacher.awards.reasonPlaceholder')}
@@ -151,7 +153,6 @@ export default function AwardStickerScreen() {
           multiline
         />
 
-        {/* Actions */}
         <View style={styles.actions}>
           <Button
             title={t('common.cancel')}
@@ -210,11 +211,16 @@ const styles = StyleSheet.create({
     borderColor: colors.primary[500],
     backgroundColor: colors.primary[50],
   },
+  stickerImage: {
+    width: 36,
+    height: 36,
+  },
   stickerName: {
     ...typography.textStyles.caption,
     color: lightTheme.text,
     textAlign: 'center',
     fontFamily: typography.fontFamily.medium,
+    minHeight: 32,
   },
   stickerNameSelected: {
     color: colors.primary[700],

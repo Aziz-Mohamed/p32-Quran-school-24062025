@@ -14,12 +14,7 @@ export type LessonStatus = 'not_started' | 'in_progress' | 'completed';
 
 // ─── Gamification ───────────────────────────────────────────────────────────
 
-export type StickerCategory =
-  | 'memorization'
-  | 'behavior'
-  | 'attendance'
-  | 'effort'
-  | 'helping';
+export type StickerTier = 'common' | 'rare' | 'epic' | 'legendary' | 'seasonal' | 'trophy';
 
 // ─── Locale ─────────────────────────────────────────────────────────────────
 

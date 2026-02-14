@@ -619,44 +619,36 @@ export type Database = {
       }
       stickers: {
         Row: {
-          category: string | null
-          description: string | null
+          created_at: string
           id: string
-          image_url: string
+          image_path: string
           is_active: boolean
-          name: string
+          name_ar: string
+          name_en: string
           points_value: number
-          school_id: string
+          tier: string
         }
         Insert: {
-          category?: string | null
-          description?: string | null
-          id?: string
-          image_url: string
+          created_at?: string
+          id: string
+          image_path: string
           is_active?: boolean
-          name: string
+          name_ar: string
+          name_en: string
           points_value?: number
-          school_id: string
+          tier?: string
         }
         Update: {
-          category?: string | null
-          description?: string | null
+          created_at?: string
           id?: string
-          image_url?: string
+          image_path?: string
           is_active?: boolean
-          name?: string
+          name_ar?: string
+          name_en?: string
           points_value?: number
-          school_id?: string
+          tier?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "stickers_school_id_fkey"
-            columns: ["school_id"]
-            isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       student_achievements: {
         Row: {
@@ -699,6 +691,7 @@ export type Database = {
           awarded_at: string
           awarded_by: string
           id: string
+          is_new: boolean
           reason: string | null
           sticker_id: string
           student_id: string
@@ -707,6 +700,7 @@ export type Database = {
           awarded_at?: string
           awarded_by: string
           id?: string
+          is_new?: boolean
           reason?: string | null
           sticker_id: string
           student_id: string
@@ -715,6 +709,7 @@ export type Database = {
           awarded_at?: string
           awarded_by?: string
           id?: string
+          is_new?: boolean
           reason?: string | null
           sticker_id?: string
           student_id?: string

@@ -1,15 +1,20 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Screen } from '@/components/layout';
-import { Card } from '@/components/ui/Card';
-import { StickerIcon } from '@/components/ui/StickerIcon';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
-import { useStudentStickers } from '@/features/gamification/hooks/useStickers';
+import {
+  useStickerCollection,
+  useNewStickers,
+  useMarkStickerSeen,
+} from '@/features/gamification/hooks/useStickers';
+import { StickerGrid } from '@/features/gamification/components/StickerGrid';
+import { StickerReveal } from '@/features/gamification/components/StickerReveal';
+import type { AwardedSticker } from '@/features/gamification/types/gamification.types';
 import { typography } from '@/theme/typography';
-import { lightTheme, colors } from '@/theme/colors';
+import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
 // ─── Stickers Screen ──────────────────────────────────────────────────────────
@@ -18,46 +23,74 @@ export default function StickersScreen() {
   const { t } = useTranslation();
   const { profile } = useAuth();
 
-  const { data: stickers = [], isLoading, error, refetch } = useStudentStickers(profile?.id);
+  const {
+    collection,
+    isLoading,
+    error,
+    refetch,
+    data: rawStickers,
+  } = useStickerCollection(profile?.id);
+
+  const { newStickers } = useNewStickers(profile?.id);
+  const markSeen = useMarkStickerSeen();
+
+  const [revealSticker, setRevealSticker] = useState<AwardedSticker | null>(
+    () => newStickers[0] ?? null,
+  );
+
+  const handleDismissReveal = useCallback(() => {
+    if (revealSticker) {
+      markSeen.mutate({
+        studentStickerId: revealSticker.id,
+        studentId: profile?.id ?? '',
+      });
+
+      const currentIndex = newStickers.findIndex((s) => s.id === revealSticker.id);
+      const nextSticker = newStickers[currentIndex + 1] ?? null;
+      setRevealSticker(nextSticker);
+    }
+  }, [revealSticker, newStickers, markSeen, profile?.id]);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
+
+  const totalCount = rawStickers?.length ?? 0;
+  const uniqueCount = collection.length;
 
   return (
     <Screen scroll>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>{t('student.stickers.title')}</Text>
-          <Text style={styles.count}>
-            {t('student.stickers.totalCollected', { count: stickers.length })}
-          </Text>
+          <View style={styles.counts}>
+            <Text style={styles.count}>
+              {t('student.stickers.totalCollected', { count: totalCount })}
+            </Text>
+            {uniqueCount !== totalCount && (
+              <Text style={styles.uniqueCount}>
+                {t('student.stickers.uniqueCount', { count: uniqueCount })}
+              </Text>
+            )}
+          </View>
         </View>
 
-        {stickers.length === 0 ? (
+        {collection.length === 0 ? (
           <EmptyState
             icon="star-outline"
             title={t('student.stickers.emptyTitle')}
             description={t('student.stickers.emptyDescription')}
           />
         ) : (
-          <View style={styles.grid}>
-            {stickers.map((item: any) => (
-              <Card key={item.id} variant="outlined" style={styles.stickerCard}>
-                <StickerIcon value={item.stickers?.image_url} size={36} color={colors.primary[500]} />
-                <Text style={styles.stickerName} numberOfLines={2}>
-                  {item.stickers?.name ?? '—'}
-                </Text>
-                {item.stickers?.category && (
-                  <Text style={styles.stickerCategory}>{item.stickers.category}</Text>
-                )}
-                <Text style={styles.stickerDate}>
-                  {item.awarded_at?.split('T')[0]}
-                </Text>
-              </Card>
-            ))}
-          </View>
+          <StickerGrid collection={collection} />
         )}
       </View>
+
+      {revealSticker && (
+        <StickerReveal
+          sticker={revealSticker}
+          onDismiss={handleDismissReveal}
+        />
+      )}
     </Screen>
   );
 }
@@ -79,36 +112,16 @@ const styles = StyleSheet.create({
     ...typography.textStyles.heading,
     color: lightTheme.text,
   },
+  counts: {
+    alignItems: 'flex-end',
+    gap: 2,
+  },
   count: {
     ...typography.textStyles.body,
     color: lightTheme.textSecondary,
   },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  stickerCard: {
-    width: '30%',
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.sm,
-    gap: spacing.xs,
-  },
-  stickerName: {
-    ...typography.textStyles.caption,
-    color: lightTheme.text,
-    textAlign: 'center',
-    fontFamily: typography.fontFamily.medium,
-  },
-  stickerCategory: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
-    fontSize: typography.fontSize.xs,
-  },
-  stickerDate: {
+  uniqueCount: {
     ...typography.textStyles.caption,
     color: lightTheme.textTertiary,
-    fontSize: typography.fontSize.xs,
   },
 });

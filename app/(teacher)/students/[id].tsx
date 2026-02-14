@@ -137,7 +137,7 @@ export default function TeacherStudentDetailScreen() {
               <View style={styles.stickerRow}>
                 <View style={styles.stickerInfo}>
                   <Text style={styles.stickerName}>
-                    {sticker.stickers?.name ?? '—'}
+                    {sticker.stickers?.name_en ?? '—'}
                   </Text>
                   {sticker.reason && (
                     <Text style={styles.stickerReason}>{sticker.reason}</Text>

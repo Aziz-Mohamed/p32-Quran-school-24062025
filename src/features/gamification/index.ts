@@ -2,7 +2,9 @@ export type {
   LeaderboardEntry,
   TrophyWithStatus,
   AchievementWithStatus,
-  StickerCollection,
+  StickerCollectionItem,
+  StickerTier,
+  AwardedSticker,
   GamificationSummary,
 } from './types/gamification.types';
 
