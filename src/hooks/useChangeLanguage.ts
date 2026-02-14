@@ -1,10 +1,33 @@
 import { useCallback } from 'react';
-import { Alert, I18nManager, Platform } from 'react-native';
+import { Alert, I18nManager, NativeModules, Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import * as Updates from 'expo-updates';
 
 import { useLocaleStore } from '@/stores/localeStore';
 import type { SupportedLocale } from '@/types/common.types';
+
+/**
+ * Reload the app after an RTL direction change.
+ *
+ * - Production: `Updates.reloadAsync()` does a full native reload.
+ * - Development: `DevSettings.reload()` reloads the JS bundle, causing
+ *   all views to remount and pick up the new I18nManager direction.
+ * - Fallback: Alert asking the user to manually restart.
+ */
+async function reloadApp(): Promise<void> {
+  try {
+    await Updates.reloadAsync();
+  } catch {
+    if (__DEV__ && NativeModules.DevSettings?.reload) {
+      NativeModules.DevSettings.reload();
+    } else {
+      Alert.alert(
+        'Restart Required',
+        'Please restart the app to apply the language change.',
+      );
+    }
+  }
+}
 
 /**
  * Shared hook for changing the app language with proper RTL handling.
@@ -30,15 +53,7 @@ export function useChangeLanguage() {
       if (I18nManager.isRTL !== shouldBeRTL && Platform.OS !== 'web') {
         I18nManager.allowRTL(shouldBeRTL);
         I18nManager.forceRTL(shouldBeRTL);
-        try {
-          await Updates.reloadAsync();
-        } catch {
-          // Dev mode: Updates.reloadAsync() may not be available
-          Alert.alert(
-            i18n.t('common.restartRequired'),
-            i18n.t('common.restartMessage'),
-          );
-        }
+        await reloadApp();
       }
     },
     [locale, setLocale, i18n],
