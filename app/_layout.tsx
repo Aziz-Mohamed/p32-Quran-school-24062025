@@ -2,6 +2,7 @@ import 'react-native-reanimated';
 import 'react-native-gesture-handler';
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { I18nManager, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -32,14 +33,22 @@ export default function RootLayout() {
     // Add custom fonts here if needed
   });
   const [storeHydrated, setStoreHydrated] = useState(false);
+  const isRTL = useLocaleStore((s) => s.isRTL);
 
   // Wait for Zustand locale store to hydrate from AsyncStorage,
-  // then sync i18n language with the persisted user preference.
+  // then sync i18n language and native RTL state with the persisted preference.
   useEffect(() => {
     const syncLocale = () => {
-      const { locale } = useLocaleStore.getState();
+      const { locale, isRTL: storedRTL } = useLocaleStore.getState();
       if (i18n.language !== locale) {
         i18n.changeLanguage(locale);
+      }
+      // Ensure native I18nManager matches the persisted locale.
+      // This covers the case where forceRTL was called but the app
+      // didn't reload (e.g. dev mode), so on next launch we re-sync.
+      if (I18nManager.isRTL !== storedRTL) {
+        I18nManager.allowRTL(storedRTL);
+        I18nManager.forceRTL(storedRTL);
       }
       setStoreHydrated(true);
     };
@@ -62,22 +71,28 @@ export default function RootLayout() {
     return null;
   }
 
+  // Root View `direction` style: In production, I18nManager.forceRTL() + reload
+  // handles everything (tab bar, nav, text cursors). This style is a dev-mode
+  // fallback so layouts flip immediately when DevSettings.reload() isn't available.
+  // In production it's harmlessly redundant with forceRTL.
   return (
-    <QueryClientProvider client={queryClient}>
-      <I18nextProvider i18n={i18n}>
-        <AuthGuard>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(student)" />
-            <Stack.Screen name="(teacher)" />
-            <Stack.Screen name="(parent)" />
-            <Stack.Screen name="(admin)" />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        </AuthGuard>
-      </I18nextProvider>
-    </QueryClientProvider>
+    <View style={{ flex: 1, direction: isRTL ? 'rtl' : 'ltr' }}>
+      <QueryClientProvider client={queryClient}>
+        <I18nextProvider i18n={i18n}>
+          <AuthGuard>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(student)" />
+              <Stack.Screen name="(teacher)" />
+              <Stack.Screen name="(parent)" />
+              <Stack.Screen name="(admin)" />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </AuthGuard>
+        </I18nextProvider>
+      </QueryClientProvider>
+    </View>
   );
 }
 

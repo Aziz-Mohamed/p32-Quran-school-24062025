@@ -24,8 +24,8 @@ interface ScreenProps {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-// Layout direction is handled globally by I18nManager.forceRTL() + app reload.
-// No need for manual `direction` style overrides on individual containers.
+// Layout direction is driven by the root View's `direction` style in _layout.tsx,
+// backed by I18nManager.forceRTL() for native components.
 
 export const Screen: React.FC<ScreenProps> = ({
   children,
