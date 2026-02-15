@@ -10,11 +10,15 @@ import type { SupportedLocale } from '@/types/common.types';
  * Shared hook for changing the app language with proper RTL handling.
  *
  * Flow:
- *   1. Persist locale to Zustand/AsyncStorage
- *   2. Update i18n translations
- *   3. If direction changed: forceRTL() → Updates.reloadAsync()
- *      After reload, I18nManager.isRTL is set from the first frame.
- *      Every component — native and JS — renders in the correct direction.
+ *   1. Persist native RTL via forceRTL() (for native components + future launches)
+ *   2. Persist locale to Zustand/AsyncStorage (drives root View `direction` style)
+ *   3. Update i18n translations
+ *   4. Reload app for full native consistency (production: Updates.reloadAsync())
+ *
+ * The root View in _layout.tsx applies `direction: 'rtl' | 'ltr'` from the
+ * store's isRTL state, which flips all React layouts synchronously.
+ * forceRTL() handles native components (tab bar, navigation) that live
+ * outside the React tree.
  */
 export function useChangeLanguage() {
   const { i18n } = useTranslation();
@@ -24,18 +28,23 @@ export function useChangeLanguage() {
     async (newLocale: SupportedLocale) => {
       if (newLocale === locale) return;
 
-      // 1. Persist user preference
-      setLocale(newLocale);
-
-      // 2. Update translations
-      await i18n.changeLanguage(newLocale);
-
-      // 3. Handle RTL direction change
       const shouldBeRTL = newLocale === 'ar';
-      if (I18nManager.isRTL !== shouldBeRTL && Platform.OS !== 'web') {
+      const directionChanged = I18nManager.isRTL !== shouldBeRTL;
+
+      // 1. Set native RTL for native components + persistence
+      if (directionChanged && Platform.OS !== 'web') {
         I18nManager.allowRTL(shouldBeRTL);
         I18nManager.forceRTL(shouldBeRTL);
+      }
 
+      // 2. Update store → root View `direction` style flips immediately
+      setLocale(newLocale);
+
+      // 3. Update translations
+      await i18n.changeLanguage(newLocale);
+
+      // 4. Reload for full native consistency
+      if (directionChanged && Platform.OS !== 'web') {
         try {
           await Updates.reloadAsync();
         } catch {
