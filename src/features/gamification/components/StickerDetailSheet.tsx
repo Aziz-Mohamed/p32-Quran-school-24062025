@@ -18,7 +18,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { shadows } from '@/theme/shadows';
 import { normalize } from '@/theme/normalize';
-import { TIER_COLORS, TIER_BG_COLORS } from './StickerGrid';
+import { TIER_COLORS } from './StickerGrid';
 import type { StickerCollectionItem, StickerTier } from '../types/gamification.types';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -38,7 +38,6 @@ export function StickerDetailSheet({ item, onClose }: StickerDetailSheetProps) {
 
   const tier = item.sticker.tier as StickerTier;
   const tierColor = TIER_COLORS[tier] ?? colors.neutral[400];
-  const tierBg = TIER_BG_COLORS[tier] ?? colors.neutral[50];
   const name = isRTL ? item.sticker.name_ar : item.sticker.name_en;
   const imageUrl = getStickerImageUrl(item.sticker.image_path);
 
@@ -74,7 +73,7 @@ export function StickerDetailSheet({ item, onClose }: StickerDetailSheetProps) {
           </Pressable>
 
           {/* Sticker image */}
-          <View style={[styles.imageContainer, { backgroundColor: tierBg }]}>
+          <View style={styles.imageContainer}>
             <Image
               source={{ uri: imageUrl }}
               style={styles.stickerImage}
@@ -88,7 +87,7 @@ export function StickerDetailSheet({ item, onClose }: StickerDetailSheetProps) {
 
           {/* Tier badge + Points */}
           <View style={styles.badgeRow}>
-            <View style={[styles.tierBadge, { backgroundColor: tierColor + '20' }]}>
+            <View style={styles.tierBadge}>
               <Text style={[styles.tierLabel, { color: tierColor }]}>
                 {t(`student.stickers.tier.${tier}`)}
               </Text>
@@ -182,6 +181,7 @@ const styles = StyleSheet.create({
     width: normalize(180),
     height: normalize(180),
     borderRadius: radius.xl,
+    backgroundColor: colors.neutral[50],
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
@@ -206,11 +206,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize(12),
     paddingVertical: normalize(5),
     borderRadius: normalize(12),
+    backgroundColor: colors.neutral[50],
   },
   tierLabel: {
     fontSize: normalize(12),
-    fontFamily: typography.fontFamily.bold,
-    textTransform: 'uppercase',
+    fontFamily: typography.fontFamily.semiBold,
+    letterSpacing: 0.5,
   },
   pointsBadge: {
     flexDirection: 'row',

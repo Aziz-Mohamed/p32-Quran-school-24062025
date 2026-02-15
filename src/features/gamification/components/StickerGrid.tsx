@@ -16,21 +16,12 @@ import type { StickerCollectionItem, StickerTier } from '../types/gamification.t
 // ─── Tier Config ──────────────────────────────────────────────────────────────
 
 export const TIER_COLORS: Record<StickerTier, string> = {
-  bronze: colors.neutral[400],
-  silver: colors.primary[500],
-  gold: colors.accent.violet[500],
-  diamond: colors.secondary[500],
-  seasonal: colors.accent.sky[500],
-  trophy: colors.gamification.gold,
-};
-
-export const TIER_BG_COLORS: Record<StickerTier, string> = {
-  bronze: colors.neutral[50],
-  silver: colors.primary[50],
-  gold: colors.accent.violet[50],
-  diamond: colors.secondary[50],
-  seasonal: colors.accent.sky[50],
-  trophy: '#FFFBEB', // amber 50
+  bronze: '#8B6C42',  // true antique bronze
+  silver: '#6B7B8D',  // cool metallic silver
+  gold: '#B8860B',    // deep real gold
+  diamond: '#4E97B8', // ice-blue diamond
+  seasonal: colors.neutral[400],
+  trophy: '#9B7500',  // rich trophy amber
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -72,7 +63,6 @@ function StickerCell({ item, isRTL, onPress }: StickerCellProps) {
   const { t } = useTranslation();
   const tier = item.sticker.tier as StickerTier;
   const tierColor = TIER_COLORS[tier] ?? colors.neutral[400];
-  const bgColor = TIER_BG_COLORS[tier] ?? colors.white;
   const name = isRTL ? item.sticker.name_ar : item.sticker.name_en;
   const imageUrl = getStickerImageUrl(item.sticker.image_path);
 
@@ -80,7 +70,6 @@ function StickerCell({ item, isRTL, onPress }: StickerCellProps) {
     <Pressable
       style={({ pressed }) => [
         styles.cell,
-        { backgroundColor: bgColor },
         pressed && styles.cellPressed
       ]}
       onPress={onPress}
@@ -100,13 +89,13 @@ function StickerCell({ item, isRTL, onPress }: StickerCellProps) {
           {name}
         </Text>
         <View style={styles.meta}>
-          <View style={[styles.tierBadge, { backgroundColor: tierColor + '20' }]}>
+          <View style={styles.tierBadge}>
             <Text style={[styles.tierLabel, { color: tierColor }]}>
               {t(`student.stickers.tier.${tier}`)}
             </Text>
           </View>
           {item.count > 1 && (
-            <View style={[styles.countBadge, { backgroundColor: tierColor }]}>
+            <View style={styles.countBadge}>
               <Text style={styles.countText}>{item.count}</Text>
             </View>
           )}
@@ -130,9 +119,10 @@ const styles = StyleSheet.create({
   cell: {
     width: CELL_SIZE,
     borderRadius: radius.lg,
+    backgroundColor: colors.white,
     ...shadows.sm,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderColor: colors.neutral[100],
     overflow: 'hidden',
   },
   cellPressed: {
@@ -176,16 +166,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize(8),
     paddingVertical: normalize(3),
     borderRadius: normalize(8),
+    backgroundColor: colors.neutral[50],
   },
   tierLabel: {
     fontSize: normalize(10),
-    fontFamily: typography.fontFamily.bold,
-    textTransform: 'uppercase',
+    fontFamily: typography.fontFamily.semiBold,
+    letterSpacing: 0.5,
   },
   countBadge: {
     minWidth: normalize(22),
     height: normalize(22),
     borderRadius: normalize(11),
+    backgroundColor: colors.neutral[700],
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: normalize(5),

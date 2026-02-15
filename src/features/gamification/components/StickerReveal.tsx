@@ -27,12 +27,12 @@ import type { AwardedSticker, StickerTier } from '../types/gamification.types';
 // ─── Tier Glow Colors ─────────────────────────────────────────────────────────
 
 const TIER_GLOW: Record<StickerTier, string> = {
-  bronze: colors.neutral[300],
-  silver: colors.primary[300],
-  gold: '#C4B5FD',
-  diamond: colors.secondary[300],
-  seasonal: '#93C5FD',
-  trophy: '#FDE68A',
+  bronze: '#C9A87C',   // warm bronze glow
+  silver: '#B0BEC5',   // cool steel glow
+  gold: '#D4A843',     // rich gold glow
+  diamond: '#90CAE8',  // ice diamond glow
+  seasonal: colors.neutral[300],
+  trophy: '#CDAA3D',   // trophy amber glow
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────

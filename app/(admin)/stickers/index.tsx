@@ -15,27 +15,8 @@ import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { shadows } from '@/theme/shadows';
 import { normalize } from '@/theme/normalize';
+import { TIER_COLORS } from '@/features/gamification/components/StickerGrid';
 import type { StickerTier } from '@/features/gamification/types/gamification.types';
-
-// ─── Tier Colors ─────────────────────────────────────────────────────────────
-
-const TIER_BG: Record<StickerTier, string> = {
-  bronze: colors.neutral[50],
-  silver: colors.primary[50],
-  gold: colors.accent.violet[50],
-  diamond: colors.secondary[50],
-  seasonal: colors.accent.sky[50],
-  trophy: '#FFFBEB',
-};
-
-const TIER_COLOR: Record<StickerTier, string> = {
-  bronze: colors.neutral[500],
-  silver: colors.primary[500],
-  gold: colors.accent.violet[500],
-  diamond: colors.secondary[500],
-  seasonal: colors.accent.sky[500],
-  trophy: colors.gamification.gold,
-};
 
 // ─── Sticker Catalog Screen ──────────────────────────────────────────────────
 
@@ -79,15 +60,13 @@ export default function StickerCatalogScreen() {
               const tier = item.tier as StickerTier;
               const name = isRTL ? item.name_ar : item.name_en;
               const imageUrl = getStickerImageUrl(item.image_path);
-              const bg = TIER_BG[tier] ?? colors.neutral[50];
-              const accent = TIER_COLOR[tier] ?? colors.neutral[500];
+              const tierColor = TIER_COLORS[tier] ?? colors.neutral[400];
 
               return (
                 <Pressable
                   key={item.id}
                   style={({ pressed }) => [
                     styles.card,
-                    { backgroundColor: bg },
                     pressed && styles.cardPressed,
                   ]}
                 >
@@ -101,8 +80,8 @@ export default function StickerCatalogScreen() {
                   <View style={styles.cardFooter}>
                     <Text style={styles.stickerName} numberOfLines={1}>{name}</Text>
                     <View style={styles.metaRow}>
-                      <View style={[styles.tierBadge, { backgroundColor: accent + '20' }]}>
-                        <Text style={[styles.tierText, { color: accent }]}>
+                      <View style={styles.tierBadge}>
+                        <Text style={[styles.tierText, { color: tierColor }]}>
                           {t(`student.stickers.tier.${tier}`)}
                         </Text>
                       </View>
@@ -151,9 +130,10 @@ const styles = StyleSheet.create({
   card: {
     width: '47%',
     borderRadius: normalize(16),
+    backgroundColor: colors.white,
     ...shadows.sm,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderColor: colors.neutral[100],
     overflow: 'hidden',
   },
   cardPressed: {
@@ -183,11 +163,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize(8),
     paddingVertical: normalize(3),
     borderRadius: normalize(8),
+    backgroundColor: colors.neutral[50],
   },
   tierText: {
     fontSize: normalize(10),
-    fontFamily: typography.fontFamily.bold,
-    textTransform: 'uppercase',
+    fontFamily: typography.fontFamily.semiBold,
+    letterSpacing: 0.5,
   },
   points: {
     ...typography.textStyles.caption,
