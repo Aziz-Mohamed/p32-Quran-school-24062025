@@ -176,12 +176,19 @@
       "points": "نقاط",
       "tapToDismiss": "اضغط للإغلاق",
       "tier": {
-        "common": "عادي",
-        "rare": "نادر",
-        "epic": "ملحمي",
-        "legendary": "أسطوري",
+        "bronze": "نجمة برونزية",
+        "silver": "نجمة فضية",
+        "gold": "نجمة ذهبية",
+        "diamond": "نجمة ماسية",
         "seasonal": "موسمي",
         "trophy": "كأس"
+      },
+      "detail": {
+        "timesEarned": "مرات الحصول",
+        "pointsValue": "قيمة النقاط",
+        "firstEarned": "أول حصول",
+        "lastEarned": "آخر حصول",
+        "awardedBy": "منحه"
       }
     },
     "trophies": {

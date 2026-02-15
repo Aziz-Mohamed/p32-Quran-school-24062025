@@ -15,20 +15,20 @@ import type { StickerCollectionItem, StickerTier } from '../types/gamification.t
 
 // ─── Tier Config ──────────────────────────────────────────────────────────────
 
-const TIER_COLORS: Record<StickerTier, string> = {
-  common: colors.neutral[400],
-  rare: colors.primary[500],
-  epic: colors.accent.violet[500],
-  legendary: colors.secondary[500],
+export const TIER_COLORS: Record<StickerTier, string> = {
+  bronze: colors.neutral[400],
+  silver: colors.primary[500],
+  gold: colors.accent.violet[500],
+  diamond: colors.secondary[500],
   seasonal: colors.accent.sky[500],
   trophy: colors.gamification.gold,
 };
 
-const TIER_BG_COLORS: Record<StickerTier, string> = {
-  common: colors.neutral[50],
-  rare: colors.primary[50],
-  epic: colors.accent.violet[50],
-  legendary: colors.secondary[50],
+export const TIER_BG_COLORS: Record<StickerTier, string> = {
+  bronze: colors.neutral[50],
+  silver: colors.primary[50],
+  gold: colors.accent.violet[50],
+  diamond: colors.secondary[50],
   seasonal: colors.accent.sky[50],
   trophy: '#FFFBEB', // amber 50
 };
@@ -63,13 +63,12 @@ export function StickerGrid({ collection, onStickerPress }: StickerGridProps) {
 // ─── Cell ─────────────────────────────────────────────────────────────────────
 
 interface StickerCellProps {
-  item: StickerCellProps['item']; // Fixed type issue
+  item: StickerCollectionItem;
   isRTL: boolean;
   onPress?: () => void;
 }
 
-// Re-defining internal props for clarity
-function StickerCell({ item, isRTL, onPress }: { item: StickerCollectionItem, isRTL: boolean, onPress?: () => void }) {
+function StickerCell({ item, isRTL, onPress }: StickerCellProps) {
   const { t } = useTranslation();
   const tier = item.sticker.tier as StickerTier;
   const tierColor = TIER_COLORS[tier] ?? colors.neutral[400];

@@ -176,12 +176,19 @@
       "points": "points",
       "tapToDismiss": "Tap to dismiss",
       "tier": {
-        "common": "Common",
-        "rare": "Rare",
-        "epic": "Epic",
-        "legendary": "Legendary",
+        "bronze": "Bronze Star",
+        "silver": "Silver Star",
+        "gold": "Gold Star",
+        "diamond": "Diamond Star",
         "seasonal": "Seasonal",
         "trophy": "Trophy"
+      },
+      "detail": {
+        "timesEarned": "Times Earned",
+        "pointsValue": "Points Value",
+        "firstEarned": "First Earned",
+        "lastEarned": "Last Earned",
+        "awardedBy": "Awarded By"
       }
     },
     "trophies": {

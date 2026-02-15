@@ -57,21 +57,24 @@ export const useStickerCollection = (studentId: string | undefined) => {
     }
 
     for (const [, { items, hasNew }] of grouped) {
-      const first = items[0];
-      if (first.stickers) {
+      const mostRecent = items[0];
+      const earliest = items[items.length - 1];
+      if (mostRecent.stickers) {
         collection.push({
           sticker: {
-            id: first.stickers.id,
-            name_ar: first.stickers.name_ar,
-            name_en: first.stickers.name_en,
-            tier: first.stickers.tier as StickerTier,
-            image_path: first.stickers.image_path,
-            points_value: first.stickers.points_value,
+            id: mostRecent.stickers.id,
+            name_ar: mostRecent.stickers.name_ar,
+            name_en: mostRecent.stickers.name_en,
+            tier: mostRecent.stickers.tier as StickerTier,
+            image_path: mostRecent.stickers.image_path,
+            points_value: mostRecent.stickers.points_value,
             is_active: true,
             created_at: '',
           },
           count: items.length,
-          lastAwardedAt: first.awarded_at,
+          firstAwardedAt: earliest.awarded_at,
+          lastAwardedAt: mostRecent.awarded_at,
+          lastAwardedBy: mostRecent.profiles?.full_name ?? null,
           isNew: hasNew,
         });
       }

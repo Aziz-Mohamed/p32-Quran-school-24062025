@@ -27,10 +27,10 @@ import type { AwardedSticker, StickerTier } from '../types/gamification.types';
 // ─── Tier Glow Colors ─────────────────────────────────────────────────────────
 
 const TIER_GLOW: Record<StickerTier, string> = {
-  common: colors.neutral[300],
-  rare: colors.primary[300],
-  epic: '#C4B5FD',
-  legendary: colors.secondary[300],
+  bronze: colors.neutral[300],
+  silver: colors.primary[300],
+  gold: '#C4B5FD',
+  diamond: colors.secondary[300],
   seasonal: '#93C5FD',
   trophy: '#FDE68A',
 };
@@ -56,7 +56,7 @@ export function StickerReveal({ sticker, onDismiss }: StickerRevealProps) {
   const textOpacity = useSharedValue(0);
   const textTranslateY = useSharedValue(20);
 
-  const tier = (sticker.stickers?.tier ?? 'common') as StickerTier;
+  const tier = (sticker.stickers?.tier ?? 'bronze') as StickerTier;
   const glowColor = TIER_GLOW[tier] ?? colors.neutral[300];
   const name = isRTL
     ? sticker.stickers?.name_ar

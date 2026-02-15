@@ -20,19 +20,19 @@ import type { StickerTier } from '@/features/gamification/types/gamification.typ
 // ─── Tier Colors ─────────────────────────────────────────────────────────────
 
 const TIER_BG: Record<StickerTier, string> = {
-  common: colors.neutral[50],
-  rare: colors.primary[50],
-  epic: colors.accent.violet[50],
-  legendary: colors.secondary[50],
+  bronze: colors.neutral[50],
+  silver: colors.primary[50],
+  gold: colors.accent.violet[50],
+  diamond: colors.secondary[50],
   seasonal: colors.accent.sky[50],
   trophy: '#FFFBEB',
 };
 
 const TIER_COLOR: Record<StickerTier, string> = {
-  common: colors.neutral[500],
-  rare: colors.primary[500],
-  epic: colors.accent.violet[500],
-  legendary: colors.secondary[500],
+  bronze: colors.neutral[500],
+  silver: colors.primary[500],
+  gold: colors.accent.violet[500],
+  diamond: colors.secondary[500],
   seasonal: colors.accent.sky[500],
   trophy: colors.gamification.gold,
 };

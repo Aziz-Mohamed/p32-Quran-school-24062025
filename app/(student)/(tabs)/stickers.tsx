@@ -12,7 +12,8 @@ import {
 } from '@/features/gamification/hooks/useStickers';
 import { StickerGrid } from '@/features/gamification/components/StickerGrid';
 import { StickerReveal } from '@/features/gamification/components/StickerReveal';
-import type { AwardedSticker } from '@/features/gamification/types/gamification.types';
+import { StickerDetailSheet } from '@/features/gamification/components/StickerDetailSheet';
+import type { AwardedSticker, StickerCollectionItem } from '@/features/gamification/types/gamification.types';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -38,6 +39,7 @@ export default function StickersScreen() {
   const [revealSticker, setRevealSticker] = useState<AwardedSticker | null>(
     () => newStickers[0] ?? null,
   );
+  const [selectedSticker, setSelectedSticker] = useState<StickerCollectionItem | null>(null);
 
   const handleDismissReveal = useCallback(() => {
     if (revealSticker) {
@@ -82,7 +84,7 @@ export default function StickersScreen() {
             description={t('student.stickers.emptyDescription')}
           />
         ) : (
-          <StickerGrid collection={collection} />
+          <StickerGrid collection={collection} onStickerPress={setSelectedSticker} />
         )}
       </View>
 
@@ -92,6 +94,11 @@ export default function StickersScreen() {
           onDismiss={handleDismissReveal}
         />
       )}
+
+      <StickerDetailSheet
+        item={selectedSticker}
+        onClose={() => setSelectedSticker(null)}
+      />
     </Screen>
   );
 }

@@ -14,7 +14,7 @@ export type LessonStatus = 'not_started' | 'in_progress' | 'completed';
 
 // ─── Gamification ───────────────────────────────────────────────────────────
 
-export type StickerTier = 'common' | 'rare' | 'epic' | 'legendary' | 'seasonal' | 'trophy';
+export type StickerTier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'seasonal' | 'trophy';
 
 // ─── Locale ─────────────────────────────────────────────────────────────────
 

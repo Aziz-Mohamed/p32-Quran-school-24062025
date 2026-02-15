@@ -23,13 +23,15 @@ export interface AchievementWithStatus extends Tables<'achievements'> {
 }
 
 /** Sticker tier type matching the DB CHECK constraint */
-export type StickerTier = 'common' | 'rare' | 'epic' | 'legendary' | 'seasonal' | 'trophy';
+export type StickerTier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'seasonal' | 'trophy';
 
 /** Aggregated sticker in a student's collection (grouped by sticker_id) */
 export interface StickerCollectionItem {
   sticker: Tables<'stickers'>;
   count: number;
+  firstAwardedAt: string;
   lastAwardedAt: string;
+  lastAwardedBy: string | null;
   isNew: boolean;
 }
 
