@@ -79,39 +79,38 @@ function StickerCell({ item, isRTL, onPress }: { item: StickerCollectionItem, is
   return (
     <Pressable
       style={({ pressed }) => [
-        styles.cell, 
+        styles.cell,
         { backgroundColor: bgColor },
         pressed && styles.cellPressed
       ]}
       onPress={onPress}
       accessibilityLabel={`${name} — ${t('student.stickers.count', { count: item.count })}`}
     >
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: imageUrl }}
-          style={styles.stickerImage}
-          contentFit="contain"
-          cachePolicy="disk"
-          transition={300}
-        />
-        {item.isNew && <View style={styles.newDot} />}
-      </View>
+      <Image
+        source={{ uri: imageUrl }}
+        style={styles.stickerImage}
+        contentFit="contain"
+        cachePolicy="disk"
+        transition={300}
+      />
+      {item.isNew && <View style={styles.newDot} />}
 
-      <Text style={styles.stickerName} numberOfLines={2}>
-        {name}
-      </Text>
-
-      <View style={styles.meta}>
-        <View style={[styles.tierBadge, { backgroundColor: tierColor + '20' }]}>
-          <Text style={[styles.tierLabel, { color: tierColor }]}>
-            {t(`student.stickers.tier.${tier}`)}
-          </Text>
-        </View>
-        {item.count > 1 && (
-          <View style={[styles.countBadge, { backgroundColor: tierColor }]}>
-            <Text style={styles.countText}>{item.count}</Text>
+      <View style={styles.footer}>
+        <Text style={styles.stickerName} numberOfLines={1}>
+          {name}
+        </Text>
+        <View style={styles.meta}>
+          <View style={[styles.tierBadge, { backgroundColor: tierColor + '20' }]}>
+            <Text style={[styles.tierLabel, { color: tierColor }]}>
+              {t(`student.stickers.tier.${tier}`)}
+            </Text>
           </View>
-        )}
+          {item.count > 1 && (
+            <View style={[styles.countBadge, { backgroundColor: tierColor }]}>
+              <Text style={styles.countText}>{item.count}</Text>
+            </View>
+          )}
+        </View>
       </View>
     </Pressable>
   );
@@ -119,86 +118,80 @@ function StickerCell({ item, isRTL, onPress }: { item: StickerCollectionItem, is
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const CELL_SIZE = '31%' as const;
+const CELL_SIZE = '47%' as const;
 
 const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.sm,
+    gap: spacing.md,
     justifyContent: 'flex-start',
   },
   cell: {
     width: CELL_SIZE,
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     ...shadows.sm,
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.05)',
-    gap: spacing.xs,
-    marginBottom: spacing.xs,
+    overflow: 'hidden',
   },
   cellPressed: {
-    transform: [{ scale: 0.96 }],
+    transform: [{ scale: 0.97 }],
     ...shadows.none,
   },
-  imageContainer: {
-    width: 60,
-    height: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   stickerImage: {
-    width: 52,
-    height: 52,
+    width: '100%',
+    aspectRatio: 1,
   },
   newDot: {
     position: 'absolute',
-    top: 0,
-    end: 0,
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    top: 8,
+    right: 8,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
     backgroundColor: colors.accent.rose[500],
     borderWidth: 2,
     borderColor: colors.white,
+    zIndex: 1,
+  },
+  footer: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+    gap: 4,
+    alignItems: 'center',
   },
   stickerName: {
-    ...typography.textStyles.label,
+    ...typography.textStyles.bodyMedium,
     color: colors.neutral[800],
     fontFamily: typography.fontFamily.semiBold,
     textAlign: 'center',
-    minHeight: 28,
-    paddingHorizontal: 2,
   },
   meta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
+    gap: 6,
   },
   tierBadge: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
   tierLabel: {
-    fontSize: 9,
+    fontSize: 10,
     fontFamily: typography.fontFamily.bold,
     textTransform: 'uppercase',
   },
   countBadge: {
-    minWidth: 18,
-    height: 18,
-    borderRadius: 9,
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 4,
+    paddingHorizontal: 5,
   },
   countText: {
-    fontSize: 9,
+    fontSize: 10,
     color: colors.white,
     fontFamily: typography.fontFamily.bold,
   },
