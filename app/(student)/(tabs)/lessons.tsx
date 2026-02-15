@@ -2,17 +2,18 @@ import React, { useMemo } from 'react';
 import { StyleSheet, View, Text, SectionList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui';
+import { Badge, ProgressBar } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useLessonProgress } from '@/features/lessons/hooks/useLessons';
+import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
-import { radius } from '@/theme/radius';
 
 // ─── Lessons Screen ───────────────────────────────────────────────────────────
 
@@ -20,6 +21,7 @@ export default function LessonsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { profile } = useAuth();
+  const theme = useRoleTheme();
 
   const { data: progressList = [], isLoading, error, refetch } = useLessonProgress(profile?.id);
 
@@ -41,9 +43,9 @@ export default function LessonsScreen() {
     }
 
     return [
-      { title: t('student.lessons.inProgress'), data: groups.in_progress },
-      { title: t('student.lessons.notStarted'), data: groups.not_started },
-      { title: t('student.lessons.completed'), data: groups.completed },
+      { title: t('student.lessons.inProgress'), data: groups.in_progress, icon: 'time' },
+      { title: t('student.lessons.notStarted'), data: groups.not_started, icon: 'play-circle' },
+      { title: t('student.lessons.completed'), data: groups.completed, icon: 'checkmark-circle' },
     ].filter((s) => s.data.length > 0);
   }, [progressList, t]);
 
@@ -52,7 +54,7 @@ export default function LessonsScreen() {
 
   if (sections.length === 0) {
     return (
-      <Screen scroll={false}>
+      <Screen scroll={false} hasTabBar>
         <EmptyState
           icon="book-outline"
           title={t('student.lessons.emptyTitle')}
@@ -63,21 +65,26 @@ export default function LessonsScreen() {
   }
 
   return (
-    <Screen scroll={false}>
+    <Screen scroll={false} hasTabBar>
       <View style={styles.container}>
         <Text style={styles.title}>{t('student.lessons.title')}</Text>
         <SectionList
           sections={sections}
           keyExtractor={(item: any) => item.id}
+          contentContainerStyle={styles.listContent}
+          stickySectionHeadersEnabled={false}
           renderSectionHeader={({ section }) => (
-            <Text style={styles.sectionHeader}>{section.title}</Text>
+            <View style={styles.sectionHeaderContainer}>
+              <Ionicons name={(section as any).icon} size={18} color={theme.primary} />
+              <Text style={styles.sectionHeader}>{section.title}</Text>
+            </View>
           )}
           renderItem={({ item }: { item: any }) => {
             const lesson = item.lessons;
-            const percentage = item.completion_percentage ?? 0;
+            const percentage = (item.completion_percentage ?? 0) / 100;
             return (
               <Card
-                variant="outlined"
+                variant="default"
                 onPress={() => router.push(`/(student)/lessons/${lesson?.id ?? item.lesson_id}`)}
                 style={styles.lessonCard}
               >
@@ -92,16 +99,22 @@ export default function LessonsScreen() {
                           : ''}
                       </Text>
                     )}
-                    {lesson?.lesson_type && (
-                      <Badge label={lesson.lesson_type} variant="default" size="sm" />
-                    )}
+                    <View style={styles.badgeRow}>
+                      {lesson?.lesson_type && (
+                        <Badge label={lesson.lesson_type} variant={theme.tag} size="sm" />
+                      )}
+                    </View>
                   </View>
-                  <Text style={styles.percentage}>{percentage}%</Text>
+                  <Ionicons name="chevron-forward" size={20} color={colors.neutral[300]} />
                 </View>
-                {/* Progress Bar */}
-                <View style={styles.progressTrack}>
-                  <View style={[styles.progressFill, { width: `${percentage}%` }]} />
-                </View>
+                
+                <ProgressBar 
+                  progress={percentage} 
+                  variant={theme.tag} 
+                  height={6} 
+                  showLabel 
+                  style={styles.progressBar}
+                />
               </Card>
             );
           }}
@@ -116,55 +129,57 @@ export default function LessonsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  listContent: {
     padding: spacing.lg,
   },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    marginBottom: spacing.md,
+    fontSize: 24,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+  },
+  sectionHeaderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
   },
   sectionHeader: {
     ...typography.textStyles.subheading,
-    color: lightTheme.textSecondary,
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
+    color: lightTheme.text,
+    fontSize: 16,
   },
   lessonCard: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
+    padding: spacing.md,
   },
   lessonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: spacing.sm,
+    alignItems: 'center',
+    marginBottom: spacing.md,
   },
   lessonInfo: {
     flex: 1,
     gap: spacing.xs,
   },
   lessonTitle: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.semiBold,
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[900],
+    fontSize: 17,
   },
   lessonMeta: {
     ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
+    color: colors.neutral[500],
   },
-  percentage: {
-    ...typography.textStyles.body,
-    color: lightTheme.primary,
-    fontFamily: typography.fontFamily.semiBold,
+  badgeRow: {
+    marginTop: spacing.xs,
   },
-  progressTrack: {
-    height: 6,
-    backgroundColor: colors.neutral[200],
-    borderRadius: radius.full,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.primary[500],
-    borderRadius: radius.full,
+  progressBar: {
+    marginTop: spacing.xs,
   },
 });

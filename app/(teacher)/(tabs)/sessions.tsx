@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useSessions } from '@/features/sessions/hooks/useSessions';
+import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -22,6 +23,7 @@ export default function SessionsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { profile } = useAuth();
+  const theme = useRoleTheme();
 
   const { data: sessions = [], isLoading, error, refetch } = useSessions({
     teacherId: profile?.id,
@@ -31,14 +33,17 @@ export default function SessionsScreen() {
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
 
   return (
-    <Screen scroll={false}>
+    <Screen scroll={false} hasTabBar>
       <View style={styles.container}>
         <View style={styles.header}>
-          <Text style={styles.title}>{t('teacher.sessions.title')}</Text>
+          <View>
+            <Text style={styles.title}>{t('teacher.sessions.title')}</Text>
+            <Text style={styles.subtitle}>{t('teacher.sessions.viewHistory')}</Text>
+          </View>
           <Button
             title={t('teacher.logSession')}
             onPress={() => router.push('/(teacher)/sessions/create')}
-            variant="primary"
+            variant={theme.tag}
             size="sm"
             icon={<Ionicons name="add" size={18} color={colors.white} />}
           />
@@ -54,26 +59,38 @@ export default function SessionsScreen() {
           <FlashList
             data={sessions}
             keyExtractor={(item: any) => item.id}
+            contentContainerStyle={styles.listContent}
+            estimatedItemSize={100}
             renderItem={({ item }: { item: any }) => (
               <Card
-                variant="outlined"
+                variant="default"
                 onPress={() => router.push(`/(teacher)/sessions/${item.id}`)}
                 style={styles.sessionCard}
               >
                 <View style={styles.sessionRow}>
+                  <View style={styles.studentAvatar}>
+                    <Text style={styles.avatarText}>
+                      {item.student?.profiles?.full_name?.[0]?.toUpperCase()}
+                    </Text>
+                  </View>
                   <View style={styles.sessionInfo}>
-                    <Text style={styles.studentName}>
+                    <Text style={styles.studentName} numberOfLines={1}>
                       {item.student?.profiles?.full_name ?? '—'}
                     </Text>
-                    <Text style={styles.sessionDate}>{item.session_date}</Text>
+                    <View style={styles.dateRow}>
+                      <Ionicons name="calendar-outline" size={12} color={colors.neutral[400]} />
+                      <Text style={styles.sessionDate}>{item.session_date}</Text>
+                    </View>
                   </View>
                   <View style={styles.scores}>
                     {item.memorization_score != null && (
-                      <Badge label={`M: ${item.memorization_score}`} variant="info" size="sm" />
+                      <Badge 
+                        label={`M: ${item.memorization_score}`} 
+                        variant={item.memorization_score >= 4 ? "success" : "warning"} 
+                        size="sm" 
+                      />
                     )}
-                    {item.tajweed_score != null && (
-                      <Badge label={`T: ${item.tajweed_score}`} variant="default" size="sm" />
-                    )}
+                    <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
                   </View>
                 </View>
               </Card>
@@ -90,9 +107,10 @@ export default function SessionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: spacing.lg,
   },
   header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -101,30 +119,58 @@ const styles = StyleSheet.create({
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
+    fontSize: 24,
+  },
+  subtitle: {
+    ...typography.textStyles.caption,
+    color: lightTheme.textSecondary,
+  },
+  listContent: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   sessionCard: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
+    padding: spacing.md,
   },
   sessionRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: spacing.md,
+  },
+  studentAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: colors.neutral[100],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[600],
   },
   sessionInfo: {
     flex: 1,
+    gap: 2,
   },
   studentName: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.semiBold,
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[900],
+    fontSize: 16,
+  },
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   sessionDate: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
-    marginTop: 2,
+    ...typography.textStyles.label,
+    color: colors.neutral[500],
   },
   scores: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.xs,
   },
 });

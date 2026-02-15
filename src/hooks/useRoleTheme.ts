@@ -58,6 +58,6 @@ export const useRoleTheme = () => {
     primaryLight: colors.primary[50],
     primaryDark: colors.primary[600],
     gradient: colors.gradients.primary,
-    tag: 'primary' as const,
+    tag: 'default' as const,
   };
 };

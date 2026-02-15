@@ -5,10 +5,11 @@ import { useTranslation } from 'react-i18next';
 
 import { useRTL } from '@/hooks/useRTL';
 import { getStickerImageUrl } from '@/lib/storage';
-import { lightTheme, colors } from '@/theme/colors';
+import { colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
+import { shadows } from '@/theme/shadows';
 import type { StickerCollectionItem, StickerTier } from '../types/gamification.types';
 
 // ─── Tier Config ──────────────────────────────────────────────────────────────
@@ -16,19 +17,19 @@ import type { StickerCollectionItem, StickerTier } from '../types/gamification.t
 const TIER_COLORS: Record<StickerTier, string> = {
   common: colors.neutral[400],
   rare: colors.primary[500],
-  epic: '#8B5CF6',
+  epic: colors.accent.violet[500],
   legendary: colors.secondary[500],
-  seasonal: colors.semantic.info,
+  seasonal: colors.accent.sky[500],
   trophy: colors.gamification.gold,
 };
 
-const TIER_BORDER_COLORS: Record<StickerTier, string> = {
-  common: colors.neutral[200],
-  rare: colors.primary[200],
-  epic: '#DDD6FE',
-  legendary: colors.secondary[200],
-  seasonal: '#BFDBFE',
-  trophy: '#FEF3C7',
+const TIER_BG_COLORS: Record<StickerTier, string> = {
+  common: colors.neutral[50],
+  rare: colors.primary[50],
+  epic: colors.accent.violet[50],
+  legendary: colors.secondary[50],
+  seasonal: colors.accent.sky[50],
+  trophy: '#FFFBEB', // amber 50
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -61,22 +62,27 @@ export function StickerGrid({ collection, onStickerPress }: StickerGridProps) {
 // ─── Cell ─────────────────────────────────────────────────────────────────────
 
 interface StickerCellProps {
-  item: StickerCollectionItem;
+  item: StickerCellProps['item']; // Fixed type issue
   isRTL: boolean;
   onPress?: () => void;
 }
 
-function StickerCell({ item, isRTL, onPress }: StickerCellProps) {
+// Re-defining internal props for clarity
+function StickerCell({ item, isRTL, onPress }: { item: StickerCollectionItem, isRTL: boolean, onPress?: () => void }) {
   const { t } = useTranslation();
   const tier = item.sticker.tier as StickerTier;
-  const borderColor = TIER_BORDER_COLORS[tier] ?? colors.neutral[200];
   const tierColor = TIER_COLORS[tier] ?? colors.neutral[400];
+  const bgColor = TIER_BG_COLORS[tier] ?? colors.white;
   const name = isRTL ? item.sticker.name_ar : item.sticker.name_en;
   const imageUrl = getStickerImageUrl(item.sticker.image_path);
 
   return (
     <Pressable
-      style={[styles.cell, { borderColor }]}
+      style={({ pressed }) => [
+        styles.cell, 
+        { backgroundColor: bgColor },
+        pressed && styles.cellPressed
+      ]}
       onPress={onPress}
       accessibilityLabel={`${name} — ${t('student.stickers.count', { count: item.count })}`}
     >
@@ -86,7 +92,7 @@ function StickerCell({ item, isRTL, onPress }: StickerCellProps) {
           style={styles.stickerImage}
           contentFit="contain"
           cachePolicy="disk"
-          transition={200}
+          transition={300}
         />
         {item.isNew && <View style={styles.newDot} />}
       </View>
@@ -96,14 +102,16 @@ function StickerCell({ item, isRTL, onPress }: StickerCellProps) {
       </Text>
 
       <View style={styles.meta}>
+        <View style={[styles.tierBadge, { backgroundColor: tierColor + '20' }]}>
+          <Text style={[styles.tierLabel, { color: tierColor }]}>
+            {t(`student.stickers.tier.${tier}`)}
+          </Text>
+        </View>
         {item.count > 1 && (
           <View style={[styles.countBadge, { backgroundColor: tierColor }]}>
-            <Text style={styles.countText}>×{item.count}</Text>
+            <Text style={styles.countText}>{item.count}</Text>
           </View>
         )}
-        <Text style={[styles.tierLabel, { color: tierColor }]}>
-          {t(`student.stickers.tier.${tier}`)}
-        </Text>
       </View>
     </Pressable>
   );
@@ -111,69 +119,87 @@ function StickerCell({ item, isRTL, onPress }: StickerCellProps) {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const CELL_SIZE = '30%' as const;
+const CELL_SIZE = '31%' as const;
 
 const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
+    justifyContent: 'flex-start',
   },
   cell: {
     width: CELL_SIZE,
     alignItems: 'center',
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xs,
-    borderWidth: 1,
     borderRadius: radius.md,
-    backgroundColor: lightTheme.surfaceElevated,
+    ...shadows.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
     gap: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  cellPressed: {
+    transform: [{ scale: 0.96 }],
+    ...shadows.none,
   },
   imageContainer: {
-    width: 56,
-    height: 56,
+    width: 60,
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
   },
   stickerImage: {
-    width: 48,
-    height: 48,
+    width: 52,
+    height: 52,
   },
   newDot: {
     position: 'absolute',
     top: 0,
     end: 0,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: colors.semantic.error,
-    borderWidth: 1.5,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: colors.accent.rose[500],
+    borderWidth: 2,
     borderColor: colors.white,
   },
   stickerName: {
-    ...typography.textStyles.caption,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.medium,
+    ...typography.textStyles.label,
+    color: colors.neutral[800],
+    fontFamily: typography.fontFamily.semiBold,
     textAlign: 'center',
-    minHeight: 32,
+    minHeight: 28,
+    paddingHorizontal: 2,
   },
   meta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
+    gap: 4,
+    marginTop: 2,
   },
-  countBadge: {
+  tierBadge: {
     paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: radius.full,
-  },
-  countText: {
-    ...typography.textStyles.label,
-    color: colors.white,
-    fontFamily: typography.fontFamily.bold,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   tierLabel: {
-    ...typography.textStyles.label,
-    textTransform: 'capitalize',
+    fontSize: 9,
+    fontFamily: typography.fontFamily.bold,
+    textTransform: 'uppercase',
+  },
+  countBadge: {
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  countText: {
+    fontSize: 9,
+    color: colors.white,
+    fontFamily: typography.fontFamily.bold,
   },
 });

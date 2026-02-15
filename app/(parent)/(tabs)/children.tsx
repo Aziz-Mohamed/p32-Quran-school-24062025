@@ -6,10 +6,11 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui';
+import { Badge, Avatar } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useChildren } from '@/features/children/hooks/useChildren';
+import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -20,6 +21,7 @@ export default function ChildrenScreen() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const router = useRouter();
+  const theme = useRoleTheme();
 
   const { data: children = [], isLoading, error, refetch } = useChildren(profile?.id);
 
@@ -27,9 +29,12 @@ export default function ChildrenScreen() {
   if (error) return <ErrorState description={(error as Error).message} onRetry={refetch} />;
 
   return (
-    <Screen scroll>
+    <Screen scroll hasTabBar>
       <View style={styles.container}>
-        <Text style={styles.title}>{t('parent.myChildren')}</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>{t('parent.myChildren')}</Text>
+          <Badge label={String(children.length)} variant={theme.tag} />
+        </View>
 
         {children.length === 0 ? (
           <EmptyState
@@ -38,34 +43,47 @@ export default function ChildrenScreen() {
             description={t('parent.children.emptyDescription')}
           />
         ) : (
-          children.map((child: any) => (
-            <Card
-              key={child.id}
-              variant="outlined"
-              style={styles.childCard}
-              onPress={() => router.push(`/(parent)/children/${child.id}`)}
-            >
-              <View style={styles.childRow}>
-                <View style={styles.childAvatar}>
-                  <Ionicons name="person" size={28} color={colors.primary[500]} />
+          <View style={styles.childrenList}>
+            {children.map((child: any) => (
+              <Card
+                key={child.id}
+                variant="default"
+                style={styles.childCard}
+                onPress={() => router.push(`/(parent)/children/${child.id}`)}
+              >
+                <View style={styles.childRow}>
+                  <Avatar 
+                    name={child.profiles?.full_name} 
+                    size="lg" 
+                    ring 
+                    variant={theme.tag}
+                  />
+                  <View style={styles.childInfo}>
+                    <Text style={styles.childName}>
+                      {child.profiles?.full_name ?? '—'}
+                    </Text>
+                    <Text style={styles.childMeta}>
+                      {child.classes?.name ?? t('admin.students.noClass')}
+                      {child.levels ? ` · ${child.levels.title}` : ''}
+                    </Text>
+                    <View style={styles.statsRow}>
+                      <View style={styles.statItem}>
+                        <Ionicons name="sparkles" size={12} color={colors.gamification.gold} />
+                        <Text style={styles.statText}>{child.total_points}</Text>
+                      </View>
+                      {child.current_streak > 0 && (
+                        <View style={styles.statItem}>
+                          <Ionicons name="flame" size={12} color={colors.accent.rose[500]} />
+                          <Text style={styles.statText}>{child.current_streak}</Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={colors.neutral[300]} />
                 </View>
-                <View style={styles.childInfo}>
-                  <Text style={styles.childName}>
-                    {child.profiles?.full_name ?? '—'}
-                  </Text>
-                  <Text style={styles.childMeta}>
-                    {child.classes?.name ?? t('admin.students.noClass')}
-                    {child.levels ? ` · ${child.levels.title}` : ''}
-                  </Text>
-                  <Text style={styles.childPoints}>
-                    {child.total_points} {t('student.points')}
-                    {child.current_streak > 0 ? ` · ${child.current_streak} ${t('student.streak')}` : ''}
-                  </Text>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
-              </View>
-            </Card>
-          ))
+              </Card>
+            ))}
+          </View>
         )}
       </View>
     </Screen>
@@ -80,42 +98,55 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.md,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.sm,
+  },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
+    fontSize: 24,
+  },
+  childrenList: {
+    gap: spacing.md,
   },
   childCard: {
-    marginBottom: spacing.xs,
+    padding: spacing.md,
   },
   childRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
   },
-  childAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primary[50],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   childInfo: {
     flex: 1,
+    gap: 2,
   },
   childName: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.semiBold,
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[900],
+    fontSize: 18,
   },
   childMeta: {
     ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
-    marginTop: 2,
+    color: colors.neutral[500],
   },
-  childPoints: {
-    ...typography.textStyles.caption,
-    color: lightTheme.primary,
-    marginTop: 2,
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginTop: 4,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statText: {
+    ...typography.textStyles.label,
+    color: colors.neutral[600],
+    fontFamily: typography.fontFamily.bold,
   },
 });

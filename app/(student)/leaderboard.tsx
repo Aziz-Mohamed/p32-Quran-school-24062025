@@ -7,15 +7,15 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui';
+import { Badge, Avatar } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useLeaderboard } from '@/features/gamification/hooks/useLeaderboard';
+import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
-import { radius } from '@/theme/radius';
 
 // ─── Leaderboard Screen ──────────────────────────────────────────────────────
 
@@ -23,12 +23,11 @@ export default function LeaderboardScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { profile } = useAuth();
+  const theme = useRoleTheme();
   const [period, setPeriod] = useState<'weekly' | 'all-time'>('all-time');
 
-  // For now, use profile's class_id (from student record). The hook needs a classId.
-  // We pass undefined and handle the empty state gracefully.
   const { data: entries = [], isLoading, error, refetch } = useLeaderboard(
-    undefined, // TODO: get student's class_id
+    undefined,
     period,
   );
 
@@ -38,20 +37,22 @@ export default function LeaderboardScreen() {
   return (
     <Screen scroll={false}>
       <View style={styles.container}>
-        <Button
-          title={t('common.back')}
-          onPress={() => router.back()}
-          variant="ghost"
-          size="sm"
-        />
-
-        <Text style={styles.title}>{t('student.leaderboard.title')}</Text>
+        <View style={styles.header}>
+          <Button
+            title={t('common.back')}
+            onPress={() => router.back()}
+            variant="ghost"
+            size="sm"
+            icon={<Ionicons name="arrow-back" size={20} color={theme.primary} />}
+          />
+          <Text style={styles.title}>{t('student.leaderboard.title')}</Text>
+        </View>
 
         {/* Period Toggle */}
-        <View style={styles.toggleRow}>
+        <View style={styles.toggleContainer}>
           <Pressable
             onPress={() => setPeriod('weekly')}
-            style={[styles.toggleButton, period === 'weekly' && styles.toggleActive]}
+            style={[styles.toggleButton, period === 'weekly' && { backgroundColor: theme.primary }]}
           >
             <Text style={[styles.toggleText, period === 'weekly' && styles.toggleTextActive]}>
               {t('student.leaderboard.weekly')}
@@ -59,7 +60,7 @@ export default function LeaderboardScreen() {
           </Pressable>
           <Pressable
             onPress={() => setPeriod('all-time')}
-            style={[styles.toggleButton, period === 'all-time' && styles.toggleActive]}
+            style={[styles.toggleButton, period === 'all-time' && { backgroundColor: theme.primary }]}
           >
             <Text style={[styles.toggleText, period === 'all-time' && styles.toggleTextActive]}>
               {t('student.leaderboard.allTime')}
@@ -77,20 +78,39 @@ export default function LeaderboardScreen() {
           <FlashList
             data={entries}
             keyExtractor={(item: any) => item.id}
+            contentContainerStyle={styles.listContent}
+            estimatedItemSize={80}
             renderItem={({ item, index }: { item: any; index: number }) => {
               const rank = index + 1;
               const isCurrentUser = item.user_id === profile?.id;
+              
               return (
                 <Card
-                  variant={isCurrentUser ? 'elevated' : 'outlined'}
-                  style={styles.entryCard}
+                  variant={isCurrentUser ? 'primary-glow' : 'default'}
+                  style={[styles.entryCard, isCurrentUser && { borderColor: theme.primary }]}
                 >
                   <View style={styles.entryRow}>
-                    <Text style={[styles.rank, rank <= 3 && styles.topRank]}>
-                      {t('student.leaderboard.rank', { rank })}
-                    </Text>
+                    <View style={styles.rankContainer}>
+                      {rank <= 3 ? (
+                        <Ionicons 
+                          name="trophy" 
+                          size={24} 
+                          color={rank === 1 ? colors.gamification.gold : rank === 2 ? colors.gamification.silver : colors.gamification.bronze} 
+                        />
+                      ) : (
+                        <Text style={styles.rankText}>{rank}</Text>
+                      )}
+                    </View>
+                    
+                    <Avatar 
+                      name={item.profiles?.full_name} 
+                      size="md" 
+                      ring={isCurrentUser}
+                      variant={isCurrentUser ? theme.tag : 'default'}
+                    />
+
                     <View style={styles.entryInfo}>
-                      <Text style={styles.entryName}>
+                      <Text style={styles.entryName} numberOfLines={1}>
                         {item.profiles?.full_name ?? '—'}
                       </Text>
                       {item.levels && (
@@ -99,7 +119,13 @@ export default function LeaderboardScreen() {
                         </Text>
                       )}
                     </View>
-                    <Text style={styles.entryPoints}>{item.total_points ?? 0}</Text>
+                    
+                    <View style={styles.pointsContainer}>
+                      <Text style={[styles.entryPoints, { color: theme.primary }]}>
+                        {item.total_points ?? 0}
+                      </Text>
+                      <Text style={styles.pointsLabel}>{t('student.points')}</Text>
+                    </View>
                   </View>
                 </Card>
               );
@@ -116,70 +142,86 @@ export default function LeaderboardScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: spacing.lg,
     gap: spacing.md,
+  },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
+    fontSize: 22,
   },
-  toggleRow: {
+  toggleContainer: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    backgroundColor: colors.neutral[100],
+    padding: 4,
+    borderRadius: 16,
+    marginHorizontal: spacing.lg,
   },
   toggleButton: {
     flex: 1,
-    paddingVertical: spacing.sm,
+    paddingVertical: 10,
     alignItems: 'center',
-    borderRadius: radius.md,
-    borderWidth: 1,
-    borderColor: lightTheme.border,
-  },
-  toggleActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
+    borderRadius: 12,
   },
   toggleText: {
-    ...typography.textStyles.body,
-    color: lightTheme.textSecondary,
-    fontFamily: typography.fontFamily.medium,
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[500],
+    fontSize: 14,
   },
   toggleTextActive: {
     color: colors.white,
   },
+  listContent: {
+    padding: spacing.lg,
+  },
   entryCard: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
+    padding: spacing.md,
   },
   entryRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
   },
-  rank: {
-    ...typography.textStyles.body,
-    color: lightTheme.textSecondary,
-    fontFamily: typography.fontFamily.semiBold,
-    width: 40,
+  rankContainer: {
+    width: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  topRank: {
-    color: colors.primary[500],
-    fontSize: typography.fontSize.md,
+  rankText: {
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[400],
+    fontSize: 18,
   },
   entryInfo: {
     flex: 1,
+    gap: 2,
   },
   entryName: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.semiBold,
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[900],
   },
   entryLevel: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
+    ...typography.textStyles.label,
+    color: colors.neutral[500],
+  },
+  pointsContainer: {
+    alignItems: 'flex-end',
   },
   entryPoints: {
-    ...typography.textStyles.body,
-    color: lightTheme.primary,
-    fontFamily: typography.fontFamily.semiBold,
+    ...typography.textStyles.bodyMedium,
+    fontFamily: typography.fontFamily.bold,
+    fontSize: 18,
+  },
+  pointsLabel: {
+    ...typography.textStyles.label,
+    fontSize: 10,
+    color: colors.neutral[400],
   },
 });

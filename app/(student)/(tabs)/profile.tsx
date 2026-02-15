@@ -7,12 +7,13 @@ import { useRouter } from 'expo-router';
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui';
+import { Badge, Avatar } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
 import { useLogout } from '@/features/auth/hooks/useLogout';
 import { useChangeLanguage } from '@/hooks/useChangeLanguage';
+import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
-import { lightTheme } from '@/theme/colors';
+import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
 // ─── Student Profile ──────────────────────────────────────────────────────────
@@ -21,6 +22,7 @@ export default function StudentProfile() {
   const { t } = useTranslation();
   const router = useRouter();
   const { profile } = useAuth();
+  const theme = useRoleTheme();
   const { logout, isPending: isLoggingOut } = useLogout();
   const { locale, toggleLanguage } = useChangeLanguage();
 
@@ -29,50 +31,75 @@ export default function StudentProfile() {
   }, [logout]);
 
   return (
-    <Screen scroll>
+    <Screen scroll hasTabBar>
       <View style={styles.container}>
         <Text style={styles.title}>{t('student.profile.title')}</Text>
 
         {/* Profile Info */}
-        <Card variant="elevated" style={styles.profileCard}>
-          <Text style={styles.profileName}>{profile?.full_name ?? '—'}</Text>
-          <Text style={styles.profileUsername}>@{profile?.username ?? '—'}</Text>
-          <Badge label={t('roles.student')} variant="info" size="md" />
+        <Card variant="primary-glow" style={styles.profileCard}>
+          <Avatar 
+            name={profile?.full_name} 
+            size="xl" 
+            ring 
+            variant={theme.tag}
+          />
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>{profile?.full_name ?? '—'}</Text>
+            <Text style={styles.profileUsername}>@{profile?.username ?? '—'}</Text>
+          </View>
+          <Badge label={t('roles.student')} variant={theme.tag} size="md" />
         </Card>
 
+        {/* Settings Group */}
+        <Text style={styles.sectionTitle}>{t('common.settings')}</Text>
+        
         {/* Notification Preferences */}
         <Card
-          variant="outlined"
+          variant="default"
           style={styles.settingCard}
           onPress={() => router.push('/notification-preferences')}
         >
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>{t('notifications.preferences.title')}</Text>
-            <Ionicons name="chevron-forward" size={20} color={lightTheme.textSecondary} />
+            <View style={styles.settingLabelContainer}>
+              <View style={[styles.settingIcon, { backgroundColor: colors.accent.sky[50] }]}>
+                <Ionicons name="notifications" size={20} color={colors.accent.sky[500]} />
+              </View>
+              <Text style={styles.settingLabel}>{t('notifications.preferences.title')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={colors.neutral[300]} />
           </View>
         </Card>
 
         {/* Language */}
-        <Card variant="outlined" style={styles.settingCard}>
+        <Card variant="default" style={styles.settingCard} onPress={toggleLanguage}>
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>{t('common.language')}</Text>
-            <Button
-              title={locale === 'en' ? t('common.arabic') : t('common.english')}
-              onPress={toggleLanguage}
-              variant="secondary"
-              size="sm"
-            />
+            <View style={styles.settingLabelContainer}>
+              <View style={[styles.settingIcon, { backgroundColor: colors.accent.violet[50] }]}>
+                <Ionicons name="language" size={20} color={colors.accent.violet[500]} />
+              </View>
+              <Text style={styles.settingLabel}>{t('common.language')}</Text>
+            </View>
+            <View style={styles.languageValue}>
+              <Text style={styles.languageText}>
+                {locale === 'en' ? t('common.english') : t('common.arabic')}
+              </Text>
+              <Ionicons name="chevron-forward" size={20} color={colors.neutral[300]} />
+            </View>
           </View>
         </Card>
 
         {/* Sign Out */}
-        <Button
-          title={t('common.signOut')}
-          onPress={handleSignOut}
-          variant="ghost"
-          size="md"
-          disabled={isLoggingOut}
-        />
+        <View style={styles.footer}>
+          <Button
+            title={t('common.signOut')}
+            onPress={handleSignOut}
+            variant="ghost"
+            size="md"
+            icon={<Ionicons name="log-out-outline" size={20} color={colors.accent.rose[500]} />}
+            style={styles.signOutButton}
+            loading={isLoggingOut}
+          />
+        </View>
       </View>
     </Screen>
   );
@@ -89,33 +116,70 @@ const styles = StyleSheet.create({
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
+    fontSize: 24,
+    marginBottom: spacing.sm,
   },
   profileCard: {
     alignItems: 'center',
     paddingVertical: spacing.xl,
-    gap: spacing.sm,
+    gap: spacing.md,
+  },
+  profileInfo: {
+    alignItems: 'center',
+    gap: 2,
   },
   profileName: {
     ...typography.textStyles.heading,
-    color: lightTheme.text,
-    fontSize: typography.fontSize.xl,
+    color: colors.neutral[900],
+    fontSize: 22,
   },
   profileUsername: {
     ...typography.textStyles.body,
-    color: lightTheme.textSecondary,
+    color: colors.neutral[500],
+  },
+  sectionTitle: {
+    ...typography.textStyles.subheading,
+    color: lightTheme.text,
+    marginTop: spacing.md,
+    fontSize: 16,
   },
   settingCard: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.lg,
+    padding: spacing.md,
   },
   settingRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  settingLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  settingIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   settingLabel: {
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[800],
+  },
+  languageValue: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  languageText: {
     ...typography.textStyles.body,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.medium,
+    color: colors.neutral[500],
+  },
+  footer: {
+    marginTop: spacing.xl,
+  },
+  signOutButton: {
+    backgroundColor: colors.accent.rose[50],
   },
 });

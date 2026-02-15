@@ -3,15 +3,17 @@ import { StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
+import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui';
+import { Badge, Avatar } from '@/components/ui';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useStudents } from '@/features/students/hooks/useStudents';
+import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
-import { lightTheme } from '@/theme/colors';
+import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
 // ─── Teacher Student List Screen ─────────────────────────────────────────────
@@ -19,6 +21,7 @@ import { spacing } from '@/theme/spacing';
 export default function TeacherStudentsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const theme = useRoleTheme();
   const [searchQuery, setSearchQuery] = useState('');
 
   const {
@@ -37,16 +40,21 @@ export default function TeacherStudentsScreen() {
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
 
   return (
-    <Screen scroll={false}>
+    <Screen scroll={false} hasTabBar>
       <View style={styles.container}>
-        <Text style={styles.title}>{t('teacher.students.title')}</Text>
+        <View style={styles.header}>
+          <Text style={styles.title}>{t('teacher.students.title')}</Text>
+          <Badge label={String(students.length)} variant={theme.tag} />
+        </View>
 
-        <SearchBar
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onClear={handleClearSearch}
-          placeholder={t('teacher.students.searchPlaceholder')}
-        />
+        <View style={styles.searchContainer}>
+          <SearchBar
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onClear={handleClearSearch}
+            placeholder={t('teacher.students.searchPlaceholder')}
+          />
+        </View>
 
         {students.length === 0 ? (
           <EmptyState
@@ -58,15 +66,23 @@ export default function TeacherStudentsScreen() {
           <FlashList
             data={students}
             keyExtractor={(item: any) => item.id}
+            contentContainerStyle={styles.listContent}
+            estimatedItemSize={80}
             renderItem={({ item }: { item: any }) => (
               <Card
-                variant="outlined"
+                variant="default"
                 onPress={() => router.push(`/(teacher)/students/${item.id}`)}
                 style={styles.studentCard}
               >
                 <View style={styles.studentRow}>
+                  <Avatar 
+                    name={item.profiles?.full_name} 
+                    size="md" 
+                    ring 
+                    variant={theme.tag}
+                  />
                   <View style={styles.studentInfo}>
-                    <Text style={styles.studentName}>
+                    <Text style={styles.studentName} numberOfLines={1}>
                       {item.profiles?.full_name ?? '—'}
                     </Text>
                     <Text style={styles.studentMeta}>
@@ -74,11 +90,9 @@ export default function TeacherStudentsScreen() {
                       {item.levels ? ` · ${item.levels.title}` : ''}
                     </Text>
                   </View>
-                  <Badge
-                    label={item.is_active ? t('teacher.students.active') : t('teacher.students.inactive')}
-                    variant={item.is_active ? 'success' : 'default'}
-                    size="sm"
-                  />
+                  <View style={styles.studentActions}>
+                    <Ionicons name="chevron-forward" size={20} color={colors.neutral[300]} />
+                  </View>
                 </View>
               </Card>
             )}
@@ -94,32 +108,53 @@ export default function TeacherStudentsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: spacing.lg,
-    gap: spacing.md,
+  },
+  header: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
   },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
+    fontSize: 24,
+  },
+  searchContainer: {
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  listContent: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.lg,
   },
   studentCard: {
-    marginBottom: spacing.sm,
+    marginBottom: spacing.md,
+    padding: spacing.md,
   },
   studentRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: spacing.md,
   },
   studentInfo: {
     flex: 1,
+    gap: 2,
   },
   studentName: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.semiBold,
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[900],
+    fontSize: 17,
   },
   studentMeta: {
     ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
-    marginTop: 2,
+    color: colors.neutral[500],
+  },
+  studentActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
 });

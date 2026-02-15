@@ -7,10 +7,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useLogout } from '@/features/auth/hooks/useLogout';
 import { useAdminDashboard } from '@/features/dashboard/hooks/useAdminDashboard';
+import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,6 +23,7 @@ export default function AdminDashboard() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const router = useRouter();
+  const theme = useRoleTheme();
   const { logout, isPending: isLoggingOut } = useLogout();
 
   const { data, isLoading, error, refetch } = useAdminDashboard(profile?.school_id);
@@ -35,125 +38,139 @@ export default function AdminDashboard() {
   return (
     <Screen scroll>
       <View style={styles.container}>
-        <Text style={styles.greeting}>
-          {t('dashboard.welcome', { name: profile?.full_name ?? '' })}
-        </Text>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greeting}>
+              {t('dashboard.welcome', { name: profile?.full_name?.split(' ')[0] ?? '' })} 👋
+            </Text>
+            <Text style={styles.subtitle}>{t('admin.dashboard.subtitle')}</Text>
+          </View>
+          <Badge label={t('roles.admin')} variant={theme.tag} size="md" />
+        </View>
 
-        {/* Stats Row */}
-        <View style={styles.statsRow}>
-          <Card variant="outlined" style={styles.statCard}>
-            <Text style={styles.statValue}>{data?.totalStudents ?? 0}</Text>
-            <Text style={styles.statLabel}>{t('admin.dashboard.totalStudents')}</Text>
-          </Card>
-          <Card variant="outlined" style={styles.statCard}>
-            <Text style={styles.statValue}>{data?.totalTeachers ?? 0}</Text>
-            <Text style={styles.statLabel}>{t('admin.dashboard.totalTeachers')}</Text>
-          </Card>
-          <Card variant="outlined" style={styles.statCard}>
-            <Text style={styles.statValue}>{data?.totalClasses ?? 0}</Text>
-            <Text style={styles.statLabel}>{t('admin.dashboard.totalClasses')}</Text>
-          </Card>
-          <Card variant="outlined" style={styles.statCard}>
-            <Text style={styles.statValue}>{data?.todayAttendanceRate ?? 0}%</Text>
-            <Text style={styles.statLabel}>{t('admin.dashboard.attendanceRate')}</Text>
-          </Card>
+        {/* Stats Grid */}
+        <View style={styles.statsGrid}>
+          <StatCard label={t('admin.dashboard.totalStudents')} value={data?.totalStudents ?? 0} color={theme.primary} icon="people" />
+          <StatCard label={t('admin.dashboard.totalTeachers')} value={data?.totalTeachers ?? 0} color={colors.accent.indigo[500]} icon="school" />
+          <StatCard label={t('admin.dashboard.totalClasses')} value={data?.totalClasses ?? 0} color={colors.accent.violet[500]} icon="albums" />
+          <StatCard label={t('admin.dashboard.attendanceRate')} value={`${data?.todayAttendanceRate ?? 0}%`} color={colors.accent.rose[500]} icon="checkmark-done" />
         </View>
 
         {/* Quick Actions */}
         <Text style={styles.sectionTitle}>{t('dashboard.quickActions')}</Text>
         <View style={styles.actionsRow}>
-          <Button
+          <ActionButton
             title={t('admin.addStudent')}
             onPress={() => router.push('/(admin)/students/create')}
-            variant="secondary"
-            size="sm"
-            icon={<Ionicons name="person-add-outline" size={18} color={colors.primary[500]} />}
-            style={styles.actionButton}
+            icon="person-add"
+            color={theme.primary}
           />
-          <Button
+          <ActionButton
             title={t('admin.addTeacher')}
             onPress={() => router.push('/(admin)/teachers/create')}
-            variant="secondary"
-            size="sm"
-            icon={<Ionicons name="school-outline" size={18} color={colors.primary[500]} />}
-            style={styles.actionButton}
+            icon="school"
+            color={colors.accent.indigo[500]}
           />
-          <Button
+          <ActionButton
             title={t('admin.addClass')}
             onPress={() => router.push('/(admin)/classes/create')}
-            variant="secondary"
-            size="sm"
-            icon={<Ionicons name="albums-outline" size={18} color={colors.primary[500]} />}
-            style={styles.actionButton}
-          />
-        </View>
-        <View style={styles.actionsRow}>
-          <Button
-            title={t('admin.bulkAttendance')}
-            onPress={() => router.push('/(admin)/attendance')}
-            variant="secondary"
-            size="sm"
-            icon={<Ionicons name="checkmark-done-outline" size={18} color={colors.primary[500]} />}
-            style={styles.actionButton}
-          />
-          <Button
-            title={t('admin.dashboard.resetPassword')}
-            onPress={() => router.push('/(admin)/members/reset-password')}
-            variant="secondary"
-            size="sm"
-            icon={<Ionicons name="key-outline" size={18} color={colors.primary[500]} />}
-            style={styles.actionButton}
+            icon="add-circle"
+            color={colors.accent.violet[500]}
           />
         </View>
 
-        {/* Navigation */}
+        {/* Management Navigation */}
         <Text style={styles.sectionTitle}>{t('admin.dashboard.manage')}</Text>
-        <Card variant="outlined" style={styles.navCard} onPress={() => router.push('/(admin)/students')}>
-          <View style={styles.navRow}>
-            <Ionicons name="people-outline" size={24} color={colors.primary[500]} />
-            <Text style={styles.navText}>{t('admin.students.title')}</Text>
-            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
-          </View>
-        </Card>
-        <Card variant="outlined" style={styles.navCard} onPress={() => router.push('/(admin)/teachers')}>
-          <View style={styles.navRow}>
-            <Ionicons name="school-outline" size={24} color={colors.primary[500]} />
-            <Text style={styles.navText}>{t('admin.teachers.title')}</Text>
-            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
-          </View>
-        </Card>
-        <Card variant="outlined" style={styles.navCard} onPress={() => router.push('/(admin)/classes')}>
-          <View style={styles.navRow}>
-            <Ionicons name="albums-outline" size={24} color={colors.primary[500]} />
-            <Text style={styles.navText}>{t('admin.classes.title')}</Text>
-            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
-          </View>
-        </Card>
-        <Card variant="outlined" style={styles.navCard} onPress={() => router.push('/(admin)/stickers')}>
-          <View style={styles.navRow}>
-            <Ionicons name="star-outline" size={24} color={colors.primary[500]} />
-            <Text style={styles.navText}>{t('admin.stickers.title')}</Text>
-            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
-          </View>
-        </Card>
-        <Card variant="outlined" style={styles.navCard} onPress={() => router.push('/(admin)/reports')}>
-          <View style={styles.navRow}>
-            <Ionicons name="bar-chart-outline" size={24} color={colors.primary[500]} />
-            <Text style={styles.navText}>{t('reports.title')}</Text>
-            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
-          </View>
-        </Card>
+        <View style={styles.navGrid}>
+          <NavCard 
+            title={t('admin.students.title')} 
+            icon="people" 
+            onPress={() => router.push('/(admin)/students')} 
+            color={theme.primary}
+          />
+          <NavCard 
+            title={t('admin.teachers.title')} 
+            icon="person-circle" 
+            onPress={() => router.push('/(admin)/teachers')} 
+            color={colors.accent.indigo[500]}
+          />
+          <NavCard 
+            title={t('admin.classes.title')} 
+            icon="albums" 
+            onPress={() => router.push('/(admin)/classes')} 
+            color={colors.accent.violet[500]}
+          />
+          <NavCard 
+            title={t('admin.stickers.title')} 
+            icon="star" 
+            onPress={() => router.push('/(admin)/stickers')} 
+            color={colors.gamification.gold}
+          />
+          <NavCard 
+            title={t('reports.title')} 
+            icon="bar-chart" 
+            onPress={() => router.push('/(admin)/reports')} 
+            color={colors.accent.rose[500]}
+          />
+          <NavCard 
+            title={t('admin.dashboard.resetPassword')} 
+            icon="key" 
+            onPress={() => router.push('/(admin)/members/reset-password')} 
+            color={colors.neutral[500]}
+          />
+        </View>
 
         {/* Sign Out */}
-        <Button
-          title={t('common.signOut')}
-          onPress={handleSignOut}
-          variant="ghost"
-          size="md"
-          disabled={isLoggingOut}
-        />
+        <View style={styles.footer}>
+          <Button
+            title={t('common.signOut')}
+            onPress={handleSignOut}
+            variant="ghost"
+            size="md"
+            icon={<Ionicons name="log-out-outline" size={20} color={colors.accent.rose[500]} />}
+            style={styles.signOutButton}
+            loading={isLoggingOut}
+          />
+        </View>
       </View>
     </Screen>
+  );
+}
+
+function StatCard({ label, value, color, icon }: { label: string, value: string | number, color: string, icon: any }) {
+  return (
+    <Card variant="default" style={styles.statCard}>
+      <View style={[styles.statIconContainer, { backgroundColor: color + '10' }]}>
+        <Ionicons name={icon} size={16} color={color} />
+      </View>
+      <Text style={[styles.statValue, { color }]}>{value}</Text>
+      <Text style={styles.statLabel} numberOfLines={1}>{label}</Text>
+    </Card>
+  );
+}
+
+function ActionButton({ title, icon, color, onPress }: { title: string, icon: any, color: string, onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} style={({ pressed }) => [styles.actionBtn, pressed && styles.actionBtnPressed]}>
+      <View style={[styles.actionIcon, { backgroundColor: color + '15' }]}>
+        <Ionicons name={icon} size={22} color={color} />
+      </View>
+      <Text style={styles.actionText} numberOfLines={1}>{title}</Text>
+    </Pressable>
+  );
+}
+
+function NavCard({ title, icon, color, onPress }: { title: string, icon: any, color: string, onPress: () => void }) {
+  return (
+    <Card variant="default" style={styles.navCard} onPress={onPress}>
+      <View style={styles.navContent}>
+        <View style={[styles.navIcon, { backgroundColor: color + '10' }]}>
+          <Ionicons name={icon} size={20} color={color} />
+        </View>
+        <Text style={styles.navText} numberOfLines={1}>{title}</Text>
+        <Ionicons name="chevron-forward" size={16} color={colors.neutral[300]} />
+      </View>
+    </Card>
   );
 }
 
@@ -162,62 +179,107 @@ export default function AdminDashboard() {
 const styles = StyleSheet.create({
   container: {
     padding: spacing.lg,
-    gap: spacing.md,
+    gap: spacing.lg,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
   },
   greeting: {
     ...typography.textStyles.heading,
-    color: lightTheme.text,
-    marginBottom: spacing.sm,
+    color: colors.neutral[900],
+    fontSize: 22,
   },
-  statsRow: {
+  subtitle: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[500],
+    marginTop: 2,
+  },
+  statsGrid: {
     flexDirection: 'row',
-    gap: spacing.sm,
     flexWrap: 'wrap',
+    gap: spacing.md,
   },
   statCard: {
-    flex: 1,
-    minWidth: '40%',
+    width: '47%',
     alignItems: 'center',
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.lg,
     paddingHorizontal: spacing.sm,
   },
+  statIconContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
   statValue: {
-    ...typography.textStyles.heading,
-    color: lightTheme.primary,
-    fontSize: typography.fontSize['2xl'],
+    ...typography.textStyles.display,
+    fontSize: 24,
   },
   statLabel: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
-    textAlign: 'center',
-    marginTop: spacing.xs,
+    ...typography.textStyles.label,
+    color: colors.neutral[500],
+    marginTop: 4,
   },
   sectionTitle: {
     ...typography.textStyles.subheading,
-    color: lightTheme.text,
-    marginTop: spacing.sm,
+    color: colors.neutral[800],
+    fontSize: 18,
   },
   actionsRow: {
     flexDirection: 'row',
-    gap: spacing.sm,
-    flexWrap: 'wrap',
+    gap: spacing.md,
   },
-  actionButton: {
+  actionBtn: {
     flex: 1,
-    minWidth: '28%',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  actionBtnPressed: {
+    opacity: 0.7,
+  },
+  actionIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionText: {
+    ...typography.textStyles.label,
+    color: colors.neutral[700],
+    fontFamily: typography.fontFamily.medium,
+  },
+  navGrid: {
+    gap: spacing.md,
   },
   navCard: {
-    marginBottom: spacing.xs,
+    padding: spacing.md,
   },
-  navRow: {
+  navContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
   },
+  navIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   navText: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.medium,
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[800],
     flex: 1,
+  },
+  footer: {
+    marginTop: spacing.xl,
+  },
+  signOutButton: {
+    backgroundColor: colors.accent.rose[50],
   },
 });
