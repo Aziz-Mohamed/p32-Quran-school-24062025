@@ -77,12 +77,17 @@ function TabItem({ isFocused, label, icon, onPress, onLongPress }: TabItemProps)
           size: 24,
         })}
       </Animated.View>
-      <Animated.Text style={[
-        styles.label,
-        { color: isFocused ? colors.primary[700] : colors.neutral[500] },
-        isFocused && styles.labelActive,
-        animatedLabelStyle
-      ]}>
+      <Animated.Text 
+        numberOfLines={1}
+        ellipsizeMode="tail"
+        allowFontScaling={false}
+        style={[
+          styles.label,
+          { color: isFocused ? colors.primary[700] : colors.neutral[500] },
+          isFocused && styles.labelActive,
+          animatedLabelStyle
+        ]}
+      >
         {label}
       </Animated.Text>
       <Animated.View style={[styles.indicator, animatedIndicatorStyle]} />
