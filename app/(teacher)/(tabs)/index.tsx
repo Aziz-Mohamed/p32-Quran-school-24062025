@@ -161,7 +161,7 @@ export default function TeacherDashboard() {
             style={styles.insightCard}
           >
             <View style={[styles.insightIcon, { backgroundColor: colors.accent.rose[50] }]}>
-              <Ionicons name="alert-circle" size={22} color={semantic.warning} />
+              <Ionicons name="hand-left-outline" size={22} color={semantic.warning} />
             </View>
             <Text style={styles.insightLabel}>{t('teacher.needsSupport')}</Text>
           </Card>
