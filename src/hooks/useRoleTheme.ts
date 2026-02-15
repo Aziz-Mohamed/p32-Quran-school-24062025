@@ -1,0 +1,63 @@
+import { useRole } from './useRole';
+import { colors } from '@/theme/colors';
+
+/**
+ * Provides a semantic theme color set based on the current user's role.
+ * 
+ * Student -> Indigo (Learning & Growth)
+ * Parent   -> Rose   (Care & Community)
+ * Teacher  -> Violet (Spirituality & Wisdom)
+ * Admin    -> Sky    (Management & Clarity)
+ */
+export const useRoleTheme = () => {
+  const { isStudent, isParent, isTeacher, isAdmin } = useRole();
+
+  if (isStudent) {
+    return {
+      primary: colors.accent.indigo[500],
+      primaryLight: colors.accent.indigo[50],
+      primaryDark: colors.accent.indigo[600],
+      gradient: colors.gradients.indigo,
+      tag: 'indigo' as const,
+    };
+  }
+
+  if (isParent) {
+    return {
+      primary: colors.accent.rose[500],
+      primaryLight: colors.accent.rose[50],
+      primaryDark: colors.accent.rose[600],
+      gradient: colors.gradients.rose,
+      tag: 'rose' as const,
+    };
+  }
+
+  if (isTeacher) {
+    return {
+      primary: colors.accent.violet[500],
+      primaryLight: colors.accent.violet[50],
+      primaryDark: colors.accent.violet[600],
+      gradient: colors.gradients.violet,
+      tag: 'violet' as const,
+    };
+  }
+
+  if (isAdmin) {
+    return {
+      primary: colors.accent.sky[500],
+      primaryLight: colors.accent.sky[50],
+      primaryDark: colors.accent.sky[600],
+      gradient: colors.gradients.sky,
+      tag: 'sky' as const,
+    };
+  }
+
+  // Default to Emerald
+  return {
+    primary: colors.primary[500],
+    primaryLight: colors.primary[50],
+    primaryDark: colors.primary[600],
+    gradient: colors.gradients.primary,
+    tag: 'primary' as const,
+  };
+};
