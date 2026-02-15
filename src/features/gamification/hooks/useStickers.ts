@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { gamificationService } from '../services/gamification.service';
 import { mutationTracker } from '@/features/realtime';
-import type { AwardedSticker, StickerCollectionItem, StickerTier } from '../types/gamification.types';
+import type { AwardedSticker, AwardRecord, StickerCollectionItem, StickerTier } from '../types/gamification.types';
 
 /**
  * Fetch the global heritage sticker catalog (no school scope needed).
@@ -60,6 +60,13 @@ export const useStickerCollection = (studentId: string | undefined) => {
       const mostRecent = items[0];
       const earliest = items[items.length - 1];
       if (mostRecent.stickers) {
+        const awards: AwardRecord[] = items.map((a) => ({
+          id: a.id,
+          awardedAt: a.awarded_at,
+          awardedBy: a.profiles?.full_name ?? null,
+          reason: a.reason ?? null,
+        }));
+
         collection.push({
           sticker: {
             id: mostRecent.stickers.id,
@@ -76,6 +83,7 @@ export const useStickerCollection = (studentId: string | undefined) => {
           lastAwardedAt: mostRecent.awarded_at,
           lastAwardedBy: mostRecent.profiles?.full_name ?? null,
           isNew: hasNew,
+          awards,
         });
       }
     }

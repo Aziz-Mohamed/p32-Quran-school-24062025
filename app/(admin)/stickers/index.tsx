@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
@@ -16,7 +16,8 @@ import { spacing } from '@/theme/spacing';
 import { shadows } from '@/theme/shadows';
 import { normalize } from '@/theme/normalize';
 import { TIER_COLORS } from '@/features/gamification/components/StickerGrid';
-import type { StickerTier } from '@/features/gamification/types/gamification.types';
+import { StickerDetailSheet } from '@/features/gamification/components/StickerDetailSheet';
+import type { StickerTier, StickerCollectionItem } from '@/features/gamification/types/gamification.types';
 
 // ─── Sticker Catalog Screen ──────────────────────────────────────────────────
 
@@ -26,6 +27,7 @@ export default function StickerCatalogScreen() {
   const { isRTL } = useRTL();
 
   const { data: stickers = [], isLoading, error, refetch } = useStickers();
+  const [selectedSticker, setSelectedSticker] = useState<StickerCollectionItem | null>(null);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={(error as Error).message} onRetry={refetch} />;
@@ -69,6 +71,15 @@ export default function StickerCatalogScreen() {
                     styles.card,
                     pressed && styles.cardPressed,
                   ]}
+                  onPress={() => setSelectedSticker({
+                    sticker: item,
+                    count: 0,
+                    firstAwardedAt: '',
+                    lastAwardedAt: '',
+                    lastAwardedBy: null,
+                    isNew: false,
+                    awards: [],
+                  })}
                 >
                   <Image
                     source={{ uri: imageUrl }}
@@ -94,6 +105,11 @@ export default function StickerCatalogScreen() {
           </View>
         )}
       </View>
+
+      <StickerDetailSheet
+        item={selectedSticker}
+        onClose={() => setSelectedSticker(null)}
+      />
     </Screen>
   );
 }

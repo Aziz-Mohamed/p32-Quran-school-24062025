@@ -25,6 +25,14 @@ export interface AchievementWithStatus extends Tables<'achievements'> {
 /** Sticker tier type matching the DB CHECK constraint */
 export type StickerTier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'seasonal' | 'trophy';
 
+/** A single award record shown in the detail view */
+export interface AwardRecord {
+  id: string;
+  awardedAt: string;
+  awardedBy: string | null;
+  reason: string | null;
+}
+
 /** Aggregated sticker in a student's collection (grouped by sticker_id) */
 export interface StickerCollectionItem {
   sticker: Tables<'stickers'>;
@@ -33,6 +41,7 @@ export interface StickerCollectionItem {
   lastAwardedAt: string;
   lastAwardedBy: string | null;
   isNew: boolean;
+  awards: AwardRecord[];
 }
 
 /** A single awarded sticker instance with joined details */

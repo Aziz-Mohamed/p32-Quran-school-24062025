@@ -185,10 +185,12 @@
       },
       "detail": {
         "timesEarned": "Times Earned",
-        "pointsValue": "Points Value",
+        "totalPoints": "Total Points",
         "firstEarned": "First Earned",
         "lastEarned": "Last Earned",
-        "awardedBy": "Awarded By"
+        "awardedBy": "Awarded By",
+        "awardHistory": "Award History",
+        "reason": "Note"
       }
     },
     "trophies": {

@@ -185,10 +185,12 @@
       },
       "detail": {
         "timesEarned": "مرات الحصول",
-        "pointsValue": "قيمة النقاط",
+        "totalPoints": "مجموع النقاط",
         "firstEarned": "أول حصول",
         "lastEarned": "آخر حصول",
-        "awardedBy": "منحه"
+        "awardedBy": "منحه",
+        "awardHistory": "سجل المنح",
+        "reason": "ملاحظة"
       }
     },
     "trophies": {
