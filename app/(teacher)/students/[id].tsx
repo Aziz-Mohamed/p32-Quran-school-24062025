@@ -18,6 +18,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Teacher Student Detail Screen ──────────────────────────────────────────
 
@@ -205,7 +206,7 @@ const styles = StyleSheet.create({
   studentName: {
     ...typography.textStyles.heading,
     color: colors.neutral[900],
-    fontSize: 24,
+    fontSize: normalize(24),
   },
   metaRow: {
     flexDirection: 'row',
@@ -223,12 +224,12 @@ const styles = StyleSheet.create({
   },
   statValue: {
     ...typography.textStyles.display,
-    fontSize: 24,
+    fontSize: normalize(24),
   },
   statLabel: {
     ...typography.textStyles.label,
     color: colors.neutral[500],
-    marginTop: 4,
+    marginTop: normalize(4),
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...typography.textStyles.subheading,
     color: colors.neutral[800],
-    fontSize: 18,
+    fontSize: normalize(18),
   },
   sessionCard: {
     marginBottom: spacing.md,
@@ -267,26 +268,26 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: colors.neutral[50],
     padding: spacing.sm,
-    borderRadius: 12,
+    borderRadius: normalize(12),
   },
   scoreItem: {
     alignItems: 'center',
     flex: 1,
   },
   scoreLabel: {
-    fontSize: 9,
+    fontSize: normalize(9),
     fontFamily: typography.fontFamily.semiBold,
     color: colors.neutral[500],
     textTransform: 'uppercase',
-    marginBottom: 4,
+    marginBottom: normalize(4),
   },
   scoreValueContainer: {
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(2),
+    borderRadius: normalize(6),
   },
   scoreValue: {
-    fontSize: 12,
+    fontSize: normalize(12),
     fontFamily: typography.fontFamily.bold,
   },
   stickerCard: {
@@ -299,9 +300,9 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   stickerIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: normalize(40),
+    height: normalize(40),
+    borderRadius: normalize(20),
     backgroundColor: '#FFFBEB',
     alignItems: 'center',
     justifyContent: 'center',
@@ -316,16 +317,16 @@ const styles = StyleSheet.create({
   stickerReason: {
     ...typography.textStyles.caption,
     color: colors.neutral[500],
-    marginTop: 2,
+    marginTop: normalize(2),
   },
   pointsBadge: {
     backgroundColor: colors.primary[50],
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(4),
+    borderRadius: normalize(8),
   },
   stickerPoints: {
-    fontSize: 12,
+    fontSize: normalize(12),
     fontFamily: typography.fontFamily.bold,
     color: colors.primary[600],
   },

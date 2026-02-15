@@ -15,6 +15,7 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 import type { SelectOption } from './Select';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -85,7 +86,7 @@ export function MultiSelect({
         </Text>
         <Ionicons
           name="chevron-down"
-          size={20}
+          size={normalize(20)}
           color={lightTheme.textTertiary}
         />
       </Pressable>
@@ -118,7 +119,7 @@ export function MultiSelect({
                   >
                     <View style={[styles.checkbox, isSelected && styles.checkboxChecked]}>
                       {isSelected && (
-                        <Ionicons name="checkmark" size={14} color={colors.white} />
+                        <Ionicons name="checkmark" size={normalize(14)} color={colors.white} />
                       )}
                     </View>
                     <Text style={styles.optionText}>{item.label}</Text>
@@ -162,7 +163,7 @@ const styles = StyleSheet.create({
     borderColor: lightTheme.border,
     borderRadius: radius.md,
     backgroundColor: lightTheme.background,
-    minHeight: 48,
+    minHeight: normalize(48),
     paddingHorizontal: spacing.md,
   },
   triggerError: {
@@ -198,8 +199,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: radius.lg,
     width: '100%',
-    maxWidth: 340,
-    maxHeight: 400,
+    maxWidth: normalize(340),
+    maxHeight: normalize(400),
     paddingVertical: spacing.sm,
   },
   option: {
@@ -216,8 +217,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.neutral[100],
   },
   checkbox: {
-    width: 22,
-    height: 22,
+    width: normalize(22),
+    height: normalize(22),
     borderRadius: radius.sm,
     borderWidth: 1.5,
     borderColor: lightTheme.border,

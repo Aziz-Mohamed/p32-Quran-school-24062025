@@ -12,6 +12,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
+import { normalize } from '@/theme/normalize';
 import type { NotificationPayload } from '../types/notifications.types';
 
 const AUTO_DISMISS_MS = 4000;
@@ -116,8 +117,8 @@ const styles = StyleSheet.create({
     insetInlineStart: 0,
     insetInlineEnd: 0,
     zIndex: 9999,
-    paddingHorizontal: 12,
-    paddingBottom: 12,
+    paddingHorizontal: normalize(12),
+    paddingBottom: normalize(12),
     backgroundColor: '#fff',
     ...Platform.select({
       ios: {
@@ -130,21 +131,21 @@ const styles = StyleSheet.create({
         elevation: 8,
       },
     }),
-    borderBottomStartRadius: 16,
-    borderBottomEndRadius: 16,
+    borderBottomStartRadius: normalize(16),
+    borderBottomEndRadius: normalize(16),
   },
   content: {
-    paddingHorizontal: 4,
+    paddingHorizontal: normalize(4),
   },
   title: {
-    fontSize: 15,
+    fontSize: normalize(15),
     fontWeight: '600',
     color: '#1B1B1B',
-    marginBlockEnd: 2,
+    marginBlockEnd: normalize(2),
   },
   body: {
-    fontSize: 13,
+    fontSize: normalize(13),
     color: '#555',
-    lineHeight: 18,
+    lineHeight: normalize(18),
   },
 });

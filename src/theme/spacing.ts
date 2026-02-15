@@ -2,28 +2,30 @@
  * Design System — Spacing Tokens
  *
  * Based on a 4 px grid. Every value is a multiple of 4.
+ * All values are run through normalize() for cross-platform consistency.
  */
+import { normalize } from './normalize';
 
 export const spacing = {
   /** 4 px — hairline gaps, icon padding */
-  xs: 4,
+  xs: normalize(4),
   /** 8 px — tight element spacing */
-  sm: 8,
+  sm: normalize(8),
   /** 12 px — compact list gaps */
-  md: 12,
+  md: normalize(12),
   /** 16 px — default padding / margin */
-  base: 16,
+  base: normalize(16),
   /** 20 px — card inner padding */
-  lg: 20,
+  lg: normalize(20),
   /** 24 px — section separation */
-  xl: 24,
+  xl: normalize(24),
   /** 32 px — group separation */
-  '2xl': 32,
+  '2xl': normalize(32),
   /** 40 px — large section gaps */
-  '3xl': 40,
+  '3xl': normalize(40),
   /** 48 px — page-level spacing */
-  '4xl': 48,
-} as const;
+  '4xl': normalize(48),
+};
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

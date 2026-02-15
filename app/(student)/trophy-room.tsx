@@ -15,6 +15,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Trophy Room Screen ──────────────────────────────────────────────────────
 
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    fontSize: 24,
+    fontSize: normalize(24),
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...typography.textStyles.subheading,
     color: colors.neutral[900],
-    fontSize: 18,
+    fontSize: normalize(18),
   },
   grid: {
     flexDirection: 'row',
@@ -157,13 +158,13 @@ const styles = StyleSheet.create({
     borderStyle: 'dashed',
   },
   trophyIconContainer: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: normalize(72),
+    height: normalize(72),
+    borderRadius: normalize(36),
     backgroundColor: '#FFFBEB', // amber 50
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
+    marginBottom: normalize(4),
   },
   trophyName: {
     ...typography.textStyles.bodyMedium,
@@ -177,12 +178,12 @@ const styles = StyleSheet.create({
   },
   earnedBadge: {
     backgroundColor: colors.primary[50],
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(2),
+    borderRadius: normalize(8),
   },
   trophyDate: {
-    fontSize: 10,
+    fontSize: normalize(10),
     fontFamily: typography.fontFamily.bold,
     color: colors.primary[600],
     textAlign: 'center',
@@ -191,6 +192,6 @@ const styles = StyleSheet.create({
     ...typography.textStyles.label,
     color: colors.neutral[400],
     textAlign: 'center',
-    marginTop: 2,
+    marginTop: normalize(2),
   },
 });

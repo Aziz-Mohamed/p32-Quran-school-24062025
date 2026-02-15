@@ -15,6 +15,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Parent Settings Screen ──────────────────────────────────────────────────
 
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    fontSize: 24,
+    fontSize: normalize(24),
     marginBottom: spacing.sm,
   },
   profileCard: {
@@ -126,12 +127,12 @@ const styles = StyleSheet.create({
   },
   profileInfo: {
     alignItems: 'center',
-    gap: 2,
+    gap: normalize(2),
   },
   profileName: {
     ...typography.textStyles.heading,
     color: colors.neutral[900],
-    fontSize: 22,
+    fontSize: normalize(22),
   },
   profileUsername: {
     ...typography.textStyles.body,
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
     ...typography.textStyles.subheading,
     color: lightTheme.text,
     marginTop: spacing.md,
-    fontSize: 16,
+    fontSize: normalize(16),
   },
   settingCard: {
     padding: spacing.md,
@@ -157,9 +158,9 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   settingIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: normalize(40),
+    height: normalize(40),
+    borderRadius: normalize(12),
     alignItems: 'center',
     justifyContent: 'center',
   },

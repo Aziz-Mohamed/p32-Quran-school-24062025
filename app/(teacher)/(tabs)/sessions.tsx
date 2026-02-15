@@ -16,6 +16,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Sessions List Screen ────────────────────────────────────────────────────
 
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    fontSize: 24,
+    fontSize: normalize(24),
   },
   subtitle: {
     ...typography.textStyles.caption,
@@ -139,9 +140,9 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   studentAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
+    width: normalize(44),
+    height: normalize(44),
+    borderRadius: normalize(12),
     backgroundColor: colors.neutral[100],
     alignItems: 'center',
     justifyContent: 'center',
@@ -152,17 +153,17 @@ const styles = StyleSheet.create({
   },
   sessionInfo: {
     flex: 1,
-    gap: 2,
+    gap: normalize(2),
   },
   studentName: {
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[900],
-    fontSize: 16,
+    fontSize: normalize(16),
   },
   dateRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: normalize(4),
   },
   sessionDate: {
     ...typography.textStyles.label,

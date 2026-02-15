@@ -14,6 +14,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Children Tab ────────────────────────────────────────────────────────────
 
@@ -107,7 +108,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    fontSize: 24,
+    fontSize: normalize(24),
   },
   childrenList: {
     gap: spacing.md,
@@ -122,12 +123,12 @@ const styles = StyleSheet.create({
   },
   childInfo: {
     flex: 1,
-    gap: 2,
+    gap: normalize(2),
   },
   childName: {
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[900],
-    fontSize: 18,
+    fontSize: normalize(18),
   },
   childMeta: {
     ...typography.textStyles.caption,
@@ -137,12 +138,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    marginTop: 4,
+    marginTop: normalize(4),
   },
   statItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: normalize(4),
   },
   statText: {
     ...typography.textStyles.label,

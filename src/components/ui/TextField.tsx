@@ -13,6 +13,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { shadows } from '@/theme/shadows';
+import { normalize } from '@/theme/normalize';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
     borderColor: colors.neutral[200],
     borderRadius: radius.sm,
     backgroundColor: colors.white,
-    minHeight: 52,
+    minHeight: normalize(52),
     paddingHorizontal: spacing.md,
     ...shadows.sm,
   },
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
     textAlign: 'auto',
   } as TextStyle,
   inputMultiline: {
-    minHeight: 120,
+    minHeight: normalize(120),
     paddingTop: spacing.md,
   },
   inputDisabled: {

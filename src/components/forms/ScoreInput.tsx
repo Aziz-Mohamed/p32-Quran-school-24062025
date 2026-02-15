@@ -6,6 +6,7 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 import { SCORE_RANGE } from '@/lib/constants';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
   },
   scoreButton: {
     flex: 1,
-    minHeight: 48,
+    minHeight: normalize(48),
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,

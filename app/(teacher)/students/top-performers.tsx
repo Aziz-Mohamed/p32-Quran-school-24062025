@@ -14,6 +14,7 @@ import { useTopPerformers } from '@/features/teachers/hooks/useTeacherInsights';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Top Performers Screen ──────────────────────────────────────────────────
 
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   rankContainer: {
-    width: 36,
+    width: normalize(36),
     alignItems: 'center',
   },
   rankText: {
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
   studentMeta: {
     ...typography.textStyles.caption,
     color: lightTheme.textSecondary,
-    marginTop: 2,
+    marginTop: normalize(2),
   },
   pointsContainer: {
     alignItems: 'center',

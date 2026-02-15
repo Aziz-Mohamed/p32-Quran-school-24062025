@@ -13,6 +13,7 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -39,7 +40,7 @@ export function ErrorState({ title, description, onRetry, style }: ErrorStatePro
       <View style={styles.iconWrapper}>
         <Ionicons
           name="alert-circle-outline"
-          size={48}
+          size={normalize(48)}
           color={colors.semantic.error}
         />
       </View>
@@ -61,7 +62,7 @@ export function ErrorState({ title, description, onRetry, style }: ErrorStatePro
         >
           <Ionicons
             name="refresh-outline"
-            size={18}
+            size={normalize(18)}
             color={colors.semantic.error}
             style={styles.retryIcon}
           />
@@ -83,8 +84,8 @@ const styles = StyleSheet.create({
   },
   iconWrapper: {
     marginBottom: spacing.base,
-    width: 80,
-    height: 80,
+    width: normalize(80),
+    height: normalize(80),
     borderRadius: radius.full,
     backgroundColor: '#FEF2F2', // very light red tint
     alignItems: 'center',

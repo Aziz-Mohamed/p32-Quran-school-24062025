@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
+import { normalize } from '@/theme/normalize';
 import { ChartContainer } from './ChartContainer';
 import { ChartLegend, type LegendItem } from './ChartLegend';
 import type { ChildScoreTrendPoint } from '../types/reports.types';
@@ -177,7 +178,7 @@ export function ChildScoreTrendChart({
 
 const styles = StyleSheet.create({
   chartWrapper: {
-    height: 220,
+    height: normalize(220),
   },
   noClassNote: {
     fontFamily: typography.fontFamily.regular,
@@ -190,7 +191,7 @@ const styles = StyleSheet.create({
   singlePointContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 200,
+    minHeight: normalize(200),
   },
   singlePointScores: {
     flexDirection: 'row',

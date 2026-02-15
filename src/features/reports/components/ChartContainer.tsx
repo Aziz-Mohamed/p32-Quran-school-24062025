@@ -7,6 +7,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { colors, lightTheme } from '@/theme/colors';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 
 interface ChartContainerProps {
   children: React.ReactNode;
@@ -87,12 +88,12 @@ const styles = StyleSheet.create({
   skeletonContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 200,
+    minHeight: normalize(200),
   },
   stateContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 200,
+    minHeight: normalize(200),
     paddingHorizontal: spacing.xl,
   },
   errorText: {

@@ -12,6 +12,7 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -43,7 +44,7 @@ export function EmptyState({
   return (
     <View style={[styles.container, style]}>
       <View style={styles.iconWrapper}>
-        <Ionicons name={icon} size={48} color={colors.neutral[400]} />
+        <Ionicons name={icon} size={normalize(48)} color={colors.neutral[400]} />
       </View>
 
       <Text style={styles.title}>{title}</Text>
@@ -79,8 +80,8 @@ const styles = StyleSheet.create({
   },
   iconWrapper: {
     marginBottom: spacing.base,
-    width: 80,
-    height: 80,
+    width: normalize(80),
+    height: normalize(80),
     borderRadius: radius.full,
     backgroundColor: colors.neutral[100],
     alignItems: 'center',

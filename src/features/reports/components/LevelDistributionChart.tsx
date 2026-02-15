@@ -4,6 +4,7 @@ import { CartesianChart, Bar } from 'victory-native';
 import { useTranslation } from 'react-i18next';
 
 import { colors } from '@/theme/colors';
+import { normalize } from '@/theme/normalize';
 import { ChartContainer } from './ChartContainer';
 import type { LevelDistributionBucket } from '../types/reports.types';
 
@@ -70,6 +71,6 @@ export function LevelDistributionChart({
 
 const styles = StyleSheet.create({
   chartWrapper: {
-    height: 200,
+    height: normalize(200),
   },
 });

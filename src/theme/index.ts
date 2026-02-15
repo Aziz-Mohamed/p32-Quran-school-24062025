@@ -32,6 +32,8 @@ export {
 
 export type { FontFamily, FontSize, FontSizeKey, TextStyle } from './typography';
 
+export { normalize } from './normalize';
+
 export { spacing } from './spacing';
 export type { Spacing, SpacingKey } from './spacing';
 

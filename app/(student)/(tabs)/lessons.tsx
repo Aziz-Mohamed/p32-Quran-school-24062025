@@ -14,6 +14,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Lessons Screen ───────────────────────────────────────────────────────────
 
@@ -136,7 +137,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    fontSize: 24,
+    fontSize: normalize(24),
     marginBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
   sectionHeader: {
     ...typography.textStyles.subheading,
     color: lightTheme.text,
-    fontSize: 16,
+    fontSize: normalize(16),
   },
   lessonCard: {
     marginBottom: spacing.md,
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
   lessonTitle: {
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[900],
-    fontSize: 17,
+    fontSize: normalize(17),
   },
   lessonMeta: {
     ...typography.textStyles.caption,

@@ -13,6 +13,7 @@ import { useStudentById, useUpdateStudent } from '@/features/students/hooks/useS
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Student Detail Screen ───────────────────────────────────────────────────
 
@@ -143,9 +144,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
   },
   avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: normalize(72),
+    height: normalize(72),
+    borderRadius: normalize(36),
     backgroundColor: colors.primary[50],
     justifyContent: 'center',
     alignItems: 'center',

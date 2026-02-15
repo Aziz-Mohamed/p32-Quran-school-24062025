@@ -14,6 +14,7 @@ import { useTeachers } from '@/features/teachers/hooks/useTeachers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Admin Teachers List ──────────────────────────────────────────────────────
 
@@ -135,6 +136,6 @@ const styles = StyleSheet.create({
   teacherMeta: {
     ...typography.textStyles.caption,
     color: lightTheme.textSecondary,
-    marginTop: 2,
+    marginTop: normalize(2),
   },
 });

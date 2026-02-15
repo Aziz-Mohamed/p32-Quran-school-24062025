@@ -15,6 +15,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Teacher Student List Screen ─────────────────────────────────────────────
 
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    fontSize: 24,
+    fontSize: normalize(24),
   },
   searchContainer: {
     paddingHorizontal: spacing.lg,
@@ -141,12 +142,12 @@ const styles = StyleSheet.create({
   },
   studentInfo: {
     flex: 1,
-    gap: 2,
+    gap: normalize(2),
   },
   studentName: {
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[900],
-    fontSize: 17,
+    fontSize: normalize(17),
   },
   studentMeta: {
     ...typography.textStyles.caption,

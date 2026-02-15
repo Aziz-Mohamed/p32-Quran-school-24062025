@@ -3,7 +3,11 @@
  *
  * Latin text : Inter (Regular / Medium / SemiBold / Bold)
  * Arabic text: Noto Sans Arabic (Regular / Bold)
+ *
+ * Font sizes and line heights are run through normalize() for
+ * cross-platform consistency.
  */
+import { normalize } from './normalize';
 
 // ─── Font Families ───────────────────────────────────────────────────────────
 
@@ -19,29 +23,29 @@ export const fontFamily = {
 // ─── Font Sizes ──────────────────────────────────────────────────────────────
 
 export const fontSize = {
-  xs: 11,
-  sm: 13,
-  base: 15,
-  md: 17,
-  lg: 20,
-  xl: 24,
-  '2xl': 30,
-  '3xl': 36,
-} as const;
+  xs: normalize(11),
+  sm: normalize(13),
+  base: normalize(15),
+  md: normalize(17),
+  lg: normalize(20),
+  xl: normalize(24),
+  '2xl': normalize(30),
+  '3xl': normalize(36),
+};
 
 // ─── Line Heights ────────────────────────────────────────────────────────────
 // Roughly 1.5× the font size, rounded to the nearest even integer.
 
 export const lineHeight = {
-  xs: 16,
-  sm: 18,
-  base: 22,
-  md: 24,
-  lg: 28,
-  xl: 32,
-  '2xl': 40,
-  '3xl': 48,
-} as const;
+  xs: normalize(16),
+  sm: normalize(18),
+  base: normalize(22),
+  md: normalize(24),
+  lg: normalize(28),
+  xl: normalize(32),
+  '2xl': normalize(40),
+  '3xl': normalize(48),
+};
 
 // ─── Font Weights (numeric for RN) ──────────────────────────────────────────
 

@@ -14,6 +14,7 @@ import { useClassStanding } from '@/features/children/hooks/useChildren';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Class Standing Screen ───────────────────────────────────────────────────
 
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   rankContainer: {
-    width: 40,
+    width: normalize(40),
     alignItems: 'center',
   },
   rankText: {

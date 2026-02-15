@@ -7,6 +7,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { lightTheme, colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 import type { TeacherActivitySummary } from '../types/reports.types';
 
 interface TeacherActivityCardProps {
@@ -33,7 +34,7 @@ export function TeacherActivityCard({ teacher, inactive }: TeacherActivityCardPr
         <View style={styles.stat}>
           <Ionicons
             name="document-text-outline"
-            size={16}
+            size={normalize(16)}
             color={inactive ? lightTheme.textTertiary : colors.primary[500]}
           />
           <Text style={[styles.statValue, inactive && styles.textMuted]}>
@@ -46,7 +47,7 @@ export function TeacherActivityCard({ teacher, inactive }: TeacherActivityCardPr
         <View style={styles.stat}>
           <Ionicons
             name="people-outline"
-            size={16}
+            size={normalize(16)}
             color={inactive ? lightTheme.textTertiary : colors.primary[500]}
           />
           <Text style={[styles.statValue, inactive && styles.textMuted]}>
@@ -59,7 +60,7 @@ export function TeacherActivityCard({ teacher, inactive }: TeacherActivityCardPr
         <View style={styles.stat}>
           <Ionicons
             name="star-outline"
-            size={16}
+            size={normalize(16)}
             color={inactive ? lightTheme.textTertiary : colors.primary[500]}
           />
           <Text style={[styles.statValue, inactive && styles.textMuted]}>
@@ -102,9 +103,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: normalize(36),
+    height: normalize(36),
+    borderRadius: normalize(18),
     backgroundColor: colors.primary[50],
     alignItems: 'center',
     justifyContent: 'center',
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
   stat: {
     flex: 1,
     alignItems: 'center',
-    gap: 2,
+    gap: normalize(2),
   },
   statValue: {
     fontFamily: typography.fontFamily.bold,

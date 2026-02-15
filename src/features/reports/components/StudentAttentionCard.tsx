@@ -7,6 +7,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { lightTheme, colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 import type { StudentNeedingAttention } from '../types/reports.types';
 
 interface StudentAttentionCardProps {
@@ -42,7 +43,7 @@ export function StudentAttentionCard({ student }: StudentAttentionCardProps) {
           <View style={styles.declineIndicator}>
             <Ionicons
               name="arrow-down"
-              size={12}
+              size={normalize(12)}
               color={colors.semantic.error}
             />
             <Text style={styles.declineText}>
@@ -73,9 +74,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   avatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: normalize(36),
+    height: normalize(36),
+    borderRadius: normalize(18),
     backgroundColor: colors.primary[50],
     alignItems: 'center',
     justifyContent: 'center',
@@ -98,7 +99,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    marginTop: 2,
+    marginTop: normalize(2),
   },
   score: {
     fontFamily: typography.fontFamily.bold,
@@ -108,7 +109,7 @@ const styles = StyleSheet.create({
   declineIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    gap: normalize(2),
   },
   declineText: {
     fontFamily: typography.fontFamily.regular,

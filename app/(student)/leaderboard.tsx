@@ -16,6 +16,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Leaderboard Screen ──────────────────────────────────────────────────────
 
@@ -154,25 +155,25 @@ const styles = StyleSheet.create({
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    fontSize: 22,
+    fontSize: normalize(22),
   },
   toggleContainer: {
     flexDirection: 'row',
     backgroundColor: colors.neutral[100],
-    padding: 4,
-    borderRadius: 16,
+    padding: normalize(4),
+    borderRadius: normalize(16),
     marginHorizontal: spacing.lg,
   },
   toggleButton: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: normalize(10),
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: normalize(12),
   },
   toggleText: {
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[500],
-    fontSize: 14,
+    fontSize: normalize(14),
   },
   toggleTextActive: {
     color: colors.white,
@@ -190,18 +191,18 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   rankContainer: {
-    width: 32,
+    width: normalize(32),
     alignItems: 'center',
     justifyContent: 'center',
   },
   rankText: {
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[400],
-    fontSize: 18,
+    fontSize: normalize(18),
   },
   entryInfo: {
     flex: 1,
-    gap: 2,
+    gap: normalize(2),
   },
   entryName: {
     ...typography.textStyles.bodyMedium,
@@ -217,11 +218,11 @@ const styles = StyleSheet.create({
   entryPoints: {
     ...typography.textStyles.bodyMedium,
     fontFamily: typography.fontFamily.bold,
-    fontSize: 18,
+    fontSize: normalize(18),
   },
   pointsLabel: {
     ...typography.textStyles.label,
-    fontSize: 10,
+    fontSize: normalize(10),
     color: colors.neutral[400],
   },
 });

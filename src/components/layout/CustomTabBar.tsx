@@ -22,6 +22,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { shadows } from '@/theme/shadows';
+import { normalize } from '@/theme/normalize';
 import { useRTL } from '@/hooks/useRTL';
 
 // ─── Sub-Component: Tab Item ────────────────────────────────────────────────
@@ -74,7 +75,7 @@ function TabItem({ isFocused, label, icon, onPress, onLongPress }: TabItemProps)
         {icon && icon({
           focused: isFocused,
           color: isFocused ? colors.primary[600] : colors.neutral[400],
-          size: 24,
+          size: normalize(24),
         })}
       </Animated.View>
       <Animated.Text 
@@ -165,7 +166,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: 'rgba(255, 255, 255, 0.98)',
     borderRadius: radius.xl,
-    paddingVertical: 6,
+    paddingVertical: normalize(6),
     paddingHorizontal: spacing.xs,
     ...shadows.lg,
     borderWidth: 1.5,
@@ -177,30 +178,30 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 2,
+    paddingVertical: normalize(2),
   },
   iconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: normalize(36),
+    height: normalize(36),
+    borderRadius: normalize(18),
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 0,
   },
   label: {
     fontFamily: typography.fontFamily.medium,
-    fontSize: 9,
-    marginTop: 1,
+    fontSize: normalize(9),
+    marginTop: normalize(1),
   },
   labelActive: {
     fontFamily: typography.fontFamily.bold,
   },
   indicator: {
     position: 'absolute',
-    bottom: -3,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
+    bottom: -normalize(3),
+    width: normalize(4),
+    height: normalize(4),
+    borderRadius: normalize(2),
     backgroundColor: colors.primary[500],
     ...shadows.glow,
   },

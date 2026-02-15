@@ -15,6 +15,7 @@ import { useClasses } from '@/features/classes/hooks/useClasses';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Admin Classes List ───────────────────────────────────────────────────────
 
@@ -141,6 +142,6 @@ const styles = StyleSheet.create({
   classMeta: {
     ...typography.textStyles.caption,
     color: lightTheme.textSecondary,
-    marginTop: 2,
+    marginTop: normalize(2),
   },
 });
