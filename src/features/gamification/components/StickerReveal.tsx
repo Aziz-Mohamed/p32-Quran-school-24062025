@@ -31,7 +31,7 @@ const TIER_GLOW: Record<StickerTier, string> = {
   silver: '#B0BEC5',   // cool steel glow
   gold: '#D4A843',     // rich gold glow
   diamond: '#90CAE8',  // ice diamond glow
-  seasonal: colors.neutral[300],
+  seasonal: '#C9A3C3',  // soft plum glow
   trophy: '#CDAA3D',   // trophy amber glow
 };
 

@@ -20,7 +20,7 @@ export const TIER_COLORS: Record<StickerTier, string> = {
   silver: '#6B7B8D',  // cool metallic silver
   gold: '#B8860B',    // deep real gold
   diamond: '#4E97B8', // ice-blue diamond
-  seasonal: colors.neutral[400],
+  seasonal: '#8B5E83',  // muted plum
   trophy: '#9B7500',  // rich trophy amber
 };
 
