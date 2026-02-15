@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, type ViewStyle } from 'react-native';
-import { lightTheme } from '@/theme/colors';
+import { colors } from '@/theme/colors';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -18,8 +18,8 @@ export function Divider({ style }: DividerProps) {
 
 const styles = StyleSheet.create({
   divider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: lightTheme.border,
+    height: 1,
+    backgroundColor: colors.neutral[100],
     width: '100%',
   },
 });
