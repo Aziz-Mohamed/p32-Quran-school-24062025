@@ -61,6 +61,9 @@ export function useUpdateStudent() {
       mutationTracker.record('students', variables.id);
       queryClient.invalidateQueries({ queryKey: ['students'] });
       queryClient.invalidateQueries({ queryKey: ['students', variables.id] });
+      if (variables.input.parentId !== undefined) {
+        queryClient.invalidateQueries({ queryKey: ['parents'] });
+      }
     },
   });
 }

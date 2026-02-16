@@ -11,6 +11,7 @@ import { Select } from '@/components/forms/Select';
 import { DatePicker } from '@/components/forms/DatePicker';
 import { useCreateStudent } from '@/features/students/hooks/useStudents';
 import { useClasses } from '@/features/classes/hooks/useClasses';
+import { useParents } from '@/features/parents/hooks/useParents';
 import { generateUsername } from '@/lib/username';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
@@ -25,10 +26,12 @@ export default function CreateStudentScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [classId, setClassId] = useState<string | null>(null);
+  const [parentId, setParentId] = useState<string | null>(null);
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
 
   const createStudent = useCreateStudent();
   const { data: classes = [] } = useClasses({ isActive: true });
+  const { data: parents = [] } = useParents();
 
   const handleGenerateUsername = () => {
     if (fullName.trim()) {
@@ -48,6 +51,7 @@ export default function CreateStudentScreen() {
         username: username.trim(),
         password,
         classId: classId ?? undefined,
+        parentId: parentId ?? undefined,
         dateOfBirth: dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : undefined,
       });
 
@@ -68,6 +72,11 @@ export default function CreateStudentScreen() {
   const classOptions = classes.map((c: any) => ({
     label: c.name,
     value: c.id,
+  }));
+
+  const parentOptions = parents.map((p: any) => ({
+    label: p.full_name,
+    value: p.id,
   }));
 
   return (
@@ -123,6 +132,14 @@ export default function CreateStudentScreen() {
           options={classOptions}
           value={classId}
           onChange={setClassId}
+        />
+
+        <Select
+          label={t('admin.students.parent')}
+          placeholder={t('admin.students.parentPlaceholder')}
+          options={parentOptions}
+          value={parentId}
+          onChange={setParentId}
         />
 
         <DatePicker

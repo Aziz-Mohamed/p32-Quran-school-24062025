@@ -99,6 +99,12 @@ export default function StudentDetailScreen() {
             <Text style={styles.infoValue}>{student.current_streak}</Text>
           </View>
           <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>{t('admin.students.parent')}</Text>
+            <Text style={styles.infoValue}>
+              {(student as any).parent?.full_name ?? t('admin.students.noParent')}
+            </Text>
+          </View>
+          <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>{t('admin.students.dateOfBirth')}</Text>
             <Text style={styles.infoValue}>
               {student.date_of_birth ?? '—'}
