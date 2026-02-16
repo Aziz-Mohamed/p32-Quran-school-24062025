@@ -427,7 +427,11 @@
       "notFound": "وليّ الأمر غير موجود",
       "children": "أبناء",
       "linkedChildren": "الأبناء المرتبطون",
-      "noChildren": "لا يوجد أبناء مرتبطون"
+      "noChildren": "لا يوجد أبناء مرتبطون",
+      "selectChildren": "ربط الأبناء",
+      "selectChildrenPlaceholder": "اختر طالبًا واحدًا على الأقل...",
+      "selectChildrenRequired": "يجب ربط طفل واحد على الأقل",
+      "manageChildren": "إدارة الأبناء المرتبطين"
     },
     "classes": {
       "title": "الفصول",

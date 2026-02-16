@@ -7,7 +7,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
+import { MultiSelect } from '@/components/forms/MultiSelect';
 import { useCreateParent } from '@/features/parents/hooks/useParents';
+import { useAvailableStudentsForParent } from '@/features/students/hooks/useStudents';
 import { generateUsername } from '@/lib/username';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
@@ -22,13 +24,26 @@ export default function CreateParentScreen() {
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+  const [childrenError, setChildrenError] = useState('');
 
   const createParent = useCreateParent();
+  const { data: availableStudents = [] } = useAvailableStudentsForParent();
+
+  const studentOptions = availableStudents.map((s: any) => ({
+    label: s.profiles?.full_name ?? '—',
+    value: s.id,
+  }));
 
   const handleGenerateUsername = () => {
     if (fullName.trim()) {
       setUsername(generateUsername(fullName));
     }
+  };
+
+  const handleStudentChange = (values: string[]) => {
+    setSelectedStudentIds(values);
+    if (values.length > 0) setChildrenError('');
   };
 
   const handleCreate = async () => {
@@ -37,11 +52,17 @@ export default function CreateParentScreen() {
       return;
     }
 
+    if (selectedStudentIds.length === 0) {
+      setChildrenError(t('admin.parents.selectChildrenRequired'));
+      return;
+    }
+
     try {
       const result = await createParent.mutateAsync({
         fullName: fullName.trim(),
         username: username.trim(),
         password,
+        studentIds: selectedStudentIds,
       });
 
       if (result.error) {
@@ -103,6 +124,15 @@ export default function CreateParentScreen() {
           onChangeText={setPassword}
           placeholder={t('admin.parents.passwordPlaceholder')}
           secureTextEntry
+        />
+
+        <MultiSelect
+          label={t('admin.parents.selectChildren')}
+          placeholder={t('admin.parents.selectChildrenPlaceholder')}
+          options={studentOptions}
+          value={selectedStudentIds}
+          onChange={handleStudentChange}
+          error={childrenError}
         />
 
         <Button

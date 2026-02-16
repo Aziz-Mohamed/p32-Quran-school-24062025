@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { StyleSheet, View, Text, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
+import { MultiSelect } from '@/components/forms/MultiSelect';
 import { LoadingState, ErrorState } from '@/components/feedback';
-import { useParentById, useUpdateParent } from '@/features/parents/hooks/useParents';
+import { useParentById, useUpdateParent, useUpdateParentChildren } from '@/features/parents/hooks/useParents';
+import { useAvailableStudentsForParent } from '@/features/students/hooks/useStudents';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,31 +23,80 @@ export default function EditParentScreen() {
 
   const { data: parent, isLoading, error, refetch } = useParentById(id);
   const updateParent = useUpdateParent();
+  const updateChildren = useUpdateParentChildren();
+  const { data: availableStudents = [] } = useAvailableStudentsForParent(id);
 
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+  const [childrenError, setChildrenError] = useState('');
+
+  // IDs of students currently linked to this parent (for computing diff)
+  const originalStudentIds = useMemo(() => {
+    const children = (parent as any)?.students ?? [];
+    return children.map((c: any) => c.id) as string[];
+  }, [parent]);
 
   useEffect(() => {
     if (parent) {
       setFullName(parent.full_name);
       setPhone(parent.phone ?? '');
+      setSelectedStudentIds(originalStudentIds);
     }
-  }, [parent]);
+  }, [parent, originalStudentIds]);
+
+  const studentOptions = availableStudents.map((s: any) => ({
+    label: s.profiles?.full_name ?? '—',
+    value: s.id,
+  }));
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={(error as Error).message} onRetry={refetch} />;
   if (!parent) return <ErrorState description={t('admin.parents.notFound')} />;
 
-  const handleSave = async () => {
-    await updateParent.mutateAsync({
-      id: parent.id,
-      input: {
-        fullName: fullName.trim(),
-        phone: phone.trim() || undefined,
-      },
-    });
-    router.back();
+  const handleStudentChange = (values: string[]) => {
+    setSelectedStudentIds(values);
+    if (values.length > 0) setChildrenError('');
   };
+
+  const handleSave = async () => {
+    if (selectedStudentIds.length === 0) {
+      setChildrenError(t('admin.parents.selectChildrenRequired'));
+      return;
+    }
+
+    try {
+      // Update profile info
+      await updateParent.mutateAsync({
+        id: parent.id,
+        input: {
+          fullName: fullName.trim(),
+          phone: phone.trim() || undefined,
+        },
+      });
+
+      // Compute diff for children changes
+      const addIds = selectedStudentIds.filter((sid) => !originalStudentIds.includes(sid));
+      const removeIds = originalStudentIds.filter((sid) => !selectedStudentIds.includes(sid));
+
+      if (addIds.length > 0 || removeIds.length > 0) {
+        await updateChildren.mutateAsync({
+          parentId: parent.id,
+          addIds,
+          removeIds,
+        });
+      }
+
+      router.back();
+    } catch (err) {
+      Alert.alert(
+        t('common.error'),
+        err instanceof Error ? err.message : 'An unexpected error occurred',
+      );
+    }
+  };
+
+  const isSaving = updateParent.isPending || updateChildren.isPending;
 
   return (
     <Screen scroll>
@@ -74,12 +125,21 @@ export default function EditParentScreen() {
           keyboardType="phone-pad"
         />
 
+        <MultiSelect
+          label={t('admin.parents.manageChildren')}
+          placeholder={t('admin.parents.selectChildrenPlaceholder')}
+          options={studentOptions}
+          value={selectedStudentIds}
+          onChange={handleStudentChange}
+          error={childrenError}
+        />
+
         <Button
           title={t('common.save')}
           onPress={handleSave}
           variant="primary"
           size="lg"
-          loading={updateParent.isPending}
+          loading={isSaving}
           style={styles.submitButton}
         />
       </View>

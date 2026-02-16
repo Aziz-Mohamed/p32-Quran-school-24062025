@@ -427,7 +427,11 @@
       "notFound": "Parent not found",
       "children": "children",
       "linkedChildren": "Linked Children",
-      "noChildren": "No Children Linked"
+      "noChildren": "No Children Linked",
+      "selectChildren": "Link Children",
+      "selectChildrenPlaceholder": "Select at least one student...",
+      "selectChildrenRequired": "At least one child must be linked",
+      "manageChildren": "Manage Linked Children"
     },
     "classes": {
       "title": "Classes",

@@ -30,6 +30,21 @@ export const useStudentById = (id: string | undefined) => {
 };
 
 /**
+ * Query hook for students available to link to a parent.
+ * Create flow: unlinked students only. Edit flow: unlinked + already linked to this parent.
+ */
+export function useAvailableStudentsForParent(parentId?: string) {
+  return useQuery({
+    queryKey: ['students', 'available-for-parent', parentId ?? 'new'],
+    queryFn: async () => {
+      const { data, error } = await studentsService.getAvailableStudentsForParent(parentId);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
+
+/**
  * Mutation hook for creating a student via the create-member Edge Function.
  */
 export function useCreateStudent() {
