@@ -78,6 +78,12 @@ export default function AdminDashboard() {
             icon="add-circle"
             color={colors.accent.violet[500]}
           />
+          <ActionButton
+            title={t('admin.addParent')}
+            onPress={() => router.push('/(admin)/parents/create')}
+            icon="people"
+            color={colors.accent.rose[500]}
+          />
         </View>
 
         {/* Management Navigation */}
@@ -95,10 +101,16 @@ export default function AdminDashboard() {
             onPress={() => router.push('/(admin)/teachers')} 
             color={colors.accent.indigo[500]}
           />
-          <NavCard 
-            title={t('admin.classes.title')} 
-            icon="albums" 
-            onPress={() => router.push('/(admin)/classes')} 
+          <NavCard
+            title={t('admin.parents.title')}
+            icon="people"
+            onPress={() => router.push('/(admin)/parents')}
+            color={colors.accent.rose[500]}
+          />
+          <NavCard
+            title={t('admin.classes.title')}
+            icon="albums"
+            onPress={() => router.push('/(admin)/classes')}
             color={colors.accent.violet[500]}
           />
           <NavCard 
