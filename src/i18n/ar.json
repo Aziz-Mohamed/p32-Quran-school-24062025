@@ -28,7 +28,8 @@
     "restartRequired": "إعادة التشغيل مطلوبة",
     "restartMessage": "يرجى إعادة تشغيل التطبيق لتطبيق تغيير اللغة.",
     "level": "المستوى",
-    "achievement": "إنجاز"
+    "achievement": "إنجاز",
+    "phone": "الهاتف"
   },
   "iconCategories": {
     "worship": "العبادة",
@@ -344,6 +345,7 @@
     },
     "addStudent": "إضافة طالب",
     "addTeacher": "إضافة معلّم",
+    "addParent": "إضافة وليّ أمر",
     "addClass": "إضافة فصل",
     "bulkAttendance": "حضور جماعي",
     "schoolHealth": "صحّة المدرسة",
@@ -375,7 +377,10 @@
       "deactivateTitle": "تعطيل الطالب؟",
       "deactivateMessage": "لن يتمكن هذا الطالب من تسجيل الدخول.",
       "activateTitle": "تفعيل الطالب؟",
-      "activateMessage": "سيتمكن هذا الطالب من تسجيل الدخول مرة أخرى."
+      "activateMessage": "سيتمكن هذا الطالب من تسجيل الدخول مرة أخرى.",
+      "parent": "وليّ الأمر",
+      "parentPlaceholder": "اختر وليّ أمر (اختياري)",
+      "noParent": "لا يوجد وليّ أمر مرتبط"
     },
     "teachers": {
       "title": "المعلّمون",
@@ -402,6 +407,27 @@
       "deactivateMessage": "لن يتمكن هذا المعلّم من تسجيل الدخول.",
       "activateTitle": "تفعيل المعلّم؟",
       "activateMessage": "سيتمكن هذا المعلّم من تسجيل الدخول مرة أخرى."
+    },
+    "parents": {
+      "title": "أولياء الأمور",
+      "subtitle": "إدارة أولياء أمور مدرستك",
+      "searchPlaceholder": "البحث عن أولياء أمور...",
+      "emptyTitle": "لا يوجد أولياء أمور بعد",
+      "emptyDescription": "أضف أول وليّ أمر للبدء",
+      "createTitle": "إنشاء وليّ أمر",
+      "editTitle": "تعديل وليّ أمر",
+      "fullName": "الاسم الكامل",
+      "fullNamePlaceholder": "أدخل اسم وليّ الأمر الكامل",
+      "username": "اسم المستخدم",
+      "usernamePlaceholder": "أدخل اسم المستخدم",
+      "password": "كلمة المرور",
+      "passwordPlaceholder": "أدخل كلمة المرور (6+ أحرف)",
+      "createButton": "إنشاء وليّ الأمر",
+      "requiredFields": "الاسم الكامل واسم المستخدم وكلمة المرور مطلوبة",
+      "notFound": "وليّ الأمر غير موجود",
+      "children": "أبناء",
+      "linkedChildren": "الأبناء المرتبطون",
+      "noChildren": "لا يوجد أبناء مرتبطون"
     },
     "classes": {
       "title": "الفصول",
