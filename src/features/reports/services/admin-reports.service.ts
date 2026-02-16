@@ -7,6 +7,8 @@ import type {
   ScoreRange,
   LevelDistributionBucket,
   TeacherActivitySummary,
+  TeacherAttendanceKPI,
+  SessionCompletionStat,
 } from '../types/reports.types';
 
 const SCORE_RANGES: Array<{
@@ -262,6 +264,53 @@ class AdminReportsService {
       uniqueStudentsEvaluated: row.unique_students,
       stickersAwarded: row.stickers_awarded,
       lastActiveDate: row.last_active_date,
+    }));
+  }
+  async getTeacherAttendanceKPIs(
+    schoolId: string,
+    dateRange: DateRange,
+  ): Promise<TeacherAttendanceKPI[]> {
+    const { data, error } = await supabase.rpc('get_teacher_attendance_kpis', {
+      p_school_id: schoolId,
+      p_start_date: dateRange.startDate,
+      p_end_date: dateRange.endDate,
+    });
+
+    if (error) throw error;
+
+    return (data ?? []).map((row) => ({
+      teacherId: row.teacher_id,
+      fullName: row.full_name,
+      avatarUrl: row.avatar_url,
+      daysPresent: row.days_present,
+      daysOnTime: row.days_on_time,
+      daysLate: row.days_late,
+      totalHoursWorked: Number(row.total_hours_worked) || 0,
+      avgHoursPerDay: Number(row.avg_hours_per_day) || 0,
+      punctualityRate: Number(row.punctuality_rate) || 0,
+    }));
+  }
+
+  async getSessionCompletionStats(
+    schoolId: string,
+    dateRange: DateRange,
+  ): Promise<SessionCompletionStat[]> {
+    const { data, error } = await supabase.rpc('get_session_completion_stats', {
+      p_school_id: schoolId,
+      p_start_date: dateRange.startDate,
+      p_end_date: dateRange.endDate,
+    });
+
+    if (error) throw error;
+
+    return (data ?? []).map((row) => ({
+      teacherId: row.teacher_id,
+      fullName: row.full_name,
+      totalScheduled: row.total_scheduled,
+      completedCount: row.completed_count,
+      cancelledCount: row.cancelled_count,
+      missedCount: row.missed_count,
+      completionRate: Number(row.completion_rate) || 0,
     }));
   }
 }

@@ -15,6 +15,8 @@ export default function TeacherLayout() {
         <Stack.Screen name="students/[id]" />
         <Stack.Screen name="students/top-performers" />
         <Stack.Screen name="students/needs-support" />
+        <Stack.Screen name="schedule/index" />
+        <Stack.Screen name="schedule/[id]" />
       </Stack>
     </ErrorBoundary>
   );

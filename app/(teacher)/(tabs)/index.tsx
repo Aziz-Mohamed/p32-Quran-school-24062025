@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useTeacherDashboard } from '@/features/dashboard/hooks/useTeacherDashboard';
-import { useCheckIn, useCheckOut } from '@/features/sessions/hooks/useCheckin';
+import { GpsCheckinCard } from '@/features/work-attendance/components/GpsCheckinCard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
@@ -27,25 +27,9 @@ export default function TeacherDashboard() {
   const theme = useRoleTheme();
 
   const { data, isLoading, error, refetch } = useTeacherDashboard(profile?.id);
-  const checkInMutation = useCheckIn();
-  const checkOutMutation = useCheckOut();
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
-
-  const checkin = data?.checkin;
-  const isCheckedIn = !!checkin && !checkin.checked_out_at;
-  const isCheckedOut = !!checkin && !!checkin.checked_out_at;
-
-  const handleCheckIn = () => {
-    if (!profile?.id || !schoolId) return;
-    checkInMutation.mutate({ teacherId: profile.id, schoolId });
-  };
-
-  const handleCheckOut = () => {
-    if (!checkin?.id) return;
-    checkOutMutation.mutate(checkin.id);
-  };
 
   return (
     <Screen scroll hasTabBar>
@@ -61,54 +45,8 @@ export default function TeacherDashboard() {
           <Badge label={t('roles.teacher')} variant={theme.tag} size="md" />
         </View>
 
-        {/* Check-in / Check-out */}
-        <Card variant={isCheckedIn ? "primary-glow" : "default"} style={styles.checkinCard}>
-          <View style={styles.checkinRow}>
-            <View style={styles.checkinInfo}>
-              <View style={[
-                styles.checkinIcon, 
-                { backgroundColor: isCheckedIn ? theme.primaryLight : colors.neutral[100] }
-              ]}>
-                <Ionicons
-                  name={isCheckedOut ? 'checkmark-circle' : isCheckedIn ? 'time' : 'log-in'}
-                  size={24}
-                  color={isCheckedOut ? semantic.success : isCheckedIn ? theme.primary : colors.neutral[400]}
-                />
-              </View>
-              <View>
-                <Text style={styles.checkinLabel}>
-                  {isCheckedOut
-                    ? t('teacher.checkedOutStatus')
-                    : isCheckedIn
-                      ? t('teacher.checkedInStatus')
-                      : t('teacher.notCheckedIn')}
-                </Text>
-                {isCheckedIn && (
-                  <Text style={styles.checkinTime}>
-                    {t('teacher.since')}: {new Date(checkin.checked_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </Text>
-                )}
-              </View>
-            </View>
-            {!checkin ? (
-              <Button
-                title={t('teacher.checkIn')}
-                onPress={handleCheckIn}
-                variant={theme.tag}
-                size="sm"
-                loading={checkInMutation.isPending}
-              />
-            ) : isCheckedIn ? (
-              <Button
-                title={t('teacher.checkOut')}
-                onPress={handleCheckOut}
-                variant="secondary"
-                size="sm"
-                loading={checkOutMutation.isPending}
-              />
-            ) : null}
-          </View>
-        </Card>
+        {/* GPS Check-in / Check-out */}
+        <GpsCheckinCard />
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
@@ -142,6 +80,24 @@ export default function TeacherDashboard() {
             style={[styles.actionButton, { backgroundColor: colors.secondary[50] }]}
           />
         </View>
+
+        {/* My Schedule */}
+        <Card
+          variant="glass"
+          onPress={() => router.push('/(teacher)/schedule')}
+          style={styles.scheduleCard}
+        >
+          <View style={styles.scheduleRow}>
+            <View style={[styles.insightIcon, { backgroundColor: colors.accent.indigo[50] }]}>
+              <Ionicons name="calendar" size={22} color={colors.accent.indigo[500]} />
+            </View>
+            <View style={styles.scheduleInfo}>
+              <Text style={styles.scheduleLabel}>{t('scheduling.mySchedule')}</Text>
+              <Text style={styles.scheduleHint}>{t('scheduling.viewUpcoming')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
+          </View>
+        </Card>
 
         {/* Student Insights */}
         <Text style={styles.sectionTitle}>{t('teacher.todayOverview')}</Text>
@@ -243,35 +199,6 @@ const styles = StyleSheet.create({
     color: lightTheme.textSecondary,
     marginTop: normalize(2),
   },
-  checkinCard: {
-    padding: spacing.md,
-  },
-  checkinRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  checkinInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  checkinIcon: {
-    width: normalize(48),
-    height: normalize(48),
-    borderRadius: normalize(14),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkinLabel: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[900],
-  },
-  checkinTime: {
-    ...typography.textStyles.label,
-    color: colors.neutral[500],
-    marginTop: normalize(2),
-  },
   statsRow: {
     flexDirection: 'row',
     gap: spacing.md,
@@ -307,6 +234,26 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     borderRadius: normalize(16),
+  },
+  scheduleCard: {
+    padding: spacing.md,
+  },
+  scheduleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  scheduleInfo: {
+    flex: 1,
+  },
+  scheduleLabel: {
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[900],
+  },
+  scheduleHint: {
+    ...typography.textStyles.label,
+    color: colors.neutral[500],
+    marginTop: normalize(2),
   },
   insightCard: {
     flex: 1,

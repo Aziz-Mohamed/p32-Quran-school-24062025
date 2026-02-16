@@ -125,10 +125,22 @@ export default function AdminDashboard() {
             onPress={() => router.push('/(admin)/reports')} 
             color={colors.accent.rose[500]}
           />
-          <NavCard 
-            title={t('admin.dashboard.resetPassword')} 
-            icon="key" 
-            onPress={() => router.push('/(admin)/members/reset-password')} 
+          <NavCard
+            title={t('admin.workAttendance.title')}
+            icon="finger-print"
+            onPress={() => router.push('/(admin)/work-attendance')}
+            color={colors.accent.sky[500]}
+          />
+          <NavCard
+            title={t('admin.location.title')}
+            icon="location"
+            onPress={() => router.push('/(admin)/settings/location')}
+            color={colors.primary[500]}
+          />
+          <NavCard
+            title={t('admin.dashboard.resetPassword')}
+            icon="key"
+            onPress={() => router.push('/(admin)/members/reset-password')}
             color={colors.neutral[500]}
           />
         </View>

@@ -15,7 +15,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.quranschool.app"
+      "bundleIdentifier": "com.quranschool.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "We need your location to verify you are at the school when checking in."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -46,6 +49,12 @@
         {
           "icon": "./assets/icon.png",
           "sounds": []
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "We need your location to verify you are at the school when checking in."
         }
       ]
     ]

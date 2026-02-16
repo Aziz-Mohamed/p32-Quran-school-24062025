@@ -51,6 +51,7 @@ export type Database = {
           id: string
           marked_by: string | null
           notes: string | null
+          scheduled_session_id: string | null
           school_id: string
           status: string
           student_id: string
@@ -61,6 +62,7 @@ export type Database = {
           id?: string
           marked_by?: string | null
           notes?: string | null
+          scheduled_session_id?: string | null
           school_id: string
           status: string
           student_id: string
@@ -71,6 +73,7 @@ export type Database = {
           id?: string
           marked_by?: string | null
           notes?: string | null
+          scheduled_session_id?: string | null
           school_id?: string
           status?: string
           student_id?: string
@@ -91,6 +94,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "attendance_scheduled_session_id_fkey"
+            columns: ["scheduled_session_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_sessions"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "attendance_school_id_fkey"
             columns: ["school_id"]
             isOneToOne: false
@@ -102,6 +112,57 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_schedules: {
+        Row: {
+          class_id: string
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean
+          school_id: string
+          start_time: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_active?: boolean
+          school_id: string
+          start_time: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          school_id?: string
+          start_time?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_schedules_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_schedules_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
             referencedColumns: ["id"]
           },
         ]
@@ -485,13 +546,122 @@ export type Database = {
           },
         ]
       }
+      scheduled_sessions: {
+        Row: {
+          cancelled_reason: string | null
+          class_id: string | null
+          class_schedule_id: string | null
+          completed_at: string | null
+          created_at: string
+          end_time: string
+          evaluation_session_id: string | null
+          id: string
+          notes: string | null
+          school_id: string
+          session_date: string
+          session_type: string
+          start_time: string
+          status: string
+          student_id: string | null
+          teacher_id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          cancelled_reason?: string | null
+          class_id?: string | null
+          class_schedule_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          end_time: string
+          evaluation_session_id?: string | null
+          id?: string
+          notes?: string | null
+          school_id: string
+          session_date: string
+          session_type: string
+          start_time: string
+          status?: string
+          student_id?: string | null
+          teacher_id: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cancelled_reason?: string | null
+          class_id?: string | null
+          class_schedule_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          end_time?: string
+          evaluation_session_id?: string | null
+          id?: string
+          notes?: string | null
+          school_id?: string
+          session_date?: string
+          session_type?: string
+          start_time?: string
+          status?: string
+          student_id?: string | null
+          teacher_id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_sessions_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_sessions_class_schedule_id_fkey"
+            columns: ["class_schedule_id"]
+            isOneToOne: false
+            referencedRelation: "class_schedules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_sessions_evaluation_session_id_fkey"
+            columns: ["evaluation_session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_sessions_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_sessions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_sessions_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schools: {
         Row: {
           address: string | null
           created_at: string
+          geofence_radius_meters: number
           id: string
           is_active: boolean
+          latitude: number | null
           logo_url: string | null
+          longitude: number | null
           name: string
           owner_id: string | null
           phone: string | null
@@ -503,9 +673,12 @@ export type Database = {
         Insert: {
           address?: string | null
           created_at?: string
+          geofence_radius_meters?: number
           id?: string
           is_active?: boolean
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           name: string
           owner_id?: string | null
           phone?: string | null
@@ -517,9 +690,12 @@ export type Database = {
         Update: {
           address?: string | null
           created_at?: string
+          geofence_radius_meters?: number
           id?: string
           is_active?: boolean
+          latitude?: number | null
           logo_url?: string | null
+          longitude?: number | null
           name?: string
           owner_id?: string | null
           phone?: string | null
@@ -859,29 +1035,62 @@ export type Database = {
         Row: {
           checked_in_at: string
           checked_out_at: string | null
+          checkin_distance_meters: number | null
+          checkin_latitude: number | null
+          checkin_longitude: number | null
+          checkout_distance_meters: number | null
+          checkout_latitude: number | null
+          checkout_longitude: number | null
           class_id: string | null
           date: string
           id: string
+          is_verified: boolean
+          notes: string | null
+          override_reason: string | null
           school_id: string
           teacher_id: string
+          verification_method: string
+          verified_by: string | null
         }
         Insert: {
           checked_in_at?: string
           checked_out_at?: string | null
+          checkin_distance_meters?: number | null
+          checkin_latitude?: number | null
+          checkin_longitude?: number | null
+          checkout_distance_meters?: number | null
+          checkout_latitude?: number | null
+          checkout_longitude?: number | null
           class_id?: string | null
           date?: string
           id?: string
+          is_verified?: boolean
+          notes?: string | null
+          override_reason?: string | null
           school_id: string
           teacher_id: string
+          verification_method?: string
+          verified_by?: string | null
         }
         Update: {
           checked_in_at?: string
           checked_out_at?: string | null
+          checkin_distance_meters?: number | null
+          checkin_latitude?: number | null
+          checkin_longitude?: number | null
+          checkout_distance_meters?: number | null
+          checkout_latitude?: number | null
+          checkout_longitude?: number | null
           class_id?: string | null
           date?: string
           id?: string
+          is_verified?: boolean
+          notes?: string | null
+          override_reason?: string | null
           school_id?: string
           teacher_id?: string
+          verification_method?: string
+          verified_by?: string | null
         }
         Relationships: [
           {
@@ -900,6 +1109,64 @@ export type Database = {
           },
           {
             foreignKeyName: "teacher_checkins_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_checkins_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teacher_work_schedules: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean
+          school_id: string
+          start_time: string
+          teacher_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_active?: boolean
+          school_id: string
+          start_time: string
+          teacher_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          school_id?: string
+          start_time?: string
+          teacher_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teacher_work_schedules_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "teacher_work_schedules_teacher_id_fkey"
             columns: ["teacher_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -989,6 +1256,18 @@ export type Database = {
           bucket_date: string
         }[]
       }
+      get_session_completion_stats: {
+        Args: { p_end_date: string; p_school_id: string; p_start_date: string }
+        Returns: {
+          cancelled_count: number
+          completed_count: number
+          completion_rate: number
+          full_name: string
+          missed_count: number
+          teacher_id: string
+          total_scheduled: number
+        }[]
+      }
       get_students_needing_attention: {
         Args: { p_class_id: string; p_end_date?: string; p_start_date?: string }
         Returns: {
@@ -1011,6 +1290,20 @@ export type Database = {
           stickers_awarded: number
           teacher_id: string
           unique_students: number
+        }[]
+      }
+      get_teacher_attendance_kpis: {
+        Args: { p_end_date: string; p_school_id: string; p_start_date: string }
+        Returns: {
+          avatar_url: string
+          avg_hours_per_day: number
+          days_late: number
+          days_on_time: number
+          days_present: number
+          full_name: string
+          punctuality_rate: number
+          teacher_id: string
+          total_hours_worked: number
         }[]
       }
       get_user_role: { Args: never; Returns: string }

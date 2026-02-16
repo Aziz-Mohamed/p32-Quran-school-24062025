@@ -14,6 +14,7 @@ export default function StudentLayout() {
         <Stack.Screen name="sessions/[id]" />
         <Stack.Screen name="trophy-room" />
         <Stack.Screen name="leaderboard" />
+        <Stack.Screen name="schedule" />
       </Stack>
     </ErrorBoundary>
   );

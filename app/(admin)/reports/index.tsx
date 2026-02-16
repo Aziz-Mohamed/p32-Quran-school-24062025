@@ -131,6 +131,36 @@ export default function AdminReportsScreen() {
             <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
           </View>
         </Card>
+
+        {/* Teacher Attendance Report */}
+        <Card
+          variant="outlined"
+          style={styles.navCard}
+          onPress={() => router.push('/(admin)/reports/teacher-attendance')}
+        >
+          <View style={styles.navRow}>
+            <Ionicons name="time-outline" size={24} color={colors.primary[500]} />
+            <Text style={styles.navText}>
+              {t('reports.teacherAttendanceReport.title')}
+            </Text>
+            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
+          </View>
+        </Card>
+
+        {/* Session Completion Report */}
+        <Card
+          variant="outlined"
+          style={styles.navCard}
+          onPress={() => router.push('/(admin)/reports/session-completion')}
+        >
+          <View style={styles.navRow}>
+            <Ionicons name="checkmark-done-outline" size={24} color={colors.primary[500]} />
+            <Text style={styles.navText}>
+              {t('reports.sessionCompletion.title')}
+            </Text>
+            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
+          </View>
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );

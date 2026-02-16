@@ -229,7 +229,8 @@
       "subtitle": "إدارة طلابك وحصصك",
       "sessionsToday": "حصص اليوم",
       "studentsSeen": "طلاب تمّت رؤيتهم",
-      "noRecentSessions": "لا توجد حصص حديثة بعد"
+      "noRecentSessions": "لا توجد حصص حديثة بعد",
+      "readyToTeach": "مستعد للتدريس اليوم؟"
     },
     "checkIn": "تسجيل الحضور",
     "checkOut": "تسجيل الانصراف",
@@ -479,6 +480,74 @@
       "minLength": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
       "success": "تمّ إعادة تعيين كلمة المرور بنجاح"
     },
+    "classSchedule": {
+      "title": "جدول الحصص",
+      "description": "حدّد أوقات الحصص المتكررة لهذا الفصل.",
+      "noSession": "لا توجد حصة",
+      "addSession": "إضافة حصة",
+      "removeTitle": "إزالة الجدول؟",
+      "removeMessage": "إزالة الحصة يوم {{day}}؟"
+    },
+    "workSchedule": {
+      "title": "جدول العمل",
+      "description": "حدّد ساعات العمل المتوقعة لكل يوم من أيام الأسبوع.",
+      "days": {
+        "0": "الأحد",
+        "1": "الإثنين",
+        "2": "الثلاثاء",
+        "3": "الأربعاء",
+        "4": "الخميس",
+        "5": "الجمعة",
+        "6": "السبت"
+      },
+      "dayOff": "يوم عطلة",
+      "addHours": "إضافة ساعات",
+      "startTime": "وقت البداية",
+      "endTime": "وقت النهاية",
+      "timeFormat": "استخدم تنسيق 24 ساعة (مثلاً 09:00، 17:00)",
+      "invalidTime": "يرجى إدخال أوقات صحيحة بتنسيق HH:MM.",
+      "endBeforeStart": "يجب أن يكون وقت النهاية بعد وقت البداية.",
+      "removeTitle": "إزالة الجدول؟",
+      "removeMessage": "إزالة ساعات العمل ليوم {{day}}؟"
+    },
+    "workAttendance": {
+      "title": "حضور المعلّمين",
+      "subtitle": "حالة تسجيل حضور المعلّمين اليوم",
+      "present": "حاضر",
+      "absent": "غائب",
+      "pendingOverrides": "بانتظار",
+      "overrideRequests": "طلبات الاستثناء",
+      "checkedInTeachers": "سجّلوا الحضور",
+      "missingTeachers": "لم يسجّلوا الحضور",
+      "noCheckins": "لم يسجّل أي معلّم حضوره اليوم.",
+      "verified": "موثّق",
+      "unverified": "غير موثّق",
+      "pendingLabel": "بانتظار",
+      "notCheckedInYet": "لم يسجّل الحضور بعد",
+      "approve": "موافقة",
+      "reject": "رفض",
+      "approveTitle": "الموافقة على الاستثناء؟",
+      "approveMessage": "سيتم توثيق تسجيل حضور المعلّم.",
+      "rejectTitle": "رفض الاستثناء؟",
+      "rejectMessage": "سيتم حذف سجل حضور المعلّم."
+    },
+    "location": {
+      "title": "موقع المدرسة",
+      "description": "حدّد إحداثيات GPS ونطاق السياج الجغرافي لتفعيل تسجيل حضور المعلّمين بالموقع.",
+      "configured": "تم تحديد الموقع. سيتم التحقق من حضور المعلّمين عبر GPS.",
+      "notConfigured": "لم يتم تحديد الموقع. لن يتطلب تسجيل الحضور التحقق من GPS.",
+      "latitude": "خط العرض",
+      "latitudePlaceholder": "مثلاً 24.7136",
+      "longitude": "خط الطول",
+      "longitudePlaceholder": "مثلاً 46.6753",
+      "geofenceRadius": "نطاق السياج الجغرافي (بالأمتار)",
+      "geofenceRadiusPlaceholder": "مثلاً 200",
+      "geofenceHint": "النطاق: 50-2000 متر. سيتم التحقق تلقائيًا من المعلّمين داخل هذا النطاق.",
+      "invalidLatitude": "يجب أن يكون خط العرض بين -90 و 90.",
+      "invalidLongitude": "يجب أن يكون خط الطول بين -180 و 180.",
+      "invalidRadius": "يجب أن يكون النطاق بين 50 و 2000 متر.",
+      "saved": "تم تحديث موقع المدرسة بنجاح."
+    },
     "attendance": {
       "title": "الحضور",
       "subtitle": "إدارة سجلات الحضور",
@@ -622,6 +691,73 @@
       "scoreDistribution": "مخطط توزيع الدرجات يظهر {{count}} طالب عبر 4 نطاقات أداء",
       "levelDistribution": "مخطط توزيع المستويات يظهر {{count}} طالب عبر {{levels}} مستويات",
       "scoreTrend": "مخطط اتجاه الدرجات يظهر درجات الحفظ والتجويد والتلاوة خلال {{count}} فترات"
+    },
+    "teacherAttendanceReport": {
+      "title": "تقرير حضور المعلمين",
+      "avgPunctuality": "متوسط الانضباط",
+      "avgHoursPerDay": "متوسط الساعات/يوم",
+      "totalPresenceDays": "إجمالي أيام الحضور",
+      "daysPresent": "أيام الحضور",
+      "daysOnTime": "في الوقت",
+      "daysLate": "متأخر",
+      "totalHours": "إجمالي الساعات",
+      "onTime": "في الوقت",
+      "noData": "لا توجد بيانات حضور للمعلمين في هذه الفترة."
+    },
+    "sessionCompletion": {
+      "title": "تقرير إتمام الحصص",
+      "completionRate": "نسبة الإتمام",
+      "scheduled": "مجدولة",
+      "completed": "مكتملة",
+      "missed": "فائتة",
+      "cancelled": "ملغاة",
+      "noData": "لا توجد بيانات حصص مجدولة في هذه الفترة."
     }
+  },
+  "scheduling": {
+    "mySchedule": "جدولي",
+    "upcomingSessions": "حصصك القادمة",
+    "viewUpcoming": "عرض الحصص القادمة",
+    "noUpcomingSessions": "لا توجد حصص مجدولة قادمة.",
+    "childScheduleTitle": "جدول {{name}}",
+    "individualSession": "حصة فردية",
+    "date": "التاريخ",
+    "time": "الوقت",
+    "type": "النوع",
+    "student": "الطالب",
+    "startSession": "بدء الحصة",
+    "completeSession": "إنهاء الحصة",
+    "cancelSession": "إلغاء الحصة",
+    "sessionCompleted": "تم تسجيل الحصة كمكتملة.",
+    "sessionNotFound": "الحصة غير موجودة.",
+    "cancelTitle": "إلغاء الحصة؟",
+    "cancelMessage": "هل أنت متأكد من إلغاء هذه الحصة؟",
+    "status": {
+      "scheduled": "مجدولة",
+      "in_progress": "جارية",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة",
+      "missed": "فائتة"
+    },
+    "sessionType": {
+      "class": "حصة فصلية",
+      "individual": "حصة فردية"
+    }
+  },
+  "workAttendance": {
+    "checkIn": "تسجيل الحضور",
+    "checkOut": "تسجيل الانصراف",
+    "checkedOut": "تم الانصراف",
+    "checkedInVerified": "حاضر (موثّق)",
+    "checkedInUnverified": "حاضر",
+    "pendingOverride": "بانتظار الموافقة",
+    "notCheckedIn": "لم يُسجّل الحضور",
+    "since": "منذ",
+    "fromSchool": "من المدرسة",
+    "locationPermissionNeeded": "صلاحية الموقع مطلوبة لتسجيل الحضور بالـ GPS.",
+    "outsideGeofence": "خارج نطاق المدرسة",
+    "outsideGeofenceDescription": "يبدو أنك خارج النطاق الجغرافي للمدرسة. يمكنك طلب استثناء يدوي بتوضيح السبب.",
+    "overrideReasonPlaceholder": "لماذا تسجّل حضورك من خارج نطاق المدرسة؟",
+    "requestOverride": "طلب استثناء"
   }
 }

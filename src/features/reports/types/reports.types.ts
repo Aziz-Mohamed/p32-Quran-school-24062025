@@ -111,3 +111,25 @@ export interface ChildProgressReport {
   attendanceSummary: ChildAttendanceSummary;
   gamification: ChildGamificationSummary;
 }
+
+export interface TeacherAttendanceKPI {
+  teacherId: string;
+  fullName: string;
+  avatarUrl: string | null;
+  daysPresent: number;
+  daysOnTime: number;
+  daysLate: number;
+  totalHoursWorked: number;
+  avgHoursPerDay: number;
+  punctualityRate: number; // 0-100
+}
+
+export interface SessionCompletionStat {
+  teacherId: string;
+  fullName: string;
+  totalScheduled: number;
+  completedCount: number;
+  cancelledCount: number;
+  missedCount: number;
+  completionRate: number; // 0-100
+}
