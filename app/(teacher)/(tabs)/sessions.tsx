@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text, Pressable } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
@@ -8,11 +8,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui';
-import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useSessions } from '@/features/sessions/hooks/useSessions';
-import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -24,7 +22,6 @@ export default function SessionsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { profile } = useAuth();
-  const theme = useRoleTheme();
 
   const { data: sessions = [], isLoading, error, refetch } = useSessions({
     teacherId: profile?.id,
@@ -41,13 +38,6 @@ export default function SessionsScreen() {
             <Text style={styles.title}>{t('teacher.sessions.title')}</Text>
             <Text style={styles.subtitle}>{t('teacher.sessions.viewHistory')}</Text>
           </View>
-          <Button
-            title={t('teacher.logSession')}
-            onPress={() => router.push('/(teacher)/sessions/create')}
-            variant={theme.tag}
-            size="sm"
-            icon={<Ionicons name="add" size={18} color={colors.white} />}
-          />
         </View>
 
         {sessions.length === 0 ? (

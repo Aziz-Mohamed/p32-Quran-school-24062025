@@ -275,7 +275,7 @@
       "due": "التسليم",
       "pending": "قيد الانتظار",
       "emptyTitle": "لا توجد حصص بعد",
-      "emptyDescription": "اضغط الزر أعلاه لتسجيل أول حصّة"
+      "emptyDescription": "ستظهر تقييمات الحصص هنا بعد إكمال الحصص المجدولة"
     },
     "students": {
       "title": "طلابي",
@@ -721,6 +721,7 @@
     "noUpcomingSessions": "لا توجد حصص مجدولة قادمة.",
     "childScheduleTitle": "جدول {{name}}",
     "individualSession": "حصة فردية",
+    "nextSession": "الحصة التالية",
     "date": "التاريخ",
     "time": "الوقت",
     "type": "النوع",
@@ -728,7 +729,7 @@
     "startSession": "بدء الحصة",
     "completeSession": "إنهاء الحصة",
     "cancelSession": "إلغاء الحصة",
-    "sessionCompleted": "تم تسجيل الحصة كمكتملة.",
+    "sessionCompleted": "تم إكمال الحصة بنجاح.",
     "sessionNotFound": "الحصة غير موجودة.",
     "cancelTitle": "إلغاء الحصة؟",
     "cancelMessage": "هل أنت متأكد من إلغاء هذه الحصة؟",
@@ -742,6 +743,13 @@
     "sessionType": {
       "class": "حصة فصلية",
       "individual": "حصة فردية"
+    },
+    "workspace": {
+      "markAllPresent": "تسجيل الجميع حاضرين",
+      "evaluation": "التقييم",
+      "completeSession": "إنهاء الحصة",
+      "openWorkspace": "فتح ورشة العمل",
+      "noStudents": "لا يوجد طلاب لهذه الحصة."
     }
   },
   "workAttendance": {

@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUpdateSessionStatus } from '@/features/scheduling/hooks/useScheduledSessions';
 import { scheduledSessionService } from '@/features/scheduling/services/scheduled-session.service';
 import { typography } from '@/theme/typography';
-import { lightTheme, colors, semantic } from '@/theme/colors';
+import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 
@@ -42,19 +42,19 @@ export default function SessionDetailScreen() {
 
   const handleStart = () => {
     if (!id) return;
-    updateStatus.mutate({ sessionId: id, status: 'in_progress' });
-  };
-
-  const handleComplete = () => {
-    if (!id) return;
     updateStatus.mutate(
-      { sessionId: id, status: 'completed' },
+      { sessionId: id, status: 'in_progress' },
       {
         onSuccess: () => {
-          Alert.alert(t('common.success'), t('scheduling.sessionCompleted'));
+          router.push(`/(teacher)/schedule/${id}/workspace`);
         },
       },
     );
+  };
+
+  const handleOpenWorkspace = () => {
+    if (!id) return;
+    router.push(`/(teacher)/schedule/${id}/workspace`);
   };
 
   const handleCancel = () => {
@@ -76,13 +76,6 @@ export default function SessionDetailScreen() {
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
   if (!session) return <ErrorState description={t('scheduling.sessionNotFound')} />;
-
-  const statusColor =
-    session.status === 'scheduled' ? colors.accent.sky[500] :
-    session.status === 'in_progress' ? semantic.warning :
-    session.status === 'completed' ? semantic.success :
-    session.status === 'cancelled' ? colors.neutral[400] :
-    semantic.error;
 
   return (
     <Screen scroll>
@@ -158,12 +151,11 @@ export default function SessionDetailScreen() {
           )}
           {session.status === 'in_progress' && (
             <Button
-              title={t('scheduling.completeSession')}
-              onPress={handleComplete}
+              title={t('scheduling.workspace.openWorkspace')}
+              onPress={handleOpenWorkspace}
               variant="primary"
               size="lg"
-              icon={<Ionicons name="checkmark-circle" size={20} color={colors.white} />}
-              loading={updateStatus.isPending}
+              icon={<Ionicons name="easel-outline" size={20} color={colors.white} />}
             />
           )}
         </View>

@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useTeacherDashboard } from '@/features/dashboard/hooks/useTeacherDashboard';
+import { useTeacherUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
 import { GpsCheckinCard } from '@/features/work-attendance/components/GpsCheckinCard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
@@ -27,6 +28,17 @@ export default function TeacherDashboard() {
   const theme = useRoleTheme();
 
   const { data, isLoading, error, refetch } = useTeacherDashboard(profile?.id);
+  const { data: upcomingSessions = [] } = useTeacherUpcomingSessions(profile?.id, schoolId ?? undefined);
+
+  const nextSession = upcomingSessions[0] ?? null;
+
+  const handleNextSession = () => {
+    if (nextSession) {
+      router.push(`/(teacher)/schedule/${nextSession.id}`);
+    } else {
+      router.push('/(teacher)/schedule');
+    }
+  };
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
@@ -64,11 +76,11 @@ export default function TeacherDashboard() {
         <Text style={styles.sectionTitle}>{t('dashboard.quickActions')}</Text>
         <View style={styles.actionsRow}>
           <Button
-            title={t('teacher.logSession')}
-            onPress={() => router.push('/(teacher)/sessions/create')}
+            title={t('scheduling.nextSession')}
+            onPress={handleNextSession}
             variant={theme.tag}
             size="md"
-            icon={<Ionicons name="add-circle" size={20} color={colors.white} />}
+            icon={<Ionicons name="arrow-forward-circle" size={20} color={colors.white} />}
             style={styles.actionButton}
           />
           <Button

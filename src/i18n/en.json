@@ -275,7 +275,7 @@
       "due": "Due",
       "pending": "Pending",
       "emptyTitle": "No Sessions Yet",
-      "emptyDescription": "Tap the button above to log your first session"
+      "emptyDescription": "Session evaluations will appear here after completing scheduled sessions"
     },
     "students": {
       "title": "My Students",
@@ -721,6 +721,7 @@
     "noUpcomingSessions": "No upcoming sessions scheduled.",
     "childScheduleTitle": "{{name}}'s Schedule",
     "individualSession": "Individual Session",
+    "nextSession": "Next Session",
     "date": "Date",
     "time": "Time",
     "type": "Type",
@@ -728,7 +729,7 @@
     "startSession": "Start Session",
     "completeSession": "Complete Session",
     "cancelSession": "Cancel Session",
-    "sessionCompleted": "Session has been marked as completed.",
+    "sessionCompleted": "Session has been completed successfully.",
     "sessionNotFound": "Session not found.",
     "cancelTitle": "Cancel Session?",
     "cancelMessage": "Are you sure you want to cancel this session?",
@@ -742,6 +743,13 @@
     "sessionType": {
       "class": "Class Session",
       "individual": "Individual Session"
+    },
+    "workspace": {
+      "markAllPresent": "Mark All Present",
+      "evaluation": "Evaluation",
+      "completeSession": "Complete Session",
+      "openWorkspace": "Open Workspace",
+      "noStudents": "No students found for this session."
     }
   },
   "workAttendance": {

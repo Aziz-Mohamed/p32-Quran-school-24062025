@@ -15,6 +15,7 @@ class AttendanceService {
       notes: r.notes ?? null,
       school_id: schoolId,
       marked_by: markedBy,
+      scheduled_session_id: input.scheduled_session_id ?? null,
     }));
 
     return supabase
