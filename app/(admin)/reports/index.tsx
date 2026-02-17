@@ -161,6 +161,21 @@ export default function AdminReportsScreen() {
             <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
           </View>
         </Card>
+
+        {/* Memorization Report */}
+        <Card
+          variant="outlined"
+          style={styles.navCard}
+          onPress={() => router.push('/(admin)/reports/memorization')}
+        >
+          <View style={styles.navRow}>
+            <Ionicons name="book-outline" size={24} color={colors.primary[500]} />
+            <Text style={styles.navText}>
+              {t('reports.memorization.title')}
+            </Text>
+            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
+          </View>
+        </Card>
       </ScrollView>
     </SafeAreaView>
   );

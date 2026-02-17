@@ -123,6 +123,7 @@
     "tabs": {
       "dashboard": "Dashboard",
       "lessons": "Lessons",
+      "memorization": "Memorization",
       "stickers": "Stickers",
       "profile": "Profile"
     },
@@ -703,6 +704,20 @@
       "totalHours": "Total Hours",
       "onTime": "on time",
       "noData": "No teacher attendance data for this period."
+    },
+    "memorization": {
+      "title": "Memorization Report",
+      "studentsTracked": "Students Tracked",
+      "totalAyahs": "Total Ayahs",
+      "totalRecitations": "Recitations",
+      "avgProgress": "Avg Progress",
+      "needReview": "Need Review",
+      "memorized": "Memorized",
+      "inProgress": "In Progress",
+      "needsReviewLabel": "Need Review",
+      "recitations": "Recitations",
+      "avgAccuracy": "Avg Accuracy",
+      "noData": "No memorization data yet. Students will appear here once they start recording recitations."
     },
     "sessionCompletion": {
       "title": "Session Completion Report",

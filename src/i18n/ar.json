@@ -123,6 +123,7 @@
     "tabs": {
       "dashboard": "لوحة التحكّم",
       "lessons": "الدروس",
+      "memorization": "الحفظ",
       "stickers": "الملصقات",
       "profile": "الملف الشخصي"
     },
@@ -703,6 +704,20 @@
       "totalHours": "إجمالي الساعات",
       "onTime": "في الوقت",
       "noData": "لا توجد بيانات حضور للمعلمين في هذه الفترة."
+    },
+    "memorization": {
+      "title": "تقرير الحفظ",
+      "studentsTracked": "طلاب متتبعون",
+      "totalAyahs": "إجمالي الآيات",
+      "totalRecitations": "التسميعات",
+      "avgProgress": "متوسط التقدم",
+      "needReview": "تحتاج مراجعة",
+      "memorized": "محفوظة",
+      "inProgress": "قيد التعلم",
+      "needsReviewLabel": "تحتاج مراجعة",
+      "recitations": "التسميعات",
+      "avgAccuracy": "متوسط الدقة",
+      "noData": "لا توجد بيانات حفظ بعد. سيظهر الطلاب هنا بعد بدء تسجيل التسميعات."
     },
     "sessionCompletion": {
       "title": "تقرير إتمام الحصص",
