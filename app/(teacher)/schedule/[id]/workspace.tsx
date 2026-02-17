@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui';
 import { ScoreInput } from '@/components/forms/ScoreInput';
 import { TextField } from '@/components/ui/TextField';
 import { LoadingState, ErrorState } from '@/components/feedback';
+import { RecitationForm, EMPTY_RECITATION, validateRecitationForm } from '@/features/memorization';
+import type { RecitationFormData } from '@/features/memorization';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudents } from '@/features/students/hooks/useStudents';
 import { useCompleteSessionWorkspace } from '@/features/scheduling/hooks/useCompleteSessionWorkspace';
@@ -111,6 +113,7 @@ export default function SessionWorkspaceScreen() {
   // Local state
   const [attendanceStatuses, setAttendanceStatuses] = useState<Record<string, AttendanceStatus>>({});
   const [evaluations, setEvaluations] = useState<Record<string, EvalData>>({});
+  const [recitations, setRecitations] = useState<Record<string, RecitationFormData[]>>({});
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
 
   // Auto-expand for individual sessions
@@ -146,12 +149,52 @@ export default function SessionWorkspaceScreen() {
     }));
   };
 
+  const getRecitations = (studentId: string): RecitationFormData[] => recitations[studentId] ?? [];
+
+  const addRecitation = (studentId: string) => {
+    setRecitations((prev) => ({
+      ...prev,
+      [studentId]: [...(prev[studentId] ?? []), { ...EMPTY_RECITATION }],
+    }));
+  };
+
+  const updateRecitation = (studentId: string, index: number, data: RecitationFormData) => {
+    setRecitations((prev) => {
+      const list = [...(prev[studentId] ?? [])];
+      list[index] = data;
+      return { ...prev, [studentId]: list };
+    });
+  };
+
+  const removeRecitation = (studentId: string, index: number) => {
+    setRecitations((prev) => {
+      const list = [...(prev[studentId] ?? [])];
+      list.splice(index, 1);
+      return { ...prev, [studentId]: list };
+    });
+  };
+
   const toggleExpand = (studentId: string) => {
     setExpandedStudentId((prev) => (prev === studentId ? null : studentId));
   };
 
   const handleComplete = () => {
     if (!session || !profile?.id || !schoolId) return;
+
+    // Validate all recitations before submitting
+    for (const [studentId, forms] of Object.entries(recitations)) {
+      for (let i = 0; i < forms.length; i++) {
+        const errors = validateRecitationForm(forms[i]);
+        if (errors) {
+          const student = studentList.find((s) => s.id === studentId);
+          Alert.alert(
+            t('common.error'),
+            `Recitation #${i + 1} for ${student?.name ?? 'student'}: ${Object.values(errors).join(', ')}`,
+          );
+          return;
+        }
+      }
+    }
 
     const records = studentList.map((s) => ({
       student_id: s.id,
@@ -176,6 +219,7 @@ export default function SessionWorkspaceScreen() {
         sessionDate: session.session_date,
         attendance,
         evaluations,
+        recitations,
         schoolId,
       },
       {
@@ -315,6 +359,36 @@ export default function SessionWorkspaceScreen() {
                       onChangeText={(v) => updateEval(student.id, 'homework_assigned', v)}
                       multiline
                     />
+
+                    {/* Recitations Section */}
+                    <View style={styles.recitationSection}>
+                      <View style={styles.recitationHeader}>
+                        <Text style={styles.recitationTitle}>Recitations</Text>
+                        <Button
+                          title="Add Recitation"
+                          onPress={() => addRecitation(student.id)}
+                          variant="secondary"
+                          size="sm"
+                          icon={<Ionicons name="add-circle-outline" size={16} color={colors.primary[500]} />}
+                        />
+                      </View>
+
+                      {getRecitations(student.id).map((recitation, idx) => (
+                        <RecitationForm
+                          key={idx}
+                          index={idx}
+                          data={recitation}
+                          onChange={(data) => updateRecitation(student.id, idx, data)}
+                          onRemove={() => removeRecitation(student.id, idx)}
+                        />
+                      ))}
+
+                      {getRecitations(student.id).length === 0 && (
+                        <Text style={styles.noRecitationsText}>
+                          No recitations added. Tap "Add Recitation" to track verse-level progress.
+                        </Text>
+                      )}
+                    </View>
                   </View>
                 )}
               </Card>
@@ -417,5 +491,28 @@ const styles = StyleSheet.create({
   completeButton: {
     marginTop: spacing.md,
     marginBottom: spacing.xl,
+  },
+  recitationSection: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.neutral[100],
+    gap: spacing.sm,
+  },
+  recitationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  recitationTitle: {
+    ...typography.textStyles.subheading,
+    color: lightTheme.text,
+    fontSize: normalize(14),
+  },
+  noRecitationsText: {
+    ...typography.textStyles.caption,
+    color: lightTheme.textTertiary,
+    textAlign: 'center',
+    paddingVertical: spacing.md,
   },
 });
