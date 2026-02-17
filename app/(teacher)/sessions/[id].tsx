@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/feedback';
+import { RevisionCard, useSessionRecitations } from '@/features/memorization';
 import { useSessionById } from '@/features/sessions/hooks/useSessions';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
@@ -21,6 +22,7 @@ export default function SessionDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const { data: session, isLoading, error, refetch } = useSessionById(id);
+  const { data: recitations = [] } = useSessionRecitations(id);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
@@ -67,6 +69,34 @@ export default function SessionDetailScreen() {
             />
           </View>
         </Card>
+
+        {/* Recitations */}
+        {recitations.length > 0 && (
+          <Card variant="outlined" style={styles.section}>
+            <Text style={styles.sectionTitle}>Recitations</Text>
+            {recitations.map((recitation: any) => (
+              <RevisionCard
+                key={recitation.id}
+                item={{
+                  progress_id: null,
+                  surah_number: recitation.surah_number,
+                  from_ayah: recitation.from_ayah,
+                  to_ayah: recitation.to_ayah,
+                  status: recitation.needs_repeat ? 'needs_review' : 'memorized',
+                  review_type: recitation.recitation_type,
+                  next_review_date: null,
+                  last_reviewed_at: recitation.created_at,
+                  review_count: 1,
+                  ease_factor: 2.5,
+                  avg_accuracy: recitation.accuracy_score,
+                  avg_tajweed: recitation.tajweed_score,
+                  avg_fluency: recitation.fluency_score,
+                  first_memorized_at: null,
+                }}
+              />
+            ))}
+          </Card>
+        )}
 
         {/* Notes */}
         {session.notes && (
