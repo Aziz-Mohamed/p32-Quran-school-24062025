@@ -12,6 +12,14 @@ export type LessonType = 'memorization' | 'revision' | 'tajweed' | 'recitation';
 
 export type LessonStatus = 'not_started' | 'in_progress' | 'completed';
 
+// ─── Memorization ──────────────────────────────────────────────────────────
+
+export type RecitationType = 'new_hifz' | 'recent_review' | 'old_review';
+
+export type MemorizationStatus = 'new' | 'learning' | 'memorized' | 'needs_review';
+
+export type AssignmentStatus = 'pending' | 'completed' | 'overdue' | 'cancelled';
+
 // ─── Gamification ───────────────────────────────────────────────────────────
 
 export type StickerTier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'seasonal' | 'trophy';
