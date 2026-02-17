@@ -29,7 +29,31 @@
     "restartMessage": "Please restart the app to apply the language change.",
     "level": "Level",
     "achievement": "Achievement",
-    "phone": "Phone"
+    "phone": "Phone",
+    "notFound": "Page not found",
+    "goHome": "Go Home",
+    "close": "Close",
+    "select": "Select...",
+    "selectDate": "Select date...",
+    "clearSearch": "Clear search",
+    "optional": "Optional",
+    "dateFormat": "YYYY-MM-DD",
+    "unexpectedError": "An unexpected error occurred",
+    "somethingWrong": "Something went wrong",
+    "daysShort": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
+    "scoreAbbrev": {
+      "memorization": "M",
+      "tajweed": "T",
+      "recitation": "R"
+    }
   },
   "iconCategories": {
     "worship": "Worship",
@@ -84,7 +108,9 @@
     "createSchoolSubtitle": "Set up your school and admin account",
     "createSchoolButton": "Create School",
     "noSchool": "Don't have a school?",
-    "alreadyHaveSchool": "Already have an account?"
+    "alreadyHaveSchool": "Already have an account?",
+    "sessionExpired": "Session expired. Please log in again.",
+    "createSchoolFailed": "Failed to create school"
   },
   "roles": {
     "student": "Student",
@@ -345,6 +371,7 @@
       "resetPassword": "Reset Password",
       "manage": "Manage"
     },
+    "createMemberFailed": "Failed to create member",
     "addStudent": "Add Student",
     "addTeacher": "Add Teacher",
     "addParent": "Add Parent",
@@ -479,7 +506,8 @@
       "resetButton": "Reset Password",
       "requiredFields": "Please select a user and enter a new password",
       "minLength": "Password must be at least 6 characters",
-      "success": "Password has been reset successfully"
+      "success": "Password has been reset successfully",
+      "failed": "Failed to reset password"
     },
     "classSchedule": {
       "title": "Class Schedule",

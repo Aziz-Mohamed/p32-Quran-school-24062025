@@ -20,7 +20,7 @@ const STATUS_DOT_COLORS: Record<string, string> = {
   excused: semantic.info,
 };
 
-const DAYS_IN_WEEK = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_KEYS = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'] as const;
 
 // ─── Attendance Calendar Screen ──────────────────────────────────────────────
 
@@ -119,8 +119,8 @@ export default function AttendanceCalendarScreen() {
 
         {/* Day Headers */}
         <View style={styles.weekHeader}>
-          {DAYS_IN_WEEK.map((d) => (
-            <Text key={d} style={styles.weekDay}>{d}</Text>
+          {DAY_KEYS.map((d) => (
+            <Text key={d} style={styles.weekDay}>{t(`common.daysShort.${d}`)}</Text>
           ))}
         </View>
 

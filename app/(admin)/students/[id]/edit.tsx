@@ -121,7 +121,7 @@ export default function EditStudentScreen() {
           label={t('admin.students.dateOfBirth')}
           value={dateOfBirth}
           onChangeText={setDateOfBirth}
-          placeholder="YYYY-MM-DD"
+          placeholder={t('common.dateFormat')}
         />
 
         <View style={styles.switchRow}>

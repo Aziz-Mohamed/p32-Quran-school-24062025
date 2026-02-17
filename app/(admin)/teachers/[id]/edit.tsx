@@ -67,10 +67,10 @@ export default function EditTeacherScreen() {
         />
 
         <TextField
-          label={t('auth.phone') ?? 'Phone'}
+          label={t('common.phone')}
           value={phone}
           onChangeText={setPhone}
-          placeholder="Optional"
+          placeholder={t('common.optional')}
           keyboardType="phone-pad"
         />
 

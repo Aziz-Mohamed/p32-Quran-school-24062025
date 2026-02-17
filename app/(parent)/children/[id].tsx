@@ -106,7 +106,7 @@ export default function ChildDetailScreen() {
           />
           {memStats && (
             <Button
-              title="Memorization"
+              title={t('student.tabs.memorization')}
               onPress={() => router.push(`/(parent)/memorization/${id}`)}
               variant="ghost"
               size="md"
@@ -137,9 +137,9 @@ export default function ChildDetailScreen() {
               </View>
               
               <View style={styles.scoresRow}>
-                <ScoreBadge label="M" value={session.memorization_score} max={5} />
-                <ScoreBadge label="T" value={session.tajweed_score} max={5} />
-                <ScoreBadge label="R" value={session.recitation_quality} max={5} />
+                <ScoreBadge label={t('common.scoreAbbrev.memorization')} value={session.memorization_score} max={5} />
+                <ScoreBadge label={t('common.scoreAbbrev.tajweed')} value={session.tajweed_score} max={5} />
+                <ScoreBadge label={t('common.scoreAbbrev.recitation')} value={session.recitation_quality} max={5} />
               </View>
 
               {session.notes && (

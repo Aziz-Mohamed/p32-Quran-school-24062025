@@ -3,6 +3,7 @@ import { StyleSheet, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Button } from '@/components/ui/Button';
+import i18n from '@/i18n/config';
 import { typography } from '@/theme/typography';
 import { lightTheme, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -42,13 +43,13 @@ export class ErrorBoundary extends Component<Props, State> {
         <View style={styles.container}>
           <Ionicons name="warning-outline" size={48} color={semantic.error} />
           <Text style={styles.title}>
-            {this.props.fallbackTitle ?? 'Something went wrong'}
+            {this.props.fallbackTitle ?? i18n.t('common.somethingWrong')}
           </Text>
           <Text style={styles.description}>
-            {this.props.fallbackDescription ?? this.state.error?.message ?? 'An unexpected error occurred'}
+            {this.props.fallbackDescription ?? this.state.error?.message ?? i18n.t('common.unexpectedError')}
           </Text>
           <Button
-            title="Try Again"
+            title={i18n.t('common.retry')}
             onPress={this.handleRetry}
             variant="primary"
             size="md"

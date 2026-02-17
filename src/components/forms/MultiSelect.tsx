@@ -16,6 +16,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
+import i18n from '@/i18n/config';
 import type { SelectOption } from './Select';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -34,13 +35,14 @@ interface MultiSelectProps {
 
 export function MultiSelect({
   label,
-  placeholder = 'Select...',
+  placeholder,
   options,
   value,
   onChange,
   error,
   style,
 }: MultiSelectProps) {
+  const resolvedPlaceholder = placeholder ?? i18n.t('common.select');
   const [visible, setVisible] = useState(false);
   const hasError = error != null && error.length > 0;
 
@@ -73,7 +75,7 @@ export function MultiSelect({
           hasError && styles.triggerError,
         ]}
         accessibilityRole="combobox"
-        accessibilityLabel={label ?? placeholder}
+        accessibilityLabel={label ?? resolvedPlaceholder}
       >
         <Text
           style={[
@@ -82,7 +84,7 @@ export function MultiSelect({
           ]}
           numberOfLines={1}
         >
-          {value.length > 0 ? selectedLabels : placeholder}
+          {value.length > 0 ? selectedLabels : resolvedPlaceholder}
         </Text>
         <Ionicons
           name="chevron-down"
@@ -133,7 +135,7 @@ export function MultiSelect({
               style={styles.doneButton}
               accessibilityRole="button"
             >
-              <Text style={styles.doneText}>Done</Text>
+              <Text style={styles.doneText}>{i18n.t('common.done')}</Text>
             </Pressable>
           </View>
         </Pressable>

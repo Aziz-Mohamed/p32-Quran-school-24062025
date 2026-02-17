@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import i18n from '@/i18n/config';
 import type {
   DateRange,
   SchoolKPISummary,
@@ -13,15 +14,15 @@ import type {
 
 const SCORE_RANGES: Array<{
   range: ScoreRange;
-  label: string;
+  labelKey: string;
   min: number;
   max: number;
   inclusive: boolean;
 }> = [
-  { range: '1-2', label: 'Needs Improvement', min: 1, max: 2, inclusive: false },
-  { range: '2-3', label: 'Developing', min: 2, max: 3, inclusive: false },
-  { range: '3-4', label: 'Proficient', min: 3, max: 4, inclusive: false },
-  { range: '4-5', label: 'Excellent', min: 4, max: 5, inclusive: true },
+  { range: '1-2', labelKey: 'reports.scoreRange.needsImprovement', min: 1, max: 2, inclusive: false },
+  { range: '2-3', labelKey: 'reports.scoreRange.developing', min: 2, max: 3, inclusive: false },
+  { range: '3-4', labelKey: 'reports.scoreRange.proficient', min: 3, max: 4, inclusive: false },
+  { range: '4-5', labelKey: 'reports.scoreRange.excellent', min: 4, max: 5, inclusive: true },
 ];
 
 class AdminReportsService {
@@ -180,7 +181,7 @@ class AdminReportsService {
     // Bucket into ranges: [1,2) [2,3) [3,4) [4,5]
     const buckets: ScoreDistributionBucket[] = SCORE_RANGES.map((r) => ({
       range: r.range,
-      label: r.label,
+      label: i18n.t(r.labelKey),
       count: 0,
     }));
 

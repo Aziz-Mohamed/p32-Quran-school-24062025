@@ -15,6 +15,7 @@ import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { shadows } from '@/theme/shadows';
 import { normalize } from '@/theme/normalize';
+import i18n from '@/i18n/config';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -31,10 +32,11 @@ interface SearchBarProps {
 export function SearchBar({
   value,
   onChangeText,
-  placeholder = 'Search...',
+  placeholder,
   onClear,
   style,
 }: SearchBarProps) {
+  const resolvedPlaceholder = placeholder ?? `${i18n.t('common.search')}...`;
   const inputRef = useRef<TextInput>(null);
   const hasText = value.length > 0;
 
@@ -59,13 +61,13 @@ export function SearchBar({
         style={styles.input}
         value={value}
         onChangeText={onChangeText}
-        placeholder={placeholder}
+        placeholder={resolvedPlaceholder}
         placeholderTextColor={lightTheme.textTertiary}
         returnKeyType="search"
         autoCorrect={false}
         autoCapitalize="none"
         accessibilityRole="search"
-        accessibilityLabel={placeholder}
+        accessibilityLabel={resolvedPlaceholder}
       />
 
       {hasText && (
@@ -74,7 +76,7 @@ export function SearchBar({
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           style={styles.clearButton}
           accessibilityRole="button"
-          accessibilityLabel="Clear search"
+          accessibilityLabel={i18n.t('common.clearSearch')}
         >
           <Ionicons
             name="close-circle"

@@ -11,6 +11,7 @@ import type {
   Profile,
 } from '../types/auth.types';
 import { buildSyntheticEmail } from '../types/auth.types';
+import i18n from '@/i18n/config';
 
 const FUNCTIONS_URL = process.env.EXPO_PUBLIC_SUPABASE_URL
   ? `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1`
@@ -29,7 +30,7 @@ class AuthService {
       if (__DEV__) {
         console.log('[AuthService] refreshSession failed:', error?.message);
       }
-      throw new Error('Session expired. Please log in again.');
+      throw new Error(i18n.t('auth.sessionExpired'));
     }
 
     if (__DEV__) {
@@ -74,7 +75,7 @@ class AuthService {
     } catch (error) {
       return {
         error: {
-          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+          message: error instanceof Error ? error.message : i18n.t('common.unexpectedError'),
         },
       };
     }
@@ -96,7 +97,7 @@ class AuthService {
       if (!response.ok) {
         return {
           error: {
-            message: result.error || 'Failed to create school',
+            message: result.error || i18n.t('auth.createSchoolFailed'),
             code: result.code,
           },
         };
@@ -114,7 +115,7 @@ class AuthService {
     } catch (error) {
       return {
         error: {
-          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+          message: error instanceof Error ? error.message : i18n.t('common.unexpectedError'),
         },
       };
     }
@@ -153,7 +154,7 @@ class AuthService {
       if (!response.ok) {
         return {
           error: {
-            message: result.error || result.message || 'Failed to create member',
+            message: result.error || result.message || i18n.t('admin.createMemberFailed'),
             code: result.code,
           },
         };
@@ -163,7 +164,7 @@ class AuthService {
     } catch (error) {
       return {
         error: {
-          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+          message: error instanceof Error ? error.message : i18n.t('common.unexpectedError'),
         },
       };
     }
@@ -193,7 +194,7 @@ class AuthService {
         }
         return {
           error: {
-            message: result.error || result.message || 'Failed to reset password',
+            message: result.error || result.message || i18n.t('admin.resetPassword.failed'),
             code: result.code,
           },
         };
@@ -203,7 +204,7 @@ class AuthService {
     } catch (error) {
       return {
         error: {
-          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+          message: error instanceof Error ? error.message : i18n.t('common.unexpectedError'),
         },
       };
     }
@@ -229,7 +230,7 @@ class AuthService {
     } catch (error) {
       return {
         error: {
-          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+          message: error instanceof Error ? error.message : i18n.t('common.unexpectedError'),
         },
       };
     }
@@ -265,7 +266,7 @@ class AuthService {
     } catch (error) {
       return {
         error: {
-          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+          message: error instanceof Error ? error.message : i18n.t('common.unexpectedError'),
         },
       };
     }
@@ -297,7 +298,7 @@ class AuthService {
     } catch (error) {
       return {
         error: {
-          message: error instanceof Error ? error.message : 'An unexpected error occurred',
+          message: error instanceof Error ? error.message : i18n.t('common.unexpectedError'),
         },
       };
     }

@@ -91,7 +91,7 @@ export default function EditParentScreen() {
     } catch (err) {
       Alert.alert(
         t('common.error'),
-        err instanceof Error ? err.message : 'An unexpected error occurred',
+        err instanceof Error ? err.message : t('common.unexpectedError'),
       );
     }
   };
@@ -121,7 +121,7 @@ export default function EditParentScreen() {
           label={t('common.phone')}
           value={phone}
           onChangeText={setPhone}
-          placeholder="Optional"
+          placeholder={t('common.optional')}
           keyboardType="phone-pad"
         />
 

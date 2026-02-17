@@ -53,7 +53,7 @@ export default function CreateTeacherScreen() {
     } catch (error) {
       Alert.alert(
         t('common.error'),
-        error instanceof Error ? error.message : 'An unexpected error occurred',
+        error instanceof Error ? error.message : t('common.unexpectedError'),
       );
     }
   };
