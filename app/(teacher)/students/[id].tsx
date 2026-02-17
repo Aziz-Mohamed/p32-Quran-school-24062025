@@ -14,6 +14,8 @@ import { useStudentById } from '@/features/students/hooks/useStudents';
 import { useSessions } from '@/features/sessions/hooks/useSessions';
 import { useStudentStickers } from '@/features/gamification/hooks/useStickers';
 import { useAttendanceRate } from '@/features/attendance/hooks/useAttendance';
+import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
+import { MemorizationProgressBar } from '@/features/memorization';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
@@ -37,6 +39,7 @@ export default function TeacherStudentDetailScreen() {
   });
   const { data: stickers = [] } = useStudentStickers(id);
   const { data: attendanceData } = useAttendanceRate(id);
+  const { data: memStats } = useMemorizationStats(id);
 
   if (studentLoading) return <LoadingState />;
   if (studentError) return <ErrorState description={(studentError as Error).message} onRetry={refetch} />;
@@ -100,6 +103,33 @@ export default function TeacherStudentDetailScreen() {
             <Text style={styles.statLabel}>{t('navigation.attendance')}</Text>
           </Card>
         </View>
+
+        {/* Memorization Progress */}
+        {memStats && (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Memorization</Text>
+              <Button
+                title="View Details"
+                onPress={() => router.push(`/(teacher)/students/${id}/memorization`)}
+                variant="ghost"
+                size="sm"
+              />
+            </View>
+            <Card variant="default" style={styles.memorizationCard}>
+              <MemorizationProgressBar stats={memStats} compact />
+              <View style={styles.memorizationActions}>
+                <Button
+                  title="Assign Hifz"
+                  onPress={() => router.push(`/(teacher)/assignments/create?studentId=${id}`)}
+                  variant="secondary"
+                  size="sm"
+                  icon={<Ionicons name="add-circle-outline" size={16} color={theme.primary} />}
+                />
+              </View>
+            </Card>
+          </>
+        )}
 
         {/* Recent Sessions */}
         <View style={styles.sectionHeader}>
@@ -329,6 +359,14 @@ const styles = StyleSheet.create({
     fontSize: normalize(12),
     fontFamily: typography.fontFamily.bold,
     color: colors.primary[600],
+  },
+  memorizationCard: {
+    padding: spacing.md,
+    gap: spacing.md,
+  },
+  memorizationActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
   },
   emptyCard: {
     padding: spacing.xl,
