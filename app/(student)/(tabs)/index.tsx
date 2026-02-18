@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge, ProgressBar } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/feedback';
+import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
@@ -26,6 +27,8 @@ export default function StudentDashboard() {
   const theme = useRoleTheme();
 
   const { data, isLoading, error, refetch } = useStudentDashboard(profile?.id);
+  const todayStr = new Date().toISOString().split('T')[0];
+  const { data: revisionSchedule = [] } = useRevisionSchedule(profile?.id, todayStr);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
@@ -95,6 +98,48 @@ export default function StudentDashboard() {
             <Text style={styles.miniStatLabel}>{t('student.dashboard.stickers')}</Text>
           </Card>
         </View>
+
+        {/* Today's Revision Plan */}
+        {revisionSchedule.length > 0 && (() => {
+          const newCount = revisionSchedule.filter((i: any) => i.review_type === 'new_hifz').length;
+          const recentCount = revisionSchedule.filter((i: any) => i.review_type === 'recent_review').length;
+          const oldCount = revisionSchedule.filter((i: any) => i.review_type === 'old_review').length;
+          return (
+            <Card
+              variant="default"
+              onPress={() => router.push('/(student)/(tabs)/memorization')}
+              style={styles.revisionPlanCard}
+            >
+              <View style={styles.revisionPlanHeader}>
+                <View style={[styles.revisionPlanIcon, { backgroundColor: colors.accent.indigo[50] }]}>
+                  <Ionicons name="book" size={20} color={colors.accent.indigo[500]} />
+                </View>
+                <Text style={styles.revisionPlanTitle}>Today's Revision Plan</Text>
+                <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
+              </View>
+              <View style={styles.revisionPlanStats}>
+                {newCount > 0 && (
+                  <View style={styles.revisionPlanStat}>
+                    <Text style={[styles.revisionPlanCount, { color: colors.accent.indigo[600] }]}>{newCount}</Text>
+                    <Text style={styles.revisionPlanLabel}>New</Text>
+                  </View>
+                )}
+                {recentCount > 0 && (
+                  <View style={styles.revisionPlanStat}>
+                    <Text style={[styles.revisionPlanCount, { color: colors.secondary[600] }]}>{recentCount}</Text>
+                    <Text style={styles.revisionPlanLabel}>Recent</Text>
+                  </View>
+                )}
+                {oldCount > 0 && (
+                  <View style={styles.revisionPlanStat}>
+                    <Text style={[styles.revisionPlanCount, { color: colors.primary[600] }]}>{oldCount}</Text>
+                    <Text style={styles.revisionPlanLabel}>Older</Text>
+                  </View>
+                )}
+              </View>
+            </Card>
+          );
+        })()}
 
         {/* Quick Actions */}
         <Text style={styles.sectionTitle}>{t('dashboard.quickActions')}</Text>
@@ -327,5 +372,43 @@ const styles = StyleSheet.create({
     ...typography.textStyles.label,
     color: colors.neutral[800],
     textAlign: 'center',
+  },
+  revisionPlanCard: {
+    padding: spacing.md,
+  },
+  revisionPlanHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  revisionPlanIcon: {
+    width: normalize(36),
+    height: normalize(36),
+    borderRadius: normalize(10),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  revisionPlanTitle: {
+    flex: 1,
+    ...typography.textStyles.bodyMedium,
+    color: lightTheme.text,
+  },
+  revisionPlanStats: {
+    flexDirection: 'row',
+    gap: spacing.lg,
+    justifyContent: 'center',
+  },
+  revisionPlanStat: {
+    alignItems: 'center',
+    gap: normalize(2),
+  },
+  revisionPlanCount: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(20),
+  },
+  revisionPlanLabel: {
+    ...typography.textStyles.label,
+    color: colors.neutral[500],
   },
 });

@@ -1,6 +1,7 @@
 import type {
   AttendanceStatus,
   LessonType,
+  RecitationType,
   UserRole,
 } from '@/types/common.types';
 
@@ -31,6 +32,14 @@ export const LESSON_TYPES: readonly LessonType[] = [
   'revision',
   'tajweed',
   'recitation',
+] as const;
+
+// ─── Recitation Types ────────────────────────────────────────────────────────
+
+export const RECITATION_TYPES: readonly RecitationType[] = [
+  'new_hifz',
+  'recent_review',
+  'old_review',
 ] as const;
 
 // ─── Scoring ────────────────────────────────────────────────────────────────

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useChildDetail } from '@/features/children/hooks/useChildren';
 import { useAttendanceRate } from '@/features/attendance/hooks/useAttendance';
+import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
@@ -27,6 +28,7 @@ export default function ChildDetailScreen() {
 
   const { data, isLoading, error, refetch } = useChildDetail(id);
   const { data: attendanceRate } = useAttendanceRate(id);
+  const { data: memStats } = useMemorizationStats(id);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={(error as Error).message} onRetry={refetch} />;
@@ -102,6 +104,16 @@ export default function ChildDetailScreen() {
             icon={<Ionicons name="bar-chart" size={18} color={colors.accent.indigo[500]} />}
             style={[styles.actionButton, { backgroundColor: colors.accent.indigo[50] }]}
           />
+          {memStats && (
+            <Button
+              title="Memorization"
+              onPress={() => router.push(`/(parent)/memorization/${id}`)}
+              variant="ghost"
+              size="md"
+              icon={<Ionicons name="book" size={18} color={colors.accent.violet[500]} />}
+              style={[styles.actionButton, { backgroundColor: colors.accent.violet[50] }]}
+            />
+          )}
         </View>
 
         {/* Recent Sessions */}

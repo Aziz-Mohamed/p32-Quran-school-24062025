@@ -399,6 +399,167 @@ export type Database = {
         }
         Relationships: []
       }
+      memorization_assignments: {
+        Row: {
+          assigned_by: string
+          assignment_type: string
+          completed_at: string | null
+          created_at: string
+          due_date: string
+          from_ayah: number
+          id: string
+          notes: string | null
+          recitation_id: string | null
+          school_id: string
+          status: string
+          student_id: string
+          surah_number: number
+          to_ayah: number
+          updated_at: string
+        }
+        Insert: {
+          assigned_by: string
+          assignment_type: string
+          completed_at?: string | null
+          created_at?: string
+          due_date: string
+          from_ayah: number
+          id?: string
+          notes?: string | null
+          recitation_id?: string | null
+          school_id: string
+          status?: string
+          student_id: string
+          surah_number: number
+          to_ayah: number
+          updated_at?: string
+        }
+        Update: {
+          assigned_by?: string
+          assignment_type?: string
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string
+          from_ayah?: number
+          id?: string
+          notes?: string | null
+          recitation_id?: string | null
+          school_id?: string
+          status?: string
+          student_id?: string
+          surah_number?: number
+          to_ayah?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorization_assignments_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memorization_assignments_recitation_id_fkey"
+            columns: ["recitation_id"]
+            isOneToOne: false
+            referencedRelation: "recitations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memorization_assignments_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memorization_assignments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memorization_progress: {
+        Row: {
+          avg_accuracy: number | null
+          avg_fluency: number | null
+          avg_tajweed: number | null
+          created_at: string
+          ease_factor: number
+          first_memorized_at: string | null
+          from_ayah: number
+          id: string
+          interval_days: number
+          last_reviewed_at: string | null
+          next_review_date: string | null
+          review_count: number
+          school_id: string
+          status: string
+          student_id: string
+          surah_number: number
+          to_ayah: number
+          updated_at: string
+        }
+        Insert: {
+          avg_accuracy?: number | null
+          avg_fluency?: number | null
+          avg_tajweed?: number | null
+          created_at?: string
+          ease_factor?: number
+          first_memorized_at?: string | null
+          from_ayah: number
+          id?: string
+          interval_days?: number
+          last_reviewed_at?: string | null
+          next_review_date?: string | null
+          review_count?: number
+          school_id: string
+          status?: string
+          student_id: string
+          surah_number: number
+          to_ayah: number
+          updated_at?: string
+        }
+        Update: {
+          avg_accuracy?: number | null
+          avg_fluency?: number | null
+          avg_tajweed?: number | null
+          created_at?: string
+          ease_factor?: number
+          first_memorized_at?: string | null
+          from_ayah?: number
+          id?: string
+          interval_days?: number
+          last_reviewed_at?: string | null
+          next_review_date?: string | null
+          review_count?: number
+          school_id?: string
+          status?: string
+          student_id?: string
+          surah_number?: number
+          to_ayah?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorization_progress_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memorization_progress_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           achievement_unlocked: boolean
@@ -540,6 +701,92 @@ export type Database = {
           {
             foreignKeyName: "push_tokens_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recitations: {
+        Row: {
+          accuracy_score: number | null
+          created_at: string
+          fluency_score: number | null
+          from_ayah: number
+          id: string
+          mistake_notes: string | null
+          needs_repeat: boolean
+          recitation_date: string
+          recitation_type: string
+          school_id: string
+          session_id: string
+          student_id: string
+          surah_number: number
+          tajweed_score: number | null
+          teacher_id: string
+          to_ayah: number
+        }
+        Insert: {
+          accuracy_score?: number | null
+          created_at?: string
+          fluency_score?: number | null
+          from_ayah: number
+          id?: string
+          mistake_notes?: string | null
+          needs_repeat?: boolean
+          recitation_date?: string
+          recitation_type: string
+          school_id: string
+          session_id: string
+          student_id: string
+          surah_number: number
+          tajweed_score?: number | null
+          teacher_id: string
+          to_ayah: number
+        }
+        Update: {
+          accuracy_score?: number | null
+          created_at?: string
+          fluency_score?: number | null
+          from_ayah?: number
+          id?: string
+          mistake_notes?: string | null
+          needs_repeat?: boolean
+          recitation_date?: string
+          recitation_type?: string
+          school_id?: string
+          session_id?: string
+          student_id?: string
+          surah_number?: number
+          tajweed_score?: number | null
+          teacher_id?: string
+          to_ayah?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recitations_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recitations_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recitations_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recitations_teacher_id_fkey"
+            columns: ["teacher_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -952,6 +1199,7 @@ export type Database = {
       }
       students: {
         Row: {
+          can_self_assign: boolean
           class_id: string | null
           current_level: number | null
           current_streak: number
@@ -966,6 +1214,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          can_self_assign?: boolean
           class_id?: string | null
           current_level?: number | null
           current_streak?: number
@@ -980,6 +1229,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          can_self_assign?: boolean
           class_id?: string | null
           current_level?: number | null
           current_streak?: number
@@ -1266,6 +1516,38 @@ export type Database = {
           missed_count: number
           teacher_id: string
           total_scheduled: number
+        }[]
+      }
+      get_student_memorization_stats: {
+        Args: { p_student_id: string }
+        Returns: {
+          avg_overall_accuracy: number
+          items_needing_review: number
+          quran_percentage: number
+          surahs_completed: number
+          surahs_started: number
+          total_ayahs_in_progress: number
+          total_ayahs_memorized: number
+          total_recitations: number
+        }[]
+      }
+      get_student_revision_schedule: {
+        Args: { p_date?: string; p_student_id: string }
+        Returns: {
+          avg_accuracy: number
+          avg_fluency: number
+          avg_tajweed: number
+          ease_factor: number
+          first_memorized_at: string
+          from_ayah: number
+          last_reviewed_at: string
+          next_review_date: string
+          progress_id: string
+          review_count: number
+          review_type: string
+          status: string
+          surah_number: number
+          to_ayah: number
         }[]
       }
       get_students_needing_attention: {
