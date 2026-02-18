@@ -28,7 +28,8 @@
     "restartRequired": "Restart Required",
     "restartMessage": "Please restart the app to apply the language change.",
     "level": "Level",
-    "achievement": "Achievement"
+    "achievement": "Achievement",
+    "phone": "Phone"
   },
   "iconCategories": {
     "worship": "Worship",
@@ -176,12 +177,21 @@
       "points": "points",
       "tapToDismiss": "Tap to dismiss",
       "tier": {
-        "common": "Common",
-        "rare": "Rare",
-        "epic": "Epic",
-        "legendary": "Legendary",
+        "bronze": "Bronze Star",
+        "silver": "Silver Star",
+        "gold": "Gold Star",
+        "diamond": "Diamond Star",
         "seasonal": "Seasonal",
         "trophy": "Trophy"
+      },
+      "detail": {
+        "timesEarned": "Times Earned",
+        "totalPoints": "Total Points",
+        "firstEarned": "First Earned",
+        "lastEarned": "Last Earned",
+        "awardedBy": "Awarded By",
+        "awardHistory": "Award History",
+        "reason": "Note"
       }
     },
     "trophies": {
@@ -335,6 +345,7 @@
     },
     "addStudent": "Add Student",
     "addTeacher": "Add Teacher",
+    "addParent": "Add Parent",
     "addClass": "Add Class",
     "bulkAttendance": "Bulk Attendance",
     "schoolHealth": "School Health",
@@ -366,7 +377,10 @@
       "deactivateTitle": "Deactivate Student?",
       "deactivateMessage": "This student will no longer be able to log in.",
       "activateTitle": "Activate Student?",
-      "activateMessage": "This student will be able to log in again."
+      "activateMessage": "This student will be able to log in again.",
+      "parent": "Parent",
+      "parentPlaceholder": "Select a parent (optional)",
+      "noParent": "No Parent Linked"
     },
     "teachers": {
       "title": "Teachers",
@@ -393,6 +407,31 @@
       "deactivateMessage": "This teacher will no longer be able to log in.",
       "activateTitle": "Activate Teacher?",
       "activateMessage": "This teacher will be able to log in again."
+    },
+    "parents": {
+      "title": "Parents",
+      "subtitle": "Manage parents in your school",
+      "searchPlaceholder": "Search parents...",
+      "emptyTitle": "No Parents Yet",
+      "emptyDescription": "Add your first parent to get started",
+      "createTitle": "Create Parent",
+      "editTitle": "Edit Parent",
+      "fullName": "Full Name",
+      "fullNamePlaceholder": "Enter parent's full name",
+      "username": "Username",
+      "usernamePlaceholder": "Enter username",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password (6+ characters)",
+      "createButton": "Create Parent",
+      "requiredFields": "Full name, username, and password are required",
+      "notFound": "Parent not found",
+      "children": "children",
+      "linkedChildren": "Linked Children",
+      "noChildren": "No Children Linked",
+      "selectChildren": "Link Children",
+      "selectChildrenPlaceholder": "Select at least one student...",
+      "selectChildrenRequired": "At least one child must be linked",
+      "manageChildren": "Manage Linked Children"
     },
     "classes": {
       "title": "Classes",

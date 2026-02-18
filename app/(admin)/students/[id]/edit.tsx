@@ -10,6 +10,7 @@ import { Select } from '@/components/forms/Select';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useStudentById, useUpdateStudent } from '@/features/students/hooks/useStudents';
 import { useClasses } from '@/features/classes/hooks/useClasses';
+import { useParents } from '@/features/parents/hooks/useParents';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -23,15 +24,18 @@ export default function EditStudentScreen() {
 
   const { data: student, isLoading, error, refetch } = useStudentById(id);
   const { data: classes = [] } = useClasses({ isActive: true });
+  const { data: parents = [] } = useParents();
   const updateStudent = useUpdateStudent();
 
   const [classId, setClassId] = useState<string | null>(null);
+  const [parentId, setParentId] = useState<string | null>(null);
   const [isActive, setIsActive] = useState(true);
   const [dateOfBirth, setDateOfBirth] = useState('');
 
   useEffect(() => {
     if (student) {
       setClassId(student.class_id);
+      setParentId(student.parent_id);
       setIsActive(student.is_active);
       setDateOfBirth(student.date_of_birth ?? '');
     }
@@ -58,6 +62,7 @@ export default function EditStudentScreen() {
       id: student.id,
       input: {
         classId,
+        parentId,
         isActive,
         dateOfBirth: dateOfBirth || undefined,
       },
@@ -74,6 +79,11 @@ export default function EditStudentScreen() {
   const classOptions = classes.map((c: any) => ({
     label: c.name,
     value: c.id,
+  }));
+
+  const parentOptions = parents.map((p: any) => ({
+    label: p.full_name,
+    value: p.id,
   }));
 
   return (
@@ -97,6 +107,14 @@ export default function EditStudentScreen() {
           options={classOptions}
           value={classId}
           onChange={setClassId}
+        />
+
+        <Select
+          label={t('admin.students.parent')}
+          placeholder={t('admin.students.parentPlaceholder')}
+          options={parentOptions}
+          value={parentId}
+          onChange={setParentId}
         />
 
         <TextField

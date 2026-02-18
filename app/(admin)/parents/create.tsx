@@ -7,31 +7,33 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
-import { Select } from '@/components/forms/Select';
-import { DatePicker } from '@/components/forms/DatePicker';
-import { useCreateStudent } from '@/features/students/hooks/useStudents';
-import { useClasses } from '@/features/classes/hooks/useClasses';
-import { useParents } from '@/features/parents/hooks/useParents';
+import { MultiSelect } from '@/components/forms/MultiSelect';
+import { useCreateParent } from '@/features/parents/hooks/useParents';
+import { useAvailableStudentsForParent } from '@/features/students/hooks/useStudents';
 import { generateUsername } from '@/lib/username';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
-// ─── Create Student Screen ───────────────────────────────────────────────────
+// ─── Create Parent Screen ───────────────────────────────────────────────────
 
-export default function CreateStudentScreen() {
+export default function CreateParentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [classId, setClassId] = useState<string | null>(null);
-  const [parentId, setParentId] = useState<string | null>(null);
-  const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
+  const [childrenError, setChildrenError] = useState('');
 
-  const createStudent = useCreateStudent();
-  const { data: classes = [] } = useClasses({ isActive: true });
-  const { data: parents = [] } = useParents();
+  const createParent = useCreateParent();
+  const { data: availableStudents = [] } = useAvailableStudentsForParent();
+
+  const studentOptions = availableStudents.map((s: any) => ({
+    label: s.profiles?.full_name ?? '—',
+    value: s.id,
+  }));
 
   const handleGenerateUsername = () => {
     if (fullName.trim()) {
@@ -39,20 +41,28 @@ export default function CreateStudentScreen() {
     }
   };
 
+  const handleStudentChange = (values: string[]) => {
+    setSelectedStudentIds(values);
+    if (values.length > 0) setChildrenError('');
+  };
+
   const handleCreate = async () => {
     if (!fullName.trim() || !username.trim() || !password.trim()) {
-      Alert.alert(t('common.error'), t('admin.students.requiredFields'));
+      Alert.alert(t('common.error'), t('admin.parents.requiredFields'));
+      return;
+    }
+
+    if (selectedStudentIds.length === 0) {
+      setChildrenError(t('admin.parents.selectChildrenRequired'));
       return;
     }
 
     try {
-      const result = await createStudent.mutateAsync({
+      const result = await createParent.mutateAsync({
         fullName: fullName.trim(),
         username: username.trim(),
         password,
-        classId: classId ?? undefined,
-        parentId: parentId ?? undefined,
-        dateOfBirth: dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : undefined,
+        studentIds: selectedStudentIds,
       });
 
       if (result.error) {
@@ -69,16 +79,6 @@ export default function CreateStudentScreen() {
     }
   };
 
-  const classOptions = classes.map((c: any) => ({
-    label: c.name,
-    value: c.id,
-  }));
-
-  const parentOptions = parents.map((p: any) => ({
-    label: p.full_name,
-    value: p.id,
-  }));
-
   return (
     <Screen scroll>
       <View style={styles.container}>
@@ -89,22 +89,22 @@ export default function CreateStudentScreen() {
           size="sm"
         />
 
-        <Text style={styles.title}>{t('admin.students.createTitle')}</Text>
+        <Text style={styles.title}>{t('admin.parents.createTitle')}</Text>
 
         <TextField
-          label={t('admin.students.fullName')}
+          label={t('admin.parents.fullName')}
           value={fullName}
           onChangeText={setFullName}
-          placeholder={t('admin.students.fullNamePlaceholder')}
+          placeholder={t('admin.parents.fullNamePlaceholder')}
         />
 
         <View style={styles.usernameRow}>
           <View style={styles.usernameField}>
             <TextField
-              label={t('admin.students.username')}
+              label={t('admin.parents.username')}
               value={username}
               onChangeText={setUsername}
-              placeholder={t('admin.students.usernamePlaceholder')}
+              placeholder={t('admin.parents.usernamePlaceholder')}
               autoCapitalize="none"
             />
           </View>
@@ -119,42 +119,28 @@ export default function CreateStudentScreen() {
         </View>
 
         <TextField
-          label={t('admin.students.password')}
+          label={t('admin.parents.password')}
           value={password}
           onChangeText={setPassword}
-          placeholder={t('admin.students.passwordPlaceholder')}
+          placeholder={t('admin.parents.passwordPlaceholder')}
           secureTextEntry
         />
 
-        <Select
-          label={t('admin.students.class')}
-          placeholder={t('admin.students.classPlaceholder')}
-          options={classOptions}
-          value={classId}
-          onChange={setClassId}
-        />
-
-        <Select
-          label={t('admin.students.parent')}
-          placeholder={t('admin.students.parentPlaceholder')}
-          options={parentOptions}
-          value={parentId}
-          onChange={setParentId}
-        />
-
-        <DatePicker
-          label={t('admin.students.dateOfBirth')}
-          value={dateOfBirth}
-          onChange={setDateOfBirth}
-          maximumDate={new Date()}
+        <MultiSelect
+          label={t('admin.parents.selectChildren')}
+          placeholder={t('admin.parents.selectChildrenPlaceholder')}
+          options={studentOptions}
+          value={selectedStudentIds}
+          onChange={handleStudentChange}
+          error={childrenError}
         />
 
         <Button
-          title={t('admin.students.createButton')}
+          title={t('admin.parents.createButton')}
           onPress={handleCreate}
           variant="primary"
           size="lg"
-          loading={createStudent.isPending}
+          loading={createParent.isPending}
           style={styles.submitButton}
         />
       </View>

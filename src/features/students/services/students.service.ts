@@ -56,6 +56,26 @@ class StudentsService {
   }
 
   /**
+   * Fetch students available for parent linking.
+   * Create flow (no parentId): returns students with no parent assigned.
+   * Edit flow (with parentId): returns unlinked students + students already linked to this parent.
+   */
+  async getAvailableStudentsForParent(parentId?: string) {
+    let query = supabase
+      .from('students')
+      .select('id, parent_id, profiles!students_id_fkey!inner(full_name)')
+      .eq('is_active', true);
+
+    if (parentId) {
+      query = query.or(`parent_id.is.null,parent_id.eq.${parentId}`);
+    } else {
+      query = query.is('parent_id', null);
+    }
+
+    return query.order('full_name', { referencedTable: 'profiles', ascending: true });
+  }
+
+  /**
    * SM-003: Update an existing student record.
    * Maps camelCase input fields to snake_case database columns.
    * Only includes fields that are explicitly provided (not undefined).
