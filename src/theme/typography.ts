@@ -65,6 +65,14 @@ export const letterSpacing = {
 // Convenience objects that can be spread directly into a RN <Text> style.
 
 export const textStyles = {
+  /** Large playful display text (hero sections, big stats) */
+  display: {
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize['3xl'],
+    lineHeight: lineHeight['3xl'],
+    letterSpacing: letterSpacing.tight,
+  },
+
   /** Page / section heading */
   heading: {
     fontFamily: fontFamily.bold,

@@ -13,6 +13,7 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { shadows } from '@/theme/shadows';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -48,7 +49,7 @@ export function SearchBar({
       <Ionicons
         name="search-outline"
         size={20}
-        color={lightTheme.textTertiary}
+        color={lightTheme.textSecondary}
         style={styles.searchIcon}
       />
 
@@ -77,7 +78,7 @@ export function SearchBar({
           <Ionicons
             name="close-circle"
             size={20}
-            color={lightTheme.textTertiary}
+            color={colors.neutral[400]}
           />
         </Pressable>
       )}
@@ -91,17 +92,20 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: lightTheme.surface,
+    backgroundColor: colors.white,
     borderRadius: radius.full,
-    minHeight: 44,
-    paddingHorizontal: spacing.md,
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    ...shadows.sm,
+    borderWidth: 1,
+    borderColor: colors.neutral[100],
   },
   searchIcon: {
     marginEnd: spacing.sm,
   },
   input: {
     flex: 1,
-    fontFamily: typography.fontFamily.regular,
+    fontFamily: typography.fontFamily.medium,
     fontSize: typography.fontSize.base,
     lineHeight: typography.lineHeight.base,
     color: lightTheme.text,
@@ -109,8 +113,8 @@ const styles = StyleSheet.create({
   } as TextStyle,
   clearButton: {
     marginStart: spacing.sm,
-    width: 44,
-    height: 44,
+    width: 32,
+    height: 32,
     alignItems: 'center',
     justifyContent: 'center',
   },

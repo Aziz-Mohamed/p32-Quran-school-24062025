@@ -1,16 +1,19 @@
 /**
  * Design System — Border Radius Tokens
+ * Updated for a softer, more playful aesthetic.
  */
 
 export const radius = {
-  /** 6 px — subtle rounding (inputs, small chips) */
-  sm: 6,
-  /** 10 px — cards, buttons */
-  md: 10,
-  /** 14 px — modals, larger cards */
-  lg: 14,
-  /** 20 px — pills, floating actions */
-  xl: 20,
+  /** 8 px — subtle rounding (small chips) */
+  xs: 8,
+  /** 12 px — inputs, buttons */
+  sm: 12,
+  /** 16 px — cards, standard containers */
+  md: 16,
+  /** 24 px — large cards, section backgrounds */
+  lg: 24,
+  /** 32 px — modals, prominent floating elements */
+  xl: 32,
   /** 9999 px — perfect circle / stadium shape */
   full: 9999,
 } as const;

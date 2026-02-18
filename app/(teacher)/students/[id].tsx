@@ -7,13 +7,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui';
+import { Badge, Avatar } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentById } from '@/features/students/hooks/useStudents';
 import { useSessions } from '@/features/sessions/hooks/useSessions';
 import { useStudentStickers } from '@/features/gamification/hooks/useStickers';
 import { useAttendanceRate } from '@/features/attendance/hooks/useAttendance';
+import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -25,6 +26,7 @@ export default function TeacherStudentDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile } = useAuth();
+  const theme = useRoleTheme();
 
   const { data: student, isLoading: studentLoading, error: studentError, refetch } = useStudentById(id);
   const { data: sessions = [] } = useSessions({
@@ -47,78 +49,82 @@ export default function TeacherStudentDetailScreen() {
   return (
     <Screen scroll>
       <View style={styles.container}>
-        <Button
-          title={t('common.back')}
-          onPress={() => router.back()}
-          variant="ghost"
-          size="sm"
-        />
-
-        {/* Student Header */}
-        <View style={styles.headerSection}>
-          <Text style={styles.studentName}>{studentProfile?.full_name ?? '—'}</Text>
-          <View style={styles.metaRow}>
-            {studentClass?.name && (
-              <Badge label={studentClass.name} variant="info" size="sm" />
-            )}
-            {studentLevel?.title && (
-              <Badge label={studentLevel.title} variant="default" size="sm" />
-            )}
-          </View>
+        <View style={styles.header}>
+          <Button
+            title={t('common.back')}
+            onPress={() => router.back()}
+            variant="ghost"
+            size="sm"
+            icon={<Ionicons name="arrow-back" size={20} color={theme.primary} />}
+          />
         </View>
 
+        {/* Student Profile Card */}
+        <Card variant="primary-glow" style={styles.profileCard}>
+          <Avatar 
+            name={studentProfile?.full_name} 
+            size="xl" 
+            ring 
+            variant="indigo" // Student is always indigo themed
+          />
+          <View style={styles.profileInfo}>
+            <Text style={styles.studentName}>{studentProfile?.full_name ?? '—'}</Text>
+            <View style={styles.metaRow}>
+              {studentClass?.name && (
+                <Badge label={studentClass.name} variant="sky" size="sm" />
+              )}
+              {studentLevel?.title && (
+                <Badge label={studentLevel.title} variant="indigo" size="sm" />
+              )}
+            </View>
+          </View>
+        </Card>
+
         {/* Stats Grid */}
-        <View style={styles.statsRow}>
-          <Card variant="outlined" style={styles.statCard}>
-            <Text style={styles.statValue}>{student.total_points ?? 0}</Text>
+        <View style={styles.statsGrid}>
+          <Card variant="default" style={styles.statCard}>
+            <Text style={[styles.statValue, { color: colors.gamification.gold }]}>{student.total_points ?? 0}</Text>
             <Text style={styles.statLabel}>{t('student.points')}</Text>
           </Card>
-          <Card variant="outlined" style={styles.statCard}>
-            <Text style={styles.statValue}>{student.current_streak ?? 0}</Text>
+          <Card variant="default" style={styles.statCard}>
+            <Text style={[styles.statValue, { color: colors.accent.rose[500] }]}>{student.current_streak ?? 0}</Text>
             <Text style={styles.statLabel}>{t('student.streak')}</Text>
           </Card>
-          <Card variant="outlined" style={styles.statCard}>
-            <Text style={styles.statValue}>{stickers.length}</Text>
+          <Card variant="default" style={styles.statCard}>
+            <Text style={[styles.statValue, { color: theme.primary }]}>{stickers.length}</Text>
             <Text style={styles.statLabel}>{t('navigation.stickers')}</Text>
           </Card>
-          <Card variant="outlined" style={styles.statCard}>
-            <Text style={styles.statValue}>{Math.round(attendanceRate)}%</Text>
+          <Card variant="default" style={styles.statCard}>
+            <Text style={[styles.statValue, { color: colors.accent.sky[500] }]}>{Math.round(attendanceRate)}%</Text>
             <Text style={styles.statLabel}>{t('navigation.attendance')}</Text>
           </Card>
         </View>
 
         {/* Recent Sessions */}
-        <Text style={styles.sectionTitle}>{t('teacher.insights.recentSessions')}</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{t('teacher.insights.recentSessions')}</Text>
+          <Badge label={String(sessions.length)} variant="default" />
+        </View>
         {sessions.length === 0 ? (
-          <Card variant="outlined">
+          <Card variant="outlined" style={styles.emptyCard}>
             <Text style={styles.emptyText}>{t('teacher.dashboard.noRecentSessions')}</Text>
           </Card>
         ) : (
           sessions.map((session: any) => (
-            <Card key={session.id} variant="outlined" style={styles.sessionCard}>
+            <Card key={session.id} variant="default" style={styles.sessionCard}>
               <View style={styles.sessionRow}>
-                <View style={styles.sessionInfo}>
-                  <Text style={styles.sessionDate}>{session.session_date}</Text>
+                <View style={styles.sessionHeaderRow}>
+                  <View style={styles.dateGroup}>
+                    <Ionicons name="calendar" size={16} color={theme.primary} />
+                    <Text style={styles.sessionDate}>{session.session_date}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
                 </View>
+                
                 <View style={styles.scoresRow}>
-                  {session.memorization_score != null && (
-                    <View style={styles.scoreItem}>
-                      <Text style={styles.scoreLabel}>{t('teacher.sessions.memorization')}</Text>
-                      <Text style={styles.scoreValue}>{session.memorization_score}/5</Text>
-                    </View>
-                  )}
-                  {session.tajweed_score != null && (
-                    <View style={styles.scoreItem}>
-                      <Text style={styles.scoreLabel}>{t('teacher.sessions.tajweed')}</Text>
-                      <Text style={styles.scoreValue}>{session.tajweed_score}/5</Text>
-                    </View>
-                  )}
-                  {session.recitation_quality != null && (
-                    <View style={styles.scoreItem}>
-                      <Text style={styles.scoreLabel}>{t('teacher.sessions.recitation')}</Text>
-                      <Text style={styles.scoreValue}>{session.recitation_quality}/5</Text>
-                    </View>
-                  )}
+                  <ScoreItem label={t('teacher.sessions.memorization')} value={session.memorization_score} color={theme.primary} />
+                  <ScoreItem label={t('teacher.sessions.tajweed')} value={session.tajweed_score} color={colors.accent.sky[500]} />
+                  <ScoreItem label={t('teacher.sessions.recitation')} value={session.recitation_quality} color={colors.accent.violet[500]} />
                 </View>
               </View>
             </Card>
@@ -126,15 +132,21 @@ export default function TeacherStudentDetailScreen() {
         )}
 
         {/* Sticker History */}
-        <Text style={styles.sectionTitle}>{t('teacher.insights.stickerHistory')}</Text>
+        <View style={[styles.sectionHeader, { marginTop: spacing.md }]}>
+          <Text style={styles.sectionTitle}>{t('teacher.insights.stickerHistory')}</Text>
+          <Badge label={String(stickers.length)} variant="default" />
+        </View>
         {stickers.length === 0 ? (
-          <Card variant="outlined">
+          <Card variant="outlined" style={styles.emptyCard}>
             <Text style={styles.emptyText}>{t('student.stickers.emptyDescription')}</Text>
           </Card>
         ) : (
           stickers.slice(0, 5).map((sticker: any) => (
-            <Card key={sticker.id} variant="outlined" style={styles.stickerCard}>
+            <Card key={sticker.id} variant="glass" style={styles.stickerCard}>
               <View style={styles.stickerRow}>
+                <View style={styles.stickerIconContainer}>
+                  <Ionicons name="star" size={20} color={colors.gamification.gold} />
+                </View>
                 <View style={styles.stickerInfo}>
                   <Text style={styles.stickerName}>
                     {sticker.stickers?.name_en ?? '—'}
@@ -143,9 +155,11 @@ export default function TeacherStudentDetailScreen() {
                     <Text style={styles.stickerReason}>{sticker.reason}</Text>
                   )}
                 </View>
-                <Text style={styles.stickerPoints}>
-                  +{sticker.stickers?.points_value ?? 0}
-                </Text>
+                <View style={styles.pointsBadge}>
+                  <Text style={styles.stickerPoints}>
+                    +{sticker.stickers?.points_value ?? 0}
+                  </Text>
+                </View>
               </View>
             </Card>
           ))
@@ -155,112 +169,173 @@ export default function TeacherStudentDetailScreen() {
   );
 }
 
+function ScoreItem({ label, value, color }: { label: string, value: number | null, color: string }) {
+  if (value == null) return null;
+  return (
+    <View style={styles.scoreItem}>
+      <Text style={styles.scoreLabel}>{label}</Text>
+      <View style={[styles.scoreValueContainer, { backgroundColor: color + '10' }]}>
+        <Text style={[styles.scoreValue, { color }]}>{value}/5</Text>
+      </View>
+    </View>
+  );
+}
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: spacing.lg,
+    gap: spacing.lg,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  profileCard: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
     gap: spacing.md,
   },
-  headerSection: {
+  profileInfo: {
+    alignItems: 'center',
     gap: spacing.sm,
   },
   studentName: {
     ...typography.textStyles.heading,
-    color: lightTheme.text,
+    color: colors.neutral[900],
+    fontSize: 24,
   },
   metaRow: {
     flexDirection: 'row',
     gap: spacing.sm,
   },
-  statsRow: {
+  statsGrid: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    flexWrap: 'wrap',
+    gap: spacing.md,
   },
   statCard: {
-    flex: 1,
+    width: '47%',
     alignItems: 'center',
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.lg,
   },
   statValue: {
-    ...typography.textStyles.subheading,
-    color: colors.primary[500],
-    fontSize: typography.fontSize.xl,
+    ...typography.textStyles.display,
+    fontSize: 24,
   },
   statLabel: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
-    textAlign: 'center',
-    marginTop: 2,
+    ...typography.textStyles.label,
+    color: colors.neutral[500],
+    marginTop: 4,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
   },
   sectionTitle: {
     ...typography.textStyles.subheading,
-    color: lightTheme.text,
-    marginTop: spacing.sm,
+    color: colors.neutral[800],
+    fontSize: 18,
   },
   sessionCard: {
-    marginBottom: spacing.xs,
+    marginBottom: spacing.md,
+    padding: spacing.md,
   },
   sessionRow: {
-    gap: spacing.sm,
+    gap: spacing.md,
   },
-  sessionInfo: {
+  sessionHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  dateGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
   sessionDate: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.medium,
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[800],
   },
   scoresRow: {
     flexDirection: 'row',
-    gap: spacing.md,
+    justifyContent: 'space-between',
+    backgroundColor: colors.neutral[50],
+    padding: spacing.sm,
+    borderRadius: 12,
   },
   scoreItem: {
     alignItems: 'center',
+    flex: 1,
   },
   scoreLabel: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
+    fontSize: 9,
+    fontFamily: typography.fontFamily.semiBold,
+    color: colors.neutral[500],
+    textTransform: 'uppercase',
+    marginBottom: 4,
+  },
+  scoreValueContainer: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   scoreValue: {
-    ...typography.textStyles.body,
-    color: colors.primary[500],
-    fontFamily: typography.fontFamily.semiBold,
+    fontSize: 12,
+    fontFamily: typography.fontFamily.bold,
   },
   stickerCard: {
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
+    padding: spacing.md,
   },
   stickerRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: spacing.md,
+  },
+  stickerIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFFBEB',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   stickerInfo: {
     flex: 1,
   },
   stickerName: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.semiBold,
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[900],
   },
   stickerReason: {
     ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
+    color: colors.neutral[500],
     marginTop: 2,
   },
+  pointsBadge: {
+    backgroundColor: colors.primary[50],
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
   stickerPoints: {
-    ...typography.textStyles.body,
-    color: colors.secondary[500],
-    fontFamily: typography.fontFamily.semiBold,
+    fontSize: 12,
+    fontFamily: typography.fontFamily.bold,
+    color: colors.primary[600],
+  },
+  emptyCard: {
+    padding: spacing.xl,
+    alignItems: 'center',
+    borderStyle: 'dashed',
   },
   emptyText: {
     ...typography.textStyles.body,
-    color: lightTheme.textSecondary,
-    textAlign: 'center',
+    color: colors.neutral[400],
   },
 });

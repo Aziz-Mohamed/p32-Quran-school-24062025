@@ -12,6 +12,7 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { shadows } from '@/theme/shadows';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -116,28 +117,32 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     lineHeight: typography.lineHeight.sm,
     color: lightTheme.text,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
+    marginStart: spacing.xs,
   } as TextStyle,
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: lightTheme.border,
-    borderRadius: radius.md,
-    backgroundColor: lightTheme.background,
-    minHeight: 48,
+    borderWidth: 1.5,
+    borderColor: colors.neutral[200],
+    borderRadius: radius.sm,
+    backgroundColor: colors.white,
+    minHeight: 52,
     paddingHorizontal: spacing.md,
+    ...shadows.sm,
   },
   inputContainerFocused: {
     borderColor: lightTheme.borderFocused,
-    borderWidth: 1.5,
+    backgroundColor: colors.white,
+    ...shadows.md,
   },
   inputContainerError: {
     borderColor: lightTheme.error,
-    borderWidth: 1.5,
+    backgroundColor: colors.accent.rose[50],
   },
   inputContainerDisabled: {
     backgroundColor: colors.neutral[100],
+    borderColor: colors.neutral[200],
     opacity: 0.7,
   },
   iconStart: {
@@ -156,18 +161,18 @@ const styles = StyleSheet.create({
     textAlign: 'auto',
   } as TextStyle,
   inputMultiline: {
-    minHeight: 100,
+    minHeight: 120,
     paddingTop: spacing.md,
   },
   inputDisabled: {
     color: lightTheme.textSecondary,
   } as TextStyle,
   errorText: {
-    fontFamily: typography.fontFamily.regular,
+    fontFamily: typography.fontFamily.medium,
     fontSize: typography.fontSize.xs,
     lineHeight: typography.lineHeight.xs,
     color: lightTheme.error,
     marginTop: spacing.xs,
-    marginStart: spacing.xs,
+    marginStart: spacing.sm,
   } as TextStyle,
 });

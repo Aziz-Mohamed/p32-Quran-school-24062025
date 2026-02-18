@@ -3,10 +3,11 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
 
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Screen } from '@/components/layout';
 import { useAuth } from '@/hooks/useAuth';
+import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { spacing } from '@/theme/spacing';
-import { lightTheme } from '@/theme/colors';
+import { lightTheme, colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { LoadingState, ErrorState } from '@/components/feedback';
 
@@ -30,6 +31,7 @@ import { StudentAttentionList } from '@/features/reports/components/StudentAtten
 export default function TeacherClassProgressScreen() {
   const { t } = useTranslation();
   const { profile, schoolId } = useAuth();
+  const theme = useRoleTheme();
   const queryClient = useQueryClient();
 
   const { timePeriod, setTimePeriod, dateRange } = useTimePeriod();
@@ -65,23 +67,26 @@ export default function TeacherClassProgressScreen() {
   }
   if (!teacherClasses.data || teacherClasses.data.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyText}>
-          {t('reports.noClassesAssigned')}
-        </Text>
-      </View>
+      <Screen scroll={false} hasTabBar>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>
+            {t('reports.noClassesAssigned')}
+          </Text>
+        </View>
+      </Screen>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.content}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
+    <Screen 
+      scroll 
+      hasTabBar 
+      padding={false}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.primary} />
+      }
+    >
+      <View style={styles.content}>
         <Text style={styles.title}>{t('reports.classProgress')}</Text>
 
         {/* Class selector (for teachers with multiple classes) */}
@@ -126,26 +131,32 @@ export default function TeacherClassProgressScreen() {
           />
         </View>
 
-        <ScoreTrendChart
-          data={scoreTrend.data ?? []}
-          isLoading={scoreTrend.isLoading}
-          isError={scoreTrend.isError}
-          onRetry={() => scoreTrend.refetch()}
-        />
+        <View style={styles.chartContainer}>
+          <ScoreTrendChart
+            data={scoreTrend.data ?? []}
+            isLoading={scoreTrend.isLoading}
+            isError={scoreTrend.isError}
+            onRetry={() => scoreTrend.refetch()}
+          />
+        </View>
 
-        <AttendanceTrendChart
-          data={attendanceTrend.data ?? []}
-          isLoading={attendanceTrend.isLoading}
-          isError={attendanceTrend.isError}
-          onRetry={() => attendanceTrend.refetch()}
-        />
+        <View style={styles.chartContainer}>
+          <AttendanceTrendChart
+            data={attendanceTrend.data ?? []}
+            isLoading={attendanceTrend.isLoading}
+            isError={attendanceTrend.isError}
+            onRetry={() => attendanceTrend.refetch()}
+          />
+        </View>
 
-        <LevelDistributionChart
-          data={classAnalytics.data?.levelDistribution ?? []}
-          isLoading={classAnalytics.isLoading}
-          isError={classAnalytics.isError}
-          onRetry={() => classAnalytics.refetch()}
-        />
+        <View style={styles.chartContainer}>
+          <LevelDistributionChart
+            data={classAnalytics.data?.levelDistribution ?? []}
+            isLoading={classAnalytics.isLoading}
+            isError={classAnalytics.isError}
+            onRetry={() => classAnalytics.refetch()}
+          />
+        </View>
 
         <StudentAttentionList
           students={attention.data ?? []}
@@ -153,27 +164,20 @@ export default function TeacherClassProgressScreen() {
           isError={attention.isError}
           onRetry={() => attention.refetch()}
         />
-      </ScrollView>
-    </SafeAreaView>
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: lightTheme.background,
-  },
-  scroll: {
-    flex: 1,
-  },
   content: {
     padding: spacing.lg,
-    paddingBottom: spacing['3xl'],
   },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    marginBottom: spacing.sm,
+    fontSize: 24,
+    marginBottom: spacing.md,
   },
   filterRow: {
     marginBottom: spacing.base,
@@ -181,15 +185,17 @@ const styles = StyleSheet.create({
   kpiRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: spacing.sm,
+    gap: spacing.md,
     marginBottom: spacing.base,
+  },
+  chartContainer: {
+    marginBottom: spacing.lg,
   },
   emptyContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,
-    backgroundColor: lightTheme.background,
   },
   emptyText: {
     ...typography.textStyles.body,

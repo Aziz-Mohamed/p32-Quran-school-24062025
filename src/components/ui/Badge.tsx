@@ -1,13 +1,23 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle, type TextStyle } from 'react-native';
-import { colors, lightTheme } from '@/theme/colors';
+import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { shadows } from '@/theme/shadows';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info';
+type BadgeVariant =
+  | 'default'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'info'
+  | 'indigo'
+  | 'rose'
+  | 'violet'
+  | 'sky';
 type BadgeSize = 'sm' | 'md';
 
 interface BadgeProps {
@@ -18,26 +28,51 @@ interface BadgeProps {
 
 // ─── Variant Maps ────────────────────────────────────────────────────────────
 
-const variantColors: Record<BadgeVariant, { bg: string; text: string }> = {
+const variantColors: Record<BadgeVariant, { bg: string; text: string; border: string }> = {
   default: {
-    bg: colors.neutral[200],
+    bg: colors.neutral[100],
     text: colors.neutral[700],
+    border: colors.neutral[200],
   },
   success: {
-    bg: '#D1FAE5', // success light bg
-    text: '#065F46', // success dark text
+    bg: '#DCFCE7',
+    text: '#15803D',
+    border: '#BBF7D0',
   },
   warning: {
-    bg: '#FEF3C7', // warning light bg
-    text: '#92400E', // warning dark text
+    bg: '#FEF3C7',
+    text: '#B45309',
+    border: '#FDE68A',
   },
   error: {
-    bg: '#FEE2E2', // error light bg
-    text: '#991B1B', // error dark text
+    bg: '#FEE2E2',
+    text: '#B91C1C',
+    border: '#FECACA',
   },
   info: {
-    bg: '#DBEAFE', // info light bg
-    text: '#1E40AF', // info dark text
+    bg: '#DBEAFE',
+    text: '#1D4ED8',
+    border: '#BFDBFE',
+  },
+  indigo: {
+    bg: colors.accent.indigo[50],
+    text: colors.accent.indigo[600],
+    border: colors.accent.indigo[500] + '20',
+  },
+  rose: {
+    bg: colors.accent.rose[50],
+    text: colors.accent.rose[600],
+    border: colors.accent.rose[500] + '20',
+  },
+  violet: {
+    bg: colors.accent.violet[50],
+    text: colors.accent.violet[600],
+    border: colors.accent.violet[500] + '20',
+  },
+  sky: {
+    bg: colors.accent.sky[50],
+    text: colors.accent.sky[600],
+    border: colors.accent.sky[500] + '20',
   },
 };
 
@@ -50,18 +85,19 @@ const sizeConfig: Record<BadgeSize, { container: ViewStyle; text: TextStyle }> =
       paddingVertical: 2,
     },
     text: {
-      fontFamily: typography.fontFamily.medium,
-      fontSize: typography.fontSize.xs,
-      lineHeight: typography.lineHeight.xs,
+      fontFamily: typography.fontFamily.bold,
+      fontSize: 10,
+      lineHeight: 14,
+      textTransform: 'uppercase',
     },
   },
   md: {
     container: {
       paddingHorizontal: spacing.md,
-      paddingVertical: spacing.xs,
+      paddingVertical: 4,
     },
     text: {
-      fontFamily: typography.fontFamily.medium,
+      fontFamily: typography.fontFamily.semiBold,
       fontSize: typography.fontSize.sm,
       lineHeight: typography.lineHeight.sm,
     },
@@ -79,7 +115,11 @@ export function Badge({ label, variant = 'default', size = 'sm' }: BadgeProps) {
       style={[
         styles.base,
         sizeStyle.container,
-        { backgroundColor: colorConfig.bg },
+        {
+          backgroundColor: colorConfig.bg,
+          borderColor: colorConfig.border,
+        },
+        shadows.sm,
       ]}
       accessibilityRole="text"
       accessibilityLabel={label}
@@ -99,8 +139,9 @@ export function Badge({ label, variant = 'default', size = 'sm' }: BadgeProps) {
 const styles = StyleSheet.create({
   base: {
     alignSelf: 'flex-start',
-    borderRadius: radius.full,
+    borderRadius: radius.xs,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
 });

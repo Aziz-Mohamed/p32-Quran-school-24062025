@@ -3,7 +3,8 @@ import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 
-import { lightTheme } from '@/theme/colors';
+import { colors } from '@/theme/colors';
+import { CustomTabBar } from '@/components/layout/CustomTabBar';
 
 // ─── Teacher Tabs Layout ──────────────────────────────────────────────────────
 
@@ -12,18 +13,17 @@ export default function TeacherTabsLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: lightTheme.primary,
-        tabBarInactiveTintColor: lightTheme.textSecondary,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: t('teacher.tabs.dashboard'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home-outline" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "home" : "home-outline"} size={24} color={color} />
           ),
         }}
       />
@@ -31,8 +31,8 @@ export default function TeacherTabsLayout() {
         name="students"
         options={{
           title: t('teacher.tabs.students'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="people-outline" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "people" : "people-outline"} size={24} color={color} />
           ),
         }}
       />
@@ -40,8 +40,8 @@ export default function TeacherTabsLayout() {
         name="sessions"
         options={{
           title: t('teacher.tabs.sessions'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="list-outline" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "calendar" : "calendar-outline"} size={24} color={color} />
           ),
         }}
       />
@@ -49,8 +49,8 @@ export default function TeacherTabsLayout() {
         name="class-progress"
         options={{
           title: t('reports.classProgress'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="bar-chart-outline" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "bar-chart" : "bar-chart-outline"} size={24} color={color} />
           ),
         }}
       />
@@ -58,8 +58,8 @@ export default function TeacherTabsLayout() {
         name="profile"
         options={{
           title: t('teacher.tabs.profile'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person-outline" size={size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "person" : "person-outline"} size={24} color={color} />
           ),
         }}
       />

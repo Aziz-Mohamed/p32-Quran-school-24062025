@@ -1,25 +1,25 @@
 /**
  * Design System — Color Tokens
  *
- * Primary:   Deep Teal  (trust, education, Islamic aesthetic)
- * Secondary: Warm Gold  (achievement, reward)
- * Semantic:  success / warning / error / info
- * Gamification: gold / silver / bronze
+ * Primary:   Emerald/Teal (Growth, Quranic gardens, trust)
+ * Secondary: Amber/Gold  (Achievement, reward, warmth)
+ * Accents:   Indigo (Learning), Rose (Care), Violet (Spirituality)
+ * Gamification: gold / silver / bronze / diamond
  */
 
 // ─── Shade Scales ────────────────────────────────────────────────────────────
 
 export const primary = {
-  50: '#F0FDFA',
-  100: '#CCFBF1',
-  200: '#99F6E4',
-  300: '#5EEAD4',
-  400: '#2DD4BF',
-  500: '#0D9488',
-  600: '#0F766E',
-  700: '#115E59',
-  800: '#134E4A',
-  900: '#042F2E',
+  50: '#F0FDF4',
+  100: '#DCFCE7',
+  200: '#BBF7D0',
+  300: '#86EFAC',
+  400: '#4ADE80',
+  500: '#22C55E', // Vibrant Green
+  600: '#16A34A',
+  700: '#15803D',
+  800: '#166534',
+  900: '#14532D',
 } as const;
 
 export const secondary = {
@@ -28,24 +28,55 @@ export const secondary = {
   200: '#FDE68A',
   300: '#FCD34D',
   400: '#FBBF24',
-  500: '#F5A623',
+  500: '#F59E0B', // Amber/Gold
   600: '#D97706',
   700: '#B45309',
   800: '#92400E',
   900: '#78350F',
 } as const;
 
+export const accent = {
+  indigo: {
+    50: '#EEF2FF',
+    100: '#E0E7FF',
+    500: '#6366F1',
+    600: '#4F46E5',
+    700: '#4338CA',
+  },
+  rose: {
+    50: '#FFF1F2',
+    100: '#FFE4E6',
+    500: '#F43F5E',
+    600: '#E11D48',
+    700: '#BE123C',
+  },
+  violet: {
+    50: '#F5F3FF',
+    100: '#EDE9FE',
+    500: '#8B5CF6',
+    600: '#7C3AED',
+    700: '#6D28D9',
+  },
+  sky: {
+    50: '#F0F9FF',
+    100: '#E0F2FE',
+    500: '#0EA5E9',
+    600: '#0284C7',
+    700: '#0369A1',
+  }
+} as const;
+
 export const neutral = {
-  50: '#FAFAFA',
-  100: '#F5F5F5',
-  200: '#E5E5E5',
-  300: '#D4D4D4',
-  400: '#A3A3A3',
-  500: '#737373',
-  600: '#525252',
-  700: '#404040',
-  800: '#262626',
-  900: '#171717',
+  50: '#F9FAFB',
+  100: '#F3F4F6',
+  200: '#E5E7EB',
+  300: '#D1D5DB',
+  400: '#9CA3AF',
+  500: '#6B7280',
+  600: '#4B5563',
+  700: '#374151',
+  800: '#1F2937',
+  900: '#111827',
 } as const;
 
 // ─── Semantic Colors ─────────────────────────────────────────────────────────
@@ -63,6 +94,34 @@ export const gamification = {
   gold: '#FFD700',
   silver: '#C0C0C0',
   bronze: '#CD7F32',
+  diamond: '#B9E2F5',
+  platinum: '#E5E4E2',
+} as const;
+
+// ─── Transparency / Glass ───────────────────────────────────────────────────
+
+export const glass = {
+  white: {
+    low: 'rgba(255, 255, 255, 0.4)',
+    medium: 'rgba(255, 255, 255, 0.6)',
+    high: 'rgba(255, 255, 255, 0.8)',
+  },
+  black: {
+    low: 'rgba(0, 0, 0, 0.05)',
+    medium: 'rgba(0, 0, 0, 0.1)',
+    high: 'rgba(0, 0, 0, 0.2)',
+  }
+} as const;
+
+// ─── Gradients (Linear equivalents for native) ──────────────────────────────
+
+export const gradients = {
+  primary: [primary[400], primary[600]],
+  secondary: [secondary[400], secondary[600]],
+  indigo: [accent.indigo[400] ?? accent.indigo[500], accent.indigo[600]],
+  rose: [accent.rose[400] ?? accent.rose[500], accent.rose[600]],
+  violet: [accent.violet[400] ?? accent.violet[500], accent.violet[600]],
+  sky: [accent.sky[400] ?? accent.sky[500], accent.sky[600]],
 } as const;
 
 // ─── Palette Aggregate ───────────────────────────────────────────────────────
@@ -70,9 +129,12 @@ export const gamification = {
 export const colors = {
   primary,
   secondary,
+  accent,
   neutral,
   semantic,
   gamification,
+  glass,
+  gradients,
 
   white: '#FFFFFF',
   black: '#000000',
@@ -82,8 +144,8 @@ export const colors = {
 // ─── Themed Surfaces ─────────────────────────────────────────────────────────
 
 export const lightTheme = {
-  background: '#FFFFFF',
-  surface: '#FAFAFA',
+  background: '#F9FAFB',
+  surface: '#FFFFFF',
   surfaceElevated: '#FFFFFF',
   text: neutral[900],
   textSecondary: neutral[600],
@@ -98,21 +160,21 @@ export const lightTheme = {
   ...semantic,
 } as const;
 
-/** Dark theme — stubbed for Phase 2 */
+/** Dark theme — High Contrast Premium */
 export const darkTheme = {
-  background: neutral[900],
-  surface: neutral[800],
-  surfaceElevated: neutral[700],
-  text: neutral[50],
-  textSecondary: neutral[300],
-  textTertiary: neutral[500],
-  border: neutral[700],
+  background: '#0F172A',
+  surface: '#1E293B',
+  surfaceElevated: '#334155',
+  text: '#F8FAFC',
+  textSecondary: '#94A3B8',
+  textTertiary: '#64748B',
+  border: '#334155',
   borderFocused: primary[400],
   overlay: 'rgba(0, 0, 0, 0.7)',
   primary: primary[400],
-  primaryText: neutral[900],
+  primaryText: '#0F172A',
   secondary: secondary[400],
-  secondaryText: neutral[900],
+  secondaryText: '#0F172A',
   ...semantic,
 } as const;
 

@@ -7,14 +7,14 @@ import {
   type ViewStyle,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { lightTheme } from '@/theme/colors';
+import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { shadows } from '@/theme/shadows';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type CardVariant = 'default' | 'elevated' | 'outlined';
+type CardVariant = 'default' | 'elevated' | 'outlined' | 'glass' | 'primary-glow';
 
 interface CardProps {
   children: React.ReactNode;
@@ -36,9 +36,21 @@ const variantStyles: Record<CardVariant, ViewStyle> = {
   },
   outlined: {
     backgroundColor: lightTheme.surfaceElevated,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: lightTheme.border,
     ...shadows.none,
+  },
+  glass: {
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    ...shadows.sm,
+  },
+  'primary-glow': {
+    backgroundColor: lightTheme.surfaceElevated,
+    borderWidth: 2,
+    borderColor: colors.primary[100],
+    ...shadows.glow,
   },
 };
 
@@ -54,10 +66,10 @@ export function Card({
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.97,
+      toValue: 0.98,
       useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
+      speed: 40,
+      bounciness: 8,
     }).start();
   };
 
@@ -65,8 +77,8 @@ export function Card({
     Animated.spring(scaleAnim, {
       toValue: 1,
       useNativeDriver: true,
-      speed: 50,
-      bounciness: 4,
+      speed: 40,
+      bounciness: 8,
     }).start();
   };
 
@@ -107,7 +119,7 @@ export function Card({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: radius.lg,
+    borderRadius: radius.md,
     padding: spacing.lg,
     overflow: 'hidden',
   },

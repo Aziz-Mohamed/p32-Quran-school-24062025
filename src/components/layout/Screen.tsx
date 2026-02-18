@@ -21,6 +21,8 @@ interface ScreenProps {
   padding?: boolean;
   /** SafeAreaView edges to respect. @default ['top', 'bottom'] */
   edges?: Edge[];
+  /** Whether the screen is within a tab layout with the floating tab bar. @default false */
+  hasTabBar?: boolean;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -32,10 +34,13 @@ export const Screen: React.FC<ScreenProps> = ({
   scroll = true,
   padding = true,
   edges = ['top', 'bottom'],
+  hasTabBar = false,
 }) => {
   const contentStyle = padding
     ? { paddingStart: spacing.base, paddingEnd: spacing.base }
     : undefined;
+
+  const bottomPadding = hasTabBar ? 110 : spacing.xl;
 
   return (
     <SafeAreaView style={styles.safe} edges={edges}>
@@ -47,7 +52,11 @@ export const Screen: React.FC<ScreenProps> = ({
       {scroll ? (
         <ScrollView
           style={styles.scroll}
-          contentContainerStyle={[styles.scrollContent, contentStyle]}
+          contentContainerStyle={[
+            styles.scrollContent, 
+            contentStyle,
+            { paddingBottom: bottomPadding }
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
@@ -55,7 +64,7 @@ export const Screen: React.FC<ScreenProps> = ({
           {children}
         </ScrollView>
       ) : (
-        <View style={[styles.container, contentStyle]}>
+        <View style={[styles.container, contentStyle, { paddingBottom: bottomPadding }]}>
           {children}
         </View>
       )}

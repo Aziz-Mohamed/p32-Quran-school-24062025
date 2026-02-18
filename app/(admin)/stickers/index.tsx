@@ -1,32 +1,39 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
-import { FlashList } from '@shopify/flash-list';
 import { Image } from 'expo-image';
 
 import { Screen } from '@/components/layout';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useStickers } from '@/features/gamification/hooks/useStickers';
 import { useRTL } from '@/hooks/useRTL';
 import { getStickerImageUrl } from '@/lib/storage';
 import { typography } from '@/theme/typography';
-import { lightTheme } from '@/theme/colors';
+import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { shadows } from '@/theme/shadows';
 import type { StickerTier } from '@/features/gamification/types/gamification.types';
 
-// ─── Tier Badge Variants ──────────────────────────────────────────────────────
+// ─── Tier Colors ─────────────────────────────────────────────────────────────
 
-const TIER_VARIANT: Record<StickerTier, 'default' | 'success' | 'warning' | 'info'> = {
-  common: 'default',
-  rare: 'info',
-  epic: 'info',
-  legendary: 'warning',
-  seasonal: 'info',
-  trophy: 'warning',
+const TIER_BG: Record<StickerTier, string> = {
+  common: colors.neutral[50],
+  rare: colors.primary[50],
+  epic: colors.accent.violet[50],
+  legendary: colors.secondary[50],
+  seasonal: colors.accent.sky[50],
+  trophy: '#FFFBEB',
+};
+
+const TIER_COLOR: Record<StickerTier, string> = {
+  common: colors.neutral[500],
+  rare: colors.primary[500],
+  epic: colors.accent.violet[500],
+  legendary: colors.secondary[500],
+  seasonal: colors.accent.sky[500],
+  trophy: colors.gamification.gold,
 };
 
 // ─── Sticker Catalog Screen ──────────────────────────────────────────────────
@@ -42,7 +49,7 @@ export default function StickerCatalogScreen() {
   if (error) return <ErrorState description={(error as Error).message} onRetry={refetch} />;
 
   return (
-    <Screen scroll={false}>
+    <Screen scroll>
       <View style={styles.container}>
         <View style={styles.header}>
           <Button
@@ -66,39 +73,45 @@ export default function StickerCatalogScreen() {
             description={t('admin.stickers.emptyDescription')}
           />
         ) : (
-          <FlashList
-            data={stickers}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => {
+          <View style={styles.grid}>
+            {stickers.map((item) => {
               const tier = item.tier as StickerTier;
               const name = isRTL ? item.name_ar : item.name_en;
               const imageUrl = getStickerImageUrl(item.image_path);
+              const bg = TIER_BG[tier] ?? colors.neutral[50];
+              const accent = TIER_COLOR[tier] ?? colors.neutral[500];
 
               return (
-                <Card variant="outlined" style={styles.stickerCard}>
-                  <View style={styles.stickerRow}>
-                    <Image
-                      source={{ uri: imageUrl }}
-                      style={styles.stickerImage}
-                      contentFit="contain"
-                      cachePolicy="disk"
-                    />
-                    <View style={styles.stickerInfo}>
-                      <Text style={styles.stickerName}>{name}</Text>
-                      <Text style={styles.stickerMeta}>
-                        {item.points_value} {t('common.pts')}
-                      </Text>
+                <Pressable
+                  key={item.id}
+                  style={({ pressed }) => [
+                    styles.card,
+                    { backgroundColor: bg },
+                    pressed && styles.cardPressed,
+                  ]}
+                >
+                  <Image
+                    source={{ uri: imageUrl }}
+                    style={styles.stickerImage}
+                    contentFit="contain"
+                    cachePolicy="disk"
+                    transition={300}
+                  />
+                  <View style={styles.cardFooter}>
+                    <Text style={styles.stickerName} numberOfLines={1}>{name}</Text>
+                    <View style={styles.metaRow}>
+                      <View style={[styles.tierBadge, { backgroundColor: accent + '20' }]}>
+                        <Text style={[styles.tierText, { color: accent }]}>
+                          {t(`student.stickers.tier.${tier}`)}
+                        </Text>
+                      </View>
+                      <Text style={styles.points}>{item.points_value} {t('common.pts')}</Text>
                     </View>
-                    <Badge
-                      label={t(`student.stickers.tier.${tier}`)}
-                      variant={TIER_VARIANT[tier] ?? 'default'}
-                      size="sm"
-                    />
                   </View>
-                </Card>
+                </Pressable>
               );
-            }}
-          />
+            })}
+          </View>
         )}
       </View>
     </Screen>
@@ -129,29 +142,55 @@ const styles = StyleSheet.create({
     color: lightTheme.textSecondary,
     textAlign: 'center',
   },
-  stickerCard: {
-    marginBottom: spacing.sm,
-  },
-  stickerRow: {
+  grid: {
     flexDirection: 'row',
-    alignItems: 'center',
+    flexWrap: 'wrap',
     gap: spacing.md,
   },
-  stickerImage: {
-    width: 40,
-    height: 40,
+  card: {
+    width: '47%',
+    borderRadius: 16,
+    ...shadows.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+    overflow: 'hidden',
   },
-  stickerInfo: {
-    flex: 1,
+  cardPressed: {
+    transform: [{ scale: 0.97 }],
+    opacity: 0.9,
+  },
+  stickerImage: {
+    width: '100%',
+    aspectRatio: 1,
+  },
+  cardFooter: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
+    gap: 4,
   },
   stickerName: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[800],
     fontFamily: typography.fontFamily.semiBold,
   },
-  stickerMeta: {
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  tierBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  tierText: {
+    fontSize: 10,
+    fontFamily: typography.fontFamily.bold,
+    textTransform: 'uppercase',
+  },
+  points: {
     ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
-    marginTop: 2,
+    color: colors.neutral[500],
+    fontFamily: typography.fontFamily.semiBold,
   },
 });

@@ -1,12 +1,13 @@
 import React, { useCallback } from 'react';
 import { Pressable, StyleSheet, type ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, lightTheme } from '@/theme/colors';
+import { colors } from '@/theme/colors';
 import { radius } from '@/theme/radius';
+import { shadows } from '@/theme/shadows';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type IconButtonVariant = 'default' | 'filled' | 'ghost';
+type IconButtonVariant = 'default' | 'primary' | 'secondary' | 'indigo' | 'rose' | 'violet' | 'ghost' | 'glow';
 
 interface IconButtonProps {
   icon: React.ReactNode;
@@ -26,18 +27,56 @@ const variantStyles: Record<
 > = {
   default: {
     container: {
-      backgroundColor: lightTheme.surface,
+      backgroundColor: colors.white,
+      ...shadows.sm,
     },
     pressedContainer: {
-      backgroundColor: colors.neutral[200],
+      backgroundColor: colors.neutral[100],
     },
   },
-  filled: {
+  primary: {
     container: {
       backgroundColor: colors.primary[500],
+      ...shadows.sm,
     },
     pressedContainer: {
       backgroundColor: colors.primary[600],
+    },
+  },
+  secondary: {
+    container: {
+      backgroundColor: colors.secondary[500],
+      ...shadows.sm,
+    },
+    pressedContainer: {
+      backgroundColor: colors.secondary[600],
+    },
+  },
+  indigo: {
+    container: {
+      backgroundColor: colors.accent.indigo[500],
+      ...shadows.sm,
+    },
+    pressedContainer: {
+      backgroundColor: colors.accent.indigo[600],
+    },
+  },
+  rose: {
+    container: {
+      backgroundColor: colors.accent.rose[500],
+      ...shadows.sm,
+    },
+    pressedContainer: {
+      backgroundColor: colors.accent.rose[600],
+    },
+  },
+  violet: {
+    container: {
+      backgroundColor: colors.accent.violet[500],
+      ...shadows.sm,
+    },
+    pressedContainer: {
+      backgroundColor: colors.accent.violet[600],
     },
   },
   ghost: {
@@ -46,6 +85,16 @@ const variantStyles: Record<
     },
     pressedContainer: {
       backgroundColor: colors.neutral[100],
+    },
+  },
+  glow: {
+    container: {
+      backgroundColor: colors.primary[500],
+      ...shadows.glow,
+    },
+    pressedContainer: {
+      backgroundColor: colors.primary[600],
+      ...shadows.none,
     },
   },
 };

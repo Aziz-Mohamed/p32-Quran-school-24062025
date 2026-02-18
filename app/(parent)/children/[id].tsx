@@ -6,11 +6,12 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui';
+import { Badge, Avatar } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useChildDetail } from '@/features/children/hooks/useChildren';
 import { useAttendanceRate } from '@/features/attendance/hooks/useAttendance';
+import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,6 +22,7 @@ export default function ChildDetailScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const theme = useRoleTheme();
 
   const { data, isLoading, error, refetch } = useChildDetail(id);
   const { data: attendanceRate } = useAttendanceRate(id);
@@ -35,101 +37,102 @@ export default function ChildDetailScreen() {
   return (
     <Screen scroll>
       <View style={styles.container}>
-        <Button
-          title={t('common.back')}
-          onPress={() => router.back()}
-          variant="ghost"
-          size="sm"
-        />
-
-        {/* Profile Header */}
-        <View style={styles.profileHeader}>
-          <View style={styles.avatar}>
-            <Ionicons name="person" size={40} color={colors.primary[500]} />
-          </View>
-          <Text style={styles.name}>{(student as any).profiles?.full_name ?? '—'}</Text>
-          <Text style={styles.className}>
-            {(student as any).classes?.name ?? t('admin.students.noClass')}
-          </Text>
-          {(student as any).levels && (
-            <Badge
-              label={(student as any).levels.title ?? `${t('common.level')} ${(student as any).levels.level_number}`}
-              variant="info"
-              size="md"
-            />
-          )}
+        <View style={styles.header}>
+          <Button
+            title={t('common.back')}
+            onPress={() => router.back()}
+            variant="ghost"
+            size="sm"
+            icon={<Ionicons name="arrow-back" size={20} color={theme.primary} />}
+          />
         </View>
 
-        {/* Stats */}
-        <View style={styles.statsRow}>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>{student.total_points}</Text>
-            <Text style={styles.statLabel}>{t('student.points')}</Text>
+        {/* Profile Header */}
+        <Card variant="primary-glow" style={styles.profileCard}>
+          <Avatar 
+            name={(student as any).profiles?.full_name} 
+            size="xl" 
+            ring 
+            variant="indigo" // Child/Student is indigo
+          />
+          <View style={styles.profileInfo}>
+            <Text style={styles.name}>{(student as any).profiles?.full_name ?? '—'}</Text>
+            <View style={styles.metaRow}>
+              <Badge
+                label={(student as any).classes?.name ?? t('admin.students.noClass')}
+                variant="sky"
+                size="sm"
+              />
+              {(student as any).levels && (
+                <Badge
+                  label={(student as any).levels.title ?? `${t('common.level')} ${(student as any).levels.level_number}`}
+                  variant="indigo"
+                  size="sm"
+                />
+              )}
+            </View>
           </View>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>{student.current_streak}</Text>
-            <Text style={styles.statLabel}>{t('student.streak')}</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>{stickerCount}</Text>
-            <Text style={styles.statLabel}>{t('navigation.stickers')}</Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={styles.statValue}>{attendanceRate?.rate ?? '—'}%</Text>
-            <Text style={styles.statLabel}>{t('dashboard.attendanceRate')}</Text>
-          </View>
+        </Card>
+
+        {/* Stats Grid */}
+        <View style={styles.statsGrid}>
+          <StatCard label={t('student.points')} value={student.total_points} color={colors.gamification.gold} />
+          <StatCard label={t('student.streak')} value={student.current_streak} color={colors.accent.rose[500]} />
+          <StatCard label={t('navigation.stickers')} value={stickerCount} color={colors.accent.violet[500]} />
+          <StatCard label={t('dashboard.attendanceRate')} value={`${attendanceRate?.rate ?? '—'}%`} color={colors.accent.sky[500]} />
         </View>
 
         {/* Quick Actions */}
+        <Text style={styles.sectionTitle}>{t('dashboard.quickActions')}</Text>
         <View style={styles.actions}>
           <Button
             title={t('parent.viewAttendance')}
             onPress={() => router.push(`/(parent)/attendance/${id}`)}
-            variant="secondary"
+            variant="ghost"
             size="md"
-            style={styles.actionButton}
+            icon={<Ionicons name="calendar" size={18} color={theme.primary} />}
+            style={[styles.actionButton, { backgroundColor: theme.primaryLight }]}
           />
-          {classId && (
-            <Button
-              title={t('parent.classStanding')}
-              onPress={() => router.push(`/(parent)/class-standing/${id}`)}
-              variant="secondary"
-              size="md"
-              style={styles.actionButton}
-            />
-          )}
           <Button
             title={t('reports.viewProgress')}
             onPress={() => router.push(`/(parent)/progress/${id}`)}
-            variant="secondary"
+            variant="ghost"
             size="md"
-            style={styles.actionButton}
+            icon={<Ionicons name="bar-chart" size={18} color={colors.accent.indigo[500]} />}
+            style={[styles.actionButton, { backgroundColor: colors.accent.indigo[50] }]}
           />
         </View>
 
         {/* Recent Sessions */}
-        <Text style={styles.sectionTitle}>{t('parent.recentSessions')}</Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{t('parent.recentSessions')}</Text>
+          <Badge label={String(recentSessions?.length ?? 0)} variant="default" />
+        </View>
         {!recentSessions || recentSessions.length === 0 ? (
-          <Card variant="outlined">
+          <Card variant="outlined" style={styles.emptyCard}>
             <Text style={styles.emptyText}>{t('student.sessions.emptyDescription')}</Text>
           </Card>
         ) : (
           recentSessions.map((session: any) => (
-            <Card key={session.id} variant="outlined" style={styles.sessionCard}>
-              <Text style={styles.sessionDate}>{session.session_date}</Text>
-              <View style={styles.scoresRow}>
-                <Text style={styles.score}>
-                  {t('teacher.sessions.memorization')}: {session.memorization_score}/10
-                </Text>
-                <Text style={styles.score}>
-                  {t('teacher.sessions.tajweed')}: {session.tajweed_score}/10
-                </Text>
-                <Text style={styles.score}>
-                  {t('teacher.sessions.recitation')}: {session.recitation_quality}/10
-                </Text>
+            <Card key={session.id} variant="default" style={styles.sessionCard}>
+              <View style={styles.sessionHeaderRow}>
+                <View style={styles.dateGroup}>
+                  <Ionicons name="time-outline" size={16} color={theme.primary} />
+                  <Text style={styles.sessionDate}>{session.session_date}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
               </View>
+              
+              <View style={styles.scoresRow}>
+                <ScoreBadge label="M" value={session.memorization_score} max={5} />
+                <ScoreBadge label="T" value={session.tajweed_score} max={5} />
+                <ScoreBadge label="R" value={session.recitation_quality} max={5} />
+              </View>
+
               {session.notes && (
-                <Text style={styles.sessionNotes}>{session.notes}</Text>
+                <View style={styles.notesContainer}>
+                  <Text style={styles.sessionNotes}>{session.notes}</Text>
+                </View>
               )}
             </Card>
           ))
@@ -139,93 +142,154 @@ export default function ChildDetailScreen() {
   );
 }
 
+function StatCard({ label, value, color }: { label: string, value: string | number, color: string }) {
+  return (
+    <Card variant="default" style={styles.statCard}>
+      <Text style={[styles.statValue, { color }]}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </Card>
+  );
+}
+
+function ScoreBadge({ label, value, max }: { label: string, value: number | null, max: number }) {
+  if (value == null) return null;
+  const isHigh = value >= (max * 0.8);
+  return (
+    <View style={[styles.scoreBadge, { backgroundColor: isHigh ? colors.primary[50] : colors.neutral[50] }]}>
+      <Text style={styles.scoreLabel}>{label}:</Text>
+      <Text style={[styles.scoreValue, { color: isHigh ? colors.primary[600] : colors.neutral[600] }]}>{value}/{max}</Text>
+    </View>
+  );
+}
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: spacing.lg,
+    gap: spacing.lg,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  profileCard: {
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
     gap: spacing.md,
   },
-  profileHeader: {
+  profileInfo: {
     alignItems: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.md,
-  },
-  avatar: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: colors.primary[50],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.xs,
+    gap: spacing.sm,
   },
   name: {
     ...typography.textStyles.heading,
-    color: lightTheme.text,
+    color: colors.neutral[900],
+    fontSize: 24,
   },
-  className: {
-    ...typography.textStyles.body,
-    color: lightTheme.textSecondary,
-  },
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: spacing.md,
-    backgroundColor: lightTheme.surface,
-    borderRadius: 12,
-  },
-  stat: {
-    alignItems: 'center',
-    gap: 2,
-  },
-  statValue: {
-    ...typography.textStyles.subheading,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.bold,
-  },
-  statLabel: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
-  },
-  actions: {
+  metaRow: {
     flexDirection: 'row',
     gap: spacing.sm,
   },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.md,
+  },
+  statCard: {
+    width: '47%',
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+  },
+  statValue: {
+    ...typography.textStyles.display,
+    fontSize: 24,
+  },
+  statLabel: {
+    ...typography.textStyles.label,
+    color: colors.neutral[500],
+    marginTop: 4,
+    textAlign: 'center',
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
   actionButton: {
     flex: 1,
+    borderRadius: 16,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: spacing.xs,
   },
   sectionTitle: {
     ...typography.textStyles.subheading,
-    color: lightTheme.text,
-    marginTop: spacing.sm,
+    color: colors.neutral[800],
+    fontSize: 18,
   },
   sessionCard: {
-    gap: spacing.xs,
+    marginBottom: spacing.md,
+    padding: spacing.md,
+    gap: spacing.md,
+  },
+  sessionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  dateGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   sessionDate: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
-    fontFamily: typography.fontFamily.medium,
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[800],
   },
   scoresRow: {
     flexDirection: 'row',
-    gap: spacing.md,
-    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
-  score: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
+  scoreBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  scoreLabel: {
+    fontSize: 10,
+    fontFamily: typography.fontFamily.semiBold,
+    color: colors.neutral[500],
+  },
+  scoreValue: {
+    fontSize: 11,
+    fontFamily: typography.fontFamily.bold,
+  },
+  notesContainer: {
+    backgroundColor: colors.neutral[50],
+    padding: spacing.sm,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.neutral[200],
   },
   sessionNotes: {
     ...typography.textStyles.caption,
-    color: lightTheme.textTertiary,
+    color: colors.neutral[600],
     fontStyle: 'italic',
+  },
+  emptyCard: {
+    padding: spacing.xl,
+    alignItems: 'center',
+    borderStyle: 'dashed',
   },
   emptyText: {
     ...typography.textStyles.body,
-    color: lightTheme.textSecondary,
-    textAlign: 'center',
+    color: colors.neutral[400],
   },
 });

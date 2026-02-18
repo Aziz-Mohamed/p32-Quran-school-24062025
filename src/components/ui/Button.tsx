@@ -12,10 +12,19 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { shadows } from '@/theme/shadows';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonVariant =
+  | 'primary'
+  | 'secondary'
+  | 'ghost'
+  | 'danger'
+  | 'glow'
+  | 'indigo'
+  | 'rose'
+  | 'violet';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
@@ -35,9 +44,9 @@ interface ButtonProps {
 const sizeStyles: Record<ButtonSize, { container: ViewStyle; text: TextStyle }> = {
   sm: {
     container: {
-      minHeight: 44,
+      minHeight: 40,
       paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
+      paddingVertical: spacing.xs,
     },
     text: {
       fontFamily: typography.fontFamily.semiBold,
@@ -47,9 +56,9 @@ const sizeStyles: Record<ButtonSize, { container: ViewStyle; text: TextStyle }> 
   },
   md: {
     container: {
-      minHeight: 48,
+      minHeight: 52,
       paddingHorizontal: spacing.lg,
-      paddingVertical: spacing.md,
+      paddingVertical: spacing.sm,
     },
     text: {
       fontFamily: typography.fontFamily.semiBold,
@@ -59,9 +68,9 @@ const sizeStyles: Record<ButtonSize, { container: ViewStyle; text: TextStyle }> 
   },
   lg: {
     container: {
-      minHeight: 56,
+      minHeight: 60,
       paddingHorizontal: spacing.xl,
-      paddingVertical: spacing.base,
+      paddingVertical: spacing.md,
     },
     text: {
       fontFamily: typography.fontFamily.semiBold,
@@ -79,19 +88,34 @@ const variantStyles: Record<
 > = {
   primary: {
     container: {
-      backgroundColor: colors.secondary[500],
+      backgroundColor: colors.primary[500],
+      ...shadows.sm,
     },
     text: {
       color: colors.white,
     },
     pressedContainer: {
-      backgroundColor: colors.secondary[600],
+      backgroundColor: colors.primary[600],
+      transform: [{ scale: 0.98 }],
+    },
+  },
+  glow: {
+    container: {
+      backgroundColor: colors.primary[500],
+      ...shadows.glow,
+    },
+    text: {
+      color: colors.white,
+    },
+    pressedContainer: {
+      backgroundColor: colors.primary[600],
+      ...shadows.none,
     },
   },
   secondary: {
     container: {
-      backgroundColor: colors.transparent,
-      borderWidth: 1.5,
+      backgroundColor: colors.white,
+      borderWidth: 2,
       borderColor: colors.primary[500],
     },
     text: {
@@ -101,15 +125,51 @@ const variantStyles: Record<
       backgroundColor: colors.primary[50],
     },
   },
+  indigo: {
+    container: {
+      backgroundColor: colors.accent.indigo[500],
+      ...shadows.sm,
+    },
+    text: {
+      color: colors.white,
+    },
+    pressedContainer: {
+      backgroundColor: colors.accent.indigo[600],
+    },
+  },
+  rose: {
+    container: {
+      backgroundColor: colors.accent.rose[500],
+      ...shadows.sm,
+    },
+    text: {
+      color: colors.white,
+    },
+    pressedContainer: {
+      backgroundColor: colors.accent.rose[600],
+    },
+  },
+  violet: {
+    container: {
+      backgroundColor: colors.accent.violet[500],
+      ...shadows.sm,
+    },
+    text: {
+      color: colors.white,
+    },
+    pressedContainer: {
+      backgroundColor: colors.accent.violet[600],
+    },
+  },
   ghost: {
     container: {
       backgroundColor: colors.transparent,
     },
     text: {
-      color: colors.primary[500],
+      color: colors.primary[600],
     },
     pressedContainer: {
-      backgroundColor: colors.neutral[100],
+      backgroundColor: colors.primary[50],
     },
   },
   danger: {
@@ -142,7 +202,7 @@ export function Button({
 
   const handlePress = useCallback(() => {
     if (isDisabled) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onPress();
   }, [isDisabled, onPress]);
 
@@ -199,7 +259,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
+    borderRadius: radius.sm,
     minWidth: 44,
   },
   fullWidth: {
@@ -207,9 +267,10 @@ const styles = StyleSheet.create({
   },
   disabled: {
     opacity: 0.5,
+    backgroundColor: colors.neutral[200],
   },
   disabledText: {
-    opacity: 0.8,
+    color: colors.neutral[500],
   },
   textWithIcon: {
     marginStart: spacing.sm,
