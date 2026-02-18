@@ -9,15 +9,16 @@
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/app-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.quranschool.app",
+      "bundleIdentifier": "com.millionmilescode.quranschool",
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "We need your location to verify you are at the school when checking in."
+        "NSLocationWhenInUseUsageDescription": "We need your location to verify you are at the school when checking in.",
+        "ExpoLocalization_supportsRTL": true
       }
     },
     "android": {
@@ -26,7 +27,11 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.quranschool.app"
+      "package": "com.millionmilescode.quranschool",
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -36,6 +41,9 @@
       "supportsRTL": true,
       "router": {
         "origin": false
+      },
+      "eas": {
+        "projectId": "8af33ffb-41f4-40d4-87be-a052bc55003d"
       }
     },
     "plugins": [
