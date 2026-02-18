@@ -5,7 +5,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { I18nManager, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { I18nextProvider } from 'react-i18next';
 
@@ -29,9 +28,6 @@ SplashScreen.preventAutoHideAsync();
 // ─── Root Layout ──────────────────────────────────────────────────────────────
 
 export default function RootLayout() {
-  const [fontsLoaded] = useFonts({
-    // Add custom fonts here if needed
-  });
   const [storeHydrated, setStoreHydrated] = useState(false);
   const isRTL = useLocaleStore((s) => s.isRTL);
 
@@ -61,12 +57,12 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
-    if (fontsLoaded && storeHydrated) {
+    if (storeHydrated) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, storeHydrated]);
+  }, [storeHydrated]);
 
-  if (!fontsLoaded || !storeHydrated) {
+  if (!storeHydrated) {
     return null;
   }
 

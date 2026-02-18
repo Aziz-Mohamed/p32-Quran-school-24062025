@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Pressable } from 'react-native';
+import { StyleSheet, View, Text, Pressable, Image } from 'react-native';
 import { Link } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
@@ -78,6 +78,14 @@ export default function LoginScreen() {
   return (
     <Screen>
       <View style={styles.container}>
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('../../assets/app-icon.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
         <Text style={styles.title}>{t('auth.login')}</Text>
         <Text style={styles.subtitle}>{t('auth.loginSubtitle')}</Text>
 
@@ -179,7 +187,15 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingBlockStart: spacing.xl * 2,
+    paddingBlockStart: spacing.xl,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBlockEnd: spacing.xl,
+  },
+  logo: {
+    width: normalize(100),
+    height: normalize(100),
   },
   title: {
     ...typography.textStyles.heading,
