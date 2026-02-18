@@ -184,7 +184,7 @@ export default function SessionWorkspaceScreen() {
     // Validate all recitations before submitting
     for (const [studentId, forms] of Object.entries(recitations)) {
       for (let i = 0; i < forms.length; i++) {
-        const errors = validateRecitationForm(forms[i]);
+        const errors = validateRecitationForm(forms[i], t);
         if (errors) {
           const student = studentList.find((s) => s.id === studentId);
           Alert.alert(

@@ -55,28 +55,31 @@ export const EMPTY_RECITATION: RecitationFormData = {
 
 // ─── Validation ──────────────────────────────────────────────────────────────
 
-export function validateRecitationForm(data: RecitationFormData): Record<string, string> | null {
+export function validateRecitationForm(
+  data: RecitationFormData,
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): Record<string, string> | null {
   const errors: Record<string, string> = {};
 
   if (data.surah_number < 1 || data.surah_number > 114) {
-    errors.surah_number = 'Please select a surah';
+    errors.surah_number = t('memorization.validation.selectSurah');
   }
 
   const surah = data.surah_number > 0 ? getSurah(data.surah_number) : null;
   const maxAyah = surah?.ayahCount ?? 0;
 
   if (data.from_ayah < 1) {
-    errors.from_ayah = 'Required';
+    errors.from_ayah = t('memorization.validation.required');
   } else if (surah && data.from_ayah > maxAyah) {
-    errors.from_ayah = `Max ${maxAyah}`;
+    errors.from_ayah = t('memorization.validation.maxAyah', { max: maxAyah });
   }
 
   if (data.to_ayah < 1) {
-    errors.to_ayah = 'Required';
+    errors.to_ayah = t('memorization.validation.required');
   } else if (surah && data.to_ayah > maxAyah) {
-    errors.to_ayah = `Max ${maxAyah}`;
+    errors.to_ayah = t('memorization.validation.maxAyah', { max: maxAyah });
   } else if (data.to_ayah < data.from_ayah) {
-    errors.to_ayah = 'Must be >= from ayah';
+    errors.to_ayah = t('memorization.validation.mustBeAfterFrom');
   }
 
   return Object.keys(errors).length > 0 ? errors : null;

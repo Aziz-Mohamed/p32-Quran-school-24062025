@@ -44,7 +44,7 @@ export const AuthFormField = <T extends FieldValues>({
             secureTextEntry={secureTextEntry}
             keyboardType={keyboardType}
             autoCapitalize={autoCapitalize}
-            error={error?.message || (error ? t('common.error.validationFailed') : undefined)}
+            error={error?.message || (error ? t('common.validationFailed') : undefined)}
           />
         </View>
       )}

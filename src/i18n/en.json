@@ -40,6 +40,12 @@
     "dateFormat": "YYYY-MM-DD",
     "unexpectedError": "An unexpected error occurred",
     "somethingWrong": "Something went wrong",
+    "settings": "Settings",
+    "teacher": "Teacher",
+    "validationFailed": "Please check your input",
+    "searchPlaceholder": "Search...",
+    "noResultsTitle": "No results",
+    "noResultsDescription": "Try a different search term.",
     "daysShort": {
       "sun": "Sun",
       "mon": "Mon",
@@ -110,7 +116,14 @@
     "noSchool": "Don't have a school?",
     "alreadyHaveSchool": "Already have an account?",
     "sessionExpired": "Session expired. Please log in again.",
-    "createSchoolFailed": "Failed to create school"
+    "createSchoolFailed": "Failed to create school",
+    "selectRole": "Select your role",
+    "role": {
+      "student": "Student",
+      "teacher": "Teacher",
+      "parent": "Parent",
+      "admin": "Admin"
+    }
   },
   "roles": {
     "student": "Student",
@@ -189,7 +202,9 @@
       "progress": "Progress",
       "surah": "Surah",
       "ayahRange": "Ayah {{from}} - {{to}}",
-      "type": "Type"
+      "type": "Type",
+      "details": "Details",
+      "startLesson": "Start Lesson"
     },
     "sessions": {
       "title": "Session History",
@@ -306,7 +321,8 @@
       "due": "Due",
       "pending": "Pending",
       "emptyTitle": "No Sessions Yet",
-      "emptyDescription": "Session evaluations will appear here after completing scheduled sessions"
+      "emptyDescription": "Session evaluations will appear here after completing scheduled sessions",
+      "viewHistory": "View History"
     },
     "students": {
       "title": "My Students",
