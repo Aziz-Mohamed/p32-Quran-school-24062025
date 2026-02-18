@@ -18,6 +18,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
+import i18n from '@/i18n/config';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -46,7 +47,7 @@ function formatDate(date: Date): string {
 
 export function DatePicker({
   label,
-  placeholder = 'Select date...',
+  placeholder,
   value,
   onChange,
   minimumDate,
@@ -54,6 +55,7 @@ export function DatePicker({
   error,
   style,
 }: DatePickerProps) {
+  const resolvedPlaceholder = placeholder ?? i18n.t('common.selectDate');
   const [showPicker, setShowPicker] = useState(false);
   const hasError = error != null && error.length > 0;
 
@@ -86,7 +88,7 @@ export function DatePicker({
           hasError && styles.triggerError,
         ]}
         accessibilityRole="button"
-        accessibilityLabel={label ?? placeholder}
+        accessibilityLabel={label ?? resolvedPlaceholder}
       >
         <Text
           style={[
@@ -94,7 +96,7 @@ export function DatePicker({
             !value && styles.placeholderText,
           ]}
         >
-          {value ? formatDate(value) : placeholder}
+          {value ? formatDate(value) : resolvedPlaceholder}
         </Text>
         <Ionicons
           name="calendar-outline"
@@ -140,7 +142,7 @@ export function DatePicker({
                 style={styles.doneButton}
                 accessibilityRole="button"
               >
-                <Text style={styles.doneText}>Done</Text>
+                <Text style={styles.doneText}>{i18n.t('common.done')}</Text>
               </Pressable>
             </View>
           </Pressable>

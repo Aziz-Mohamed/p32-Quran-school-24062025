@@ -16,6 +16,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
+import i18n from '@/i18n/config';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -38,13 +39,14 @@ interface SelectProps {
 
 export function Select({
   label,
-  placeholder = 'Select...',
+  placeholder,
   options,
   value,
   onChange,
   error,
   style,
 }: SelectProps) {
+  const resolvedPlaceholder = placeholder ?? i18n.t('common.select');
   const [visible, setVisible] = useState(false);
   const hasError = error != null && error.length > 0;
   const selectedOption = options.find((o) => o.value === value);
@@ -71,7 +73,7 @@ export function Select({
           hasError && styles.triggerError,
         ]}
         accessibilityRole="combobox"
-        accessibilityLabel={label ?? placeholder}
+        accessibilityLabel={label ?? resolvedPlaceholder}
       >
         <Text
           style={[
@@ -80,7 +82,7 @@ export function Select({
           ]}
           numberOfLines={1}
         >
-          {selectedOption?.label ?? placeholder}
+          {selectedOption?.label ?? resolvedPlaceholder}
         </Text>
         <Ionicons
           name="chevron-down"
