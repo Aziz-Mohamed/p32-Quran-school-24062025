@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { Screen } from '@/components/layout';
 import { TextField } from '@/components/ui';
 import { Button } from '@/components/ui';
+import { LanguageToggleButton } from '@/components/ui/LanguageToggleButton';
 import { authService } from '@/features/auth/services/auth.service';
 import { useAuthStore, type Profile } from '@/stores/authStore';
 import { supabase } from '@/lib/supabase';
@@ -95,6 +96,8 @@ export default function CreateSchoolScreen() {
   return (
     <Screen>
       <View style={styles.container}>
+        <LanguageToggleButton />
+
         <View style={styles.logoContainer}>
           <Image
             source={require('../../assets/app-icon.png')}

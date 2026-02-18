@@ -12,6 +12,7 @@ import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useLogout } from '@/features/auth/hooks/useLogout';
 import { useAdminDashboard } from '@/features/dashboard/hooks/useAdminDashboard';
+import { useChangeLanguage } from '@/hooks/useChangeLanguage';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
@@ -26,6 +27,7 @@ export default function AdminDashboard() {
   const router = useRouter();
   const theme = useRoleTheme();
   const { logout, isPending: isLoggingOut } = useLogout();
+  const { locale, toggleLanguage } = useChangeLanguage();
 
   const { data, isLoading, error, refetch } = useAdminDashboard(profile?.school_id);
 
@@ -143,6 +145,18 @@ export default function AdminDashboard() {
             onPress={() => router.push('/(admin)/members/reset-password')}
             color={colors.neutral[500]}
           />
+          <Card variant="default" style={styles.navCard} onPress={toggleLanguage}>
+            <View style={styles.navContent}>
+              <View style={[styles.navIcon, { backgroundColor: colors.accent.indigo[500] + '10' }]}>
+                <Ionicons name="language" size={20} color={colors.accent.indigo[500]} />
+              </View>
+              <Text style={styles.navText}>{t('common.language')}</Text>
+              <Text style={styles.langValue}>
+                {locale === 'en' ? t('common.english') : t('common.arabic')}
+              </Text>
+              <Ionicons name="chevron-forward" size={16} color={colors.neutral[300]} />
+            </View>
+          </Card>
         </View>
 
         {/* Sign Out */}
@@ -300,6 +314,11 @@ const styles = StyleSheet.create({
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[800],
     flex: 1,
+  },
+  langValue: {
+    ...typography.textStyles.body,
+    color: colors.neutral[500],
+    marginRight: spacing.xs,
   },
   footer: {
     marginTop: spacing.xl,

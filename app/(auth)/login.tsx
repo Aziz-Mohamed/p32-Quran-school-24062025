@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { Screen } from '@/components/layout';
 import { TextField } from '@/components/ui';
 import { Button } from '@/components/ui';
+import { LanguageToggleButton } from '@/components/ui/LanguageToggleButton';
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import { useAuthStore } from '@/stores/authStore';
 import { typography } from '@/theme/typography';
@@ -78,6 +79,8 @@ export default function LoginScreen() {
   return (
     <Screen>
       <View style={styles.container}>
+        <LanguageToggleButton />
+
         <View style={styles.logoContainer}>
           <Image
             source={require('../../assets/app-icon.png')}
