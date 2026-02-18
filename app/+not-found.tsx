@@ -1,32 +1,58 @@
-import { Link, Stack } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text } from 'react-native';
+import { Link } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { Screen } from '@/components/layout';
+import { typography } from '@/theme/typography';
+import { lightTheme } from '@/theme/colors';
+import { spacing } from '@/theme/spacing';
+
+// ─── Not Found Screen ─────────────────────────────────────────────────────────
 
 export default function NotFoundScreen() {
+  const { t } = useTranslation();
+
   return (
-    <>
-      <Stack.Screen options={{ title: 'Oops!' }} />
-      <ThemedView style={styles.container}>
-        <ThemedText type="title">This screen does not exist.</ThemedText>
+    <Screen scroll={false}>
+      <View style={styles.container}>
+        <Text style={styles.title}>404</Text>
+        <Text style={styles.subtitle}>{t('common.notFound')}</Text>
         <Link href="/" style={styles.link}>
-          <ThemedText type="link">Go to home screen!</ThemedText>
+          <Text style={styles.linkText}>{t('common.goHome')}</Text>
         </Link>
-      </ThemedView>
-    </>
+      </View>
+    </Screen>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-    padding: 20,
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  title: {
+    ...typography.textStyles.heading,
+    fontSize: 72,
+    color: lightTheme.primary,
+    marginBlockEnd: spacing.sm,
+  },
+  subtitle: {
+    ...typography.textStyles.body,
+    color: lightTheme.textSecondary,
+    textAlign: 'center',
+    marginBlockEnd: spacing.xl,
   },
   link: {
-    marginTop: 15,
-    paddingVertical: 15,
+    paddingVertical: spacing.base,
+    paddingHorizontal: spacing.lg,
+  },
+  linkText: {
+    ...typography.textStyles.label,
+    color: lightTheme.primary,
   },
 });

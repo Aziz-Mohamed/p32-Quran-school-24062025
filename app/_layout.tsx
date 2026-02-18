@@ -1,116 +1,172 @@
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, I18nManager, Text, View } from "react-native";
-import "react-native-reanimated";
+import 'react-native-reanimated';
+import 'react-native-gesture-handler';
 
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { i18nInitPromise } from "@/hooks/useI18n";
-import { initializeRTL } from "@/hooks/useRTL";
+import React, { useEffect } from 'react';
+import { Stack, useRouter, useSegments } from 'expo-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useFonts } from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
+import { I18nextProvider } from 'react-i18next';
 
-const LANGUAGE_KEY = "@quran_school_language";
+import { useAuthStore, type Profile } from '@/stores/authStore';
+import { useAuth } from '@/hooks/useAuth';
+import i18n from '@/i18n/config';
+import { supabase } from '@/lib/supabase';
+
+// ─── Keep Splash Screen Visible ──────────────────────────────────────────────
+
+SplashScreen.preventAutoHideAsync();
+
+// ─── Query Client ─────────────────────────────────────────────────────────────
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
+
+// ─── Root Layout ──────────────────────────────────────────────────────────────
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+  const [fontsLoaded] = useFonts({
+    // Add custom fonts here if needed
   });
-  const [i18nReady, setI18nReady] = useState(false);
-  const [rtlInitialized, setRtlInitialized] = useState(false);
 
-  // Wait for i18n to be ready and initialize RTL
   useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        // Wait for i18n to be ready
-        await i18nInitPromise;
-        setI18nReady(true);
-        console.log("i18n ready state:", true);
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
-        // Initialize RTL based on stored language preference
-        const rtlChanged = await initializeRTL();
-        setRtlInitialized(true);
-
-        console.log("Current RTL state:", I18nManager.isRTL);
-        if (rtlChanged) {
-          console.log("RTL was changed during initialization");
-        }
-      } catch (error) {
-        console.error("Error initializing app:", error);
-        setI18nReady(true);
-        setRtlInitialized(true);
-      }
-    };
-
-    initializeApp();
-  }, []);
-
-  // Show loading screen while fonts, i18n, and RTL are loading
-  if (!loaded || !i18nReady || !rtlInitialized) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: "#FAFAF7",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <ActivityIndicator size="large" color="#3A7D5D" />
-        <Text
-          style={{
-            marginTop: 16,
-            fontSize: 16,
-            color: "#666",
-          }}
-        >
-          Loading Quran School...
-        </Text>
-        {!i18nReady && (
-          <Text
-            style={{
-              marginTop: 8,
-              fontSize: 14,
-              color: "#999",
-            }}
-          >
-            Initializing translations...
-          </Text>
-        )}
-        {!rtlInitialized && (
-          <Text
-            style={{
-              marginTop: 8,
-              fontSize: 14,
-              color: "#999",
-            }}
-          >
-            Setting up layout...
-          </Text>
-        )}
-      </View>
-    );
+  if (!fontsLoaded) {
+    return null;
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="admin" options={{ headerShown: false }} />
-        <Stack.Screen name="teacher" options={{ headerShown: false }} />
-        <Stack.Screen name="student" options={{ headerShown: false }} />
-        <Stack.Screen name="parent" options={{ headerShown: false }} />
-        <Stack.Screen name="auth" options={{ headerShown: false }} />
-        <Stack.Screen name="shared" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <I18nextProvider i18n={i18n}>
+        <AuthGuard>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(student)" />
+            <Stack.Screen name="(teacher)" />
+            <Stack.Screen name="(parent)" />
+            <Stack.Screen name="(admin)" />
+            <Stack.Screen name="+not-found" />
+          </Stack>
+        </AuthGuard>
+      </I18nextProvider>
+    </QueryClientProvider>
   );
+}
+
+// ─── Auth Guard ───────────────────────────────────────────────────────────────
+
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const segments = useSegments();
+  const router = useRouter();
+  const { isAuthenticated, isLoading, role } = useAuth();
+  const initialize = useAuthStore((s) => s.initialize);
+  const setSession = useAuthStore((s) => s.setSession);
+  const setProfile = useAuthStore((s) => s.setProfile);
+  const clearAuth = useAuthStore((s) => s.clearAuth);
+
+  // ─── Initialize Auth Listener ───────────────────────────────────────────────
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        // Fetch profile
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data, error }) => {
+            if (!error && data) {
+              setProfile(data as Profile);
+            }
+            initialize();
+          });
+      } else {
+        initialize();
+      }
+    });
+
+    // Listen to auth changes (T116: handle token expiry)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !session) {
+        // Token expired or user signed out — clear auth state
+        clearAuth();
+        return;
+      }
+      if (session) {
+        // Fetch profile on sign in or token refresh
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data, error }) => {
+            if (!error && data) {
+              setProfile(data as Profile);
+            }
+          });
+      } else {
+        setProfile(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [setSession, setProfile, initialize, clearAuth]);
+
+  // ─── Auth Guard Logic ────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (isLoading) {
+      return;
+    }
+
+    const inAuthGroup = segments[0] === '(auth)';
+
+    if (!isAuthenticated) {
+      // Not authenticated - redirect to login unless already in auth group
+      if (!inAuthGroup) {
+        router.replace('/(auth)/login');
+      }
+    } else {
+      // Authenticated - redirect to role-based dashboard if in auth group
+      if (inAuthGroup) {
+        switch (role) {
+          case 'student':
+            router.replace('/(student)/');
+            break;
+          case 'teacher':
+            router.replace('/(teacher)/');
+            break;
+          case 'parent':
+            router.replace('/(parent)/');
+            break;
+          case 'admin':
+            router.replace('/(admin)/');
+            break;
+          default:
+            router.replace('/(auth)/login');
+        }
+      }
+    }
+  }, [isAuthenticated, isLoading, role, segments, router]);
+
+  return <>{children}</>;
 }

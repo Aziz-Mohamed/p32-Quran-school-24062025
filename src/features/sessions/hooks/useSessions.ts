@@ -1,0 +1,43 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { sessionsService } from '../services/sessions.service';
+import type { CreateSessionInput, SessionFilters } from '../types/sessions.types';
+
+export const useCreateSession = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ['create-session'],
+    mutationFn: (input: CreateSessionInput) => sessionsService.createSession(input),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-dashboard'] });
+      queryClient.invalidateQueries({
+        queryKey: ['student-dashboard', variables.student_id],
+      });
+    },
+  });
+};
+
+export const useSessions = (filters: SessionFilters) => {
+  return useQuery({
+    queryKey: ['sessions', filters],
+    queryFn: async () => {
+      const { data, error } = await sessionsService.getSessions(filters);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+};
+
+export const useSessionById = (id: string | undefined) => {
+  return useQuery({
+    queryKey: ['sessions', id],
+    queryFn: async () => {
+      if (!id) throw new Error('Session ID is required');
+      const { data, error } = await sessionsService.getSessionById(id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+};
