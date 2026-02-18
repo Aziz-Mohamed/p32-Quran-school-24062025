@@ -17,6 +17,7 @@ export default function AdminLayout() {
         <Stack.Screen name="teachers/create" />
         <Stack.Screen name="teachers/[id]/index" />
         <Stack.Screen name="teachers/[id]/edit" />
+        <Stack.Screen name="teachers/[id]/work-schedule" />
         <Stack.Screen name="parents/index" />
         <Stack.Screen name="parents/create" />
         <Stack.Screen name="parents/[id]/index" />
@@ -25,6 +26,7 @@ export default function AdminLayout() {
         <Stack.Screen name="classes/create" />
         <Stack.Screen name="classes/[id]/index" />
         <Stack.Screen name="classes/[id]/edit" />
+        <Stack.Screen name="classes/[id]/schedule" />
         <Stack.Screen name="attendance/index" />
         <Stack.Screen name="members/reset-password" />
         <Stack.Screen name="stickers/index" />
@@ -32,6 +34,10 @@ export default function AdminLayout() {
         <Stack.Screen name="stickers/[id]/edit" />
         <Stack.Screen name="reports/index" />
         <Stack.Screen name="reports/teacher-activity" />
+        <Stack.Screen name="reports/teacher-attendance" />
+        <Stack.Screen name="reports/session-completion" />
+        <Stack.Screen name="settings/location" />
+        <Stack.Screen name="work-attendance/index" />
       </Stack>
     </ErrorBoundary>
   );

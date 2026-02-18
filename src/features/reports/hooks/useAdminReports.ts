@@ -62,3 +62,27 @@ export function useTeacherActivity(
     staleTime: STALE_TIME,
   });
 }
+
+export function useTeacherAttendanceKPIs(
+  schoolId: string | null,
+  dateRange: DateRange,
+) {
+  return useQuery({
+    queryKey: ['admin-reports', 'teacher-attendance-kpis', schoolId, dateRange.startDate, dateRange.endDate],
+    queryFn: () => adminReportsService.getTeacherAttendanceKPIs(schoolId!, dateRange),
+    enabled: !!schoolId,
+    staleTime: STALE_TIME,
+  });
+}
+
+export function useSessionCompletionStats(
+  schoolId: string | null,
+  dateRange: DateRange,
+) {
+  return useQuery({
+    queryKey: ['admin-reports', 'session-completion', schoolId, dateRange.startDate, dateRange.endDate],
+    queryFn: () => adminReportsService.getSessionCompletionStats(schoolId!, dateRange),
+    enabled: !!schoolId,
+    staleTime: STALE_TIME,
+  });
+}

@@ -81,6 +81,19 @@ export function buildStudentProfile(
     },
   ];
 
+  // Scheduled sessions for the student's classes
+  if (classId) {
+    subscriptions.push({
+      table: 'scheduled_sessions',
+      event: '*',
+      filter: `class_id=eq.${classId}`,
+      queryKeys: [
+        ['student-upcoming-sessions'],
+        ['scheduled-sessions'],
+      ],
+    });
+  }
+
   return {
     channelName: `student-${studentId}`,
     subscriptions,
@@ -157,6 +170,28 @@ export function buildTeacherProfile(
       ],
     },
   ];
+
+  // Teacher check-ins (own)
+  subscriptions.push({
+    table: 'teacher_checkins',
+    event: '*',
+    filter: `teacher_id=eq.${teacherId}`,
+    queryKeys: [
+      ['teacher-checkin'],
+      ['teacher-dashboard'],
+    ],
+  });
+
+  // Scheduled sessions for the teacher
+  subscriptions.push({
+    table: 'scheduled_sessions',
+    event: '*',
+    filter: `teacher_id=eq.${teacherId}`,
+    queryKeys: [
+      ['teacher-upcoming-sessions'],
+      ['scheduled-sessions'],
+    ],
+  });
 
   return {
     channelName: `teacher-${teacherId}`,
@@ -236,6 +271,16 @@ export function buildParentProfile(
         ['parent-dashboard'],
       ],
     },
+    {
+      table: 'scheduled_sessions',
+      event: '*',
+      filter: childFilter,
+      queryKeys: [
+        ['scheduled-sessions'],
+        ['student-upcoming-sessions'],
+        ['parent-dashboard'],
+      ],
+    },
   ];
 
   return {
@@ -298,6 +343,26 @@ export function buildAdminProfile(schoolId: string): RoleSubscriptionProfile {
         ['classes'],
         ['admin-dashboard'],
         ['teacher-dashboard'],
+      ],
+    },
+    {
+      table: 'teacher_checkins',
+      event: '*',
+      filter: schoolFilter,
+      queryKeys: [
+        ['teacher-checkins'],
+        ['school-attendance-today'],
+        ['pending-overrides'],
+        ['admin-dashboard'],
+      ],
+    },
+    {
+      table: 'scheduled_sessions',
+      event: '*',
+      filter: schoolFilter,
+      queryKeys: [
+        ['scheduled-sessions'],
+        ['admin-dashboard'],
       ],
     },
   ];

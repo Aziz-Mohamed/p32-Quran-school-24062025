@@ -4,6 +4,7 @@ import type { Tables } from '@/types/database.types';
 export interface BulkAttendanceInput {
   class_id: string;
   date: string;
+  scheduled_session_id?: string;
   records: Array<{
     student_id: string;
     status: 'present' | 'absent' | 'late' | 'excused';

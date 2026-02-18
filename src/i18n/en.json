@@ -229,7 +229,8 @@
       "subtitle": "Manage your students and sessions",
       "sessionsToday": "Sessions Today",
       "studentsSeen": "Students Seen",
-      "noRecentSessions": "No recent sessions yet"
+      "noRecentSessions": "No recent sessions yet",
+      "readyToTeach": "Ready to teach today?"
     },
     "checkIn": "Check In",
     "checkOut": "Check Out",
@@ -274,7 +275,7 @@
       "due": "Due",
       "pending": "Pending",
       "emptyTitle": "No Sessions Yet",
-      "emptyDescription": "Tap the button above to log your first session"
+      "emptyDescription": "Session evaluations will appear here after completing scheduled sessions"
     },
     "students": {
       "title": "My Students",
@@ -479,6 +480,74 @@
       "minLength": "Password must be at least 6 characters",
       "success": "Password has been reset successfully"
     },
+    "classSchedule": {
+      "title": "Class Schedule",
+      "description": "Set the recurring session times for this class.",
+      "noSession": "No session",
+      "addSession": "Add Session",
+      "removeTitle": "Remove Schedule?",
+      "removeMessage": "Remove the session on {{day}}?"
+    },
+    "workSchedule": {
+      "title": "Work Schedule",
+      "description": "Set the expected work hours for each day of the week.",
+      "days": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      },
+      "dayOff": "Day off",
+      "addHours": "Add Hours",
+      "startTime": "Start Time",
+      "endTime": "End Time",
+      "timeFormat": "Use 24-hour format (e.g. 09:00, 17:00)",
+      "invalidTime": "Please enter valid times in HH:MM format.",
+      "endBeforeStart": "End time must be after start time.",
+      "removeTitle": "Remove Schedule?",
+      "removeMessage": "Remove work hours for {{day}}?"
+    },
+    "workAttendance": {
+      "title": "Teacher Attendance",
+      "subtitle": "Today's teacher check-in status",
+      "present": "Present",
+      "absent": "Absent",
+      "pendingOverrides": "Pending",
+      "overrideRequests": "Override Requests",
+      "checkedInTeachers": "Checked In",
+      "missingTeachers": "Not Checked In",
+      "noCheckins": "No teachers have checked in today.",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "pendingLabel": "Pending",
+      "notCheckedInYet": "Not checked in yet",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveTitle": "Approve Override?",
+      "approveMessage": "This will verify the teacher's check-in.",
+      "rejectTitle": "Reject Override?",
+      "rejectMessage": "This will delete the teacher's check-in record."
+    },
+    "location": {
+      "title": "School Location",
+      "description": "Set your school's GPS coordinates and geofence radius to enable location-verified teacher check-ins.",
+      "configured": "Location is configured. Teacher check-ins will be GPS-verified.",
+      "notConfigured": "Location not set. Teacher check-ins will not require GPS verification.",
+      "latitude": "Latitude",
+      "latitudePlaceholder": "e.g. 24.7136",
+      "longitude": "Longitude",
+      "longitudePlaceholder": "e.g. 46.6753",
+      "geofenceRadius": "Geofence Radius (meters)",
+      "geofenceRadiusPlaceholder": "e.g. 200",
+      "geofenceHint": "Range: 50–2000 meters. Teachers within this radius will be auto-verified.",
+      "invalidLatitude": "Latitude must be between -90 and 90.",
+      "invalidLongitude": "Longitude must be between -180 and 180.",
+      "invalidRadius": "Radius must be between 50 and 2000 meters.",
+      "saved": "School location updated successfully."
+    },
     "attendance": {
       "title": "Attendance",
       "subtitle": "Manage attendance records",
@@ -622,6 +691,81 @@
       "scoreDistribution": "Score distribution chart showing {{count}} students across 4 performance ranges",
       "levelDistribution": "Level distribution chart showing {{count}} students across {{levels}} levels",
       "scoreTrend": "Score trend chart showing memorization, tajweed, and recitation scores over {{count}} periods"
+    },
+    "teacherAttendanceReport": {
+      "title": "Teacher Attendance Report",
+      "avgPunctuality": "Avg Punctuality",
+      "avgHoursPerDay": "Avg Hours/Day",
+      "totalPresenceDays": "Total Presence Days",
+      "daysPresent": "Days Present",
+      "daysOnTime": "On Time",
+      "daysLate": "Late",
+      "totalHours": "Total Hours",
+      "onTime": "on time",
+      "noData": "No teacher attendance data for this period."
+    },
+    "sessionCompletion": {
+      "title": "Session Completion Report",
+      "completionRate": "Completion Rate",
+      "scheduled": "Scheduled",
+      "completed": "Completed",
+      "missed": "Missed",
+      "cancelled": "Cancelled",
+      "noData": "No scheduled session data for this period."
     }
+  },
+  "scheduling": {
+    "mySchedule": "My Schedule",
+    "upcomingSessions": "Your upcoming sessions",
+    "viewUpcoming": "View upcoming sessions",
+    "noUpcomingSessions": "No upcoming sessions scheduled.",
+    "childScheduleTitle": "{{name}}'s Schedule",
+    "individualSession": "Individual Session",
+    "nextSession": "Next Session",
+    "date": "Date",
+    "time": "Time",
+    "type": "Type",
+    "student": "Student",
+    "startSession": "Start Session",
+    "completeSession": "Complete Session",
+    "cancelSession": "Cancel Session",
+    "sessionCompleted": "Session has been completed successfully.",
+    "sessionNotFound": "Session not found.",
+    "cancelTitle": "Cancel Session?",
+    "cancelMessage": "Are you sure you want to cancel this session?",
+    "status": {
+      "scheduled": "Scheduled",
+      "in_progress": "In Progress",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "missed": "Missed"
+    },
+    "sessionType": {
+      "class": "Class Session",
+      "individual": "Individual Session"
+    },
+    "workspace": {
+      "markAllPresent": "Mark All Present",
+      "evaluation": "Evaluation",
+      "completeSession": "Complete Session",
+      "openWorkspace": "Open Workspace",
+      "noStudents": "No students found for this session."
+    }
+  },
+  "workAttendance": {
+    "checkIn": "Check In",
+    "checkOut": "Check Out",
+    "checkedOut": "Checked Out",
+    "checkedInVerified": "Checked In (Verified)",
+    "checkedInUnverified": "Checked In",
+    "pendingOverride": "Pending Approval",
+    "notCheckedIn": "Not Checked In",
+    "since": "Since",
+    "fromSchool": "from school",
+    "locationPermissionNeeded": "Location permission is required for GPS check-in.",
+    "outsideGeofence": "Outside School Area",
+    "outsideGeofenceDescription": "You appear to be outside the school's geofence. You can request a manual override by providing a reason.",
+    "overrideReasonPlaceholder": "Why are you checking in from outside the school area?",
+    "requestOverride": "Request Override"
   }
 }
