@@ -168,7 +168,7 @@ export default function TeacherDashboard() {
               <View style={styles.sessionRow}>
                 <View style={styles.sessionInfo}>
                   <Text style={styles.sessionStudentName}>
-                    {session.profiles?.full_name ?? t('common.noResults')}
+                    {session.student?.profiles?.full_name ?? t('common.noResults')}
                   </Text>
                   <Text style={styles.sessionDate}>{session.session_date}</Text>
                 </View>

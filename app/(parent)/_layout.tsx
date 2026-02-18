@@ -12,6 +12,7 @@ export default function ParentLayout() {
         <Stack.Screen name="children/[id]" />
         <Stack.Screen name="attendance/[childId]" />
         <Stack.Screen name="class-standing/[childId]" />
+        <Stack.Screen name="progress/[childId]" />
       </Stack>
     </ErrorBoundary>
   );

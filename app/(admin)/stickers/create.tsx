@@ -7,10 +7,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
-import { EmojiPicker } from '@/components/forms/EmojiPicker';
+import { IslamicIconPicker } from '@/components/forms/IslamicIconPicker';
 import { useAuth } from '@/hooks/useAuth';
 import { gamificationService } from '@/features/gamification/services/gamification.service';
-import { DEFAULT_STICKER_EMOJI } from '@/lib/stickerEmojis';
+import { DEFAULT_STICKER_ICON } from '@/lib/islamicIcons';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -26,7 +26,7 @@ export default function CreateStickerScreen() {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [pointsValue, setPointsValue] = useState('5');
-  const [emoji, setEmoji] = useState(DEFAULT_STICKER_EMOJI);
+  const [iconKey, setIconKey] = useState<string>(DEFAULT_STICKER_ICON);
 
   const createSticker = useMutation({
     mutationFn: () =>
@@ -35,7 +35,7 @@ export default function CreateStickerScreen() {
         category: category.trim() || null,
         points_value: parseInt(pointsValue, 10) || 5,
         school_id: profile?.school_id ?? '',
-        image_url: emoji,
+        image_url: iconKey,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stickers'] });
@@ -63,10 +63,10 @@ export default function CreateStickerScreen() {
 
         <Text style={styles.title}>{t('admin.stickers.createTitle')}</Text>
 
-        <EmojiPicker
+        <IslamicIconPicker
           label={t('admin.stickers.icon')}
-          value={emoji}
-          onChange={setEmoji}
+          value={iconKey}
+          onChange={setIconKey}
         />
 
         <TextField

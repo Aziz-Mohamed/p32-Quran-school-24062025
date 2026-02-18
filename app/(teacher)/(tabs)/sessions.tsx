@@ -63,7 +63,7 @@ export default function SessionsScreen() {
                 <View style={styles.sessionRow}>
                   <View style={styles.sessionInfo}>
                     <Text style={styles.studentName}>
-                      {item.profiles?.full_name ?? '—'}
+                      {item.student?.profiles?.full_name ?? '—'}
                     </Text>
                     <Text style={styles.sessionDate}>{item.session_date}</Text>
                   </View>

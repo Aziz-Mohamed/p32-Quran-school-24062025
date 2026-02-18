@@ -98,6 +98,13 @@ export default function ChildDetailScreen() {
               style={styles.actionButton}
             />
           )}
+          <Button
+            title={t('reports.viewProgress', 'View Progress')}
+            onPress={() => router.push(`/(parent)/progress/${id}`)}
+            variant="secondary"
+            size="md"
+            style={styles.actionButton}
+          />
         </View>
 
         {/* Recent Sessions */}
@@ -118,7 +125,7 @@ export default function ChildDetailScreen() {
                   {t('teacher.sessions.tajweed')}: {session.tajweed_score}/10
                 </Text>
                 <Text style={styles.score}>
-                  {t('teacher.sessions.recitation')}: {session.recitation_score}/10
+                  {t('teacher.sessions.recitation')}: {session.recitation_quality}/10
                 </Text>
               </View>
               {session.notes && (

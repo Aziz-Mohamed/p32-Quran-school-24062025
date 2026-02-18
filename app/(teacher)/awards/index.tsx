@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 
 import { Screen } from '@/components/layout';
-import { Card } from '@/components/ui/Card';
+import { StickerIcon } from '@/components/ui/StickerIcon';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { Select, type SelectOption } from '@/components/forms/Select';
@@ -119,9 +119,11 @@ export default function AwardStickerScreen() {
                   accessibilityState={{ selected: isSelected }}
                   accessibilityLabel={sticker.name}
                 >
-                  <Text style={styles.stickerEmoji}>
-                    {sticker.image_url || '⭐'}
-                  </Text>
+                  <StickerIcon
+                    value={sticker.image_url}
+                    size={32}
+                    color={isSelected ? colors.primary[600] : colors.neutral[600]}
+                  />
                   <Text
                     style={[
                       styles.stickerName,
@@ -207,9 +209,6 @@ const styles = StyleSheet.create({
   stickerItemSelected: {
     borderColor: colors.primary[500],
     backgroundColor: colors.primary[50],
-  },
-  stickerEmoji: {
-    fontSize: 32,
   },
   stickerName: {
     ...typography.textStyles.caption,

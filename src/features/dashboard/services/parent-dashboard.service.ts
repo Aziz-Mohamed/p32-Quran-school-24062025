@@ -24,7 +24,7 @@ class ParentDashboardService {
         const [sessionResult, attendanceResult] = await Promise.all([
           supabase
             .from('sessions')
-            .select('session_date, memorization_score, tajweed_score, recitation_score')
+            .select('session_date, memorization_score, tajweed_score, recitation_quality')
             .eq('student_id', child.id)
             .order('session_date', { ascending: false })
             .limit(1)

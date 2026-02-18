@@ -26,7 +26,7 @@ export default function SessionDetailScreen() {
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
   if (!session) return <ErrorState description={t('common.noResults')} onRetry={refetch} />;
 
-  const studentName = (session as any).profiles?.full_name ?? '—';
+  const studentName = (session as any).student?.profiles?.full_name ?? '—';
 
   return (
     <Screen scroll>

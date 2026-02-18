@@ -841,6 +841,80 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_attendance_trend: {
+        Args: {
+          p_class_id?: string
+          p_end_date: string
+          p_granularity: string
+          p_school_id: string
+          p_start_date: string
+        }
+        Returns: {
+          absent_count: number
+          attendance_rate: number
+          bucket_date: string
+          excused_count: number
+          late_count: number
+          present_count: number
+        }[]
+      }
+      get_child_score_trend: {
+        Args: {
+          p_class_id: string
+          p_end_date: string
+          p_granularity: string
+          p_start_date: string
+          p_student_id: string
+        }
+        Returns: {
+          avg_memorization: number
+          avg_recitation: number
+          avg_tajweed: number
+          bucket_date: string
+          class_avg_memorization: number
+          class_avg_recitation: number
+          class_avg_tajweed: number
+        }[]
+      }
+      get_score_trend: {
+        Args: {
+          p_class_id?: string
+          p_end_date: string
+          p_granularity: string
+          p_school_id: string
+          p_start_date: string
+        }
+        Returns: {
+          avg_memorization: number
+          avg_recitation: number
+          avg_tajweed: number
+          bucket_date: string
+        }[]
+      }
+      get_students_needing_attention: {
+        Args: { p_class_id: string; p_end_date?: string; p_start_date?: string }
+        Returns: {
+          avatar_url: string
+          current_avg: number
+          decline_amount: number
+          flag_reason: string
+          full_name: string
+          previous_avg: number
+          student_id: string
+        }[]
+      }
+      get_teacher_activity: {
+        Args: { p_end_date: string; p_school_id: string; p_start_date: string }
+        Returns: {
+          avatar_url: string
+          full_name: string
+          last_active_date: string
+          sessions_logged: number
+          stickers_awarded: number
+          teacher_id: string
+          unique_students: number
+        }[]
+      }
       get_user_role: { Args: never; Returns: string }
       get_user_school_id: { Args: never; Returns: string }
     }

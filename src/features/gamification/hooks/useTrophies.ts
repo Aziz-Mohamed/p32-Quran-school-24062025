@@ -6,7 +6,13 @@ export const useStudentTrophies = (studentId: string | undefined) => {
     queryKey: ['student-trophies', studentId],
     queryFn: async () => {
       if (!studentId) throw new Error('Student ID is required');
-      return gamificationService.getStudentTrophies(studentId);
+      const result = await gamificationService.getStudentTrophies(studentId);
+      if (result.trophiesError) throw result.trophiesError;
+      if (result.earnedError) throw result.earnedError;
+      return {
+        allTrophies: result.allTrophies ?? [],
+        earnedTrophies: result.earnedTrophies ?? [],
+      };
     },
     enabled: !!studentId,
   });
