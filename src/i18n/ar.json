@@ -164,7 +164,11 @@
       "viewTrophies": "عرض الجوائز",
       "viewLeaderboard": "المتصدّرون",
       "recentAchievements": "الإنجازات الأخيرة",
-      "noAchievements": "لا توجد إنجازات بعد"
+      "noAchievements": "لا توجد إنجازات بعد",
+      "readyToLearn": "مستعدّ للتعلّم اليوم؟",
+      "levelProgress": "تقدّم المستوى",
+      "sessions": "الحصص",
+      "stickers": "الملصقات"
     },
     "myLessons": "دروسي",
     "myProgress": "تقدّمي",
@@ -810,5 +814,97 @@
     "outsideGeofenceDescription": "يبدو أنك خارج النطاق الجغرافي للمدرسة. يمكنك طلب استثناء يدوي بتوضيح السبب.",
     "overrideReasonPlaceholder": "لماذا تسجّل حضورك من خارج نطاق المدرسة؟",
     "requestOverride": "طلب استثناء"
+  },
+  "memorization": {
+    "title": "الحفظ",
+    "progress": "التقدّم",
+    "progressTitle": "تقدّم الحفظ",
+    "recitations": "التسميعات",
+    "addRecitation": "إضافة تسميع",
+    "noRecitations": "لم تُضف تسميعات. اضغط \"إضافة تسميع\" لتتبع التقدّم.",
+    "needsReview": "تحتاج مراجعة",
+    "needsRepeat": "تحتاج إعادة",
+    "viewDetails": "عرض التفاصيل",
+    "studentMemorization": "{{name}} — الحفظ",
+    "surahsStarted": "السور ({{count}} بُدئت)",
+    "ayahRange": "الآية {{from}}–{{to}}",
+    "needReviewCount": "{{count}} تحتاج مراجعة",
+    "reviewCount": "{{count}} مراجعة",
+    "quranProgress": "تقدّم القرآن",
+    "quranMemorization": "حفظ القرآن",
+    "ayahsMemorized": "{{memorized}} / {{total}} آية محفوظة",
+    "surahsStartedLabel": "سور بُدئت",
+    "surahsComplete": "سور مكتملة",
+    "inProgress": "قيد التعلّم",
+    "averageAccuracy": "متوسط الدقة",
+    "noProgressYet": "لا يوجد تقدّم في الحفظ بعد.",
+    "noProgressDescription": "أكمل التسميعات لرؤية تقدّمك هنا.",
+    "todaysRevisionPlan": "خطة المراجعة اليومية",
+    "noRevisionToday": "لا توجد عناصر مراجعة اليوم",
+    "noRevisionDescription": "ستظهر خطة المراجعة اليومية هنا بعد أن يعيّن معلّمك الحفظ.",
+    "assignNewHifz": "تعيين حفظ جديد",
+    "assignHifz": "تعيين حفظ",
+    "status": {
+      "new": "جديد",
+      "learning": "قيد التعلّم",
+      "memorized": "محفوظ",
+      "needs_review": "تحتاج مراجعة"
+    },
+    "sections": {
+      "new_hifz": "الحفظ الجديد",
+      "recent_review": "المراجعة القريبة",
+      "old_review": "المراجعة البعيدة"
+    },
+    "revisionLabels": {
+      "new": "جديد",
+      "recent": "قريب",
+      "older": "بعيد"
+    },
+    "recitationType": {
+      "title": "نوع التسميع",
+      "new_hifz": "حفظ جديد",
+      "recent_review": "مراجعة قريبة",
+      "old_review": "مراجعة بعيدة"
+    },
+    "recitationForm": {
+      "title": "التسميع #{{number}}",
+      "accuracy": "الدقة",
+      "tajweed": "التجويد",
+      "fluency": "الطلاقة",
+      "needsRepeat": "تحتاج إعادة",
+      "needsRepeatDesc": "علامة لإعادة الحفظ",
+      "mistakeNotes": "ملاحظات الأخطاء",
+      "mistakeNotesPlaceholder": "سجّل أي أخطاء محددة..."
+    },
+    "surahPicker": {
+      "surahLabel": "السورة",
+      "selectSurah": "اختر سورة...",
+      "fromAyah": "من الآية",
+      "toAyah": "إلى الآية",
+      "ayahCountInfo": "{{name}} بها {{count}} آية",
+      "searchSurahs": "ابحث في السور...",
+      "ayahCount": "{{count}} آية"
+    },
+    "assignment": {
+      "title": "تعيين حفظ",
+      "subtitle": "عيّن حفظًا جديدًا أو مراجعة لطالب",
+      "studentLabel": "الطالب",
+      "selectStudent": "اختر طالبًا...",
+      "dueDate": "تاريخ التسليم",
+      "selectDueDate": "اختر تاريخ التسليم...",
+      "notesLabel": "ملاحظات (اختياري)",
+      "notesPlaceholder": "تعليمات للطالب...",
+      "createButton": "إنشاء التعيين",
+      "createdSuccess": "تم إنشاء التعيين بنجاح"
+    },
+    "validation": {
+      "selectStudent": "يرجى اختيار طالب",
+      "selectSurah": "يرجى اختيار سورة",
+      "required": "مطلوب",
+      "maxAyah": "الحد الأقصى {{max}}",
+      "mustBeAfterFrom": "يجب أن تكون >= من الآية",
+      "selectDueDate": "يرجى تحديد تاريخ التسليم",
+      "recitationError": "التسميع #{{number}} لـ{{name}}: {{errors}}"
+    }
   }
 }

@@ -9,6 +9,7 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
@@ -48,6 +49,7 @@ export function SurahAyahPicker({
   toAyahError,
   style,
 }: SurahAyahPickerProps) {
+  const { t } = useTranslation();
   const [modalVisible, setModalVisible] = useState(false);
   const [search, setSearch] = useState('');
 
@@ -88,7 +90,7 @@ export function SurahAyahPicker({
     <View style={[styles.root, style]}>
       {/* Surah Selector */}
       <View style={styles.field}>
-        <Text style={styles.label}>Surah</Text>
+        <Text style={styles.label}>{t('memorization.surahPicker.surahLabel')}</Text>
         <Pressable
           onPress={() => setModalVisible(true)}
           style={[styles.trigger, hasSurahError && styles.triggerError]}
@@ -102,7 +104,7 @@ export function SurahAyahPicker({
               <Text style={styles.surahArabic}>{selectedSurah.nameArabic}</Text>
             </View>
           ) : (
-            <Text style={styles.placeholderText}>Select surah...</Text>
+            <Text style={styles.placeholderText}>{t('memorization.surahPicker.selectSurah')}</Text>
           )}
           <Ionicons name="chevron-down" size={normalize(20)} color={lightTheme.textTertiary} />
         </Pressable>
@@ -112,7 +114,7 @@ export function SurahAyahPicker({
       {/* Ayah Range */}
       <View style={styles.ayahRow}>
         <View style={styles.ayahField}>
-          <Text style={styles.label}>From Ayah</Text>
+          <Text style={styles.label}>{t('memorization.surahPicker.fromAyah')}</Text>
           <TextInput
             style={[styles.ayahInput, hasFromError && styles.inputError]}
             value={fromAyah != null ? String(fromAyah) : ''}
@@ -130,7 +132,7 @@ export function SurahAyahPicker({
         </View>
 
         <View style={styles.ayahField}>
-          <Text style={styles.label}>To Ayah</Text>
+          <Text style={styles.label}>{t('memorization.surahPicker.toAyah')}</Text>
           <TextInput
             style={[styles.ayahInput, hasToError && styles.inputError]}
             value={toAyah != null ? String(toAyah) : ''}
@@ -151,7 +153,7 @@ export function SurahAyahPicker({
       {/* Ayah Range Info */}
       {selectedSurah && (
         <Text style={styles.ayahInfo}>
-          {selectedSurah.nameEnglish} has {selectedSurah.ayahCount} ayahs
+          {t('memorization.surahPicker.ayahCountInfo', { name: selectedSurah.nameEnglish, count: selectedSurah.ayahCount })}
         </Text>
       )}
 
@@ -180,7 +182,7 @@ export function SurahAyahPicker({
                 style={styles.searchInput}
                 value={search}
                 onChangeText={setSearch}
-                placeholder="Search surahs..."
+                placeholder={t('memorization.surahPicker.searchSurahs')}
                 placeholderTextColor={lightTheme.textTertiary}
                 autoFocus
               />
@@ -211,7 +213,7 @@ export function SurahAyahPicker({
                       </Text>
                       <Text style={styles.optionArabic}>{item.nameArabic}</Text>
                     </View>
-                    <Text style={styles.optionAyahCount}>{item.ayahCount} ayahs</Text>
+                    <Text style={styles.optionAyahCount}>{t('memorization.surahPicker.ayahCount', { count: item.ayahCount })}</Text>
                     {isSelected && (
                       <Ionicons name="checkmark" size={normalize(20)} color={colors.primary[500]} />
                     )}

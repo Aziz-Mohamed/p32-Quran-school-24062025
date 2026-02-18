@@ -50,20 +50,20 @@ export default function CreateAssignmentScreen() {
   const validate = (): boolean => {
     const errs: Record<string, string> = {};
 
-    if (!studentId) errs.studentId = 'Please select a student';
-    if (surahNumber < 1 || surahNumber > 114) errs.surah = 'Please select a surah';
+    if (!studentId) errs.studentId = t('memorization.validation.selectStudent');
+    if (surahNumber < 1 || surahNumber > 114) errs.surah = t('memorization.validation.selectSurah');
 
     const surah = surahNumber > 0 ? getSurah(surahNumber) : null;
     const maxAyah = surah?.ayahCount ?? 0;
 
-    if (fromAyah < 1) errs.fromAyah = 'Required';
-    else if (surah && fromAyah > maxAyah) errs.fromAyah = `Max ${maxAyah}`;
+    if (fromAyah < 1) errs.fromAyah = t('memorization.validation.required');
+    else if (surah && fromAyah > maxAyah) errs.fromAyah = t('memorization.validation.maxAyah', { max: maxAyah });
 
-    if (toAyah < 1) errs.toAyah = 'Required';
-    else if (surah && toAyah > maxAyah) errs.toAyah = `Max ${maxAyah}`;
-    else if (toAyah < fromAyah) errs.toAyah = 'Must be >= from ayah';
+    if (toAyah < 1) errs.toAyah = t('memorization.validation.required');
+    else if (surah && toAyah > maxAyah) errs.toAyah = t('memorization.validation.maxAyah', { max: maxAyah });
+    else if (toAyah < fromAyah) errs.toAyah = t('memorization.validation.mustBeAfterFrom');
 
-    if (!dueDate) errs.dueDate = 'Please set a due date';
+    if (!dueDate) errs.dueDate = t('memorization.validation.selectDueDate');
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
@@ -86,7 +86,7 @@ export default function CreateAssignmentScreen() {
       },
       {
         onSuccess: () => {
-          Alert.alert(t('common.success'), 'Assignment created successfully', [
+          Alert.alert(t('common.success'), t('memorization.assignment.createdSuccess'), [
             { text: t('common.done'), onPress: () => router.back() },
           ]);
         },
@@ -107,14 +107,14 @@ export default function CreateAssignmentScreen() {
           size="sm"
         />
 
-        <Text style={styles.title}>Assign Memorization</Text>
-        <Text style={styles.subtitle}>Assign new memorization or review to a student</Text>
+        <Text style={styles.title}>{t('memorization.assignment.title')}</Text>
+        <Text style={styles.subtitle}>{t('memorization.assignment.subtitle')}</Text>
 
         <Card variant="outlined" style={styles.formCard}>
           {/* Student Select */}
           <Select
-            label="Student"
-            placeholder="Select student..."
+            label={t('memorization.assignment.studentLabel')}
+            placeholder={t('memorization.assignment.selectStudent')}
             options={studentOptions}
             value={studentId}
             onChange={(v) => {
@@ -154,8 +154,8 @@ export default function CreateAssignmentScreen() {
 
           {/* Due Date */}
           <DatePicker
-            label="Due Date"
-            placeholder="Select due date..."
+            label={t('memorization.assignment.dueDate')}
+            placeholder={t('memorization.assignment.selectDueDate')}
             value={dueDate}
             onChange={(d) => {
               setDueDate(d);
@@ -167,8 +167,8 @@ export default function CreateAssignmentScreen() {
 
           {/* Notes */}
           <TextField
-            label="Notes (optional)"
-            placeholder="Instructions for the student..."
+            label={t('memorization.assignment.notesLabel')}
+            placeholder={t('memorization.assignment.notesPlaceholder')}
             value={notes}
             onChangeText={setNotes}
             multiline
@@ -176,7 +176,7 @@ export default function CreateAssignmentScreen() {
         </Card>
 
         <Button
-          title="Create Assignment"
+          title={t('memorization.assignment.createButton')}
           onPress={handleSubmit}
           variant="primary"
           size="lg"

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, Switch, type ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Card } from '@/components/ui/Card';
@@ -84,6 +85,7 @@ export function validateRecitationForm(data: RecitationFormData): Record<string,
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function RecitationForm({ index, data, onChange, onRemove, style }: RecitationFormProps) {
+  const { t } = useTranslation();
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const update = <K extends keyof RecitationFormData>(field: K, value: RecitationFormData[K]) => {
@@ -103,9 +105,9 @@ export function RecitationForm({ index, data, onChange, onRemove, style }: Recit
     <Card variant="outlined" style={StyleSheet.flatten([styles.root, style])}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Recitation #{index + 1}</Text>
+        <Text style={styles.headerTitle}>{t('memorization.recitationForm.title', { number: index + 1 })}</Text>
         <Button
-          title="Remove"
+          title={t('common.remove')}
           onPress={onRemove}
           variant="ghost"
           size="sm"
@@ -134,17 +136,17 @@ export function RecitationForm({ index, data, onChange, onRemove, style }: Recit
 
       {/* Scores */}
       <ScoreInput
-        label="Accuracy"
+        label={t('memorization.recitationForm.accuracy')}
         value={data.accuracy_score}
         onChange={(v) => update('accuracy_score', v)}
       />
       <ScoreInput
-        label="Tajweed"
+        label={t('memorization.recitationForm.tajweed')}
         value={data.tajweed_score}
         onChange={(v) => update('tajweed_score', v)}
       />
       <ScoreInput
-        label="Fluency"
+        label={t('memorization.recitationForm.fluency')}
         value={data.fluency_score}
         onChange={(v) => update('fluency_score', v)}
       />
@@ -152,8 +154,8 @@ export function RecitationForm({ index, data, onChange, onRemove, style }: Recit
       {/* Needs Repeat Toggle */}
       <View style={styles.toggleRow}>
         <View style={styles.toggleInfo}>
-          <Text style={styles.toggleLabel}>Needs Repeat</Text>
-          <Text style={styles.toggleDescription}>Flag for re-memorization</Text>
+          <Text style={styles.toggleLabel}>{t('memorization.recitationForm.needsRepeat')}</Text>
+          <Text style={styles.toggleDescription}>{t('memorization.recitationForm.needsRepeatDesc')}</Text>
         </View>
         <Switch
           value={data.needs_repeat}
@@ -167,8 +169,8 @@ export function RecitationForm({ index, data, onChange, onRemove, style }: Recit
 
       {/* Mistake Notes */}
       <TextField
-        label="Mistake Notes"
-        placeholder="Note any specific mistakes..."
+        label={t('memorization.recitationForm.mistakeNotes')}
+        placeholder={t('memorization.recitationForm.mistakeNotesPlaceholder')}
         value={data.mistake_notes}
         onChangeText={(v) => update('mistake_notes', v)}
         multiline

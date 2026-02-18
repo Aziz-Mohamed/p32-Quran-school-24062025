@@ -58,7 +58,7 @@ export default function StudentSessionDetailScreen() {
         {/* Recitations */}
         {recitations.length > 0 && (
           <Card variant="outlined" style={styles.section}>
-            <Text style={styles.sectionTitle}>Recitations</Text>
+            <Text style={styles.sectionTitle}>{t('memorization.recitations')}</Text>
             {recitations.map((recitation: any) => {
               const surah = getSurah(recitation.surah_number);
               const range = formatVerseRange(recitation.surah_number, recitation.from_ayah, recitation.to_ayah);
@@ -93,7 +93,7 @@ export default function StudentSessionDetailScreen() {
                       </View>
                     )}
                     {recitation.needs_repeat && (
-                      <Badge label="Needs Repeat" variant="warning" size="sm" />
+                      <Badge label={t('memorization.needsRepeat')} variant="warning" size="sm" />
                     )}
                   </View>
                   {recitation.mistake_notes && (

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import * as Haptics from 'expo-haptics';
 
 import { colors, lightTheme } from '@/theme/colors';
@@ -25,24 +26,21 @@ interface RecitationTypeChipsProps {
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 
-const TYPE_CONFIG: Record<RecitationType, { label: string; labelAr: string; bg: string; text: string; border: string }> = {
+const TYPE_CONFIG: Record<RecitationType, { key: string; bg: string; text: string; border: string }> = {
   new_hifz: {
-    label: 'New Hifz',
-    labelAr: 'حفظ جديد',
+    key: 'memorization.recitationType.new_hifz',
     bg: colors.accent.indigo[50],
     text: colors.accent.indigo[600],
     border: colors.accent.indigo[500] + '30',
   },
   recent_review: {
-    label: 'Recent Review',
-    labelAr: 'مراجعة قريبة',
+    key: 'memorization.recitationType.recent_review',
     bg: colors.secondary[50],
     text: colors.secondary[700],
     border: colors.secondary[500] + '30',
   },
   old_review: {
-    label: 'Old Review',
-    labelAr: 'مراجعة بعيدة',
+    key: 'memorization.recitationType.old_review',
     bg: colors.primary[50],
     text: colors.primary[700],
     border: colors.primary[500] + '30',
@@ -52,8 +50,10 @@ const TYPE_CONFIG: Record<RecitationType, { label: string; labelAr: string; bg: 
 // ─── Single Chip ─────────────────────────────────────────────────────────────
 
 export function RecitationTypeChip({ type, selected, onPress, style }: RecitationTypeChipProps) {
+  const { t } = useTranslation();
   const config = TYPE_CONFIG[type];
   const isInteractive = onPress != null;
+  const label = t(config.key);
 
   const chipStyle = selected
     ? [styles.chip, styles.chipSelected, style]
@@ -73,16 +73,16 @@ export function RecitationTypeChip({ type, selected, onPress, style }: Recitatio
         style={chipStyle}
         accessibilityRole="radio"
         accessibilityState={{ selected: selected ?? false }}
-        accessibilityLabel={config.label}
+        accessibilityLabel={label}
       >
-        <Text style={textStyle}>{config.label}</Text>
+        <Text style={textStyle}>{label}</Text>
       </Pressable>
     );
   }
 
   return (
-    <View style={chipStyle} accessibilityRole="text" accessibilityLabel={config.label}>
-      <Text style={textStyle}>{config.label}</Text>
+    <View style={chipStyle} accessibilityRole="text" accessibilityLabel={label}>
+      <Text style={textStyle}>{label}</Text>
     </View>
   );
 }
@@ -90,9 +90,10 @@ export function RecitationTypeChip({ type, selected, onPress, style }: Recitatio
 // ─── Chip Group ──────────────────────────────────────────────────────────────
 
 export function RecitationTypeChips({ value, onChange, style }: RecitationTypeChipsProps) {
+  const { t } = useTranslation();
   return (
     <View style={[styles.chipGroup, style]}>
-      <Text style={styles.label}>Recitation Type</Text>
+      <Text style={styles.label}>{t('memorization.recitationType.title')}</Text>
       <View style={styles.chipRow}>
         <RecitationTypeChip
           type="new_hifz"

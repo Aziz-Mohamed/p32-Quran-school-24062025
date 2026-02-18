@@ -114,26 +114,26 @@ export default function StudentDashboard() {
                 <View style={[styles.revisionPlanIcon, { backgroundColor: colors.accent.indigo[50] }]}>
                   <Ionicons name="book" size={20} color={colors.accent.indigo[500]} />
                 </View>
-                <Text style={styles.revisionPlanTitle}>Today's Revision Plan</Text>
+                <Text style={styles.revisionPlanTitle}>{t('memorization.todaysRevisionPlan')}</Text>
                 <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
               </View>
               <View style={styles.revisionPlanStats}>
                 {newCount > 0 && (
                   <View style={styles.revisionPlanStat}>
                     <Text style={[styles.revisionPlanCount, { color: colors.accent.indigo[600] }]}>{newCount}</Text>
-                    <Text style={styles.revisionPlanLabel}>New</Text>
+                    <Text style={styles.revisionPlanLabel}>{t('memorization.revisionLabels.new')}</Text>
                   </View>
                 )}
                 {recentCount > 0 && (
                   <View style={styles.revisionPlanStat}>
                     <Text style={[styles.revisionPlanCount, { color: colors.secondary[600] }]}>{recentCount}</Text>
-                    <Text style={styles.revisionPlanLabel}>Recent</Text>
+                    <Text style={styles.revisionPlanLabel}>{t('memorization.revisionLabels.recent')}</Text>
                   </View>
                 )}
                 {oldCount > 0 && (
                   <View style={styles.revisionPlanStat}>
                     <Text style={[styles.revisionPlanCount, { color: colors.primary[600] }]}>{oldCount}</Text>
-                    <Text style={styles.revisionPlanLabel}>Older</Text>
+                    <Text style={styles.revisionPlanLabel}>{t('memorization.revisionLabels.older')}</Text>
                   </View>
                 )}
               </View>

@@ -108,9 +108,9 @@ export default function TeacherStudentDetailScreen() {
         {memStats && (
           <>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Memorization</Text>
+              <Text style={styles.sectionTitle}>{t('memorization.title')}</Text>
               <Button
-                title="View Details"
+                title={t('memorization.viewDetails')}
                 onPress={() => router.push(`/(teacher)/students/${id}/memorization`)}
                 variant="ghost"
                 size="sm"
@@ -120,7 +120,7 @@ export default function TeacherStudentDetailScreen() {
               <MemorizationProgressBar stats={memStats} compact />
               <View style={styles.memorizationActions}>
                 <Button
-                  title="Assign Hifz"
+                  title={t('memorization.assignHifz')}
                   onPress={() => router.push(`/(teacher)/assignments/create?studentId=${id}`)}
                   variant="secondary"
                   size="sm"

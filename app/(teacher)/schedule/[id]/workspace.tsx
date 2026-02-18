@@ -189,7 +189,7 @@ export default function SessionWorkspaceScreen() {
           const student = studentList.find((s) => s.id === studentId);
           Alert.alert(
             t('common.error'),
-            `Recitation #${i + 1} for ${student?.name ?? 'student'}: ${Object.values(errors).join(', ')}`,
+            t('memorization.validation.recitationError', { number: i + 1, name: student?.name ?? 'student', errors: Object.values(errors).join(', ') }),
           );
           return;
         }
@@ -363,9 +363,9 @@ export default function SessionWorkspaceScreen() {
                     {/* Recitations Section */}
                     <View style={styles.recitationSection}>
                       <View style={styles.recitationHeader}>
-                        <Text style={styles.recitationTitle}>Recitations</Text>
+                        <Text style={styles.recitationTitle}>{t('memorization.recitations')}</Text>
                         <Button
-                          title="Add Recitation"
+                          title={t('memorization.addRecitation')}
                           onPress={() => addRecitation(student.id)}
                           variant="secondary"
                           size="sm"
@@ -385,7 +385,7 @@ export default function SessionWorkspaceScreen() {
 
                       {getRecitations(student.id).length === 0 && (
                         <Text style={styles.noRecitationsText}>
-                          No recitations added. Tap "Add Recitation" to track verse-level progress.
+                          {t('memorization.noRecitations')}
                         </Text>
                       )}
                     </View>
