@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { shadows } from '@/theme/shadows';
+import { normalize } from '@/theme/normalize';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -22,28 +23,28 @@ interface AvatarProps {
 // ─── Size Maps ───────────────────────────────────────────────────────────────
 
 const sizeMap: Record<AvatarSize, number> = {
-  sm: 32,
-  md: 44,
-  lg: 64,
-  xl: 96,
+  sm: normalize(32),
+  md: normalize(44),
+  lg: normalize(64),
+  xl: normalize(96),
 };
 
 const fontSizeMap: Record<AvatarSize, TextStyle> = {
   sm: {
-    fontSize: 10,
-    lineHeight: 14,
+    fontSize: normalize(10),
+    lineHeight: normalize(14),
   },
   md: {
-    fontSize: 14,
-    lineHeight: 18,
+    fontSize: normalize(14),
+    lineHeight: normalize(18),
   },
   lg: {
-    fontSize: 22,
-    lineHeight: 30,
+    fontSize: normalize(22),
+    lineHeight: normalize(30),
   },
   xl: {
-    fontSize: 32,
-    lineHeight: 44,
+    fontSize: normalize(32),
+    lineHeight: normalize(44),
   },
 };
 

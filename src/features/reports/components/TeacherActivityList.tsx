@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { spacing } from '@/theme/spacing';
 import { lightTheme } from '@/theme/colors';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 import { ChartContainer } from './ChartContainer';
 import { TeacherActivityCard } from './TeacherActivityCard';
 import type { TeacherActivitySummary } from '../types/reports.types';
@@ -90,7 +91,7 @@ export function TeacherActivityList({
 
 const styles = StyleSheet.create({
   listContainer: {
-    minHeight: 100,
+    minHeight: normalize(100),
   },
   sectionHeader: {
     fontFamily: typography.fontFamily.semiBold,

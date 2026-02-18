@@ -13,6 +13,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { shadows } from '@/theme/shadows';
+import { normalize } from '@/theme/normalize';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -44,7 +45,7 @@ interface ButtonProps {
 const sizeStyles: Record<ButtonSize, { container: ViewStyle; text: TextStyle }> = {
   sm: {
     container: {
-      minHeight: 40,
+      minHeight: normalize(40),
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.xs,
     },
@@ -56,7 +57,7 @@ const sizeStyles: Record<ButtonSize, { container: ViewStyle; text: TextStyle }> 
   },
   md: {
     container: {
-      minHeight: 52,
+      minHeight: normalize(52),
       paddingHorizontal: spacing.lg,
       paddingVertical: spacing.sm,
     },
@@ -68,7 +69,7 @@ const sizeStyles: Record<ButtonSize, { container: ViewStyle; text: TextStyle }> 
   },
   lg: {
     container: {
-      minHeight: 60,
+      minHeight: normalize(60),
       paddingHorizontal: spacing.xl,
       paddingVertical: spacing.md,
     },
@@ -260,7 +261,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.sm,
-    minWidth: 44,
+    minWidth: normalize(44),
   },
   fullWidth: {
     width: '100%',

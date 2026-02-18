@@ -7,6 +7,7 @@ import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
+import { normalize } from '@/theme/normalize';
 import { ChartContainer } from './ChartContainer';
 import type { AttendanceTrendPoint } from '../types/reports.types';
 
@@ -88,12 +89,12 @@ export function AttendanceTrendChart({
 
 const styles = StyleSheet.create({
   chartWrapper: {
-    height: 200,
+    height: normalize(200),
   },
   singlePointContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 200,
+    minHeight: normalize(200),
   },
   singlePointValue: {
     fontFamily: typography.fontFamily.bold,

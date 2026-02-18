@@ -7,6 +7,7 @@ import { colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -163,7 +164,7 @@ export function Toast({
       >
         <Ionicons
           name={config.icon}
-          size={22}
+          size={normalize(22)}
           color={config.textColor}
           style={styles.icon}
         />
@@ -175,7 +176,7 @@ export function Toast({
         </Text>
         <Ionicons
           name="close"
-          size={18}
+          size={normalize(18)}
           color={config.textColor}
         />
       </Pressable>

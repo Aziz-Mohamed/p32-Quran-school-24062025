@@ -21,6 +21,7 @@ import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { shadows } from '@/theme/shadows';
+import { normalize } from '@/theme/normalize';
 import type { AwardedSticker, StickerTier } from '../types/gamification.types';
 
 // ─── Tier Glow Colors ─────────────────────────────────────────────────────────
@@ -199,14 +200,14 @@ const styles = StyleSheet.create({
   },
   glow: {
     position: 'absolute',
-    width: 200,
-    height: 200,
-    borderRadius: 100,
+    width: normalize(200),
+    height: normalize(200),
+    borderRadius: normalize(100),
     opacity: 0.6,
   },
   stickerContainer: {
-    width: 140,
-    height: 140,
+    width: normalize(140),
+    height: normalize(140),
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.white,
@@ -214,8 +215,8 @@ const styles = StyleSheet.create({
     ...shadows.xl,
   },
   stickerImage: {
-    width: 110,
-    height: 110,
+    width: normalize(110),
+    height: normalize(110),
   },
   textContainer: {
     alignItems: 'center',

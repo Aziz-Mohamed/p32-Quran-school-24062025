@@ -15,6 +15,7 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -83,7 +84,7 @@ export function Select({
         </Text>
         <Ionicons
           name="chevron-down"
-          size={20}
+          size={normalize(20)}
           color={lightTheme.textTertiary}
         />
       </Pressable>
@@ -125,7 +126,7 @@ export function Select({
                     {isSelected && (
                       <Ionicons
                         name="checkmark"
-                        size={20}
+                        size={normalize(20)}
                         color={colors.primary[500]}
                       />
                     )}
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
     borderColor: lightTheme.border,
     borderRadius: radius.md,
     backgroundColor: lightTheme.background,
-    minHeight: 48,
+    minHeight: normalize(48),
     paddingHorizontal: spacing.md,
   },
   triggerError: {
@@ -197,8 +198,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: radius.lg,
     width: '100%',
-    maxWidth: 340,
-    maxHeight: 320,
+    maxWidth: normalize(340),
+    maxHeight: normalize(320),
     paddingVertical: spacing.sm,
   },
   option: {

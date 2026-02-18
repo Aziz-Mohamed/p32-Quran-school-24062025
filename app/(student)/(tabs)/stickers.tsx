@@ -16,6 +16,7 @@ import type { AwardedSticker } from '@/features/gamification/types/gamification.
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Stickers Screen ──────────────────────────────────────────────────────────
 
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
   },
   counts: {
     alignItems: 'flex-end',
-    gap: 2,
+    gap: normalize(2),
   },
   count: {
     ...typography.textStyles.body,

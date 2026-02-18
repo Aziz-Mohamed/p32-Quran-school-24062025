@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { normalize } from '@/theme/normalize';
 import type { UserRole } from '../types/notifications.types';
 
 interface NotificationSoftAskProps {
@@ -72,63 +73,63 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 24,
+    paddingHorizontal: normalize(24),
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    paddingVertical: 32,
-    paddingHorizontal: 24,
+    borderRadius: normalize(16),
+    paddingVertical: normalize(32),
+    paddingHorizontal: normalize(24),
     width: '100%',
-    maxWidth: 360,
+    maxWidth: normalize(360),
     alignItems: 'center',
   },
   iconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: normalize(64),
+    height: normalize(64),
+    borderRadius: normalize(32),
     backgroundColor: '#E8F5E9',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBlockEnd: 16,
+    marginBlockEnd: normalize(16),
   },
   iconText: {
-    fontSize: 32,
+    fontSize: normalize(32),
   },
   title: {
-    fontSize: 20,
+    fontSize: normalize(20),
     fontWeight: '700',
     color: '#1B1B1B',
     textAlign: 'center',
-    marginBlockEnd: 8,
+    marginBlockEnd: normalize(8),
   },
   body: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: normalize(15),
+    lineHeight: normalize(22),
     color: '#555',
     textAlign: 'center',
-    marginBlockEnd: 24,
+    marginBlockEnd: normalize(24),
   },
   enableButton: {
     backgroundColor: '#2F9E44',
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 24,
+    borderRadius: normalize(12),
+    paddingVertical: normalize(14),
+    paddingHorizontal: normalize(24),
     width: '100%',
     alignItems: 'center',
-    marginBlockEnd: 12,
+    marginBlockEnd: normalize(12),
   },
   enableButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: normalize(16),
     fontWeight: '600',
   },
   skipButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 24,
+    paddingVertical: normalize(8),
+    paddingHorizontal: normalize(24),
   },
   skipButtonText: {
     color: '#888',
-    fontSize: 14,
+    fontSize: normalize(14),
   },
 });

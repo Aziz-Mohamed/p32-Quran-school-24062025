@@ -14,6 +14,7 @@ import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { shadows } from '@/theme/shadows';
+import { normalize } from '@/theme/normalize';
 import type { StickerTier } from '@/features/gamification/types/gamification.types';
 
 // ─── Tier Colors ─────────────────────────────────────────────────────────────
@@ -59,7 +60,7 @@ export default function StickerCatalogScreen() {
             size="sm"
           />
           <Text style={styles.title}>{t('admin.stickers.title')}</Text>
-          <View style={{ width: 70 }} />
+          <View style={{ width: normalize(70) }} />
         </View>
 
         <Text style={styles.subtitle}>
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '47%',
-    borderRadius: 16,
+    borderRadius: normalize(16),
     ...shadows.sm,
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.05)',
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
   cardFooter: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
-    gap: 4,
+    gap: normalize(4),
   },
   stickerName: {
     ...typography.textStyles.bodyMedium,
@@ -179,12 +180,12 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   tierBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(3),
+    borderRadius: normalize(8),
   },
   tierText: {
-    fontSize: 10,
+    fontSize: normalize(10),
     fontFamily: typography.fontFamily.bold,
     textTransform: 'uppercase',
   },

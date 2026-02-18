@@ -5,6 +5,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { shadows } from '@/theme/shadows';
+import { normalize } from '@/theme/normalize';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -82,19 +83,19 @@ const sizeConfig: Record<BadgeSize, { container: ViewStyle; text: TextStyle }> =
   sm: {
     container: {
       paddingHorizontal: spacing.sm,
-      paddingVertical: 2,
+      paddingVertical: normalize(2),
     },
     text: {
       fontFamily: typography.fontFamily.bold,
-      fontSize: 10,
-      lineHeight: 14,
+      fontSize: normalize(10),
+      lineHeight: normalize(14),
       textTransform: 'uppercase',
     },
   },
   md: {
     container: {
       paddingHorizontal: spacing.md,
-      paddingVertical: 4,
+      paddingVertical: normalize(4),
     },
     text: {
       fontFamily: typography.fontFamily.semiBold,

@@ -14,6 +14,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { shadows } from '@/theme/shadows';
+import { normalize } from '@/theme/normalize';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -48,7 +49,7 @@ export function SearchBar({
     <View style={[styles.container, style]}>
       <Ionicons
         name="search-outline"
-        size={20}
+        size={normalize(20)}
         color={lightTheme.textSecondary}
         style={styles.searchIcon}
       />
@@ -77,7 +78,7 @@ export function SearchBar({
         >
           <Ionicons
             name="close-circle"
-            size={20}
+            size={normalize(20)}
             color={colors.neutral[400]}
           />
         </Pressable>
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.white,
     borderRadius: radius.full,
-    minHeight: 48,
+    minHeight: normalize(48),
     paddingHorizontal: spacing.lg,
     ...shadows.sm,
     borderWidth: 1,
@@ -113,8 +114,8 @@ const styles = StyleSheet.create({
   } as TextStyle,
   clearButton: {
     marginStart: spacing.sm,
-    width: 32,
-    height: 32,
+    width: normalize(32),
+    height: normalize(32),
     alignItems: 'center',
     justifyContent: 'center',
   },

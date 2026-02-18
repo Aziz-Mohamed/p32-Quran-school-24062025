@@ -11,6 +11,7 @@ import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 
 interface IslamicIconPickerProps {
   label?: string;
@@ -27,7 +28,7 @@ export function IslamicIconPicker({ label, value, onChange }: IslamicIconPickerP
       {label && <Text style={styles.label}>{label}</Text>}
 
       <Pressable style={styles.preview} onPress={() => setExpanded(!expanded)}>
-        <StickerIcon value={value || DEFAULT_STICKER_ICON} size={36} color={colors.primary[500]} />
+        <StickerIcon value={value || DEFAULT_STICKER_ICON} size={normalize(36)} color={colors.primary[500]} />
         <Text style={styles.previewHint}>
           {expanded ? t('common.tapToClose') : t('common.tapToChoose')}
         </Text>
@@ -58,7 +59,7 @@ export function IslamicIconPicker({ label, value, onChange }: IslamicIconPickerP
                     >
                       <StickerIcon
                         value={iconName}
-                        size={28}
+                        size={normalize(28)}
                         color={isSelected ? colors.primary[600] : colors.neutral[700]}
                       />
                     </Pressable>
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
     color: lightTheme.textSecondary,
   },
   grid: {
-    maxHeight: 320,
+    maxHeight: normalize(320),
     borderWidth: 1,
     borderColor: lightTheme.border,
     borderRadius: radius.md,
@@ -119,8 +120,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
   },
   iconButton: {
-    width: 48,
-    height: 48,
+    width: normalize(48),
+    height: normalize(48),
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.sm,

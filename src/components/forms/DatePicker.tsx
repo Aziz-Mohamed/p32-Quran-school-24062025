@@ -17,6 +17,7 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -97,7 +98,7 @@ export function DatePicker({
         </Text>
         <Ionicons
           name="calendar-outline"
-          size={20}
+          size={normalize(20)}
           color={lightTheme.textTertiary}
         />
       </Pressable>
@@ -170,7 +171,7 @@ const styles = StyleSheet.create({
     borderColor: lightTheme.border,
     borderRadius: radius.md,
     backgroundColor: lightTheme.background,
-    minHeight: 48,
+    minHeight: normalize(48),
     paddingHorizontal: spacing.md,
   },
   triggerError: {
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: radius.lg,
     width: '100%',
-    maxWidth: 360,
+    maxWidth: normalize(360),
     padding: spacing.lg,
   },
   doneButton: {

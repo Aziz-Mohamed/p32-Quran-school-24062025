@@ -7,6 +7,7 @@ import { Screen } from '@/components/layout';
 import { useAuth } from '@/hooks/useAuth';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 import { lightTheme, colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { LoadingState, ErrorState } from '@/components/feedback';
@@ -176,7 +177,7 @@ const styles = StyleSheet.create({
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    fontSize: 24,
+    fontSize: normalize(24),
     marginBottom: spacing.md,
   },
   filterRow: {

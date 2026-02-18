@@ -16,6 +16,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Admin Dashboard ──────────────────────────────────────────────────────────
 
@@ -189,12 +190,12 @@ const styles = StyleSheet.create({
   greeting: {
     ...typography.textStyles.heading,
     color: colors.neutral[900],
-    fontSize: 22,
+    fontSize: normalize(22),
   },
   subtitle: {
     ...typography.textStyles.caption,
     color: colors.neutral[500],
-    marginTop: 2,
+    marginTop: normalize(2),
   },
   statsGrid: {
     flexDirection: 'row',
@@ -208,26 +209,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
   },
   statIconContainer: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: normalize(32),
+    height: normalize(32),
+    borderRadius: normalize(16),
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: normalize(8),
   },
   statValue: {
     ...typography.textStyles.display,
-    fontSize: 24,
+    fontSize: normalize(24),
   },
   statLabel: {
     ...typography.textStyles.label,
     color: colors.neutral[500],
-    marginTop: 4,
+    marginTop: normalize(4),
   },
   sectionTitle: {
     ...typography.textStyles.subheading,
     color: colors.neutral[800],
-    fontSize: 18,
+    fontSize: normalize(18),
   },
   actionsRow: {
     flexDirection: 'row',
@@ -242,9 +243,9 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   actionIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 16,
+    width: normalize(56),
+    height: normalize(56),
+    borderRadius: normalize(16),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -265,9 +266,9 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   navIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: normalize(40),
+    height: normalize(40),
+    borderRadius: normalize(10),
     alignItems: 'center',
     justifyContent: 'center',
   },

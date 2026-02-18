@@ -15,6 +15,7 @@ import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
+import { normalize } from '@/theme/normalize';
 
 // ─── Dev Quick Login ──────────────────────────────────────────────────────────
 
@@ -234,19 +235,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    paddingBlock: 6,
+    paddingBlock: normalize(6),
     paddingInline: spacing.md,
     borderRadius: radius.full,
     borderWidth: 1,
     borderColor: lightTheme.border,
   },
   devDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: normalize(6),
+    height: normalize(6),
+    borderRadius: normalize(3),
   },
   devPillText: {
-    fontSize: 11,
+    fontSize: normalize(11),
     color: lightTheme.textSecondary,
   },
 });

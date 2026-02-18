@@ -7,6 +7,7 @@ import { Screen } from '@/components/layout';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Not Found Screen ─────────────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.textStyles.heading,
-    fontSize: 72,
+    fontSize: normalize(72),
     color: lightTheme.primary,
     marginBlockEnd: spacing.sm,
   },

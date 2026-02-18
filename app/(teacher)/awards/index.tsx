@@ -18,6 +18,7 @@ import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
+import { normalize } from '@/theme/normalize';
 
 // ─── Award Sticker Screen ────────────────────────────────────────────────────
 
@@ -212,15 +213,15 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[50],
   },
   stickerImage: {
-    width: 36,
-    height: 36,
+    width: normalize(36),
+    height: normalize(36),
   },
   stickerName: {
     ...typography.textStyles.caption,
     color: lightTheme.text,
     textAlign: 'center',
     fontFamily: typography.fontFamily.medium,
-    minHeight: 32,
+    minHeight: normalize(32),
   },
   stickerNameSelected: {
     color: colors.primary[700],

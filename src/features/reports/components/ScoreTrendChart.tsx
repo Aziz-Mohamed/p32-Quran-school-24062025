@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
+import { normalize } from '@/theme/normalize';
 import { ChartContainer } from './ChartContainer';
 import { ChartLegend } from './ChartLegend';
 import type { ScoreTrendPoint } from '../types/reports.types';
@@ -124,12 +125,12 @@ export function ScoreTrendChart({
 
 const styles = StyleSheet.create({
   chartWrapper: {
-    height: 200,
+    height: normalize(200),
   },
   singlePointContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 200,
+    minHeight: normalize(200),
   },
   singlePointScores: {
     flexDirection: 'row',

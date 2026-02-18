@@ -16,6 +16,7 @@ import { useMarkBulkAttendance, useClassAttendance } from '@/features/attendance
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 
@@ -278,7 +279,7 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    borderRadius: 16,
+    borderRadius: normalize(16),
   },
   statusText: {
     ...typography.textStyles.caption,

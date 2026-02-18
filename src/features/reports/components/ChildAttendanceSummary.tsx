@@ -6,6 +6,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { lightTheme, colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 import { ChartContainer } from './ChartContainer';
 import type { ChildAttendanceSummary as ChildAttendanceSummaryType } from '../types/reports.types';
 
@@ -122,7 +123,7 @@ const styles = StyleSheet.create({
   },
   statItem: {
     flex: 1,
-    minWidth: 60,
+    minWidth: normalize(60),
     alignItems: 'center',
     backgroundColor: lightTheme.surface,
     borderRadius: radius.md,
@@ -140,6 +141,6 @@ const styles = StyleSheet.create({
     lineHeight: typography.lineHeight.xs,
     color: lightTheme.textSecondary,
     textAlign: 'center',
-    marginTop: 2,
+    marginTop: normalize(2),
   },
 });

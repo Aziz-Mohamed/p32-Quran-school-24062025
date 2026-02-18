@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { CartesianChart, Bar } from 'victory-native';
 import { useTranslation } from 'react-i18next';
 
+import { normalize } from '@/theme/normalize';
 import { ChartContainer } from './ChartContainer';
 import { ChartLegend, type LegendItem } from './ChartLegend';
 import type { ScoreDistributionBucket } from '../types/reports.types';
@@ -84,6 +85,6 @@ export function ScoreDistributionChart({
 
 const styles = StyleSheet.create({
   chartWrapper: {
-    height: 200,
+    height: normalize(200),
   },
 });

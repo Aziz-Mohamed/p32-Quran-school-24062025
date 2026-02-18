@@ -1,22 +1,25 @@
 /**
  * Design System — Border Radius Tokens
+ *
  * Updated for a softer, more playful aesthetic.
+ * All values are run through normalize() for cross-platform consistency.
  */
+import { normalize } from './normalize';
 
 export const radius = {
   /** 8 px — subtle rounding (small chips) */
-  xs: 8,
+  xs: normalize(8),
   /** 12 px — inputs, buttons */
-  sm: 12,
+  sm: normalize(12),
   /** 16 px — cards, standard containers */
-  md: 16,
+  md: normalize(16),
   /** 24 px — large cards, section backgrounds */
-  lg: 24,
+  lg: normalize(24),
   /** 32 px — modals, prominent floating elements */
-  xl: 32,
+  xl: normalize(32),
   /** 9999 px — perfect circle / stadium shape */
-  full: 9999,
-} as const;
+  full: normalize(9999),
+};
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

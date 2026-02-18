@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
 
+import { normalize } from '@/theme/normalize';
 import { useAuthStore } from '@/stores/authStore';
 import {
   useNotificationPreferences,
@@ -148,7 +149,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
   },
   content: {
-    padding: 16,
+    padding: normalize(16),
   },
   center: {
     flex: 1,
@@ -156,46 +157,46 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontSize: 22,
+    fontSize: normalize(22),
     fontWeight: '700',
     color: '#1B1B1B',
-    marginBlockEnd: 4,
+    marginBlockEnd: normalize(4),
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: normalize(14),
     color: '#666',
-    marginBlockEnd: 24,
+    marginBlockEnd: normalize(24),
   },
   section: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginBlockEnd: 16,
+    borderRadius: normalize(12),
+    paddingHorizontal: normalize(16),
+    paddingVertical: normalize(8),
+    marginBlockEnd: normalize(16),
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: normalize(16),
     fontWeight: '600',
     color: '#1B1B1B',
-    paddingVertical: 12,
+    paddingVertical: normalize(12),
   },
   sectionDescription: {
-    fontSize: 13,
+    fontSize: normalize(13),
     color: '#888',
-    marginBlockEnd: 8,
+    marginBlockEnd: normalize(8),
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: normalize(12),
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#E8E8E8',
   },
   label: {
-    fontSize: 15,
+    fontSize: normalize(15),
     color: '#333',
     flex: 1,
-    marginInlineEnd: 12,
+    marginInlineEnd: normalize(12),
   },
 });

@@ -15,6 +15,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Child Detail Screen ─────────────────────────────────────────────────────
 
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
   name: {
     ...typography.textStyles.heading,
     color: colors.neutral[900],
-    fontSize: 24,
+    fontSize: normalize(24),
   },
   metaRow: {
     flexDirection: 'row',
@@ -204,12 +205,12 @@ const styles = StyleSheet.create({
   },
   statValue: {
     ...typography.textStyles.display,
-    fontSize: 24,
+    fontSize: normalize(24),
   },
   statLabel: {
     ...typography.textStyles.label,
     color: colors.neutral[500],
-    marginTop: 4,
+    marginTop: normalize(4),
     textAlign: 'center',
   },
   actions: {
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: normalize(16),
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -229,7 +230,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...typography.textStyles.subheading,
     color: colors.neutral[800],
-    fontSize: 18,
+    fontSize: normalize(18),
   },
   sessionCard: {
     marginBottom: spacing.md,
@@ -257,24 +258,24 @@ const styles = StyleSheet.create({
   scoreBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    gap: normalize(4),
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(4),
+    borderRadius: normalize(8),
   },
   scoreLabel: {
-    fontSize: 10,
+    fontSize: normalize(10),
     fontFamily: typography.fontFamily.semiBold,
     color: colors.neutral[500],
   },
   scoreValue: {
-    fontSize: 11,
+    fontSize: normalize(11),
     fontFamily: typography.fontFamily.bold,
   },
   notesContainer: {
     backgroundColor: colors.neutral[50],
     padding: spacing.sm,
-    borderRadius: 8,
+    borderRadius: normalize(8),
     borderLeftWidth: 3,
     borderLeftColor: colors.neutral[200],
   },

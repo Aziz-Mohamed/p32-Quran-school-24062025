@@ -4,6 +4,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { spacing } from '@/theme/spacing';
 import { lightTheme } from '@/theme/colors';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 
 export type LineStyle = 'solid' | 'dashed' | 'dotted';
 
@@ -58,14 +59,14 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   indicatorContainer: {
-    width: 20,
-    height: 12,
+    width: normalize(20),
+    height: normalize(12),
     justifyContent: 'center',
   },
   indicator: {
-    height: 3,
-    width: 20,
-    borderRadius: 1.5,
+    height: normalize(3),
+    width: normalize(20),
+    borderRadius: normalize(1.5),
   },
   label: {
     fontFamily: typography.fontFamily.regular,

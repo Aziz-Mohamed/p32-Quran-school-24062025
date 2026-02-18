@@ -7,6 +7,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { lightTheme, colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 import { ChartContainer } from './ChartContainer';
 import type { ChildGamificationSummary as ChildGamificationSummaryType } from '../types/reports.types';
 
@@ -91,7 +92,7 @@ function GamificationItem({
 }) {
   return (
     <View style={styles.item}>
-      <Ionicons name={icon as any} size={20} color={iconColor} />
+      <Ionicons name={icon as any} size={normalize(20)} color={iconColor} />
       <Text style={styles.itemValue}>{value}</Text>
       <Text style={styles.itemLabel}>{label}</Text>
     </View>
@@ -106,13 +107,13 @@ const styles = StyleSheet.create({
   },
   item: {
     flex: 1,
-    minWidth: 100,
+    minWidth: normalize(100),
     alignItems: 'center',
     backgroundColor: lightTheme.surface,
     borderRadius: radius.md,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.sm,
-    gap: 4,
+    gap: normalize(4),
   },
   itemValue: {
     fontFamily: typography.fontFamily.bold,

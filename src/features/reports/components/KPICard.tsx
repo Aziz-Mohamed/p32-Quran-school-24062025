@@ -6,6 +6,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { lightTheme } from '@/theme/colors';
 import { typography } from '@/theme/typography';
+import { normalize } from '@/theme/normalize';
 
 interface KPICardProps {
   label: string;
@@ -47,7 +48,7 @@ export function KPICard({ label, value, format, isLoading }: KPICardProps) {
 const styles = StyleSheet.create({
   card: {
     flex: 1,
-    minWidth: 100,
+    minWidth: normalize(100),
     backgroundColor: lightTheme.surfaceElevated,
     borderRadius: radius.lg,
     paddingVertical: spacing.md,

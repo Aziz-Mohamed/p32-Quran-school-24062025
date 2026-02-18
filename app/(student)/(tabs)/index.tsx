@@ -15,6 +15,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Student Dashboard ────────────────────────────────────────────────────────
 
@@ -189,12 +190,12 @@ const styles = StyleSheet.create({
   greeting: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    fontSize: 22,
+    fontSize: normalize(22),
   },
   subtitle: {
     ...typography.textStyles.caption,
     color: lightTheme.textSecondary,
-    marginTop: 2,
+    marginTop: normalize(2),
   },
   levelCard: {
     padding: spacing.lg,
@@ -224,7 +225,7 @@ const styles = StyleSheet.create({
   },
   statValue: {
     ...typography.textStyles.display,
-    fontSize: 28,
+    fontSize: normalize(28),
   },
   statLabel: {
     ...typography.textStyles.label,
@@ -241,7 +242,7 @@ const styles = StyleSheet.create({
   },
   miniStatValue: {
     ...typography.textStyles.bodyMedium,
-    fontSize: 18,
+    fontSize: normalize(18),
     color: colors.neutral[900],
   },
   miniStatLabel: {
@@ -265,7 +266,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: normalize(16),
   },
   emptyCard: {
     padding: spacing.xl,
@@ -285,9 +286,9 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   homeworkIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: normalize(40),
+    height: normalize(40),
+    borderRadius: normalize(12),
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -301,7 +302,7 @@ const styles = StyleSheet.create({
   homeworkDue: {
     ...typography.textStyles.label,
     color: colors.accent.rose[500],
-    marginTop: 2,
+    marginTop: normalize(2),
   },
   achievementsGrid: {
     flexDirection: 'row',
@@ -314,9 +315,9 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   achievementCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: normalize(48),
+    height: normalize(48),
+    borderRadius: normalize(24),
     backgroundColor: colors.secondary[50],
     alignItems: 'center',
     justifyContent: 'center',

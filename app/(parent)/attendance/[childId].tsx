@@ -11,6 +11,7 @@ import { useAttendanceCalendar, useAttendanceRate } from '@/features/attendance/
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 const STATUS_DOT_COLORS: Record<string, string> = {
   present: semantic.success,
@@ -225,16 +226,16 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 2,
+    gap: normalize(2),
   },
   dayNumber: {
     ...typography.textStyles.caption,
     color: lightTheme.text,
   },
   statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: normalize(8),
+    height: normalize(8),
+    borderRadius: normalize(4),
   },
   legend: {
     flexDirection: 'row',
@@ -246,12 +247,12 @@ const styles = StyleSheet.create({
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: normalize(4),
   },
   legendDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: normalize(10),
+    height: normalize(10),
+    borderRadius: normalize(5),
   },
   legendText: {
     ...typography.textStyles.caption,

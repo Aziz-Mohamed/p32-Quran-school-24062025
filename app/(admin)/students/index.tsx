@@ -15,6 +15,7 @@ import { useStudents } from '@/features/students/hooks/useStudents';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Admin Students List ──────────────────────────────────────────────────────
 
@@ -150,7 +151,7 @@ const styles = StyleSheet.create({
   studentMeta: {
     ...typography.textStyles.caption,
     color: lightTheme.textSecondary,
-    marginTop: 2,
+    marginTop: normalize(2),
   },
   studentBadges: {
     flexDirection: 'row',

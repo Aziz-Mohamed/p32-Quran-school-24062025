@@ -14,6 +14,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { normalize } from '@/theme/normalize';
 
 // ─── Parent Dashboard ─────────────────────────────────────────────────────────
 
@@ -77,7 +78,7 @@ export default function ParentDashboard() {
                         size="sm"
                       />
                     )}
-                    <Ionicons name="chevron-forward" size={20} color={colors.neutral[300]} style={{ marginTop: 4 }} />
+                    <Ionicons name="chevron-forward" size={20} color={colors.neutral[300]} style={{ marginTop: normalize(4) }} />
                   </View>
                 </View>
 
@@ -113,12 +114,12 @@ const styles = StyleSheet.create({
   greeting: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
-    fontSize: 22,
+    fontSize: normalize(22),
   },
   subtitle: {
     ...typography.textStyles.body,
     color: lightTheme.textSecondary,
-    marginTop: 2,
+    marginTop: normalize(2),
   },
   childrenList: {
     gap: spacing.md,
@@ -141,7 +142,7 @@ const styles = StyleSheet.create({
   childMeta: {
     ...typography.textStyles.caption,
     color: colors.neutral[500],
-    marginTop: 2,
+    marginTop: normalize(2),
   },
   childStatus: {
     alignItems: 'flex-end',
@@ -152,7 +153,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     marginTop: spacing.md,
     padding: spacing.sm,
-    borderRadius: 12,
+    borderRadius: normalize(12),
   },
   sessionLabel: {
     ...typography.textStyles.label,

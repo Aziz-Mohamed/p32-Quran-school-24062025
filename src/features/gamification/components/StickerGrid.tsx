@@ -10,6 +10,7 @@ import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { shadows } from '@/theme/shadows';
+import { normalize } from '@/theme/normalize';
 import type { StickerCollectionItem, StickerTier } from '../types/gamification.types';
 
 // ─── Tier Config ──────────────────────────────────────────────────────────────
@@ -145,11 +146,11 @@ const styles = StyleSheet.create({
   },
   newDot: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
+    top: normalize(8),
+    right: normalize(8),
+    width: normalize(14),
+    height: normalize(14),
+    borderRadius: normalize(7),
     backgroundColor: colors.accent.rose[500],
     borderWidth: 2,
     borderColor: colors.white,
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.sm,
-    gap: 4,
+    gap: normalize(4),
     alignItems: 'center',
   },
   stickerName: {
@@ -170,28 +171,28 @@ const styles = StyleSheet.create({
   meta: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: normalize(6),
   },
   tierBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(3),
+    borderRadius: normalize(8),
   },
   tierLabel: {
-    fontSize: 10,
+    fontSize: normalize(10),
     fontFamily: typography.fontFamily.bold,
     textTransform: 'uppercase',
   },
   countBadge: {
-    minWidth: 22,
-    height: 22,
-    borderRadius: 11,
+    minWidth: normalize(22),
+    height: normalize(22),
+    borderRadius: normalize(11),
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 5,
+    paddingHorizontal: normalize(5),
   },
   countText: {
-    fontSize: 10,
+    fontSize: normalize(10),
     color: colors.white,
     fontFamily: typography.fontFamily.bold,
   },
