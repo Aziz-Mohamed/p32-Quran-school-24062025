@@ -97,7 +97,7 @@ export function Select({
         onRequestClose={() => setVisible(false)}
       >
         <Pressable style={styles.overlay} onPress={() => setVisible(false)}>
-          <View style={styles.dropdown}>
+          <View style={styles.dropdown} onStartShouldSetResponder={() => true}>
             <FlatList
               data={options}
               keyExtractor={(item) => item.value}

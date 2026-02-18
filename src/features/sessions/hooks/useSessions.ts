@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { sessionsService } from '../services/sessions.service';
+import { mutationTracker } from '@/features/realtime';
 import type { CreateSessionInput, SessionFilters } from '../types/sessions.types';
 
 export const useCreateSession = () => {
@@ -8,7 +9,10 @@ export const useCreateSession = () => {
   return useMutation({
     mutationKey: ['create-session'],
     mutationFn: (input: CreateSessionInput) => sessionsService.createSession(input),
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
+      if (data?.data?.id) {
+        mutationTracker.record('sessions', data.data.id);
+      }
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['teacher-dashboard'] });
       queryClient.invalidateQueries({

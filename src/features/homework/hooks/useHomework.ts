@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { homeworkService } from '../services/homework.service';
+import { mutationTracker } from '@/features/realtime';
 import type { HomeworkFilters } from '../types/homework.types';
 
 export const useStudentHomework = (
@@ -27,7 +28,8 @@ export const useCompleteHomework = () => {
   return useMutation({
     mutationKey: ['complete-homework'],
     mutationFn: (homeworkId: string) => homeworkService.completeHomework(homeworkId),
-    onSuccess: () => {
+    onSuccess: (_data, homeworkId) => {
+      mutationTracker.record('homework', homeworkId);
       queryClient.invalidateQueries({ queryKey: ['homework'] });
       queryClient.invalidateQueries({ queryKey: ['student-dashboard'] });
     },

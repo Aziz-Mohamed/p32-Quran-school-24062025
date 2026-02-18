@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { gamificationService } from '../services/gamification.service';
+import { mutationTracker } from '@/features/realtime';
 
 export const useStickers = (schoolId: string | undefined) => {
   return useQuery({
@@ -39,7 +40,10 @@ export const useAwardSticker = () => {
       reason?: string;
       schoolId: string;
     }) => gamificationService.awardSticker(input),
-    onSuccess: (_data, variables) => {
+    onSuccess: (data, variables) => {
+      if (data?.data?.id) {
+        mutationTracker.record('student_stickers', data.data.id);
+      }
       queryClient.invalidateQueries({
         queryKey: ['student-stickers', variables.studentId],
       });
