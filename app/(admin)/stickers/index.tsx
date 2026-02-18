@@ -3,38 +3,40 @@ import { StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
-import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
-import { Badge, StickerIcon } from '@/components/ui';
+import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
-import { useAuth } from '@/hooks/useAuth';
-import { gamificationService } from '@/features/gamification/services/gamification.service';
-import { useQuery } from '@tanstack/react-query';
+import { useStickers } from '@/features/gamification/hooks/useStickers';
+import { useRTL } from '@/hooks/useRTL';
+import { getStickerImageUrl } from '@/lib/storage';
 import { typography } from '@/theme/typography';
-import { lightTheme, colors } from '@/theme/colors';
+import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import type { StickerTier } from '@/features/gamification/types/gamification.types';
+
+// ─── Tier Badge Variants ──────────────────────────────────────────────────────
+
+const TIER_VARIANT: Record<StickerTier, 'default' | 'success' | 'warning' | 'info'> = {
+  common: 'default',
+  rare: 'info',
+  epic: 'info',
+  legendary: 'warning',
+  seasonal: 'info',
+  trophy: 'warning',
+};
 
 // ─── Sticker Catalog Screen ──────────────────────────────────────────────────
 
 export default function StickerCatalogScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { profile } = useAuth();
+  const { isRTL } = useRTL();
 
-  const { data: stickers = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['stickers', profile?.school_id],
-    queryFn: async () => {
-      if (!profile?.school_id) return [];
-      // Get all stickers (not just active) for admin
-      const { data, error } = await gamificationService.getStickers(profile.school_id);
-      if (error) throw error;
-      return data ?? [];
-    },
-    enabled: !!profile?.school_id,
-  });
+  const { data: stickers = [], isLoading, error, refetch } = useStickers();
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={(error as Error).message} onRetry={refetch} />;
@@ -50,14 +52,12 @@ export default function StickerCatalogScreen() {
             size="sm"
           />
           <Text style={styles.title}>{t('admin.stickers.title')}</Text>
-          <Button
-            title={t('admin.stickers.add')}
-            onPress={() => router.push('/(admin)/stickers/create')}
-            variant="primary"
-            size="sm"
-            icon={<Ionicons name="add" size={18} color={colors.white} />}
-          />
+          <View style={{ width: 70 }} />
         </View>
+
+        <Text style={styles.subtitle}>
+          {t('admin.stickers.catalogCount', { count: stickers.length })}
+        </Text>
 
         {stickers.length === 0 ? (
           <EmptyState
@@ -68,30 +68,36 @@ export default function StickerCatalogScreen() {
         ) : (
           <FlashList
             data={stickers}
-            keyExtractor={(item: any) => item.id}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => {
+              const tier = item.tier as StickerTier;
+              const name = isRTL ? item.name_ar : item.name_en;
+              const imageUrl = getStickerImageUrl(item.image_path);
 
-            renderItem={({ item }: { item: any }) => (
-              <Card
-                variant="outlined"
-                style={styles.stickerCard}
-                onPress={() => router.push(`/(admin)/stickers/${item.id}/edit`)}
-              >
-                <View style={styles.stickerRow}>
-                  <StickerIcon value={item.image_url} size={28} color={colors.primary[500]} />
-                  <View style={styles.stickerInfo}>
-                    <Text style={styles.stickerName}>{item.name}</Text>
-                    <Text style={styles.stickerMeta}>
-                      {item.category ?? '—'} · {item.points_value} {t('common.pts')}
-                    </Text>
+              return (
+                <Card variant="outlined" style={styles.stickerCard}>
+                  <View style={styles.stickerRow}>
+                    <Image
+                      source={{ uri: imageUrl }}
+                      style={styles.stickerImage}
+                      contentFit="contain"
+                      cachePolicy="disk"
+                    />
+                    <View style={styles.stickerInfo}>
+                      <Text style={styles.stickerName}>{name}</Text>
+                      <Text style={styles.stickerMeta}>
+                        {item.points_value} {t('common.pts')}
+                      </Text>
+                    </View>
+                    <Badge
+                      label={t(`student.stickers.tier.${tier}`)}
+                      variant={TIER_VARIANT[tier] ?? 'default'}
+                      size="sm"
+                    />
                   </View>
-                  <Badge
-                    label={item.is_active ? t('common.active') : t('common.inactive')}
-                    variant={item.is_active ? 'success' : 'warning'}
-                    size="sm"
-                  />
-                </View>
-              </Card>
-            )}
+                </Card>
+              );
+            }}
           />
         )}
       </View>
@@ -118,6 +124,11 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
+  subtitle: {
+    ...typography.textStyles.caption,
+    color: lightTheme.textSecondary,
+    textAlign: 'center',
+  },
   stickerCard: {
     marginBottom: spacing.sm,
   },
@@ -125,6 +136,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+  },
+  stickerImage: {
+    width: 40,
+    height: 40,
   },
   stickerInfo: {
     flex: 1,
