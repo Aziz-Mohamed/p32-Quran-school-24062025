@@ -49,14 +49,14 @@ export function ChildScoreTrendChart({
 
   // Build legend items — child lines + class avg reference
   const legendItems: LegendItem[] = [
-    { label: t('reports.legend.memorization', 'Memorization'), color: COLORS.memorization, lineStyle: 'solid' },
-    { label: t('reports.legend.tajweed', 'Tajweed'), color: COLORS.tajweed, lineStyle: 'dashed' },
-    { label: t('reports.legend.recitation', 'Recitation'), color: COLORS.recitation, lineStyle: 'dotted' },
+    { label: t('reports.legend.memorization'), color: COLORS.memorization, lineStyle: 'solid' },
+    { label: t('reports.legend.tajweed'), color: COLORS.tajweed, lineStyle: 'dashed' },
+    { label: t('reports.legend.recitation'), color: COLORS.recitation, lineStyle: 'dotted' },
   ];
 
   if (hasClass) {
     legendItems.push({
-      label: t('reports.legend.classAvg', 'Class Average'),
+      label: t('reports.legend.classAvg'),
       color: COLORS.classAvg,
       lineStyle: 'dashed',
     });
@@ -68,7 +68,7 @@ export function ChildScoreTrendChart({
 
   return (
     <ChartContainer
-      title={t('reports.scoreTrend', 'Score Trend')}
+      title={t('reports.scoreTrend')}
       isLoading={isLoading}
       isEmpty={isEmpty}
       isError={isError}

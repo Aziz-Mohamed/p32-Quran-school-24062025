@@ -32,7 +32,7 @@ export function LevelDistributionChart({
 
   return (
     <ChartContainer
-      title={t('reports.levelDistribution', 'Level Distribution')}
+      title={t('reports.levelDistribution')}
       isLoading={isLoading}
       isEmpty={isEmpty}
       isError={isError}

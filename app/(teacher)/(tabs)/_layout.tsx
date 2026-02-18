@@ -48,7 +48,7 @@ export default function TeacherTabsLayout() {
       <Tabs.Screen
         name="class-progress"
         options={{
-          title: t('reports.classProgress', 'Class Progress'),
+          title: t('reports.classProgress'),
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="bar-chart-outline" size={size} color={color} />
           ),

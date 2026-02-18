@@ -82,7 +82,7 @@ export default function AdminReportsScreen() {
           size="sm"
         />
 
-        <Text style={styles.title}>{t('reports.title', 'Reports')}</Text>
+        <Text style={styles.title}>{t('reports.title')}</Text>
 
         <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
 
@@ -126,7 +126,7 @@ export default function AdminReportsScreen() {
           <View style={styles.navRow}>
             <Ionicons name="people-outline" size={24} color={colors.primary[500]} />
             <Text style={styles.navText}>
-              {t('reports.teacherActivity', 'Teacher Activity')}
+              {t('reports.teacherActivity')}
             </Text>
             <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
           </View>

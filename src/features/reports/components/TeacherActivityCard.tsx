@@ -40,7 +40,7 @@ export function TeacherActivityCard({ teacher, inactive }: TeacherActivityCardPr
             {teacher.sessionsLogged}
           </Text>
           <Text style={[styles.statLabel, inactive && styles.textMuted]}>
-            {t('reports.teacherActivityDetail.sessionsLogged', 'Sessions Logged')}
+            {t('reports.teacherActivityDetail.sessionsLogged')}
           </Text>
         </View>
         <View style={styles.stat}>
@@ -53,7 +53,7 @@ export function TeacherActivityCard({ teacher, inactive }: TeacherActivityCardPr
             {teacher.uniqueStudentsEvaluated}
           </Text>
           <Text style={[styles.statLabel, inactive && styles.textMuted]}>
-            {t('reports.teacherActivityDetail.studentsEvaluated', 'Students Evaluated')}
+            {t('reports.teacherActivityDetail.studentsEvaluated')}
           </Text>
         </View>
         <View style={styles.stat}>
@@ -66,18 +66,18 @@ export function TeacherActivityCard({ teacher, inactive }: TeacherActivityCardPr
             {teacher.stickersAwarded}
           </Text>
           <Text style={[styles.statLabel, inactive && styles.textMuted]}>
-            {t('reports.teacherActivityDetail.stickersAwarded', 'Stickers Awarded')}
+            {t('reports.teacherActivityDetail.stickersAwarded')}
           </Text>
         </View>
       </View>
       {teacher.lastActiveDate && (
         <Text style={[styles.lastActive, inactive && styles.textMuted]}>
-          {t('reports.teacherActivityDetail.lastActive', 'Last Active')}: {teacher.lastActiveDate}
+          {t('reports.teacherActivityDetail.lastActive')}: {teacher.lastActiveDate}
         </Text>
       )}
       {inactive && (
         <Text style={styles.inactiveLabel}>
-          {t('reports.teacherActivityDetail.zeroSessions', '0 sessions')}
+          {t('reports.teacherActivityDetail.zeroSessions')}
         </Text>
       )}
     </View>

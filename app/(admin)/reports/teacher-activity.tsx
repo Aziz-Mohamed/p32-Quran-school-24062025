@@ -50,7 +50,7 @@ export default function TeacherActivityScreen() {
         />
 
         <Text style={styles.title}>
-          {t('reports.teacherActivity', 'Teacher Activity')}
+          {t('reports.teacherActivity')}
         </Text>
 
         <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />

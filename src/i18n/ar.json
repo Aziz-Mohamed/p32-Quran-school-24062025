@@ -24,7 +24,11 @@
     "english": "English",
     "arabic": "العربية",
     "tapToClose": "اضغط للإغلاق",
-    "tapToChoose": "اضغط لاختيار الأيقونة"
+    "tapToChoose": "اضغط لاختيار الأيقونة",
+    "restartRequired": "إعادة التشغيل مطلوبة",
+    "restartMessage": "يرجى إعادة تشغيل التطبيق لتطبيق تغيير اللغة.",
+    "level": "المستوى",
+    "achievement": "إنجاز"
   },
   "iconCategories": {
     "worship": "العبادة",

@@ -46,18 +46,18 @@ export function ChartContainer({
       ) : isError ? (
         <View style={styles.stateContainer}>
           <Text style={styles.errorText}>
-            {t('reports.errorMessage', 'Unable to load report data. Please try again.')}
+            {t('reports.errorMessage')}
           </Text>
           {onRetry && (
             <Text style={styles.retryButton} onPress={onRetry}>
-              {t('reports.retry', 'Retry')}
+              {t('reports.retry')}
             </Text>
           )}
         </View>
       ) : isEmpty ? (
         <View style={styles.stateContainer}>
           <Text style={styles.emptyText}>
-            {emptyMessage ?? t('reports.noData', 'No data available for this period.')}
+            {emptyMessage ?? t('reports.noData')}
           </Text>
         </View>
       ) : (

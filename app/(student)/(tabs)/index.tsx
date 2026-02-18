@@ -39,7 +39,7 @@ export default function StudentDashboard() {
             {t('dashboard.welcome', { name: profile?.full_name ?? '' })}
           </Text>
           {level && (
-            <Badge label={level.title ?? `Level ${level.level_number}`} variant="info" size="md" />
+            <Badge label={level.title ?? `${t('common.level')} ${level.level_number}`} variant="info" size="md" />
           )}
         </View>
 
@@ -122,7 +122,7 @@ export default function StudentDashboard() {
                 <Ionicons name="ribbon-outline" size={24} color={colors.primary[500]} />
                 <View style={styles.achievementInfo}>
                   <Text style={styles.achievementName}>
-                    {ach.achievements?.title ?? 'Achievement'}
+                    {ach.achievements?.title ?? t('common.achievement')}
                   </Text>
                   <Text style={styles.achievementDate}>{ach.earned_at?.split('T')[0]}</Text>
                 </View>

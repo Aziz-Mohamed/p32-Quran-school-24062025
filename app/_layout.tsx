@@ -2,6 +2,7 @@ import 'react-native-reanimated';
 import 'react-native-gesture-handler';
 
 import React, { useEffect, useState, useCallback } from 'react';
+import { I18nManager, View } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -9,6 +10,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { I18nextProvider } from 'react-i18next';
 
 import { useAuthStore, type Profile } from '@/stores/authStore';
+import { useLocaleStore } from '@/stores/localeStore';
 import { useAuth } from '@/hooks/useAuth';
 import i18n from '@/i18n/config';
 import { supabase } from '@/lib/supabase';
@@ -30,33 +32,65 @@ export default function RootLayout() {
   const [fontsLoaded] = useFonts({
     // Add custom fonts here if needed
   });
+  const [storeHydrated, setStoreHydrated] = useState(false);
+  const isRTL = useLocaleStore((s) => s.isRTL);
+
+  // Wait for Zustand locale store to hydrate from AsyncStorage,
+  // then sync i18n language and native RTL state with the persisted preference.
+  useEffect(() => {
+    const syncLocale = () => {
+      const { locale, isRTL: storedRTL } = useLocaleStore.getState();
+      if (i18n.language !== locale) {
+        i18n.changeLanguage(locale);
+      }
+      // Sync native I18nManager with persisted locale so that native
+      // components (tab bar, navigation) and future app launches are correct.
+      if (I18nManager.isRTL !== storedRTL) {
+        I18nManager.allowRTL(storedRTL);
+        I18nManager.forceRTL(storedRTL);
+      }
+      setStoreHydrated(true);
+    };
+
+    if (useLocaleStore.persist.hasHydrated()) {
+      syncLocale();
+    } else {
+      const unsub = useLocaleStore.persist.onFinishHydration(syncLocale);
+      return unsub;
+    }
+  }, []);
 
   useEffect(() => {
-    if (fontsLoaded) {
+    if (fontsLoaded && storeHydrated) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded]);
+  }, [fontsLoaded, storeHydrated]);
 
-  if (!fontsLoaded) {
+  if (!fontsLoaded || !storeHydrated) {
     return null;
   }
 
+  // `direction` on the root View controls layout for the entire React tree.
+  // `I18nManager.forceRTL()` (called above) handles native components outside
+  // this tree (tab bar, navigation transitions) and persists for next launch.
   return (
-    <QueryClientProvider client={queryClient}>
-      <I18nextProvider i18n={i18n}>
-        <AuthGuard>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(student)" />
-            <Stack.Screen name="(teacher)" />
-            <Stack.Screen name="(parent)" />
-            <Stack.Screen name="(admin)" />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        </AuthGuard>
-      </I18nextProvider>
-    </QueryClientProvider>
+    <View style={{ flex: 1, direction: isRTL ? 'rtl' : 'ltr' }}>
+      <QueryClientProvider client={queryClient}>
+        <I18nextProvider i18n={i18n}>
+          <AuthGuard>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(student)" />
+              <Stack.Screen name="(teacher)" />
+              <Stack.Screen name="(parent)" />
+              <Stack.Screen name="(admin)" />
+              <Stack.Screen name="+not-found" />
+            </Stack>
+          </AuthGuard>
+        </I18nextProvider>
+      </QueryClientProvider>
+    </View>
   );
 }
 

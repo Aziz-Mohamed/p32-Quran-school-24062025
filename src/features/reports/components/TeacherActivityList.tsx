@@ -47,7 +47,7 @@ export function TeacherActivityList({
   if (inactive.length > 0) {
     listData.push({
       type: 'header',
-      title: t('reports.teacherActivityDetail.inactiveSection', 'Inactive This Period'),
+      title: t('reports.teacherActivityDetail.inactiveSection'),
     });
     for (const teacher of inactive) {
       listData.push({ type: 'teacher', teacher, inactive: true });
@@ -56,12 +56,12 @@ export function TeacherActivityList({
 
   return (
     <ChartContainer
-      title={t('reports.teacherActivity', 'Teacher Activity')}
+      title={t('reports.teacherActivity')}
       isLoading={isLoading}
       isEmpty={isEmpty}
       isError={isError}
       onRetry={onRetry}
-      emptyMessage={t('reports.empty.noTeachers', 'No teachers registered yet.')}
+      emptyMessage={t('reports.empty.noTeachers')}
     >
       <View style={styles.listContainer}>
         <FlashList

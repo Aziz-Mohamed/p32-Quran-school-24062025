@@ -18,36 +18,36 @@ export function KPIGrid({ data, isLoading }: KPIGridProps) {
     <View style={styles.container}>
       <View style={styles.row}>
         <KPICard
-          label={t('reports.kpi.activeStudents', 'Active Students')}
+          label={t('reports.kpi.activeStudents')}
           value={data?.activeStudents ?? 0}
           isLoading={isLoading}
         />
         <KPICard
-          label={t('reports.kpi.activeTeachers', 'Active Teachers')}
+          label={t('reports.kpi.activeTeachers')}
           value={data?.activeTeachers ?? 0}
           isLoading={isLoading}
         />
         <KPICard
-          label={t('reports.kpi.totalClasses', 'Total Classes')}
+          label={t('reports.kpi.totalClasses')}
           value={data?.totalClasses ?? 0}
           isLoading={isLoading}
         />
       </View>
       <View style={styles.row}>
         <KPICard
-          label={t('reports.kpi.attendanceRate', 'Attendance Rate')}
+          label={t('reports.kpi.attendanceRate')}
           value={data?.attendanceRate ?? 0}
           format="percentage"
           isLoading={isLoading}
         />
         <KPICard
-          label={t('reports.kpi.averageScore', 'Avg Score')}
+          label={t('reports.kpi.averageScore')}
           value={data?.averageScore ?? 0}
           format="score"
           isLoading={isLoading}
         />
         <KPICard
-          label={t('reports.kpi.stickersAwarded', 'Stickers Awarded')}
+          label={t('reports.kpi.stickersAwarded')}
           value={data?.totalStickersAwarded ?? 0}
           isLoading={isLoading}
         />

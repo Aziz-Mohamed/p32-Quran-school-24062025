@@ -24,7 +24,11 @@
     "english": "English",
     "arabic": "العربية",
     "tapToClose": "Tap to close",
-    "tapToChoose": "Tap to choose icon"
+    "tapToChoose": "Tap to choose icon",
+    "restartRequired": "Restart Required",
+    "restartMessage": "Please restart the app to apply the language change.",
+    "level": "Level",
+    "achievement": "Achievement"
   },
   "iconCategories": {
     "worship": "Worship",

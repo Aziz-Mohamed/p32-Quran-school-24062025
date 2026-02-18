@@ -28,7 +28,7 @@ export function ChildGamificationSummary({
 
   return (
     <ChartContainer
-      title={t('reports.gamification.title', 'Rewards & Progress')}
+      title={t('reports.gamification.title')}
       isLoading={isLoading}
       isEmpty={isEmpty}
       isError={isError}
@@ -39,37 +39,37 @@ export function ChildGamificationSummary({
           <GamificationItem
             icon="star"
             iconColor={colors.secondary[500]}
-            label={t('reports.gamification.totalStickers', 'Total Stickers')}
+            label={t('reports.gamification.totalStickers')}
             value={data.totalStickers}
           />
           <GamificationItem
             icon="trophy"
             iconColor={colors.semantic.warning}
-            label={t('reports.gamification.achievements', 'Achievements')}
+            label={t('reports.gamification.achievements')}
             value={data.achievementsUnlocked}
           />
           <GamificationItem
             icon="layers"
             iconColor={colors.primary[500]}
-            label={t('reports.gamification.currentLevel', 'Current Level')}
+            label={t('reports.gamification.currentLevel')}
             value={data.currentLevelTitle}
           />
           <GamificationItem
             icon="flame"
             iconColor={colors.semantic.error}
-            label={t('reports.gamification.currentStreak', 'Current Streak')}
+            label={t('reports.gamification.currentStreak')}
             value={data.currentStreak}
           />
           <GamificationItem
             icon="ribbon"
             iconColor={colors.primary[600]}
-            label={t('reports.gamification.longestStreak', 'Longest Streak')}
+            label={t('reports.gamification.longestStreak')}
             value={data.longestStreak}
           />
           <GamificationItem
             icon="diamond"
             iconColor={colors.secondary[600]}
-            label={t('reports.gamification.totalPoints', 'Total Points')}
+            label={t('reports.gamification.totalPoints')}
             value={data.totalPoints.toLocaleString()}
           />
         </View>

@@ -67,7 +67,7 @@ export default function TeacherClassProgressScreen() {
     return (
       <View style={styles.emptyContainer}>
         <Text style={styles.emptyText}>
-          {t('reports.noClassesAssigned', 'No classes assigned — contact your school admin.')}
+          {t('reports.noClassesAssigned')}
         </Text>
       </View>
     );
@@ -82,7 +82,7 @@ export default function TeacherClassProgressScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <Text style={styles.title}>{t('reports.classProgress', 'Class Progress')}</Text>
+        <Text style={styles.title}>{t('reports.classProgress')}</Text>
 
         {/* Class selector (for teachers with multiple classes) */}
         {teacherClasses.data.length > 1 && (
@@ -101,25 +101,25 @@ export default function TeacherClassProgressScreen() {
         {/* Class Summary KPIs */}
         <View style={styles.kpiRow}>
           <KPICard
-            label={t('reports.kpi.attendanceRate', 'Attendance Rate')}
+            label={t('reports.kpi.attendanceRate')}
             value={classAnalytics.data?.attendanceRate ?? 0}
             format="percentage"
             isLoading={classAnalytics.isLoading}
           />
           <KPICard
-            label={t('reports.legend.memorization', 'Memorization')}
+            label={t('reports.legend.memorization')}
             value={classAnalytics.data?.averageMemorization ?? 0}
             format="score"
             isLoading={classAnalytics.isLoading}
           />
           <KPICard
-            label={t('reports.legend.tajweed', 'Tajweed')}
+            label={t('reports.legend.tajweed')}
             value={classAnalytics.data?.averageTajweed ?? 0}
             format="score"
             isLoading={classAnalytics.isLoading}
           />
           <KPICard
-            label={t('reports.legend.recitation', 'Recitation')}
+            label={t('reports.legend.recitation')}
             value={classAnalytics.data?.averageRecitation ?? 0}
             format="score"
             isLoading={classAnalytics.isLoading}
