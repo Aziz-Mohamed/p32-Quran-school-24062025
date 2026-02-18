@@ -454,6 +454,40 @@
       }
     }
   },
+  "notifications": {
+    "softAsk": {
+      "title": "Stay in the Loop",
+      "body": {
+        "student": "Get notified when you earn stickers, trophies, and new homework assignments.",
+        "teacher": "Get morning summaries and alerts when students need attention.",
+        "parent": "Get updates on your child's attendance, homework, and achievements.",
+        "admin": "Get notified about important school activity."
+      },
+      "enable": "Enable Notifications",
+      "skip": "Not Now"
+    },
+    "preferences": {
+      "title": "Notification Settings",
+      "subtitle": "Choose which notifications you receive",
+      "quietHours": "Quiet Hours",
+      "quietHoursDescription": "Pause notifications during these hours",
+      "quietHoursStart": "Start Time",
+      "quietHoursEnd": "End Time",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "categories": {
+      "stickerAwarded": "Sticker Awarded",
+      "trophyEarned": "Trophy Earned",
+      "achievementUnlocked": "Achievement Unlocked",
+      "homeworkAssigned": "Homework Assigned",
+      "attendanceMarked": "Attendance Marked",
+      "sessionCompleted": "Session Completed",
+      "homeworkReminder": "Homework Reminder",
+      "dailySummary": "Daily Summary",
+      "studentAlert": "Student Alert"
+    }
+  },
   "reports": {
     "title": "Reports",
     "errorMessage": "Unable to load report data. Please try again.",

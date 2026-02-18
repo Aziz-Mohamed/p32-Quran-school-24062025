@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, View, Text, I18nManager, Alert } from 'react-native';
+import { StyleSheet, View, Text, I18nManager } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import * as Updates from 'expo-updates';
 
 import { Screen } from '@/components/layout';
@@ -8,17 +9,19 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui';
 import { useAuth } from '@/hooks/useAuth';
+import { useLogout } from '@/features/auth/hooks/useLogout';
 import { useLocaleStore } from '@/stores/localeStore';
-import { supabase } from '@/lib/supabase';
 import { typography } from '@/theme/typography';
-import { lightTheme, colors } from '@/theme/colors';
+import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 
 // ─── Student Profile ──────────────────────────────────────────────────────────
 
 export default function StudentProfile() {
   const { t, i18n } = useTranslation();
+  const router = useRouter();
   const { profile } = useAuth();
+  const { logout, isPending: isLoggingOut } = useLogout();
   const { locale, setLocale } = useLocaleStore();
 
   const toggleLanguage = useCallback(async () => {
@@ -37,9 +40,9 @@ export default function StudentProfile() {
     }
   }, [locale, setLocale, i18n]);
 
-  const handleSignOut = useCallback(async () => {
-    await supabase.auth.signOut();
-  }, []);
+  const handleSignOut = useCallback(() => {
+    logout();
+  }, [logout]);
 
   return (
     <Screen scroll>
@@ -51,6 +54,18 @@ export default function StudentProfile() {
           <Text style={styles.profileName}>{profile?.full_name ?? '—'}</Text>
           <Text style={styles.profileUsername}>@{profile?.username ?? '—'}</Text>
           <Badge label={t('roles.student')} variant="info" size="md" />
+        </Card>
+
+        {/* Notification Preferences */}
+        <Card
+          variant="outlined"
+          style={styles.settingCard}
+          onPress={() => router.push('/notification-preferences')}
+        >
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>{t('notifications.preferences.title')}</Text>
+            <Text style={styles.chevron}>{'>'}</Text>
+          </View>
         </Card>
 
         {/* Language */}
@@ -72,6 +87,7 @@ export default function StudentProfile() {
           onPress={handleSignOut}
           variant="ghost"
           size="md"
+          disabled={isLoggingOut}
         />
       </View>
     </Screen>
@@ -117,5 +133,10 @@ const styles = StyleSheet.create({
     ...typography.textStyles.body,
     color: lightTheme.text,
     fontFamily: typography.fontFamily.medium,
+  },
+  chevron: {
+    ...typography.textStyles.body,
+    color: lightTheme.textSecondary,
+    fontSize: typography.fontSize.lg,
   },
 });

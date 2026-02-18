@@ -40,7 +40,14 @@
       "expo-localization",
       "expo-secure-store",
       "expo-font",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "sounds": []
+        }
+      ]
     ]
   }
 }

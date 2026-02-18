@@ -9,8 +9,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
+import { useLogout } from '@/features/auth/hooks/useLogout';
 import { useAdminDashboard } from '@/features/dashboard/hooks/useAdminDashboard';
-import { supabase } from '@/lib/supabase';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,12 +21,13 @@ export default function AdminDashboard() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const router = useRouter();
+  const { logout, isPending: isLoggingOut } = useLogout();
 
   const { data, isLoading, error, refetch } = useAdminDashboard(profile?.school_id);
 
-  const handleSignOut = useCallback(async () => {
-    await supabase.auth.signOut();
-  }, []);
+  const handleSignOut = useCallback(() => {
+    logout();
+  }, [logout]);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
@@ -149,6 +150,7 @@ export default function AdminDashboard() {
           onPress={handleSignOut}
           variant="ghost"
           size="md"
+          disabled={isLoggingOut}
         />
       </View>
     </Screen>

@@ -1,7 +1,7 @@
 import 'react-native-reanimated';
 import 'react-native-gesture-handler';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -14,6 +14,11 @@ import i18n from '@/i18n/config';
 import { supabase } from '@/lib/supabase';
 import { queryClient } from '@/lib/queryClient';
 import { useRealtimeManager, useRealtimeReconnect } from '@/features/realtime';
+import { useNotificationSetup } from '@/features/notifications/hooks/useNotificationSetup';
+import { useNotificationHandler } from '@/features/notifications/hooks/useNotificationHandler';
+import { NotificationSoftAsk } from '@/features/notifications/components/NotificationSoftAsk';
+import { InAppBanner } from '@/features/notifications/components/InAppBanner';
+import type { UserRole, NotificationPayload } from '@/features/notifications/types/notifications.types';
 
 // ─── Keep Splash Screen Visible ──────────────────────────────────────────────
 
@@ -65,6 +70,45 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   // ─── Realtime Subscriptions ─────────────────────────────────────────────────
   useRealtimeReconnect();
   useRealtimeManager();
+
+  // ─── Push Notifications ───────────────────────────────────────────────────
+  const {
+    showSoftAsk,
+    dismissSoftAsk,
+    requestPermissions,
+  } = useNotificationSetup({
+    userId: profile?.id,
+    isAuthenticated,
+  });
+
+  const handleEnableNotifications = async () => {
+    dismissSoftAsk();
+    await requestPermissions();
+  };
+
+  // ─── Notification Handler (tap + foreground) ──────────────────────────────
+  const [bannerNotification, setBannerNotification] = useState<NotificationPayload | null>(null);
+
+  const handleForegroundNotification = useCallback((payload: NotificationPayload) => {
+    setBannerNotification(payload);
+  }, []);
+
+  const { navigateToNotification } = useNotificationHandler({
+    isAuthenticated,
+    onForegroundNotification: handleForegroundNotification,
+  });
+
+  const handleBannerPress = useCallback(
+    (payload: NotificationPayload) => {
+      setBannerNotification(null);
+      navigateToNotification(payload.data);
+    },
+    [navigateToNotification],
+  );
+
+  const handleBannerDismiss = useCallback(() => {
+    setBannerNotification(null);
+  }, []);
   const initialize = useAuthStore((s) => s.initialize);
   const setSession = useAuthStore((s) => s.setSession);
   const setProfile = useAuthStore((s) => s.setProfile);
@@ -168,5 +212,20 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, isLoading, role, profile, segments, router]);
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <NotificationSoftAsk
+        visible={showSoftAsk && isAuthenticated && !!profile}
+        role={(role as UserRole) ?? 'student'}
+        onEnable={handleEnableNotifications}
+        onDismiss={dismissSoftAsk}
+      />
+      <InAppBanner
+        notification={bannerNotification}
+        onPress={handleBannerPress}
+        onDismiss={handleBannerDismiss}
+      />
+    </>
+  );
 }
