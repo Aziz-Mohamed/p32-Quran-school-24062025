@@ -14,6 +14,7 @@ import {
   useGpsCheckOut,
   useRequestOverride,
 } from '../hooks/useGpsCheckin';
+import type { SchoolVerificationSettings } from '../types/work-attendance.types';
 import { colors, semantic } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
@@ -39,32 +40,40 @@ export function GpsCheckinCard() {
   const isVerified = checkin?.is_verified;
   const hasPendingOverride = checkin && !checkin.is_verified && checkin.override_reason;
 
+  const verificationMode = (schoolLocation?.verification_mode ?? 'gps') as SchoolVerificationSettings['verification_mode'];
+
+  const getDefaultSettings = (): SchoolVerificationSettings => ({
+    latitude: 0,
+    longitude: 0,
+    geofence_radius_meters: 99999,
+    wifi_ssid: null,
+    verification_mode: 'gps',
+    verification_logic: 'or',
+  });
+
   const handleCheckIn = async () => {
     if (!profile?.id || !schoolId) return;
 
-    if (!schoolLocation?.latitude || !schoolLocation?.longitude) {
-      // School location not set — check in without GPS (fallback)
-      checkInMutation.mutate({
-        teacherId: profile.id,
-        schoolId,
-        schoolLocation: { latitude: 0, longitude: 0, geofence_radius_meters: 99999 },
-      });
-      return;
-    }
+    const settings: SchoolVerificationSettings = schoolLocation
+      ? {
+          latitude: schoolLocation.latitude,
+          longitude: schoolLocation.longitude,
+          geofence_radius_meters: schoolLocation.geofence_radius_meters,
+          wifi_ssid: schoolLocation.wifi_ssid,
+          verification_mode: (schoolLocation.verification_mode as SchoolVerificationSettings['verification_mode']) ?? 'gps',
+          verification_logic: (schoolLocation.verification_logic as SchoolVerificationSettings['verification_logic']) ?? 'or',
+        }
+      : getDefaultSettings();
 
     checkInMutation.mutate(
       {
         teacherId: profile.id,
         schoolId,
-        schoolLocation: {
-          latitude: schoolLocation.latitude,
-          longitude: schoolLocation.longitude,
-          geofence_radius_meters: schoolLocation.geofence_radius_meters,
-        },
+        schoolLocation: settings,
       },
       {
         onSuccess: (result) => {
-          if (!result.isWithinGeofence && result.data?.id) {
+          if (!result.isVerified && result.data?.id) {
             setPendingCheckinId(result.data.id);
             setShowOverrideModal(true);
           }
@@ -76,21 +85,20 @@ export function GpsCheckinCard() {
   const handleCheckOut = () => {
     if (!checkin?.id) return;
 
-    if (!schoolLocation?.latitude || !schoolLocation?.longitude) {
-      checkOutMutation.mutate({
-        checkinId: checkin.id,
-        schoolLocation: { latitude: 0, longitude: 0, geofence_radius_meters: 99999 },
-      });
-      return;
-    }
+    const settings: SchoolVerificationSettings = schoolLocation
+      ? {
+          latitude: schoolLocation.latitude,
+          longitude: schoolLocation.longitude,
+          geofence_radius_meters: schoolLocation.geofence_radius_meters,
+          wifi_ssid: schoolLocation.wifi_ssid,
+          verification_mode: (schoolLocation.verification_mode as SchoolVerificationSettings['verification_mode']) ?? 'gps',
+          verification_logic: (schoolLocation.verification_logic as SchoolVerificationSettings['verification_logic']) ?? 'or',
+        }
+      : getDefaultSettings();
 
     checkOutMutation.mutate({
       checkinId: checkin.id,
-      schoolLocation: {
-        latitude: schoolLocation.latitude,
-        longitude: schoolLocation.longitude,
-        geofence_radius_meters: schoolLocation.geofence_radius_meters,
-      },
+      schoolLocation: settings,
     });
   };
 
@@ -108,7 +116,7 @@ export function GpsCheckinCard() {
     );
   };
 
-  const getStatusIcon = () => {
+  const getStatusIcon = (): keyof typeof Ionicons.glyphMap => {
     if (isCheckedOut) return 'checkmark-circle';
     if (isCheckedIn && isVerified) return 'shield-checkmark';
     if (isCheckedIn && hasPendingOverride) return 'hourglass';
@@ -132,7 +140,23 @@ export function GpsCheckinCard() {
     return t('workAttendance.notCheckedIn');
   };
 
+  const getErrorText = () => {
+    if (checkInMutation.locationError === 'location_permission_denied') {
+      return t('workAttendance.locationPermissionNeeded');
+    }
+    if (checkInMutation.locationError === 'wifi_ssid_unavailable') {
+      return t('workAttendance.wifiSsidUnavailable');
+    }
+    if (checkInMutation.locationError) {
+      return checkInMutation.locationError;
+    }
+    return null;
+  };
+
   if (checkinLoading) return null;
+
+  const showDistance = isCheckedIn && checkin.checkin_distance_meters != null;
+  const showWifi = isCheckedIn && checkin.checkin_wifi_ssid != null;
 
   return (
     <>
@@ -158,10 +182,18 @@ export function GpsCheckinCard() {
                   })}
                 </Text>
               )}
-              {isCheckedIn && checkin.checkin_distance_meters != null && (
-                <Text style={styles.distanceText}>
-                  {Math.round(checkin.checkin_distance_meters)}m{' '}
-                  {t('workAttendance.fromSchool')}
+              {showDistance && (
+                <Text style={styles.detailText}>
+                  <Ionicons name="navigate-outline" size={12} color={colors.neutral[400]} />{' '}
+                  {Math.round(checkin.checkin_distance_meters!)}m {t('workAttendance.fromSchool')}
+                </Text>
+              )}
+              {showWifi && (
+                <Text style={styles.detailText}>
+                  <Ionicons name="wifi-outline" size={12} color={colors.neutral[400]} />{' '}
+                  {checkin.checkin_wifi_ssid === schoolLocation?.wifi_ssid
+                    ? t('workAttendance.connectedTo', { ssid: checkin.checkin_wifi_ssid })
+                    : t('workAttendance.wrongWifi')}
                 </Text>
               )}
             </View>
@@ -185,8 +217,8 @@ export function GpsCheckinCard() {
           ) : null}
         </View>
 
-        {checkInMutation.locationError === 'location_permission_denied' && (
-          <Text style={styles.errorText}>{t('workAttendance.locationPermissionNeeded')}</Text>
+        {getErrorText() && (
+          <Text style={styles.errorText}>{getErrorText()}</Text>
         )}
       </Card>
 
@@ -194,7 +226,7 @@ export function GpsCheckinCard() {
       <Modal visible={showOverrideModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>{t('workAttendance.outsideGeofence')}</Text>
+            <Text style={styles.modalTitle}>{t('workAttendance.verificationFailed')}</Text>
             <Text style={styles.modalDescription}>
               {t('workAttendance.outsideGeofenceDescription')}
             </Text>
@@ -267,7 +299,7 @@ const styles = StyleSheet.create({
     color: colors.neutral[500],
     marginTop: normalize(2),
   },
-  distanceText: {
+  detailText: {
     ...typography.textStyles.label,
     color: colors.neutral[400],
     marginTop: normalize(1),

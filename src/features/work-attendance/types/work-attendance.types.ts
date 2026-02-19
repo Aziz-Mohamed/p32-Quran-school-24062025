@@ -5,29 +5,42 @@ export interface GpsCoords {
   longitude: number;
 }
 
-export interface GpsCheckinInput {
-  teacherId: string;
-  schoolId: string;
-  coords: GpsCoords;
-  distanceMeters: number;
-  isWithinGeofence: boolean;
+export type VerificationMode = 'gps' | 'wifi' | 'both';
+export type VerificationLogic = 'and' | 'or';
+export type VerificationMethod = 'gps' | 'wifi' | 'both' | 'manual' | 'none';
+
+export interface SchoolVerificationSettings {
+  latitude: number | null;
+  longitude: number | null;
+  geofence_radius_meters: number;
+  wifi_ssid: string | null;
+  verification_mode: VerificationMode;
+  verification_logic: VerificationLogic;
 }
 
-export interface GpsCheckoutInput {
+// Keep SchoolLocation as alias for backward compatibility in existing code
+export type SchoolLocation = SchoolVerificationSettings;
+
+export interface CheckinInput {
+  teacherId: string;
+  schoolId: string;
+  coords: GpsCoords | null;
+  distanceMeters: number | null;
+  wifiSSID: string | null;
+  verificationMethod: VerificationMethod;
+  isVerified: boolean;
+}
+
+export interface CheckoutInput {
   checkinId: string;
-  coords: GpsCoords;
-  distanceMeters: number;
+  coords: GpsCoords | null;
+  distanceMeters: number | null;
+  wifiSSID: string | null;
 }
 
 export interface OverrideRequestInput {
   checkinId: string;
   reason: string;
-}
-
-export interface SchoolLocation {
-  latitude: number;
-  longitude: number;
-  geofence_radius_meters: number;
 }
 
 export type TeacherCheckin = Tables<'teacher_checkins'>;
@@ -37,8 +50,6 @@ export interface TeacherCheckinWithProfile extends TeacherCheckin {
 }
 
 export type TeacherWorkSchedule = Tables<'teacher_work_schedules'>;
-
-export type VerificationMethod = 'gps' | 'manual' | 'none';
 
 export interface TeacherAttendanceFilters {
   schoolId: string;

@@ -16,6 +16,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.millionmilescode.quranschool",
+      "entitlements": {
+        "com.apple.developer.networking.wifi-info": true
+      },
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need your location to verify you are at the school when checking in.",
         "ExpoLocalization_supportsRTL": true

@@ -1,42 +1,46 @@
 import { supabase } from '@/lib/supabase';
 import type {
-  GpsCheckinInput,
-  GpsCheckoutInput,
+  CheckinInput,
+  CheckoutInput,
   TeacherAttendanceFilters,
+  VerificationMode,
+  VerificationLogic,
   WorkScheduleInput,
 } from '../types/work-attendance.types';
 
 class WorkAttendanceService {
   /**
-   * GPS-verified check-in.
+   * Teacher check-in with GPS and/or WiFi verification.
    */
-  async gpsCheckIn(input: GpsCheckinInput) {
+  async checkIn(input: CheckinInput) {
     return supabase
       .from('teacher_checkins')
       .insert({
         teacher_id: input.teacherId,
         school_id: input.schoolId,
-        checkin_latitude: input.coords.latitude,
-        checkin_longitude: input.coords.longitude,
-        checkin_distance_meters: input.distanceMeters,
-        verification_method: input.isWithinGeofence ? 'gps' : 'none',
-        is_verified: input.isWithinGeofence,
+        checkin_latitude: input.coords?.latitude ?? null,
+        checkin_longitude: input.coords?.longitude ?? null,
+        checkin_distance_meters: input.distanceMeters ?? null,
+        checkin_wifi_ssid: input.wifiSSID ?? null,
+        verification_method: input.verificationMethod,
+        is_verified: input.isVerified,
       })
       .select()
       .single();
   }
 
   /**
-   * GPS-verified check-out.
+   * Teacher check-out with GPS and/or WiFi data.
    */
-  async gpsCheckOut(input: GpsCheckoutInput) {
+  async checkOut(input: CheckoutInput) {
     return supabase
       .from('teacher_checkins')
       .update({
         checked_out_at: new Date().toISOString(),
-        checkout_latitude: input.coords.latitude,
-        checkout_longitude: input.coords.longitude,
-        checkout_distance_meters: input.distanceMeters,
+        checkout_latitude: input.coords?.latitude ?? null,
+        checkout_longitude: input.coords?.longitude ?? null,
+        checkout_distance_meters: input.distanceMeters ?? null,
+        checkout_wifi_ssid: input.wifiSSID ?? null,
       })
       .eq('id', input.checkinId)
       .select()
@@ -44,7 +48,7 @@ class WorkAttendanceService {
   }
 
   /**
-   * Request manual override (teacher is outside geofence).
+   * Request manual override (teacher failed verification).
    */
   async requestOverride(checkinId: string, reason: string) {
     return supabase
@@ -145,28 +149,33 @@ class WorkAttendanceService {
   }
 
   /**
-   * Get school location settings.
+   * Get school verification settings (location + WiFi + mode).
    */
   async getSchoolLocation(schoolId: string) {
     return supabase
       .from('schools')
-      .select('latitude, longitude, geofence_radius_meters')
+      .select('latitude, longitude, geofence_radius_meters, wifi_ssid, verification_mode, verification_logic')
       .eq('id', schoolId)
       .single();
   }
 
   /**
-   * Update school location settings (admin only).
+   * Update school verification settings (admin only).
    */
-  async updateSchoolLocation(
+  async updateVerificationSettings(
     schoolId: string,
-    latitude: number,
-    longitude: number,
-    geofenceRadiusMeters: number,
+    data: {
+      latitude: number | null;
+      longitude: number | null;
+      geofence_radius_meters: number;
+      wifi_ssid: string | null;
+      verification_mode: VerificationMode;
+      verification_logic: VerificationLogic;
+    },
   ) {
     return supabase
       .from('schools')
-      .update({ latitude, longitude, geofence_radius_meters: geofenceRadiusMeters })
+      .update(data)
       .eq('id', schoolId)
       .select()
       .single();

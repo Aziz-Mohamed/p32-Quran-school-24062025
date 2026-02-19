@@ -1,5 +1,11 @@
 import * as Location from 'expo-location';
-import type { GpsCoords, SchoolLocation } from '../types/work-attendance.types';
+import type { GpsCoords } from '../types/work-attendance.types';
+
+interface GpsLocationData {
+  latitude: number;
+  longitude: number;
+  geofence_radius_meters: number;
+}
 
 class LocationService {
   /**
@@ -59,7 +65,7 @@ class LocationService {
   /**
    * Check if a position is within the school's geofence.
    */
-  isWithinGeofence(userCoords: GpsCoords, school: SchoolLocation): boolean {
+  isWithinGeofence(userCoords: GpsCoords, school: GpsLocationData): boolean {
     const distance = this.computeDistance(
       userCoords.latitude,
       userCoords.longitude,
@@ -72,7 +78,7 @@ class LocationService {
   /**
    * Get distance from school in meters.
    */
-  getDistanceFromSchool(userCoords: GpsCoords, school: SchoolLocation): number {
+  getDistanceFromSchool(userCoords: GpsCoords, school: GpsLocationData): number {
     return this.computeDistance(
       userCoords.latitude,
       userCoords.longitude,
