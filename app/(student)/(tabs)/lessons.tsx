@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, View, Text, SectionList } from 'react-native';
+import { I18nManager, StyleSheet, View, Text, SectionList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -106,7 +106,7 @@ export default function LessonsScreen() {
                       )}
                     </View>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={colors.neutral[300]} />
+                  <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={20} color={colors.neutral[300]} />
                 </View>
                 
                 <ProgressBar 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Pressable } from 'react-native';
+import { I18nManager, StyleSheet, View, Text, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
@@ -44,7 +44,7 @@ export default function LeaderboardScreen() {
             onPress={() => router.back()}
             variant="ghost"
             size="sm"
-            icon={<Ionicons name="arrow-back" size={20} color={theme.primary} />}
+            icon={<Ionicons name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"} size={20} color={theme.primary} />}
           />
           <Text style={styles.title}>{t('student.leaderboard.title')}</Text>
         </View>
