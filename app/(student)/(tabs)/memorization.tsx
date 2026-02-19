@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, View, Text, SectionList, Pressable } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -21,20 +22,17 @@ import { normalize } from '@/theme/normalize';
 
 const SECTION_CONFIG = {
   new_hifz: {
-    titleAr: 'الحفظ الجديد',
-    titleEn: 'New Memorization',
+    titleKey: 'memorization.sections.new_hifz',
     icon: 'add-circle' as const,
     color: colors.accent.indigo[500],
   },
   recent_review: {
-    titleAr: 'المراجعة القريبة',
-    titleEn: 'Recent Review',
+    titleKey: 'memorization.sections.recent_review',
     icon: 'refresh-circle' as const,
     color: colors.secondary[500],
   },
   old_review: {
-    titleAr: 'المراجعة البعيدة',
-    titleEn: 'Older Review',
+    titleKey: 'memorization.sections.old_review',
     icon: 'time' as const,
     color: colors.primary[500],
   },
@@ -43,6 +41,7 @@ const SECTION_CONFIG = {
 // ─── Memorization Screen ─────────────────────────────────────────────────────
 
 export default function MemorizationScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { profile } = useAuth();
   const theme = useRoleTheme();
@@ -89,9 +88,9 @@ export default function MemorizationScreen() {
     <Screen scroll={false} hasTabBar>
       <View style={styles.container}>
         <View style={styles.headerRow}>
-          <Text style={styles.title}>Memorization</Text>
+          <Text style={styles.title}>{t('memorization.title')}</Text>
           <Button
-            title="Progress"
+            title={t('memorization.progress')}
             onPress={() => router.push('/(student)/memorization/progress')}
             variant="ghost"
             size="sm"
@@ -108,8 +107,8 @@ export default function MemorizationScreen() {
           <View style={styles.emptyContainer}>
             <EmptyState
               icon="book-outline"
-              title="No revision items today"
-              description="Your daily revision plan will appear here once your teacher assigns memorization."
+              title={t('memorization.noRevisionToday')}
+              description={t('memorization.noRevisionDescription')}
             />
           </View>
         ) : (
@@ -130,8 +129,7 @@ export default function MemorizationScreen() {
                 >
                   <Ionicons name={s.icon} size={20} color={s.color} />
                   <View style={styles.sectionHeaderText}>
-                    <Text style={styles.sectionHeaderArabic}>{s.titleAr}</Text>
-                    <Text style={styles.sectionHeader}>{s.titleEn}</Text>
+                    <Text style={styles.sectionHeader}>{t(s.titleKey)}</Text>
                   </View>
                   <View style={[styles.countBadge, { backgroundColor: s.color + '20' }]}>
                     <Text style={[styles.countText, { color: s.color }]}>{s.count}</Text>
@@ -193,14 +191,10 @@ const styles = StyleSheet.create({
   sectionHeaderText: {
     flex: 1,
   },
-  sectionHeaderArabic: {
-    fontFamily: typography.fontFamily.arabicBold,
-    fontSize: typography.fontSize.base,
-    color: lightTheme.text,
-  },
   sectionHeader: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
+    ...typography.textStyles.subheading,
+    color: lightTheme.text,
+    fontSize: typography.fontSize.base,
   },
   countBadge: {
     paddingHorizontal: spacing.sm,

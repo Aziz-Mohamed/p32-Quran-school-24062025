@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { Screen } from '@/components/layout';
 import { TextField } from '@/components/ui';
 import { Button } from '@/components/ui';
+import { LanguageToggleButton } from '@/components/ui/LanguageToggleButton';
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import { useAuthStore } from '@/stores/authStore';
 import { typography } from '@/theme/typography';
@@ -28,13 +29,14 @@ const DEV_ACCOUNTS = [
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 
-const loginSchema = z.object({
-  schoolSlug: z.string().min(1, 'School code is required'),
-  username: z.string().min(1, 'Username is required'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
+const createLoginSchema = (t: (key: string) => string) =>
+  z.object({
+    schoolSlug: z.string().min(1, t('auth.validation.schoolCodeRequired')),
+    username: z.string().min(1, t('auth.validation.usernameRequired')),
+    password: z.string().min(6, t('auth.validation.passwordMin')),
+  });
 
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = z.infer<ReturnType<typeof createLoginSchema>>;
 
 // ─── Login Screen ─────────────────────────────────────────────────────────────
 
@@ -45,6 +47,7 @@ export default function LoginScreen() {
   const setSchoolSlug = useAuthStore((s) => s.setSchoolSlug);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const loginSchema = createLoginSchema(t);
   const {
     control,
     handleSubmit,
@@ -78,6 +81,8 @@ export default function LoginScreen() {
   return (
     <Screen>
       <View style={styles.container}>
+        <LanguageToggleButton />
+
         <View style={styles.logoContainer}>
           <Image
             source={require('../../assets/app-icon.png')}

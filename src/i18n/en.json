@@ -40,6 +40,12 @@
     "dateFormat": "YYYY-MM-DD",
     "unexpectedError": "An unexpected error occurred",
     "somethingWrong": "Something went wrong",
+    "settings": "Settings",
+    "teacher": "Teacher",
+    "validationFailed": "Please check your input",
+    "searchPlaceholder": "Search...",
+    "noResultsTitle": "No results",
+    "noResultsDescription": "Try a different search term.",
     "daysShort": {
       "sun": "Sun",
       "mon": "Mon",
@@ -110,7 +116,23 @@
     "noSchool": "Don't have a school?",
     "alreadyHaveSchool": "Already have an account?",
     "sessionExpired": "Session expired. Please log in again.",
-    "createSchoolFailed": "Failed to create school"
+    "createSchoolFailed": "Failed to create school",
+    "selectRole": "Select your role",
+    "validation": {
+      "schoolCodeRequired": "School code is required",
+      "usernameRequired": "Username is required",
+      "passwordMin": "Password must be at least 6 characters",
+      "schoolNameMin": "School name must be at least 2 characters",
+      "fullNameMin": "Full name must be at least 2 characters",
+      "usernameMin": "Username must be at least 3 characters",
+      "usernameFormat": "Only lowercase letters, numbers, and underscores"
+    },
+    "role": {
+      "student": "Student",
+      "teacher": "Teacher",
+      "parent": "Parent",
+      "admin": "Admin"
+    }
   },
   "roles": {
     "student": "Student",
@@ -164,7 +186,11 @@
       "viewTrophies": "View Trophies",
       "viewLeaderboard": "Leaderboard",
       "recentAchievements": "Recent Achievements",
-      "noAchievements": "No achievements yet"
+      "noAchievements": "No achievements yet",
+      "readyToLearn": "Ready to learn today?",
+      "levelProgress": "Level Progress",
+      "sessions": "Sessions",
+      "stickers": "Stickers"
     },
     "myLessons": "My Lessons",
     "myProgress": "My Progress",
@@ -185,7 +211,9 @@
       "progress": "Progress",
       "surah": "Surah",
       "ayahRange": "Ayah {{from}} - {{to}}",
-      "type": "Type"
+      "type": "Type",
+      "details": "Details",
+      "startLesson": "Start Lesson"
     },
     "sessions": {
       "title": "Session History",
@@ -302,7 +330,8 @@
       "due": "Due",
       "pending": "Pending",
       "emptyTitle": "No Sessions Yet",
-      "emptyDescription": "Session evaluations will appear here after completing scheduled sessions"
+      "emptyDescription": "Session evaluations will appear here after completing scheduled sessions",
+      "viewHistory": "View History"
     },
     "students": {
       "title": "My Students",
@@ -810,5 +839,97 @@
     "outsideGeofenceDescription": "You appear to be outside the school's geofence. You can request a manual override by providing a reason.",
     "overrideReasonPlaceholder": "Why are you checking in from outside the school area?",
     "requestOverride": "Request Override"
+  },
+  "memorization": {
+    "title": "Memorization",
+    "progress": "Progress",
+    "progressTitle": "Memorization Progress",
+    "recitations": "Recitations",
+    "addRecitation": "Add Recitation",
+    "noRecitations": "No recitations added. Tap \"Add Recitation\" to track verse-level progress.",
+    "needsReview": "Needs Review",
+    "needsRepeat": "Needs Repeat",
+    "viewDetails": "View Details",
+    "studentMemorization": "{{name}} — Memorization",
+    "surahsStarted": "Surahs ({{count}} started)",
+    "ayahRange": "Ayah {{from}}–{{to}}",
+    "needReviewCount": "{{count}} need review",
+    "reviewCount": "{{count}} review(s)",
+    "quranProgress": "Quran Progress",
+    "quranMemorization": "Quran Memorization",
+    "ayahsMemorized": "{{memorized}} / {{total}} ayahs memorized",
+    "surahsStartedLabel": "Surahs Started",
+    "surahsComplete": "Surahs Complete",
+    "inProgress": "In Progress",
+    "averageAccuracy": "Average Accuracy",
+    "noProgressYet": "No memorization progress yet.",
+    "noProgressDescription": "Complete recitations to see your progress here.",
+    "todaysRevisionPlan": "Today's Revision Plan",
+    "noRevisionToday": "No revision items today",
+    "noRevisionDescription": "Your daily revision plan will appear here once your teacher assigns memorization.",
+    "assignNewHifz": "Assign New Hifz",
+    "assignHifz": "Assign Hifz",
+    "status": {
+      "new": "New",
+      "learning": "Learning",
+      "memorized": "Memorized",
+      "needs_review": "Needs Review"
+    },
+    "sections": {
+      "new_hifz": "New Memorization",
+      "recent_review": "Recent Review",
+      "old_review": "Older Review"
+    },
+    "revisionLabels": {
+      "new": "New",
+      "recent": "Recent",
+      "older": "Older"
+    },
+    "recitationType": {
+      "title": "Recitation Type",
+      "new_hifz": "New Hifz",
+      "recent_review": "Recent Review",
+      "old_review": "Old Review"
+    },
+    "recitationForm": {
+      "title": "Recitation #{{number}}",
+      "accuracy": "Accuracy",
+      "tajweed": "Tajweed",
+      "fluency": "Fluency",
+      "needsRepeat": "Needs Repeat",
+      "needsRepeatDesc": "Flag for re-memorization",
+      "mistakeNotes": "Mistake Notes",
+      "mistakeNotesPlaceholder": "Note any specific mistakes..."
+    },
+    "surahPicker": {
+      "surahLabel": "Surah",
+      "selectSurah": "Select surah...",
+      "fromAyah": "From Ayah",
+      "toAyah": "To Ayah",
+      "ayahCountInfo": "{{name}} has {{count}} ayahs",
+      "searchSurahs": "Search surahs...",
+      "ayahCount": "{{count}} ayahs"
+    },
+    "assignment": {
+      "title": "Assign Memorization",
+      "subtitle": "Assign new memorization or review to a student",
+      "studentLabel": "Student",
+      "selectStudent": "Select student...",
+      "dueDate": "Due Date",
+      "selectDueDate": "Select due date...",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "Instructions for the student...",
+      "createButton": "Create Assignment",
+      "createdSuccess": "Assignment created successfully"
+    },
+    "validation": {
+      "selectStudent": "Please select a student",
+      "selectSurah": "Please select a surah",
+      "required": "Required",
+      "maxAyah": "Max {{max}}",
+      "mustBeAfterFrom": "Must be >= from ayah",
+      "selectDueDate": "Please set a due date",
+      "recitationError": "Recitation #{{number}} for {{name}}: {{errors}}"
+    }
   }
 }

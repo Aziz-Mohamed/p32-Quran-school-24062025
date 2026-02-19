@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { StyleSheet, View, type ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { FlashList, type ListRenderItem } from '@shopify/flash-list';
 
 import { spacing } from '@/theme/spacing';
@@ -27,13 +28,18 @@ export function SearchableList<T>({
   renderItem,
   keyExtractor,
   searchFilter,
-  searchPlaceholder = 'Search...',
-  emptyTitle = 'No results',
-  emptyDescription = 'Try a different search term.',
+  searchPlaceholder,
+  emptyTitle,
+  emptyDescription,
   ListHeaderComponent,
   style,
 }: SearchableListProps<T>) {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
+
+  const resolvedSearchPlaceholder = searchPlaceholder ?? t('common.searchPlaceholder');
+  const resolvedEmptyTitle = emptyTitle ?? t('common.noResultsTitle');
+  const resolvedEmptyDescription = emptyDescription ?? t('common.noResultsDescription');
 
   const filteredData = useMemo(() => {
     if (query.length === 0) return data;
@@ -49,7 +55,7 @@ export function SearchableList<T>({
         value={query}
         onChangeText={setQuery}
         onClear={handleClear}
-        placeholder={searchPlaceholder}
+        placeholder={resolvedSearchPlaceholder}
         style={styles.searchBar}
       />
 
@@ -59,7 +65,7 @@ export function SearchableList<T>({
         keyExtractor={keyExtractor}
         ListHeaderComponent={ListHeaderComponent}
         ListEmptyComponent={
-          <EmptyState title={emptyTitle} description={emptyDescription} />
+          <EmptyState title={resolvedEmptyTitle} description={resolvedEmptyDescription} />
         }
         contentContainerStyle={styles.listContent}
       />

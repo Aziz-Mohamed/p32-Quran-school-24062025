@@ -90,7 +90,7 @@ export default function TeacherStudentMemorizationScreen() {
           size="sm"
         />
 
-        <Text style={styles.title}>{studentName} — Memorization</Text>
+        <Text style={styles.title}>{t('memorization.studentMemorization', { name: studentName })}</Text>
 
         {/* Overall Stats */}
         <Card variant="primary-glow" style={styles.statsCard}>
@@ -100,7 +100,7 @@ export default function TeacherStudentMemorizationScreen() {
         {/* Quick Actions */}
         <View style={styles.actionsRow}>
           <Button
-            title="Assign New Hifz"
+            title={t('memorization.assignNewHifz')}
             onPress={() => router.push(`/(teacher)/assignments/create?studentId=${id}`)}
             variant="primary"
             size="md"
@@ -114,7 +114,7 @@ export default function TeacherStudentMemorizationScreen() {
           <>
             <View style={styles.sectionHeader}>
               <Ionicons name="alert-circle" size={18} color={colors.semantic.warning} />
-              <Text style={styles.sectionTitle}>Needs Review</Text>
+              <Text style={styles.sectionTitle}>{t('memorization.needsReview')}</Text>
               <Badge
                 label={String(progress.filter((p: any) => p.status === 'needs_review').length)}
                 variant="warning"
@@ -130,7 +130,7 @@ export default function TeacherStudentMemorizationScreen() {
                     <View style={styles.reviewRow}>
                       <Text style={styles.reviewSurah}>{surah?.nameArabic ?? ''}</Text>
                       <Text style={styles.reviewRange}>
-                        Ayah {item.from_ayah}–{item.to_ayah}
+                        {t('memorization.ayahRange', { from: item.from_ayah, to: item.to_ayah })}
                       </Text>
                       {item.avg_accuracy != null && (
                         <Text style={styles.reviewScore}>
@@ -146,7 +146,7 @@ export default function TeacherStudentMemorizationScreen() {
 
         {/* Surah Progress Map */}
         <Text style={[styles.sectionTitle, styles.sectionTitleStandalone]}>
-          Surah Progress ({surahsWithProgress.length} started)
+          {t('memorization.surahsStarted', { count: surahsWithProgress.length })}
         </Text>
 
         {surahsWithProgress.map((surah) => {
@@ -166,7 +166,7 @@ export default function TeacherStudentMemorizationScreen() {
                     </View>
                   </View>
                   {surah.needsReview > 0 && (
-                    <Badge label={`${surah.needsReview} need review`} variant="warning" size="sm" />
+                    <Badge label={t('memorization.needReviewCount', { count: surah.needsReview })} variant="warning" size="sm" />
                   )}
                   <ProgressBar progress={surah.progress} variant="primary" height={6} showLabel />
                 </View>
@@ -184,11 +184,11 @@ export default function TeacherStudentMemorizationScreen() {
                     return (
                       <View key={idx} style={styles.ayahRange}>
                         <Text style={styles.ayahRangeText}>
-                          Ayah {item.from_ayah}–{item.to_ayah}
+                          {t('memorization.ayahRange', { from: item.from_ayah, to: item.to_ayah })}
                         </Text>
                         <View style={[styles.statusChip, { backgroundColor: sc.bg }]}>
                           <Text style={[styles.statusChipText, { color: sc.color }]}>
-                            {item.status.replace('_', ' ')}
+                            {t(`memorization.status.${item.status}`)}
                           </Text>
                         </View>
                         {item.avg_accuracy != null && (

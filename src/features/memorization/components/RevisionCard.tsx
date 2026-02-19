@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 
@@ -24,32 +25,29 @@ interface RevisionCardProps {
 
 // ─── Status Config ───────────────────────────────────────────────────────────
 
-const STATUS_STYLES: Record<string, { color: string; bg: string; label: string }> = {
+const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
   new: {
     color: colors.accent.indigo[600],
     bg: colors.accent.indigo[50],
-    label: 'New',
   },
   learning: {
     color: colors.secondary[700],
     bg: colors.secondary[50],
-    label: 'Learning',
   },
   memorized: {
     color: colors.semantic.success,
     bg: '#DCFCE7',
-    label: 'Memorized',
   },
   needs_review: {
     color: colors.semantic.warning,
     bg: '#FEF3C7',
-    label: 'Needs Review',
   },
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function RevisionCard({ item, onPress, style }: RevisionCardProps) {
+  const { t } = useTranslation();
   const surah = getSurah(item.surah_number);
   const statusConfig = STATUS_STYLES[item.status] ?? STATUS_STYLES.new;
 
@@ -76,7 +74,7 @@ export function RevisionCard({ item, onPress, style }: RevisionCardProps) {
         {/* Status Badge */}
         <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
           <Text style={[styles.statusText, { color: statusConfig.color }]}>
-            {statusConfig.label}
+            {t(`memorization.status.${item.status}`)}
           </Text>
         </View>
 
@@ -107,7 +105,7 @@ export function RevisionCard({ item, onPress, style }: RevisionCardProps) {
         {/* Review Count */}
         {item.review_count > 0 && (
           <Text style={styles.reviewCount}>
-            {item.review_count} review{item.review_count !== 1 ? 's' : ''}
+            {t('memorization.reviewCount', { count: item.review_count })}
           </Text>
         )}
       </View>

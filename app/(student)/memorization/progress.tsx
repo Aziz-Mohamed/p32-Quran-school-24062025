@@ -90,7 +90,7 @@ export default function MemorizationProgressScreen() {
           size="sm"
         />
 
-        <Text style={styles.title}>Memorization Progress</Text>
+        <Text style={styles.title}>{t('memorization.progressTitle')}</Text>
 
         {/* Overall Stats */}
         <Card variant="primary-glow" style={styles.statsCard}>
@@ -99,13 +99,13 @@ export default function MemorizationProgressScreen() {
 
         {/* Surah Map */}
         <Text style={styles.sectionTitle}>
-          Surahs ({surahsWithProgress.length} started)
+          {t('memorization.surahsStarted', { count: surahsWithProgress.length })}
         </Text>
 
         {surahsWithProgress.length === 0 ? (
           <Card variant="outlined" style={styles.emptyCard}>
             <Text style={styles.emptyText}>
-              No memorization progress yet. Complete recitations to see your progress here.
+              {t('memorization.noProgressYet')} {t('memorization.noProgressDescription')}
             </Text>
           </Card>
         ) : (
@@ -149,11 +149,11 @@ export default function MemorizationProgressScreen() {
                       return (
                         <View key={idx} style={styles.ayahRange}>
                           <Text style={styles.ayahRangeText}>
-                            Ayah {item.from_ayah} – {item.to_ayah}
+                            {t('memorization.ayahRange', { from: item.from_ayah, to: item.to_ayah })}
                           </Text>
                           <View style={[styles.statusChip, { backgroundColor: sc.bg }]}>
                             <Text style={[styles.statusChipText, { color: sc.color }]}>
-                              {item.status.replace('_', ' ')}
+                              {t(`memorization.status.${item.status}`)}
                             </Text>
                           </View>
                           {item.avg_accuracy != null && (

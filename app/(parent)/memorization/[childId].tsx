@@ -80,7 +80,7 @@ export default function ParentMemorizationScreen() {
           size="sm"
         />
 
-        <Text style={styles.title}>Memorization Progress</Text>
+        <Text style={styles.title}>{t('memorization.progressTitle')}</Text>
 
         {/* Stats */}
         <Card variant="primary-glow" style={styles.statsCard}>
@@ -89,12 +89,12 @@ export default function ParentMemorizationScreen() {
 
         {/* Surah List */}
         <Text style={styles.sectionTitle}>
-          Surahs ({surahsWithProgress.length} started)
+          {t('memorization.surahsStarted', { count: surahsWithProgress.length })}
         </Text>
 
         {surahsWithProgress.length === 0 ? (
           <Card variant="outlined" style={styles.emptyCard}>
-            <Text style={styles.emptyText}>No memorization progress yet.</Text>
+            <Text style={styles.emptyText}>{t('memorization.noProgressYet')}</Text>
           </Card>
         ) : (
           surahsWithProgress.map((surah) => {
@@ -129,11 +129,11 @@ export default function ParentMemorizationScreen() {
                       return (
                         <View key={idx} style={styles.ayahRange}>
                           <Text style={styles.ayahRangeText}>
-                            Ayah {item.from_ayah}–{item.to_ayah}
+                            {t('memorization.ayahRange', { from: item.from_ayah, to: item.to_ayah })}
                           </Text>
                           <View style={[styles.statusChip, { backgroundColor: sc.bg }]}>
                             <Text style={[styles.statusChipText, { color: sc.color }]}>
-                              {item.status.replace('_', ' ')}
+                              {t(`memorization.status.${item.status}`)}
                             </Text>
                           </View>
                         </View>

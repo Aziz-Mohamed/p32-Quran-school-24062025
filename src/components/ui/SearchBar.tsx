@@ -36,7 +36,7 @@ export function SearchBar({
   onClear,
   style,
 }: SearchBarProps) {
-  const resolvedPlaceholder = placeholder ?? `${i18n.t('common.search')}...`;
+  const resolvedPlaceholder = placeholder ?? i18n.t('common.searchPlaceholder');
   const inputRef = useRef<TextInput>(null);
   const hasText = value.length > 0;
 

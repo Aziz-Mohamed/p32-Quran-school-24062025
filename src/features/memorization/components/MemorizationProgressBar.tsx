@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 
 import { ProgressBar } from '@/components/ui/ProgressBar';
@@ -22,6 +23,8 @@ interface MemorizationProgressBarProps {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function MemorizationProgressBar({ stats, compact = false, style }: MemorizationProgressBarProps) {
+  const { t } = useTranslation();
+
   if (!stats) return null;
 
   const progress = stats.quran_percentage / 100;
@@ -32,7 +35,7 @@ export function MemorizationProgressBar({ stats, compact = false, style }: Memor
     return (
       <View style={[styles.compactRoot, style]}>
         <View style={styles.compactHeader}>
-          <Text style={styles.compactLabel}>Quran Progress</Text>
+          <Text style={styles.compactLabel}>{t('memorization.quranProgress')}</Text>
           <Text style={styles.compactPercent}>{stats.quran_percentage.toFixed(1)}%</Text>
         </View>
         <ProgressBar progress={progress} variant="primary" height={6} />
@@ -45,12 +48,12 @@ export function MemorizationProgressBar({ stats, compact = false, style }: Memor
       {/* Main Progress */}
       <View style={styles.progressSection}>
         <View style={styles.progressHeader}>
-          <Text style={styles.progressTitle}>Quran Memorization</Text>
+          <Text style={styles.progressTitle}>{t('memorization.quranMemorization')}</Text>
           <Text style={styles.progressPercent}>{stats.quran_percentage.toFixed(1)}%</Text>
         </View>
         <ProgressBar progress={progress} variant="primary" height={10} />
         <Text style={styles.progressDetail}>
-          {memorizedAyahs.toLocaleString()} / {TOTAL_QURAN_AYAHS.toLocaleString()} ayahs memorized
+          {t('memorization.ayahsMemorized', { memorized: memorizedAyahs.toLocaleString(), total: TOTAL_QURAN_AYAHS.toLocaleString() })}
         </Text>
       </View>
 
@@ -59,25 +62,25 @@ export function MemorizationProgressBar({ stats, compact = false, style }: Memor
         <StatItem
           icon="book-outline"
           iconColor={colors.accent.indigo[500]}
-          label="Surahs Started"
+          label={t('memorization.surahsStartedLabel')}
           value={stats.surahs_started}
         />
         <StatItem
           icon="checkmark-done-outline"
           iconColor={colors.semantic.success}
-          label="Surahs Complete"
+          label={t('memorization.surahsComplete')}
           value={stats.surahs_completed}
         />
         <StatItem
           icon="hourglass-outline"
           iconColor={colors.secondary[500]}
-          label="In Progress"
+          label={t('memorization.inProgress')}
           value={inProgressAyahs}
         />
         <StatItem
           icon="alert-circle-outline"
           iconColor={colors.semantic.warning}
-          label="Need Review"
+          label={t('memorization.needsReview')}
           value={stats.items_needing_review}
         />
       </View>
@@ -86,7 +89,7 @@ export function MemorizationProgressBar({ stats, compact = false, style }: Memor
       {stats.avg_overall_accuracy != null && (
         <View style={styles.accuracyRow}>
           <Ionicons name="star" size={normalize(16)} color={colors.secondary[500]} />
-          <Text style={styles.accuracyLabel}>Average Accuracy</Text>
+          <Text style={styles.accuracyLabel}>{t('memorization.averageAccuracy')}</Text>
           <Text style={styles.accuracyValue}>{stats.avg_overall_accuracy.toFixed(1)} / 5</Text>
         </View>
       )}
