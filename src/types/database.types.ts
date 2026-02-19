@@ -916,6 +916,9 @@ export type Database = {
           slug: string
           timezone: string
           updated_at: string
+          verification_logic: string
+          verification_mode: string
+          wifi_ssid: string | null
         }
         Insert: {
           address?: string | null
@@ -933,6 +936,9 @@ export type Database = {
           slug: string
           timezone?: string
           updated_at?: string
+          verification_logic?: string
+          verification_mode?: string
+          wifi_ssid?: string | null
         }
         Update: {
           address?: string | null
@@ -950,6 +956,9 @@ export type Database = {
           slug?: string
           timezone?: string
           updated_at?: string
+          verification_logic?: string
+          verification_mode?: string
+          wifi_ssid?: string | null
         }
         Relationships: []
       }
@@ -1288,9 +1297,11 @@ export type Database = {
           checkin_distance_meters: number | null
           checkin_latitude: number | null
           checkin_longitude: number | null
+          checkin_wifi_ssid: string | null
           checkout_distance_meters: number | null
           checkout_latitude: number | null
           checkout_longitude: number | null
+          checkout_wifi_ssid: string | null
           class_id: string | null
           date: string
           id: string
@@ -1308,9 +1319,11 @@ export type Database = {
           checkin_distance_meters?: number | null
           checkin_latitude?: number | null
           checkin_longitude?: number | null
+          checkin_wifi_ssid?: string | null
           checkout_distance_meters?: number | null
           checkout_latitude?: number | null
           checkout_longitude?: number | null
+          checkout_wifi_ssid?: string | null
           class_id?: string | null
           date?: string
           id?: string
@@ -1328,9 +1341,11 @@ export type Database = {
           checkin_distance_meters?: number | null
           checkin_latitude?: number | null
           checkin_longitude?: number | null
+          checkin_wifi_ssid?: string | null
           checkout_distance_meters?: number | null
           checkout_latitude?: number | null
           checkout_longitude?: number | null
+          checkout_wifi_ssid?: string | null
           class_id?: string | null
           date?: string
           id?: string

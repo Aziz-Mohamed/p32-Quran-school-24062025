@@ -1,5 +1,6 @@
 // Services
 export { locationService } from './services/location.service';
+export { wifiService } from './services/wifi.service';
 export { workAttendanceService } from './services/work-attendance.service';
 
 // Hooks
@@ -26,16 +27,22 @@ export {
   useDeleteWorkSchedule,
 } from './hooks/useWorkSchedule';
 
+// Utils
+export { determineVerification } from './utils/verification';
+
 // Types
 export type {
   GpsCoords,
-  GpsCheckinInput,
-  GpsCheckoutInput,
+  CheckinInput,
+  CheckoutInput,
   SchoolLocation,
+  SchoolVerificationSettings,
   TeacherCheckin,
   TeacherCheckinWithProfile,
   TeacherWorkSchedule,
   VerificationMethod,
+  VerificationMode,
+  VerificationLogic,
   TeacherAttendanceFilters,
   WorkScheduleInput,
 } from './types/work-attendance.types';

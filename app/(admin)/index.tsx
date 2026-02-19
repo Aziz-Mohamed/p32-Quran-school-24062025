@@ -135,7 +135,7 @@ export default function AdminDashboard() {
           />
           <NavCard
             title={t('admin.location.title')}
-            icon="location"
+            icon="shield-checkmark"
             onPress={() => router.push('/(admin)/settings/location')}
             color={colors.primary[500]}
           />
