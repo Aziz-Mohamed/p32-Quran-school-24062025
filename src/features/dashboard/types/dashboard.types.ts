@@ -46,21 +46,47 @@ export interface TeacherDashboardData {
   pendingHomework: Tables<'homework'>[];
 }
 
+/** Aggregated stats across all children */
+export interface ParentAggregateStats {
+  totalChildren: number;
+  presentToday: number;
+  absentToday: number;
+  notMarkedToday: number;
+  averageAttendanceRate: number; // 0-100, -1 if N/A
+  totalPoints: number;
+  totalStickers: number;
+  totalStreakDays: number;
+}
+
+/** Per-child quick status for the compact dashboard row */
+export interface ChildQuickStatus {
+  id: string;
+  name: string;
+  avatarUrl: string | null;
+  className: string | null;
+  levelTitle: string | null;
+  todayStatus: 'present' | 'absent' | 'late' | 'excused' | null;
+  attendanceRate: number; // 0-100, -1 if N/A
+  totalPoints: number;
+  currentStreak: number;
+}
+
+/** A recent session entry for the activity feed */
+export interface RecentSessionEntry {
+  id: string;
+  studentId: string;
+  childName: string;
+  sessionDate: string;
+  memorizationScore: number | null;
+  tajweedScore: number | null;
+  recitationQuality: number | null;
+}
+
 /** Summary data for a parent viewing their children */
 export interface ParentDashboardData {
-  profile: Profile;
-  children: Array<{
-    student: Student;
-    profile: Profile;
-    currentLevel: Tables<'levels'> | null;
-    recentSessions: Session[];
-    upcomingHomework: Tables<'homework'>[];
-    attendanceSummary: {
-      totalDays: number;
-      presentDays: number;
-      absentDays: number;
-    };
-  }>;
+  children: ChildQuickStatus[];
+  aggregateStats: ParentAggregateStats;
+  recentSessions: RecentSessionEntry[];
 }
 
 /** Summary statistics for an admin's dashboard */

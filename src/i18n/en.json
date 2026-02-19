@@ -370,7 +370,19 @@
     "dashboard": {
       "title": "Parent Dashboard",
       "subtitle": "Track your children's progress",
-      "lastSession": "Last Session"
+      "lastSession": "Last Session",
+      "todayAtAGlance": "Today's Attendance",
+      "present": "Present",
+      "absent": "Absent",
+      "notMarked": "Not Marked",
+      "absentAlert": "{{name}} was absent today",
+      "allPresent": "All children present today!",
+      "averageAttendance": "Avg Attendance",
+      "totalPoints": "Total Points",
+      "totalStickers": "Total Stickers",
+      "activeStreaks": "Active Streaks",
+      "childrenStatus": "My Children",
+      "noRecentSessions": "No recent sessions yet"
     },
     "myChildren": "My Children",
     "childProgress": "Child Progress",

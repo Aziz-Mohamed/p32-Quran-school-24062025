@@ -370,7 +370,19 @@
     "dashboard": {
       "title": "لوحة وليّ الأمر",
       "subtitle": "تابع تقدّم أبنائك",
-      "lastSession": "آخر حصة"
+      "lastSession": "آخر حصة",
+      "todayAtAGlance": "حضور اليوم",
+      "present": "حاضر",
+      "absent": "غائب",
+      "notMarked": "غير مسجّل",
+      "absentAlert": "{{name}} كان غائباً اليوم",
+      "allPresent": "جميع الأبناء حاضرون اليوم!",
+      "averageAttendance": "متوسط الحضور",
+      "totalPoints": "إجمالي النقاط",
+      "totalStickers": "إجمالي الملصقات",
+      "activeStreaks": "سلسلة النشاط",
+      "childrenStatus": "أبنائي",
+      "noRecentSessions": "لا توجد حصص أخيرة بعد"
     },
     "myChildren": "أبنائي",
     "childProgress": "تقدّم الطفل",
