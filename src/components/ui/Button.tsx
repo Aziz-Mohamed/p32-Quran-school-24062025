@@ -207,8 +207,8 @@ export function Button({
     onPress();
   }, [isDisabled, onPress]);
 
-  const variantStyle = variantStyles[variant];
-  const sizeStyle = sizeStyles[size];
+  const variantStyle = variantStyles[variant] ?? variantStyles.primary;
+  const sizeStyle = sizeStyles[size] ?? sizeStyles.md;
 
   return (
     <Pressable

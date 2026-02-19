@@ -226,11 +226,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   actions: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     gap: spacing.md,
   },
   actionButton: {
-    flex: 1,
     borderRadius: normalize(16),
   },
   sectionHeader: {
