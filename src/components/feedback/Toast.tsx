@@ -8,6 +8,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
+import { rippleConfigs } from '@/theme/ripple';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -160,6 +161,7 @@ export function Toast({
       <Pressable
         style={[styles.container, { backgroundColor: config.backgroundColor }]}
         onPress={dismiss}
+        android_ripple={rippleConfigs.dark}
         accessibilityRole="alert"
       >
         <Ionicons
@@ -202,6 +204,7 @@ const styles = StyleSheet.create({
     paddingStart: spacing.md,
     paddingEnd: spacing.md,
     borderRadius: radius.md,
+    overflow: 'hidden',
     shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

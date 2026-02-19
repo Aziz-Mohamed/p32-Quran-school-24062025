@@ -14,6 +14,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
+import { rippleConfigs } from '@/theme/ripple';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -58,6 +59,7 @@ export function ErrorState({ title, description, onRetry, style }: ErrorStatePro
             pressed && styles.retryButtonPressed,
           ]}
           onPress={onRetry}
+          android_ripple={rippleConfigs.dark}
           accessibilityRole="button"
         >
           <Ionicons
@@ -112,6 +114,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.semantic.error,
+    overflow: 'hidden',
     marginTop: spacing.sm,
   },
   retryButtonPressed: {

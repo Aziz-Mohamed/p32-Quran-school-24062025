@@ -9,6 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { normalize } from '@/theme/normalize';
+import { rippleConfigs } from '@/theme/ripple';
 import type { UserRole } from '../types/notifications.types';
 
 interface NotificationSoftAskProps {
@@ -49,14 +50,14 @@ export function NotificationSoftAsk({
           <Text style={styles.body}>{t(bodyKey)}</Text>
 
           {/* Enable button */}
-          <Pressable style={styles.enableButton} onPress={onEnable}>
+          <Pressable style={styles.enableButton} onPress={onEnable} android_ripple={rippleConfigs.light}>
             <Text style={styles.enableButtonText}>
               {t('notifications.softAsk.enable')}
             </Text>
           </Pressable>
 
           {/* Skip button */}
-          <Pressable style={styles.skipButton} onPress={onDismiss}>
+          <Pressable style={styles.skipButton} onPress={onDismiss} android_ripple={rippleConfigs.dark}>
             <Text style={styles.skipButtonText}>
               {t('notifications.softAsk.skip')}
             </Text>
@@ -118,6 +119,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     marginBlockEnd: normalize(12),
+    overflow: 'hidden',
   },
   enableButtonText: {
     color: '#fff',

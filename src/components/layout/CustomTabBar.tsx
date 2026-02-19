@@ -23,6 +23,7 @@ import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { shadows } from '@/theme/shadows';
 import { normalize } from '@/theme/normalize';
+import { rippleConfigs } from '@/theme/ripple';
 import { useRTL } from '@/hooks/useRTL';
 
 // ─── Sub-Component: Tab Item ────────────────────────────────────────────────
@@ -69,6 +70,7 @@ function TabItem({ isFocused, label, icon, onPress, onLongPress }: TabItemProps)
       onLongPress={onLongPress}
       onPressIn={() => (scale.value = withSpring(0.92))}
       onPressOut={() => (scale.value = withSpring(1))}
+      android_ripple={rippleConfigs.dark}
       style={styles.tabItem}
     >
       <Animated.View style={[styles.iconContainer, animatedIconContainerStyle]}>
@@ -179,6 +181,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: normalize(2),
+    overflow: 'hidden',
+    borderRadius: radius.md,
   },
   iconContainer: {
     width: normalize(36),

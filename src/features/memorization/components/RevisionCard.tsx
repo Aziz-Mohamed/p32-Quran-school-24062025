@@ -12,6 +12,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
+import { rippleConfigs } from '@/theme/ripple';
 import { getSurah, formatVerseRange } from '@/lib/quran-metadata';
 import type { RevisionScheduleItem } from '../types/memorization.types';
 
@@ -119,6 +120,8 @@ export function RevisionCard({ item, onPress, style }: RevisionCardProps) {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           onPress(item);
         }}
+        android_ripple={rippleConfigs.dark}
+        style={styles.pressable}
         accessibilityRole="button"
         accessibilityLabel={`${surah?.nameEnglish ?? 'Surah'} ${verseRange}`}
       >
@@ -133,6 +136,10 @@ export function RevisionCard({ item, onPress, style }: RevisionCardProps) {
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  pressable: {
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
   root: {
     padding: spacing.md,
     gap: spacing.sm,

@@ -7,6 +7,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
+import { rippleConfigs } from '@/theme/ripple';
 import { SCORE_RANGE } from '@/lib/constants';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -51,6 +52,7 @@ export function ScoreInput({ label, value, onChange, error, style }: ScoreInputP
                 hasError && !isSelected && styles.scoreButtonError,
                 pressed && styles.scoreButtonPressed,
               ]}
+              android_ripple={rippleConfigs.primary}
               accessibilityRole="radio"
               accessibilityState={{ selected: isSelected }}
               accessibilityLabel={`Score ${score}`}
@@ -99,6 +101,7 @@ const styles = StyleSheet.create({
     borderColor: lightTheme.border,
     borderRadius: radius.md,
     backgroundColor: lightTheme.background,
+    overflow: 'hidden',
   },
   scoreButtonSelected: {
     borderColor: colors.primary[500],

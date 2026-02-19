@@ -12,6 +12,7 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { rippleConfigs } from '@/theme/ripple';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,7 @@ export function FilterChips({ chips, selected, onSelect, style }: FilterChipsPro
               styles.chip,
               isActive && styles.chipActive,
             ]}
+            android_ripple={isActive ? rippleConfigs.light : rippleConfigs.dark}
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
           >
@@ -78,6 +80,7 @@ const styles = StyleSheet.create({
     backgroundColor: lightTheme.surface,
     borderWidth: 1,
     borderColor: lightTheme.border,
+    overflow: 'hidden',
   },
   chipActive: {
     backgroundColor: colors.primary[500],

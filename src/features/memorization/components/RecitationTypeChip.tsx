@@ -7,6 +7,7 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { rippleConfigs } from '@/theme/ripple';
 import type { RecitationType } from '@/types/common.types';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -71,6 +72,7 @@ export function RecitationTypeChip({ type, selected, onPress, style }: Recitatio
           onPress(type);
         }}
         style={chipStyle}
+        android_ripple={selected ? rippleConfigs.light : rippleConfigs.dark}
         accessibilityRole="radio"
         accessibilityState={{ selected: selected ?? false }}
         accessibilityLabel={label}
@@ -124,6 +126,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
     borderWidth: 1,
     alignSelf: 'flex-start',
+    overflow: 'hidden',
   },
   chipSelected: {
     backgroundColor: colors.primary[500],

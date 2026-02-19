@@ -4,6 +4,7 @@ import * as Haptics from 'expo-haptics';
 import { colors } from '@/theme/colors';
 import { radius } from '@/theme/radius';
 import { shadows } from '@/theme/shadows';
+import { rippleConfigs } from '@/theme/ripple';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -99,6 +100,19 @@ const variantStyles: Record<
   },
 };
 
+// ─── Ripple Map ─────────────────────────────────────────────────────────────
+
+const variantRipple = {
+  default: rippleConfigs.iconDark,
+  primary: rippleConfigs.iconLight,
+  secondary: rippleConfigs.iconLight,
+  indigo: rippleConfigs.iconLight,
+  rose: rippleConfigs.iconLight,
+  violet: rippleConfigs.iconLight,
+  ghost: rippleConfigs.iconDark,
+  glow: rippleConfigs.iconLight,
+} as const;
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function IconButton({
@@ -125,6 +139,7 @@ export function IconButton({
     <Pressable
       onPress={handlePress}
       disabled={disabled}
+      android_ripple={variantRipple[variant]}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ disabled }}
