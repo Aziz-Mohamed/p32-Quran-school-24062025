@@ -22,17 +22,18 @@ import { normalize } from '@/theme/normalize';
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 
-const createSchoolSchema = z.object({
-  schoolName: z.string().min(2, 'School name must be at least 2 characters'),
-  adminFullName: z.string().min(2, 'Full name must be at least 2 characters'),
-  username: z
-    .string()
-    .min(3, 'Username must be at least 3 characters')
-    .regex(/^[a-z0-9_]+$/, 'Only lowercase letters, numbers, and underscores'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-});
+const createSchoolSchemaFactory = (t: (key: string) => string) =>
+  z.object({
+    schoolName: z.string().min(2, t('auth.validation.schoolNameMin')),
+    adminFullName: z.string().min(2, t('auth.validation.fullNameMin')),
+    username: z
+      .string()
+      .min(3, t('auth.validation.usernameMin'))
+      .regex(/^[a-z0-9_]+$/, t('auth.validation.usernameFormat')),
+    password: z.string().min(6, t('auth.validation.passwordMin')),
+  });
 
-type CreateSchoolFormData = z.infer<typeof createSchoolSchema>;
+type CreateSchoolFormData = z.infer<ReturnType<typeof createSchoolSchemaFactory>>;
 
 // ─── Create School Screen ─────────────────────────────────────────────────────
 
@@ -45,6 +46,7 @@ export default function CreateSchoolScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  const createSchoolSchema = createSchoolSchemaFactory(t);
   const {
     control,
     handleSubmit,

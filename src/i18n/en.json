@@ -118,6 +118,15 @@
     "sessionExpired": "Session expired. Please log in again.",
     "createSchoolFailed": "Failed to create school",
     "selectRole": "Select your role",
+    "validation": {
+      "schoolCodeRequired": "School code is required",
+      "usernameRequired": "Username is required",
+      "passwordMin": "Password must be at least 6 characters",
+      "schoolNameMin": "School name must be at least 2 characters",
+      "fullNameMin": "Full name must be at least 2 characters",
+      "usernameMin": "Username must be at least 3 characters",
+      "usernameFormat": "Only lowercase letters, numbers, and underscores"
+    },
     "role": {
       "student": "Student",
       "teacher": "Teacher",
