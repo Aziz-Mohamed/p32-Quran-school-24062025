@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, View, Text, Pressable } from 'react-native';
+import { StyleSheet, View, Text, Pressable, I18nManager } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -154,7 +154,7 @@ export default function AdminDashboard() {
               <Text style={styles.langValue}>
                 {locale === 'en' ? t('common.english') : t('common.arabic')}
               </Text>
-              <Ionicons name="chevron-forward" size={16} color={colors.neutral[300]} />
+              <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={16} color={colors.neutral[300]} />
             </View>
           </Card>
         </View>
@@ -207,7 +207,7 @@ function NavCard({ title, icon, color, onPress }: { title: string, icon: any, co
           <Ionicons name={icon} size={20} color={color} />
         </View>
         <Text style={styles.navText} numberOfLines={1}>{title}</Text>
-        <Ionicons name="chevron-forward" size={16} color={colors.neutral[300]} />
+        <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={16} color={colors.neutral[300]} />
       </View>
     </Card>
   );

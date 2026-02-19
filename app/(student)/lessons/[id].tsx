@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { I18nManager, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -41,7 +41,7 @@ export default function LessonDetailScreen() {
             onPress={() => router.back()}
             variant="ghost"
             size="sm"
-            icon={<Ionicons name="arrow-back" size={20} color={theme.primary} />}
+            icon={<Ionicons name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"} size={20} color={theme.primary} />}
           />
         </View>
 

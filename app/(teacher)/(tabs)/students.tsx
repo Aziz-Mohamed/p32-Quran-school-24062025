@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { I18nManager, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
@@ -92,7 +92,7 @@ export default function TeacherStudentsScreen() {
                     </Text>
                   </View>
                   <View style={styles.studentActions}>
-                    <Ionicons name="chevron-forward" size={20} color={colors.neutral[300]} />
+                    <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={20} color={colors.neutral[300]} />
                   </View>
                 </View>
               </Card>

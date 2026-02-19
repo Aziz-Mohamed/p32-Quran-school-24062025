@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { I18nManager, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
@@ -128,7 +128,7 @@ export default function AdminReportsScreen() {
             <Text style={styles.navText}>
               {t('reports.teacherActivity')}
             </Text>
-            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
+            <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={20} color={lightTheme.textTertiary} />
           </View>
         </Card>
 
@@ -143,7 +143,7 @@ export default function AdminReportsScreen() {
             <Text style={styles.navText}>
               {t('reports.teacherAttendanceReport.title')}
             </Text>
-            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
+            <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={20} color={lightTheme.textTertiary} />
           </View>
         </Card>
 
@@ -158,7 +158,7 @@ export default function AdminReportsScreen() {
             <Text style={styles.navText}>
               {t('reports.sessionCompletion.title')}
             </Text>
-            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
+            <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={20} color={lightTheme.textTertiary} />
           </View>
         </Card>
 
@@ -173,7 +173,7 @@ export default function AdminReportsScreen() {
             <Text style={styles.navText}>
               {t('reports.memorization.title')}
             </Text>
-            <Ionicons name="chevron-forward" size={20} color={lightTheme.textTertiary} />
+            <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={20} color={lightTheme.textTertiary} />
           </View>
         </Card>
       </ScrollView>

@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { I18nManager, StyleSheet, View, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
@@ -67,7 +67,7 @@ export default function SettingsScreen() {
               </View>
               <Text style={styles.settingLabel}>{t('notifications.preferences.title')}</Text>
             </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.neutral[300]} />
+            <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={20} color={colors.neutral[300]} />
           </View>
         </Card>
 
@@ -84,7 +84,7 @@ export default function SettingsScreen() {
               <Text style={styles.languageText}>
                 {locale === 'en' ? t('common.english') : t('common.arabic')}
               </Text>
-              <Ionicons name="chevron-forward" size={20} color={colors.neutral[300]} />
+              <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={20} color={colors.neutral[300]} />
             </View>
           </View>
         </Card>
