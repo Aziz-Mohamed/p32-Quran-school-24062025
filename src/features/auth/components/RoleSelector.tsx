@@ -3,7 +3,7 @@ import { StyleSheet, Text, View, Pressable, type ViewStyle } from 'react-native'
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/components/ui';
-import { lightTheme, spacing, fontSize, fontWeight, radius, primary, rippleConfigs } from '@/theme';
+import { lightTheme, spacing, fontSize, fontWeight, radius, primary } from '@/theme';
 import type { UserRole } from '@/types/common.types';
 
 interface RoleSelectorProps {
@@ -38,7 +38,6 @@ export const RoleSelector: React.FC<RoleSelectorProps> = ({ value, onChange }) =
             <Pressable
               key={option.role}
               onPress={() => onChange(option.role)}
-              android_ripple={rippleConfigs.dark}
               style={styles.cardWrapper}
             >
               <Card

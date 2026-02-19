@@ -11,7 +11,6 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { shadows } from '@/theme/shadows';
 import { normalize } from '@/theme/normalize';
-import { rippleConfigs } from '@/theme/ripple';
 import type { StickerCollectionItem, StickerTier } from '../types/gamification.types';
 
 // ─── Tier Config ──────────────────────────────────────────────────────────────
@@ -74,7 +73,6 @@ function StickerCell({ item, isRTL, onPress }: StickerCellProps) {
         pressed && styles.cellPressed
       ]}
       onPress={onPress}
-      android_ripple={rippleConfigs.dark}
       accessibilityLabel={`${name} — ${t('student.stickers.count', { count: item.count })}`}
     >
       <Image

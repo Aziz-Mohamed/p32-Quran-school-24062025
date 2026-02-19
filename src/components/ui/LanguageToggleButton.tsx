@@ -8,7 +8,6 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
 import { typography } from '@/theme/typography';
-import { rippleConfigs } from '@/theme/ripple';
 
 /**
  * Compact pill-style language toggle for auth screens.
@@ -21,7 +20,6 @@ export function LanguageToggleButton() {
     <Pressable
       onPress={toggleLanguage}
       style={({ pressed }) => [styles.pill, pressed && styles.pressed]}
-      android_ripple={rippleConfigs.primary}
       hitSlop={8}
     >
       <Ionicons name="language" size={16} color={colors.primary[600]} />
@@ -44,7 +42,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary[50],
     borderWidth: 1,
     borderColor: colors.primary[100],
-    overflow: 'hidden',
   },
   pressed: {
     opacity: 0.7,

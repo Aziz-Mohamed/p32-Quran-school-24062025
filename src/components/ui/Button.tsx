@@ -14,7 +14,6 @@ import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { shadows } from '@/theme/shadows';
 import { normalize } from '@/theme/normalize';
-import { rippleConfigs } from '@/theme/ripple';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -187,19 +186,6 @@ const variantStyles: Record<
   },
 };
 
-// ─── Ripple Map ─────────────────────────────────────────────────────────────
-
-const variantRipple = {
-  primary: rippleConfigs.light,
-  glow: rippleConfigs.light,
-  secondary: rippleConfigs.dark,
-  ghost: rippleConfigs.dark,
-  danger: rippleConfigs.light,
-  indigo: rippleConfigs.light,
-  rose: rippleConfigs.light,
-  violet: rippleConfigs.light,
-} as const;
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function Button({
@@ -228,7 +214,6 @@ export function Button({
     <Pressable
       onPress={handlePress}
       disabled={isDisabled}
-      android_ripple={variantRipple[variant]}
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       accessibilityLabel={title}
@@ -277,7 +262,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: radius.sm,
     minWidth: normalize(44),
-    overflow: 'hidden',
   },
   fullWidth: {
     width: '100%',

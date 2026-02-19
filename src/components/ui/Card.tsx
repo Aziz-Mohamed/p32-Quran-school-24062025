@@ -11,7 +11,6 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { shadows } from '@/theme/shadows';
-import { rippleConfigs } from '@/theme/ripple';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -54,16 +53,6 @@ const variantStyles: Record<CardVariant, ViewStyle> = {
     ...shadows.glow,
   },
 };
-
-// ─── Ripple Map ─────────────────────────────────────────────────────────────
-
-const variantRipple = {
-  default: rippleConfigs.dark,
-  elevated: rippleConfigs.dark,
-  outlined: rippleConfigs.dark,
-  glass: rippleConfigs.dark,
-  'primary-glow': rippleConfigs.primary,
-} as const;
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -112,12 +101,10 @@ export function Card({
         onPress={handlePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        android_ripple={variantRipple[variant]}
         accessibilityRole="button"
-        style={cardStyle}
       >
         <Animated.View
-          style={{ transform: [{ scale: scaleAnim }] }}
+          style={[cardStyle, { transform: [{ scale: scaleAnim }] }]}
         >
           {children}
         </Animated.View>

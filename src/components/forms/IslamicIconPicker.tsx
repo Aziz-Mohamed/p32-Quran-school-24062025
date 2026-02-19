@@ -12,7 +12,6 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
-import { rippleConfigs } from '@/theme/ripple';
 
 interface IslamicIconPickerProps {
   label?: string;
@@ -28,7 +27,7 @@ export function IslamicIconPicker({ label, value, onChange }: IslamicIconPickerP
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
 
-      <Pressable style={styles.preview} onPress={() => setExpanded(!expanded)} android_ripple={rippleConfigs.dark}>
+      <Pressable style={styles.preview} onPress={() => setExpanded(!expanded)}>
         <StickerIcon value={value || DEFAULT_STICKER_ICON} size={normalize(36)} color={colors.primary[500]} />
         <Text style={styles.previewHint}>
           {expanded ? t('common.tapToClose') : t('common.tapToChoose')}
@@ -56,7 +55,6 @@ export function IslamicIconPicker({ label, value, onChange }: IslamicIconPickerP
                         styles.iconButton,
                         isSelected && styles.iconButtonSelected,
                       ]}
-                      android_ripple={rippleConfigs.primary}
                       accessibilityLabel={t(`iconNames.${iconName}`)}
                     >
                       <StickerIcon
@@ -93,7 +91,6 @@ const styles = StyleSheet.create({
     borderColor: lightTheme.border,
     borderRadius: radius.md,
     backgroundColor: lightTheme.surface,
-    overflow: 'hidden',
   },
   previewHint: {
     ...typography.textStyles.caption,
@@ -130,7 +127,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     borderWidth: 2,
     borderColor: 'transparent',
-    overflow: 'hidden',
   },
   iconButtonSelected: {
     borderColor: colors.primary[500],

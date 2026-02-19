@@ -12,7 +12,6 @@ import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
-import { rippleConfigs } from '@/theme/ripple';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -64,7 +63,6 @@ export function ConfirmDialog({
                 pressed && styles.buttonPressed,
               ]}
               onPress={onCancel}
-              android_ripple={rippleConfigs.dark}
               accessibilityRole="button"
             >
               <Text style={styles.cancelLabel}>{resolvedCancelLabel}</Text>
@@ -77,7 +75,6 @@ export function ConfirmDialog({
                 pressed && styles.buttonPressed,
               ]}
               onPress={onConfirm}
-              android_ripple={rippleConfigs.light}
               accessibilityRole="button"
             >
               <Text style={styles.confirmLabel}>{resolvedConfirmLabel}</Text>
@@ -126,7 +123,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
     borderRadius: radius.md,
-    overflow: 'hidden',
   },
   buttonPressed: {
     opacity: 0.7,

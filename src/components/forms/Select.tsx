@@ -16,7 +16,6 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
-import { rippleConfigs } from '@/theme/ripple';
 import i18n from '@/i18n/config';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -73,7 +72,6 @@ export function Select({
           styles.trigger,
           hasError && styles.triggerError,
         ]}
-        android_ripple={rippleConfigs.dark}
         accessibilityRole="combobox"
         accessibilityLabel={label ?? resolvedPlaceholder}
       >
@@ -116,7 +114,6 @@ export function Select({
                       isSelected && styles.optionSelected,
                       pressed && styles.optionPressed,
                     ]}
-                    android_ripple={rippleConfigs.primary}
                     accessibilityRole="menuitem"
                     accessibilityState={{ selected: isSelected }}
                   >
@@ -169,7 +166,6 @@ const styles = StyleSheet.create({
     backgroundColor: lightTheme.background,
     minHeight: normalize(48),
     paddingHorizontal: spacing.md,
-    overflow: 'hidden',
   },
   triggerError: {
     borderColor: lightTheme.error,

@@ -43,8 +43,6 @@ export type { Radius, RadiusKey } from './radius';
 export { shadows } from './shadows';
 export type { Shadows, ShadowKey } from './shadows';
 
-export { androidRipple, androidRippleBorderless, rippleConfigs } from './ripple';
-
 // ─── Unified Theme Object ────────────────────────────────────────────────────
 
 import { colors, lightTheme, darkTheme } from './colors';

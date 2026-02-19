@@ -18,7 +18,6 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
-import { rippleConfigs } from '@/theme/ripple';
 import { SURAHS, getSurah } from '@/lib/quran-metadata';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -95,7 +94,6 @@ export function SurahAyahPicker({
         <Pressable
           onPress={() => setModalVisible(true)}
           style={[styles.trigger, hasSurahError && styles.triggerError]}
-          android_ripple={rippleConfigs.dark}
           accessibilityRole="combobox"
           accessibilityLabel="Select surah"
         >
@@ -203,7 +201,6 @@ export function SurahAyahPicker({
                       isSelected && styles.optionSelected,
                       pressed && styles.optionPressed,
                     ]}
-                    android_ripple={rippleConfigs.primary}
                     accessibilityRole="menuitem"
                     accessibilityState={{ selected: isSelected }}
                   >
@@ -258,7 +255,6 @@ const styles = StyleSheet.create({
     backgroundColor: lightTheme.background,
     minHeight: normalize(48),
     paddingHorizontal: spacing.md,
-    overflow: 'hidden',
   },
   triggerError: {
     borderColor: lightTheme.error,

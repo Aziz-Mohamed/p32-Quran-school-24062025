@@ -13,7 +13,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
 import { normalize } from '@/theme/normalize';
-import { rippleConfigs } from '@/theme/ripple';
 import type { NotificationPayload } from '../types/notifications.types';
 
 const AUTO_DISMISS_MS = 4000;
@@ -98,7 +97,7 @@ export function InAppBanner({ notification, onPress, onDismiss }: InAppBannerPro
           animatedStyle,
         ]}
       >
-        <Pressable style={styles.content} onPress={handlePress} android_ripple={rippleConfigs.dark}>
+        <Pressable style={styles.content} onPress={handlePress}>
           <Text style={styles.title} numberOfLines={1}>
             {notification.title}
           </Text>
