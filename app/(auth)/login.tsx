@@ -62,10 +62,17 @@ export default function LoginScreen() {
     },
   });
 
-  const fillDevAccount = (account: (typeof DEV_ACCOUNTS)[number]) => {
-    setValue('schoolSlug', account.schoolSlug);
-    setValue('username', account.username);
-    setValue('password', account.password);
+  const quickLogin = (account: (typeof DEV_ACCOUNTS)[number]) => {
+    setErrorMessage(null);
+    setSchoolSlug(account.schoolSlug);
+    login(
+      { schoolSlug: account.schoolSlug, username: account.username, password: account.password },
+      {
+        onError: (error) => {
+          setErrorMessage(error.message || t('auth.loginError'));
+        },
+      },
+    );
   };
 
   const onSubmit = (data: LoginFormData) => {
@@ -167,22 +174,21 @@ export default function LoginScreen() {
 
       </View>
 
-      {__DEV__ && (
-        <View style={styles.devSection}>
-          <View style={styles.devPills}>
-            {DEV_ACCOUNTS.map((account) => (
-              <Pressable
-                key={account.role}
-                style={[styles.devPill, { borderColor: account.color }]}
-                onPress={() => fillDevAccount(account)}
-              >
-                <View style={[styles.devDot, { backgroundColor: account.color }]} />
-                <Text style={styles.devPillText}>{account.label}</Text>
-              </Pressable>
-            ))}
-          </View>
+      <View style={styles.devSection}>
+        <View style={styles.devPills}>
+          {DEV_ACCOUNTS.map((account) => (
+            <Pressable
+              key={account.role}
+              style={[styles.devPill, { borderColor: account.color }]}
+              onPress={() => quickLogin(account)}
+              disabled={isPending}
+            >
+              <View style={[styles.devDot, { backgroundColor: account.color }]} />
+              <Text style={styles.devPillText}>{account.label}</Text>
+            </Pressable>
+          ))}
         </View>
-      )}
+      </View>
     </Screen>
   );
 }
