@@ -1,5 +1,5 @@
 import React, { useEffect, useCallback } from 'react';
-import { Text, StyleSheet, Pressable, Platform } from 'react-native';
+import { Text, StyleSheet, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -120,17 +120,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize(12),
     paddingBottom: normalize(12),
     backgroundColor: '#fff',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.15,
-        shadowRadius: 8,
-      },
-      android: {
-        elevation: 8,
-      },
-    }),
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.15)',
     borderBottomStartRadius: normalize(16),
     borderBottomEndRadius: normalize(16),
   },

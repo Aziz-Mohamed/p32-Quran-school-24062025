@@ -202,11 +202,7 @@ const styles = StyleSheet.create({
     paddingStart: spacing.md,
     paddingEnd: spacing.md,
     borderRadius: radius.md,
-    shadowColor: colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
+    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
   },
   icon: {
     marginEnd: spacing.sm,

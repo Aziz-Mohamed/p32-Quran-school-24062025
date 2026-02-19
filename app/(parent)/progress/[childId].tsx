@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text } from 'react-native';
+import { RefreshControl, ScrollView, StatusBar, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
@@ -49,57 +50,69 @@ export default function ParentProgressScreen() {
   }
 
   return (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={styles.content}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <Button
-        title={t('common.back')}
-        onPress={() => router.back()}
-        variant="ghost"
-        size="sm"
-      />
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <StatusBar barStyle="dark-content" backgroundColor={lightTheme.background} />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.container}>
+          <Button
+            title={t('common.back')}
+            onPress={() => router.back()}
+            variant="ghost"
+            size="sm"
+          />
 
-      <Text style={styles.title}>{t('reports.childProgress')}</Text>
+          <Text style={styles.title}>{t('reports.childProgress')}</Text>
 
-      <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
+          <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
 
-      <ChildScoreTrendChart
-        data={progressReport.data?.scoreTrend ?? []}
-        hasClass={!!classId}
-        isLoading={progressReport.isLoading}
-        isError={progressReport.isError}
-        onRetry={() => progressReport.refetch()}
-      />
+          <ChildScoreTrendChart
+            data={progressReport.data?.scoreTrend ?? []}
+            hasClass={!!classId}
+            isLoading={progressReport.isLoading}
+            isError={progressReport.isError}
+            onRetry={() => progressReport.refetch()}
+          />
 
-      <ChildAttendanceSummary
-        data={progressReport.data?.attendanceSummary}
-        isLoading={progressReport.isLoading}
-        isError={progressReport.isError}
-        onRetry={() => progressReport.refetch()}
-      />
+          <ChildAttendanceSummary
+            data={progressReport.data?.attendanceSummary}
+            isLoading={progressReport.isLoading}
+            isError={progressReport.isError}
+            onRetry={() => progressReport.refetch()}
+          />
 
-      <ChildGamificationSummary
-        data={progressReport.data?.gamification}
-        isLoading={progressReport.isLoading}
-        isError={progressReport.isError}
-        onRetry={() => progressReport.refetch()}
-      />
-    </ScrollView>
+          <ChildGamificationSummary
+            data={progressReport.data?.gamification}
+            isLoading={progressReport.isLoading}
+            isError={progressReport.isError}
+            onRetry={() => progressReport.refetch()}
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  safe: {
     flex: 1,
     backgroundColor: lightTheme.background,
   },
+  scroll: {
+    flex: 1,
+  },
   content: {
+    flexGrow: 1,
+    paddingBottom: spacing.xl,
+  },
+  container: {
     padding: spacing.lg,
-    paddingBottom: spacing['3xl'],
   },
   title: {
     ...typography.textStyles.heading,
