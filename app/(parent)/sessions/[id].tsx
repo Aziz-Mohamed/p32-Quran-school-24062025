@@ -102,40 +102,50 @@ export default function ParentSessionDetailScreen() {
             {recitations.map((recitation: any) => {
               const surah = getSurah(recitation.surah_number);
               const range = formatVerseRange(recitation.surah_number, recitation.from_ayah, recitation.to_ayah, i18n.language as 'ar' | 'en');
+              const hasScores = recitation.accuracy_score != null || recitation.tajweed_score != null || recitation.fluency_score != null;
               return (
-                <View key={recitation.id} style={styles.recitationItem}>
-                  <View style={styles.recitationHeader}>
-                    <View style={styles.recitationInfo}>
-                      <Text style={styles.recitationSurah}>
-                        {surah?.nameArabic ?? ''} - {surah?.nameEnglish ?? ''}
-                      </Text>
-                      <Text style={styles.recitationRange}>{range}</Text>
-                    </View>
+                <View key={recitation.id} style={styles.recitationCard}>
+                  {/* Row 1: Surah name + type chip */}
+                  <View style={styles.recitationTopRow}>
+                    <Text style={styles.recitationSurah} numberOfLines={1}>
+                      {surah?.nameArabic ?? ''} - {surah?.nameEnglish ?? ''}
+                    </Text>
                     <RecitationTypeChip type={recitation.recitation_type} />
                   </View>
-                  <View style={styles.recitationScores}>
-                    {recitation.accuracy_score != null && (
-                      <View style={styles.miniScorePill}>
-                        <Text style={styles.miniScoreLabel}>{t('parent.sessionDetail.memorization')}:</Text>
-                        <Text style={[styles.miniScoreValue, { color: colors.primary[600] }]}>{recitation.accuracy_score}/5</Text>
-                      </View>
-                    )}
-                    {recitation.tajweed_score != null && (
-                      <View style={styles.miniScorePill}>
-                        <Text style={styles.miniScoreLabel}>{t('parent.sessionDetail.tajweed')}:</Text>
-                        <Text style={[styles.miniScoreValue, { color: colors.accent.violet[600] }]}>{recitation.tajweed_score}/5</Text>
-                      </View>
-                    )}
-                    {recitation.fluency_score != null && (
-                      <View style={styles.miniScorePill}>
-                        <Text style={styles.miniScoreLabel}>{t('parent.sessionDetail.recitation')}:</Text>
-                        <Text style={[styles.miniScoreValue, { color: colors.accent.sky[600] }]}>{recitation.fluency_score}/5</Text>
-                      </View>
-                    )}
-                    {recitation.needs_repeat && (
+
+                  {/* Row 2: Verse range */}
+                  <Text style={styles.recitationRange}>{range}</Text>
+
+                  {/* Row 3: Scores in even grid */}
+                  {hasScores && (
+                    <View style={styles.recitationScoresGrid}>
+                      {recitation.accuracy_score != null && (
+                        <View style={styles.recitationScoreCell}>
+                          <Text style={styles.recitationScoreLabel}>{t('parent.sessionDetail.memorization')}</Text>
+                          <Text style={[styles.recitationScoreValue, { color: colors.primary[600] }]}>{recitation.accuracy_score}/5</Text>
+                        </View>
+                      )}
+                      {recitation.tajweed_score != null && (
+                        <View style={styles.recitationScoreCell}>
+                          <Text style={styles.recitationScoreLabel}>{t('parent.sessionDetail.tajweed')}</Text>
+                          <Text style={[styles.recitationScoreValue, { color: colors.accent.violet[600] }]}>{recitation.tajweed_score}/5</Text>
+                        </View>
+                      )}
+                      {recitation.fluency_score != null && (
+                        <View style={styles.recitationScoreCell}>
+                          <Text style={styles.recitationScoreLabel}>{t('parent.sessionDetail.recitation')}</Text>
+                          <Text style={[styles.recitationScoreValue, { color: colors.accent.sky[600] }]}>{recitation.fluency_score}/5</Text>
+                        </View>
+                      )}
+                    </View>
+                  )}
+
+                  {/* Footer: needs repeat */}
+                  {recitation.needs_repeat && (
+                    <View style={styles.recitationFooter}>
                       <Badge label={t('memorization.needsRepeat')} variant="warning" size="sm" />
-                    )}
-                  </View>
+                    </View>
+                  )}
                 </View>
               );
             })}
@@ -286,55 +296,53 @@ const styles = StyleSheet.create({
     ...typography.textStyles.heading,
     fontSize: normalize(20),
   },
-  recitationItem: {
+  recitationCard: {
+    backgroundColor: colors.neutral[50],
+    borderRadius: normalize(10),
+    padding: spacing.sm,
     gap: spacing.xs,
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.neutral[100],
   },
-  recitationHeader: {
+  recitationTopRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
-  },
-  recitationInfo: {
-    flex: 1,
   },
   recitationSurah: {
     fontFamily: typography.fontFamily.medium,
     fontSize: typography.fontSize.sm,
     color: lightTheme.text,
+    flex: 1,
   },
   recitationRange: {
     fontFamily: typography.fontFamily.semiBold,
     fontSize: typography.fontSize.xs,
     color: colors.primary[600],
-    marginTop: normalize(2),
   },
-  recitationScores: {
+  recitationScoresGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    flexWrap: 'wrap',
+    marginTop: normalize(4),
+    backgroundColor: colors.white,
+    borderRadius: normalize(8),
+    padding: spacing.xs,
   },
-  miniScorePill: {
-    flexDirection: 'row',
+  recitationScoreCell: {
+    flex: 1,
     alignItems: 'center',
-    gap: normalize(4),
-    backgroundColor: colors.neutral[50],
-    paddingHorizontal: normalize(8),
-    paddingVertical: normalize(3),
-    borderRadius: normalize(6),
+    gap: normalize(2),
   },
-  miniScoreLabel: {
-    fontSize: normalize(11),
+  recitationScoreLabel: {
+    fontSize: normalize(10),
     fontFamily: typography.fontFamily.semiBold,
-    color: colors.neutral[500],
+    color: colors.neutral[400],
   },
-  miniScoreValue: {
-    fontSize: normalize(12),
+  recitationScoreValue: {
+    fontSize: normalize(13),
     fontFamily: typography.fontFamily.bold,
+  },
+  recitationFooter: {
+    flexDirection: 'row',
+    marginTop: normalize(2),
   },
   notesContainer: {
     backgroundColor: colors.neutral[50],
