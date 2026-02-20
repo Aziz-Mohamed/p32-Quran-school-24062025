@@ -87,7 +87,7 @@ export default function StudentDetailScreen() {
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>{t('admin.students.level')}</Text>
             <Text style={styles.infoValue}>
-              {(student as any).levels?.title ?? `${t('common.level')} ${student.current_level}`}
+              {t('common.level')} {student.current_level ?? 0}/240
             </Text>
           </View>
           <View style={styles.infoRow}>

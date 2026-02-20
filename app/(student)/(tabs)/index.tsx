@@ -13,6 +13,7 @@ import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSc
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useRubCertifications, RevisionWarning } from '@/features/gamification';
 import { formatSessionDate } from '@/lib/helpers';
 import { formatVerseRange } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
@@ -29,6 +30,7 @@ export default function StudentDashboard() {
   const theme = useRoleTheme();
 
   const { data, isLoading, error, refetch } = useStudentDashboard(profile?.id);
+  const { activeCount, criticalCount } = useRubCertifications(profile?.id);
   const todayStr = new Date().toISOString().split('T')[0];
   const { data: revisionSchedule = [] } = useRevisionSchedule(profile?.id, todayStr);
 
@@ -36,7 +38,7 @@ export default function StudentDashboard() {
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
 
   const student = data?.student;
-  const level = (student as any)?.levels ?? null;
+  const currentLevel = activeCount;
 
   return (
     <Screen scroll hasTabBar>
@@ -49,29 +51,30 @@ export default function StudentDashboard() {
             </Text>
             <Text style={styles.subtitle}>{t('student.dashboard.readyToLearn')}</Text>
           </View>
-          {level && (
-            <Badge 
-              label={level.title ?? `${t('common.level')} ${level.level_number}`} 
-              variant={theme.tag} 
-              size="md" 
-            />
-          )}
+          <Badge
+            label={`${t('common.level')} ${currentLevel}/240`}
+            variant={theme.tag}
+            size="md"
+          />
         </View>
 
         {/* Level Progress */}
         <Card variant="primary-glow" style={styles.levelCard}>
           <View style={styles.levelHeader}>
-            <Text style={styles.levelTitle}>{t('common.level')} {level?.level_number ?? 1}</Text>
+            <Text style={styles.levelTitle}>{t('common.level')} {currentLevel}</Text>
             <Text style={styles.levelPoints}>{student?.total_points ?? 0} {t('student.points')}</Text>
           </View>
-          <ProgressBar 
-            progress={0.65} // Example progress
-            variant={theme.tag} 
-            height={10} 
-            showLabel 
-            label={t('student.dashboard.levelProgress')} 
+          <ProgressBar
+            progress={currentLevel / 240}
+            variant={theme.tag}
+            height={10}
+            showLabel
+            label={`${currentLevel}/240 ${t('student.dashboard.rubCertified')}`}
           />
         </Card>
+
+        {/* Revision Warning */}
+        <RevisionWarning count={criticalCount} />
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
@@ -147,6 +150,14 @@ export default function StudentDashboard() {
         <Text style={styles.sectionTitle}>{t('dashboard.quickActions')}</Text>
         <View style={styles.actionsRow}>
           <Button
+            title={t('gamification.progressMap')}
+            onPress={() => router.push('/(student)/rub-progress')}
+            variant="ghost"
+            size="sm"
+            icon={<Ionicons name="map" size={18} color={colors.accent.violet[500]} />}
+            style={[styles.actionButton, { backgroundColor: colors.accent.violet[50] }]}
+          />
+          <Button
             title={t('student.dashboard.viewSessions')}
             onPress={() => router.push('/(student)/sessions')}
             variant="ghost"
@@ -155,11 +166,11 @@ export default function StudentDashboard() {
             style={[styles.actionButton, { backgroundColor: theme.primaryLight }]}
           />
           <Button
-            title={t('student.dashboard.viewTrophies')}
-            onPress={() => router.push('/(student)/trophy-room')}
+            title={t('student.dashboard.viewLeaderboard')}
+            onPress={() => router.push('/(student)/leaderboard')}
             variant="ghost"
             size="sm"
-            icon={<Ionicons name="trophy" size={18} color={colors.secondary[500]} />}
+            icon={<Ionicons name="podium" size={18} color={colors.secondary[500]} />}
             style={[styles.actionButton, { backgroundColor: colors.secondary[50] }]}
           />
         </View>
@@ -215,26 +226,6 @@ export default function StudentDashboard() {
           })
         )}
 
-        {/* Recent Achievements */}
-        <Text style={styles.sectionTitle}>{t('student.dashboard.recentAchievements')}</Text>
-        {(data?.recentAchievements ?? []).length === 0 ? (
-          <Card variant="outlined" style={styles.emptyCard}>
-            <Text style={styles.emptyText}>{t('student.dashboard.noAchievements')}</Text>
-          </Card>
-        ) : (
-          <View style={styles.achievementsGrid}>
-            {data!.recentAchievements!.map((ach: any) => (
-              <Card key={ach.id} variant="glass" style={styles.achievementCard}>
-                <View style={styles.achievementCircle}>
-                  <Ionicons name="ribbon" size={24} color={colors.secondary[500]} />
-                </View>
-                <Text style={styles.achievementName} numberOfLines={1}>
-                  {ach.achievements?.title ?? t('common.achievement')}
-                </Text>
-              </Card>
-            ))}
-          </View>
-        )}
       </View>
     </Screen>
   );
@@ -387,30 +378,6 @@ const styles = StyleSheet.create({
   },
   homeworkOverdue: {
     color: colors.accent.rose[500],
-  },
-  achievementsGrid: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    flexWrap: 'wrap',
-  },
-  achievementCard: {
-    width: '47%',
-    alignItems: 'center',
-    padding: spacing.md,
-  },
-  achievementCircle: {
-    width: normalize(48),
-    height: normalize(48),
-    borderRadius: normalize(24),
-    backgroundColor: colors.secondary[50],
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.sm,
-  },
-  achievementName: {
-    ...typography.textStyles.label,
-    color: colors.neutral[800],
-    textAlign: 'center',
   },
   revisionPlanCard: {
     padding: spacing.md,

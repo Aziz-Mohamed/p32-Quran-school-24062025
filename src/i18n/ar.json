@@ -33,6 +33,7 @@
     "notFound": "الصفحة غير موجودة",
     "goHome": "الرئيسية",
     "close": "إغلاق",
+    "undo": "تراجع",
     "select": "...اختر",
     "selectDate": "...اختر التاريخ",
     "clearSearch": "مسح البحث",
@@ -812,11 +813,39 @@
     "gamification": {
       "title": "المكافآت والتقدم",
       "totalStickers": "إجمالي الملصقات",
-      "achievements": "الإنجازات",
       "currentLevel": "المستوى الحالي",
       "currentStreak": "السلسلة الحالية",
       "longestStreak": "أطول سلسلة",
-      "totalPoints": "إجمالي النقاط"
+      "totalPoints": "إجمالي النقاط",
+      "activeCertifications": "الإجازات النشطة",
+      "progressMap": "خريطة تقدم الأرباع",
+      "juz": "جزء",
+      "hizb": "حزب",
+      "rub": "ربع",
+      "surah": "سورة",
+      "verseRange": "الآيات",
+      "levelLabel": "المستوى {{level}} / {{total}}",
+      "rubCertified": "{{count}} ربع مُجاز",
+      "revisionWarning": "{{count}} ربع يحتاج مراجعة",
+      "certifyTitle": "إجازة الربع",
+      "certifyMessage": "سيُثبت هذا أن الطالب قد حفظ هذا الربع.",
+      "certify": "إجازة",
+      "certifiedSuccess": "الربع {{rub}} تمت إجازته!",
+      "freshness": {
+        "fresh": "طازج",
+        "fading": "يتلاشى",
+        "warning": "يحتاج مراجعة",
+        "critical": "عاجل",
+        "dormant": "خامل"
+      },
+      "revision": {
+        "good": "جيد",
+        "poor": "ضعيف",
+        "goodDesc": "الطالب تلا بشكل صحيح — تُعاد النضارة إلى 100%",
+        "poorDesc": "الطالب يحتاج مزيداً من التمرين — تُعاد النضارة إلى 50%",
+        "recertify": "إعادة إجازة",
+        "recertifyDesc": "خامل لأكثر من 90 يوماً — يتطلب إعادة إجازة كاملة"
+      }
     },
     "legend": {
       "memorization": "الحفظ",

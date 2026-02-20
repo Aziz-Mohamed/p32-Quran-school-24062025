@@ -65,7 +65,7 @@ export default function ChildrenScreen() {
                     </Text>
                     <Text style={styles.childMeta}>
                       {child.classes?.name ?? t('admin.students.noClass')}
-                      {child.levels ? ` · ${child.levels.title}` : ''}
+                      {` · Lvl ${child.current_level ?? 0}`}
                     </Text>
                     <View style={styles.statsRow}>
                       <View style={styles.statItem}>

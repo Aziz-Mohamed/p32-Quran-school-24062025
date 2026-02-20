@@ -33,6 +33,7 @@
     "notFound": "Page not found",
     "goHome": "Go Home",
     "close": "Close",
+    "undo": "Undo",
     "select": "Select...",
     "selectDate": "Select date...",
     "clearSearch": "Clear search",
@@ -812,11 +813,39 @@
     "gamification": {
       "title": "Rewards & Progress",
       "totalStickers": "Total Stickers",
-      "achievements": "Achievements",
       "currentLevel": "Current Level",
       "currentStreak": "Current Streak",
       "longestStreak": "Longest Streak",
-      "totalPoints": "Total Points"
+      "totalPoints": "Total Points",
+      "activeCertifications": "Active Certifications",
+      "progressMap": "Rubʿ Progress Map",
+      "juz": "Juz",
+      "hizb": "Hizb",
+      "rub": "Rubʿ",
+      "surah": "Surah",
+      "verseRange": "Verses",
+      "levelLabel": "Level {{level}} / {{total}}",
+      "rubCertified": "{{count}} rubʿ certified",
+      "revisionWarning": "{{count}} rubʿ need revision",
+      "certifyTitle": "Certify Rubʿ",
+      "certifyMessage": "This will certify that the student has memorized this rubʿ.",
+      "certify": "Certify",
+      "certifiedSuccess": "Rubʿ {{rub}} certified!",
+      "freshness": {
+        "fresh": "Fresh",
+        "fading": "Fading",
+        "warning": "Needs Revision",
+        "critical": "Urgent",
+        "dormant": "Dormant"
+      },
+      "revision": {
+        "good": "Good",
+        "poor": "Poor",
+        "goodDesc": "Student recited correctly — freshness resets to 100%",
+        "poorDesc": "Student needs more practice — freshness resets to 50%",
+        "recertify": "Re-certify",
+        "recertifyDesc": "Dormant over 90 days — requires full re-certification"
+      }
     },
     "legend": {
       "memorization": "Memorization",

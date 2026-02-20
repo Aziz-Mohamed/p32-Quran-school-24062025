@@ -88,7 +88,7 @@ export default function TeacherStudentsScreen() {
                     </Text>
                     <Text style={styles.studentMeta}>
                       {item.classes?.name ?? t('teacher.students.noClass')}
-                      {item.levels ? ` · ${item.levels.title}` : ''}
+                      {` · Lvl ${item.current_level ?? 0}`}
                     </Text>
                   </View>
                   <View style={styles.studentActions}>

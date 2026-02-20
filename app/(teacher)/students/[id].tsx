@@ -1,5 +1,5 @@
-import React from 'react';
-import { I18nManager, StyleSheet, View, Text } from 'react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { I18nManager, Pressable, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +13,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { useStudentById } from '@/features/students/hooks/useStudents';
 import { useSessions } from '@/features/sessions/hooks/useSessions';
 import { useStudentStickers } from '@/features/gamification/hooks/useStickers';
+import { useRubCertifications } from '@/features/gamification/hooks/useRubCertifications';
+import { useCertifyRub } from '@/features/gamification/hooks/useCertifyRub';
+import { useUndoCertification } from '@/features/gamification/hooks/useUndoCertification';
+import { RubProgressMap } from '@/features/gamification/components/RubProgressMap';
+import { RevisionSheet } from '@/features/gamification/components/RevisionSheet';
+import { useRecordRevision } from '@/features/gamification/hooks/useRecordRevision';
+import type { EnrichedCertification } from '@/features/gamification/types/gamification.types';
 import { useAttendanceRate } from '@/features/attendance/hooks/useAttendance';
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { MemorizationProgressBar } from '@/features/memorization';
@@ -21,6 +28,7 @@ import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
+import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
 
 // ─── Teacher Student Detail Screen ──────────────────────────────────────────
@@ -41,6 +49,84 @@ export default function TeacherStudentDetailScreen() {
   const { data: stickers = [] } = useStudentStickers(id);
   const { data: attendanceData } = useAttendanceRate(id);
   const { data: memStats } = useMemorizationStats(id);
+  const { activeCount } = useRubCertifications(id);
+  const certifyMutation = useCertifyRub();
+  const undoMutation = useUndoCertification();
+  const { goodRevision, poorRevision, recertify } = useRecordRevision();
+
+  // Undo state
+  const [undoInfo, setUndoInfo] = useState<{ certId: string; rubNumber: number } | null>(null);
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Revision sheet state
+  const [revisionCert, setRevisionCert] = useState<EnrichedCertification | null>(null);
+
+  const handleCertify = useCallback(
+    async (rubNumber: number) => {
+      if (!id || !profile?.id) return;
+      try {
+        const result = await certifyMutation.mutateAsync({
+          studentId: id,
+          rubNumber,
+          certifiedBy: profile.id,
+        });
+        if (result.data) {
+          // Clear previous undo timer
+          if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+          setUndoInfo({ certId: result.data.id, rubNumber });
+          // Auto-dismiss after 30 seconds
+          undoTimerRef.current = setTimeout(() => setUndoInfo(null), 30_000);
+        }
+      } catch {
+        // Mutation error handled by TanStack Query
+      }
+    },
+    [id, profile?.id, certifyMutation],
+  );
+
+  const handleUndo = useCallback(() => {
+    if (!undoInfo || !id) return;
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    undoMutation.mutate({ certificationId: undoInfo.certId, studentId: id });
+    setUndoInfo(null);
+  }, [undoInfo, id, undoMutation]);
+
+  const handleCertifiedRubPress = useCallback((cert: EnrichedCertification) => {
+    setRevisionCert(cert);
+  }, []);
+
+  const handleRevisionAction = useCallback(
+    (action: 'good' | 'poor' | 'recertify') => {
+      if (!revisionCert || !id) return;
+      const base = {
+        certificationId: revisionCert.id,
+        studentId: id,
+        reviewCount: revisionCert.review_count,
+        dormantSince: revisionCert.dormant_since,
+      };
+
+      if (action === 'good') {
+        goodRevision.mutate(base);
+      } else if (action === 'poor') {
+        poorRevision.mutate(base);
+      } else if (action === 'recertify' && profile?.id) {
+        recertify.mutate({
+          certificationId: revisionCert.id,
+          studentId: id,
+          certifiedBy: profile.id,
+        });
+      }
+      setRevisionCert(null);
+    },
+    [revisionCert, id, profile?.id, goodRevision, poorRevision, recertify],
+  );
+
+  // Cleanup timer
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    };
+  }, []);
 
   if (studentLoading) return <LoadingState />;
   if (studentError) return <ErrorState description={(studentError as Error).message} onRetry={refetch} />;
@@ -48,7 +134,6 @@ export default function TeacherStudentDetailScreen() {
 
   const studentProfile = (student as any).profiles;
   const studentClass = (student as any).classes;
-  const studentLevel = (student as any).levels;
   const attendanceRate = attendanceData?.rate ?? 0;
 
   return (
@@ -78,9 +163,7 @@ export default function TeacherStudentDetailScreen() {
               {studentClass?.name && (
                 <Badge label={studentClass.name} variant="sky" size="sm" />
               )}
-              {studentLevel?.title && (
-                <Badge label={studentLevel.title} variant="indigo" size="sm" />
-              )}
+              <Badge label={`${t('common.level')} ${activeCount}/240`} variant="indigo" size="sm" />
             </View>
           </View>
         </Card>
@@ -164,6 +247,39 @@ export default function TeacherStudentDetailScreen() {
               </View>
             </Card>
           ))
+        )}
+
+        {/* Rubʿ Progress Map */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{t('gamification.progressMap')}</Text>
+        </View>
+        <View style={styles.progressMapContainer}>
+          <RubProgressMap
+            studentId={id!}
+            mode="interactive"
+            onCertify={handleCertify}
+            onCertifiedRubPress={handleCertifiedRubPress}
+          />
+        </View>
+
+        {/* Revision Sheet */}
+        <RevisionSheet
+          visible={!!revisionCert}
+          certification={revisionCert}
+          onAction={handleRevisionAction}
+          onClose={() => setRevisionCert(null)}
+        />
+
+        {/* Undo Banner */}
+        {undoInfo && (
+          <View style={styles.undoBanner}>
+            <Text style={styles.undoText}>
+              {t('gamification.certifiedSuccess', { rub: undoInfo.rubNumber })}
+            </Text>
+            <Pressable onPress={handleUndo} style={styles.undoButton}>
+              <Text style={styles.undoButtonText}>{t('common.undo')}</Text>
+            </Pressable>
+          </View>
         )}
 
         {/* Sticker History */}
@@ -375,6 +491,34 @@ const styles = StyleSheet.create({
   memorizationActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+  },
+  progressMapContainer: {
+    minHeight: normalize(400),
+  },
+  undoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.primary[50],
+    borderRadius: radius.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  undoText: {
+    ...typography.textStyles.bodyMedium,
+    color: colors.primary[800],
+    flex: 1,
+  },
+  undoButton: {
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.xs,
+    backgroundColor: colors.primary[500],
+  },
+  undoButtonText: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(13),
+    color: colors.white,
   },
   emptyCard: {
     padding: spacing.xl,

@@ -216,7 +216,7 @@ function ChildStatusRow({
           <Text style={styles.childName} numberOfLines={1}>{child.name}</Text>
           <Text style={styles.childMeta} numberOfLines={1}>
             {child.className ?? '—'}
-            {child.levelTitle ? ` · ${child.levelTitle}` : ''}
+            {` · ${t('common.level')} ${child.currentLevel}/240`}
           </Text>
         </View>
         <View style={styles.childBadges}>

@@ -65,7 +65,7 @@ export default function NeedsSupportScreen() {
                   </Text>
                   <Text style={styles.studentMeta}>
                     {student.classes?.name ?? ''}
-                    {student.levels ? ` · ${student.levels.title}` : ''}
+                    {` · Lvl ${student.current_level ?? 0}`}
                   </Text>
                 </View>
                 <View style={styles.statsContainer}>

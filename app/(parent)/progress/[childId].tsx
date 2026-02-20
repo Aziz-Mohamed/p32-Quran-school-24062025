@@ -22,6 +22,7 @@ import { ChildAttendanceSummary } from '@/features/reports/components/ChildAtten
 import { ChildGamificationSummary } from '@/features/reports/components/ChildGamificationSummary';
 
 import { useChildDetail } from '@/features/children/hooks/useChildren';
+import { RubProgressMap } from '@/features/gamification';
 
 export default function ParentProgressScreen() {
   const { t } = useTranslation();
@@ -93,6 +94,13 @@ export default function ParentProgressScreen() {
             isError={progressReport.isError}
             onRetry={() => progressReport.refetch()}
           />
+
+          {childId && (
+            <RubProgressMap
+              studentId={childId}
+              mode="readonly"
+            />
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>

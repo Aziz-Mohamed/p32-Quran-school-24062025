@@ -67,13 +67,11 @@ export default function ChildDetailScreen() {
                 variant="sky"
                 size="sm"
               />
-              {(student as any).levels && (
-                <Badge
-                  label={(student as any).levels.title ?? `${t('common.level')} ${(student as any).levels.level_number}`}
-                  variant="indigo"
-                  size="sm"
-                />
-              )}
+              <Badge
+                label={`${t('common.level')} ${(student as any).current_level ?? 0}/240`}
+                variant="indigo"
+                size="sm"
+              />
             </View>
           </View>
         </Card>

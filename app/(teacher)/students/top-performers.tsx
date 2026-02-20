@@ -69,7 +69,7 @@ export default function TopPerformersScreen() {
                   </Text>
                   <Text style={styles.studentMeta}>
                     {student.classes?.name ?? ''}
-                    {student.levels ? ` · ${student.levels.title}` : ''}
+                    {` · ${t('common.level')} ${student.current_level ?? 0}`}
                   </Text>
                 </View>
                 <View style={styles.pointsContainer}>

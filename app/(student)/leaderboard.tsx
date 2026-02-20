@@ -114,11 +114,9 @@ export default function LeaderboardScreen() {
                       <Text style={styles.entryName} numberOfLines={1}>
                         {item.profiles?.full_name ?? '—'}
                       </Text>
-                      {item.levels && (
-                        <Text style={styles.entryLevel}>
-                          {item.levels.title ?? `Lvl ${item.levels.level_number}`}
-                        </Text>
-                      )}
+                      <Text style={styles.entryLevel}>
+                        {t('common.level')} {item.current_level ?? 0}
+                      </Text>
                     </View>
                     
                     <View style={styles.pointsContainer}>
