@@ -80,6 +80,7 @@ export interface RecentSessionEntry {
   memorizationScore: number | null;
   tajweedScore: number | null;
   recitationQuality: number | null;
+  notes: string | null;
 }
 
 /** Summary data for a parent viewing their children */

@@ -11,11 +11,12 @@ import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useParentDashboard } from '@/features/dashboard/hooks/useParentDashboard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
-import type { ChildQuickStatus } from '@/features/dashboard/types/dashboard.types';
+import type { ChildQuickStatus, RecentSessionEntry } from '@/features/dashboard/types/dashboard.types';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ function formatRate(rate: number): string {
 // ─── Parent Dashboard ─────────────────────────────────────────────────────────
 
 export default function ParentDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { profile } = useAuth();
   const router = useRouter();
   const theme = useRoleTheme();
@@ -170,9 +171,9 @@ export default function ParentDashboard() {
           ))}
         </View>
 
-        {/* ── Recent Activity ── */}
+        {/* ── Recent Sessions ── */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('dashboard.recentActivity')}</Text>
+          <Text style={styles.sectionTitle}>{t('parent.recentSessions')}</Text>
           <Badge label={String(recentSessions.length)} variant="sky" />
         </View>
         {recentSessions.length === 0 ? (
@@ -181,30 +182,12 @@ export default function ParentDashboard() {
           </Card>
         ) : (
           recentSessions.map((session) => (
-            <Card key={session.id} variant="default" style={styles.sessionCard}>
-              <View style={styles.sessionRow}>
-                <View style={[styles.sessionAvatar, { backgroundColor: colors.neutral[100] }]}>
-                  <Text style={styles.avatarText}>
-                    {session.childName?.[0]?.toUpperCase() ?? '?'}
-                  </Text>
-                </View>
-                <View style={styles.sessionInfo}>
-                  <Text style={styles.sessionName} numberOfLines={1}>
-                    {session.childName}
-                  </Text>
-                  <Text style={styles.sessionDate}>{session.sessionDate}</Text>
-                </View>
-                <View style={styles.sessionScores}>
-                  {session.memorizationScore != null && (
-                    <Badge
-                      label={`${session.memorizationScore}/5`}
-                      variant={session.memorizationScore >= 4 ? 'success' : 'warning'}
-                      size="sm"
-                    />
-                  )}
-                </View>
-              </View>
-            </Card>
+            <SessionCard
+              key={session.id}
+              session={session}
+              locale={i18n.language}
+              onPress={() => router.push(`/(parent)/sessions/${session.id}`)}
+            />
           ))
         )}
       </View>
@@ -244,13 +227,85 @@ function ChildStatusRow({
               size="sm"
             />
           ) : (
-            <Badge label="—" variant="default" size="sm" />
+            <Badge label={t('parent.dashboard.notMarked')} variant="default" size="sm" />
           )}
           <Text style={styles.rateText}>{formatRate(child.attendanceRate)}</Text>
         </View>
         <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.neutral[300]} />
       </View>
     </Card>
+  );
+}
+
+// ─── Session Card ────────────────────────────────────────────────────────────
+
+function SessionCard({
+  session,
+  locale,
+  onPress,
+}: {
+  session: RecentSessionEntry;
+  locale: string;
+  onPress: () => void;
+}) {
+  const { t } = useTranslation();
+  const formatted = formatSessionDate(session.sessionDate, locale);
+  const hasScores = session.memorizationScore != null || session.tajweedScore != null || session.recitationQuality != null;
+
+  return (
+    <Card variant="default" style={styles.sessionCard} onPress={onPress}>
+      {/* Header: child name + date */}
+      <View style={styles.sessionHeader}>
+        <View style={styles.sessionHeaderLeft}>
+          <Ionicons name="book-outline" size={16} color={colors.accent.violet[500]} />
+          <Text style={styles.sessionChildName} numberOfLines={1}>{session.childName}</Text>
+        </View>
+        <View style={styles.sessionDateRow}>
+          <Text style={styles.sessionDateText}>{formatted.date}</Text>
+          <Text style={styles.sessionWeekday}>({formatted.weekday})</Text>
+        </View>
+      </View>
+
+      {/* Scores row */}
+      {hasScores && (
+        <View style={styles.sessionScoresRow}>
+          {session.memorizationScore != null && (
+            <ScorePill label={t('common.scoreAbbrev.memorization')} value={session.memorizationScore} max={5} />
+          )}
+          {session.tajweedScore != null && (
+            <ScorePill label={t('common.scoreAbbrev.tajweed')} value={session.tajweedScore} max={5} />
+          )}
+          {session.recitationQuality != null && (
+            <ScorePill label={t('common.scoreAbbrev.recitation')} value={session.recitationQuality} max={5} />
+          )}
+        </View>
+      )}
+
+      {/* Notes preview */}
+      {session.notes && (
+        <View style={styles.sessionNotesPreview}>
+          <Text style={styles.sessionNotesText} numberOfLines={2}>{session.notes}</Text>
+        </View>
+      )}
+
+      {/* Tap hint */}
+      <View style={styles.sessionTapHint}>
+        <Text style={styles.sessionTapText}>{t('parent.sessionDetail.title')}</Text>
+        <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={14} color={colors.neutral[300]} />
+      </View>
+    </Card>
+  );
+}
+
+function ScorePill({ label, value, max }: { label: string; value: number; max: number }) {
+  const isHigh = value >= max * 0.8;
+  return (
+    <View style={[styles.scorePill, { backgroundColor: isHigh ? colors.primary[50] : colors.neutral[50] }]}>
+      <Text style={styles.scorePillLabel}>{label}:</Text>
+      <Text style={[styles.scorePillValue, { color: isHigh ? colors.primary[600] : colors.neutral[600] }]}>
+        {value}/{max}
+      </Text>
+    </View>
   );
 }
 
@@ -355,16 +410,15 @@ const styles = StyleSheet.create({
 
   // Children quick status
   childrenList: {
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   childCard: {
-    padding: spacing.sm,
-    paddingHorizontal: spacing.md,
+    padding: spacing.md,
   },
   childRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   childInfo: {
     flex: 1,
@@ -389,42 +443,83 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.semiBold,
   },
 
-  // Recent Activity
+  // Recent Sessions
   sessionCard: {
     padding: spacing.md,
+    gap: spacing.sm,
   },
-  sessionRow: {
+  sessionHeader: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    gap: spacing.md,
   },
-  sessionAvatar: {
-    width: normalize(36),
-    height: normalize(36),
-    borderRadius: normalize(18),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[600],
-  },
-  sessionInfo: {
-    flex: 1,
-  },
-  sessionName: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[900],
-  },
-  sessionDate: {
-    ...typography.textStyles.label,
-    color: colors.neutral[500],
-    marginTop: normalize(2),
-  },
-  sessionScores: {
+  sessionHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+    flex: 1,
+  },
+  sessionChildName: {
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[900],
+    flex: 1,
+  },
+  sessionDateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(4),
+  },
+  sessionDateText: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[500],
+  },
+  sessionWeekday: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[400],
+  },
+  sessionScoresRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  scorePill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(4),
+    paddingHorizontal: normalize(10),
+    paddingVertical: normalize(4),
+    borderRadius: normalize(8),
+  },
+  scorePillLabel: {
+    fontSize: normalize(11),
+    fontFamily: typography.fontFamily.semiBold,
+    color: colors.neutral[500],
+  },
+  scorePillValue: {
+    fontSize: normalize(12),
+    fontFamily: typography.fontFamily.bold,
+  },
+  sessionNotesPreview: {
+    backgroundColor: colors.neutral[50],
+    padding: spacing.sm,
+    borderRadius: normalize(8),
+    borderLeftWidth: 3,
+    borderLeftColor: colors.neutral[200],
+  },
+  sessionNotesText: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[600],
+    fontStyle: 'italic',
+  },
+  sessionTapHint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: normalize(4),
+  },
+  sessionTapText: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[400],
   },
 
   // Empty

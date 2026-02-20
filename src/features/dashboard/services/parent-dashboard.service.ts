@@ -62,7 +62,7 @@ class ParentDashboardService {
           .in('student_id', childIds),
         supabase
           .from('sessions')
-          .select('id, student_id, session_date, memorization_score, tajweed_score, recitation_quality')
+          .select('id, student_id, session_date, memorization_score, tajweed_score, recitation_quality, notes')
           .in('student_id', childIds)
           .order('session_date', { ascending: false })
           .limit(5),
@@ -147,6 +147,7 @@ class ParentDashboardService {
       memorizationScore: s.memorization_score,
       tajweedScore: s.tajweed_score,
       recitationQuality: s.recitation_quality,
+      notes: s.notes,
     }));
 
     return {
