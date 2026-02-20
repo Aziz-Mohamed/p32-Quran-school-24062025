@@ -13,6 +13,8 @@ import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSc
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { formatSessionDate } from '@/lib/helpers';
+import { formatVerseRange } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,7 +23,7 @@ import { normalize } from '@/theme/normalize';
 // ─── Student Dashboard ────────────────────────────────────────────────────────
 
 export default function StudentDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { profile } = useAuth();
   const router = useRouter();
   const theme = useRoleTheme();
@@ -172,22 +174,40 @@ export default function StudentDashboard() {
             <Text style={styles.emptyText}>{t('student.dashboard.noHomework')}</Text>
           </Card>
         ) : (
-          data!.homework!.map((hw: any) => (
-            <Card key={hw.id} variant="default" onPress={() => router.push(`/(student)/homework/${hw.id}`)} style={styles.homeworkCard}>
-              <View style={styles.homeworkContent}>
-                <View style={[styles.homeworkIcon, { backgroundColor: theme.primaryLight }]}>
-                  <Ionicons name="book" size={20} color={theme.primary} />
+          data!.homework!.map((hw: any) => {
+            const isOverdue = hw.due_date && new Date(hw.due_date + 'T00:00:00') < new Date(new Date().toISOString().split('T')[0] + 'T00:00:00');
+            const rec = hw.sessions?.recitations?.[0];
+            const verse = rec ? formatVerseRange(rec.surah_number, rec.from_ayah, rec.to_ayah, i18n.language as 'ar' | 'en') : null;
+            return (
+              <Card key={hw.id} variant="default" onPress={() => router.push(`/(student)/homework/${hw.id}`)} style={styles.homeworkCard}>
+                <View style={styles.homeworkContent}>
+                  <View style={styles.homeworkIcon}>
+                    <Ionicons name="book-outline" size={20} color={colors.accent.indigo[500]} />
+                  </View>
+                  <View style={styles.homeworkInfo}>
+                    {verse ? (
+                      <Text numberOfLines={1}>
+                        <Text style={styles.homeworkSurah}>{verse}</Text>
+                        {'  '}
+                        <Text style={styles.homeworkType}>{hw.description.split(' ')[0]}</Text>
+                      </Text>
+                    ) : (
+                      <Text style={styles.homeworkSurah} numberOfLines={1}>{hw.description}</Text>
+                    )}
+                    <Text style={styles.homeworkDue}>
+                      <Text style={styles.homeworkDueLabel}>{t('teacher.sessions.due')}  </Text>
+                      <Text style={isOverdue ? styles.homeworkOverdue : undefined}>
+                        {hw.due_date
+                          ? formatSessionDate(hw.due_date, i18n.language).date
+                          : t('student.homeworkDetail.noDueDate')}
+                      </Text>
+                    </Text>
+                  </View>
+                  <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={16} color={colors.neutral[300]} />
                 </View>
-                <View style={styles.homeworkInfo}>
-                  <Text style={styles.homeworkDescription} numberOfLines={1}>{hw.description}</Text>
-                  <Text style={styles.homeworkDue}>
-                    {t('teacher.sessions.due')}: {hw.due_date}
-                  </Text>
-                </View>
-                <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={20} color={colors.neutral[300]} />
-              </View>
-            </Card>
-          ))
+              </Card>
+            );
+          })
         )}
 
         {/* Recent Achievements */}
@@ -323,7 +343,8 @@ const styles = StyleSheet.create({
     color: lightTheme.textSecondary,
   },
   homeworkCard: {
-    padding: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
   },
   homeworkContent: {
     flexDirection: 'row',
@@ -334,20 +355,33 @@ const styles = StyleSheet.create({
     width: normalize(40),
     height: normalize(40),
     borderRadius: normalize(12),
+    backgroundColor: colors.accent.indigo[50],
     alignItems: 'center',
     justifyContent: 'center',
   },
   homeworkInfo: {
     flex: 1,
+    gap: normalize(3),
   },
-  homeworkDescription: {
-    ...typography.textStyles.bodyMedium,
+  homeworkSurah: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(14),
     color: lightTheme.text,
   },
+  homeworkType: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: normalize(12),
+    color: colors.neutral[400],
+  },
   homeworkDue: {
-    ...typography.textStyles.label,
+    ...typography.textStyles.caption,
+    color: colors.neutral[400],
+  },
+  homeworkDueLabel: {
+    color: colors.neutral[300],
+  },
+  homeworkOverdue: {
     color: colors.accent.rose[500],
-    marginTop: normalize(2),
   },
   achievementsGrid: {
     flexDirection: 'row',
