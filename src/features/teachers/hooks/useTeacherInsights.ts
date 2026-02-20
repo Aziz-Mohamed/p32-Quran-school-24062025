@@ -12,7 +12,7 @@ export function useTopPerformers(teacherId: string | undefined) {
       const { data, error } = await supabase
         .from('students')
         .select(
-          '*, profiles!students_id_fkey!inner(full_name, avatar_url), classes!inner(name, teacher_id), levels!students_current_level_fkey(title, level_number)',
+          '*, profiles!students_id_fkey!inner(full_name, avatar_url), classes!inner(name, teacher_id)',
         )
         .eq('classes.teacher_id', teacherId!)
         .eq('is_active', true)
@@ -36,7 +36,7 @@ export function useNeedsSupport(teacherId: string | undefined) {
       const { data, error } = await supabase
         .from('students')
         .select(
-          '*, profiles!students_id_fkey!inner(full_name, avatar_url), classes!inner(name, teacher_id), levels!students_current_level_fkey(title, level_number)',
+          '*, profiles!students_id_fkey!inner(full_name, avatar_url), classes!inner(name, teacher_id)',
         )
         .eq('classes.teacher_id', teacherId!)
         .eq('is_active', true)

@@ -30,7 +30,7 @@ class ParentDashboardService {
     const { data: children, error: childrenError } = await supabase
       .from('students')
       .select(
-        '*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name), levels!students_current_level_fkey(level_number, title)',
+        '*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name)',
       )
       .eq('parent_id', parentId)
       .eq('is_active', true);
@@ -107,7 +107,7 @@ class ParentDashboardService {
         name: child.profiles?.full_name ?? '',
         avatarUrl: child.profiles?.avatar_url ?? null,
         className: child.classes?.name ?? null,
-        levelTitle: child.levels?.title ?? null,
+        currentLevel: child.current_level ?? 0,
         todayStatus: (todayMap.get(child.id) as ChildQuickStatus['todayStatus']) ?? null,
         attendanceRate: rate,
         totalPoints: child.total_points ?? 0,

@@ -5,7 +5,7 @@ export interface ChildOverview {
   student: Tables<'students'>;
   profile: Tables<'profiles'>;
   class: Tables<'classes'> | null;
-  currentLevel: Tables<'levels'> | null;
+  currentLevel: number;
   recentSessions: Tables<'sessions'>[];
   upcomingHomework: Tables<'homework'>[];
   attendanceSummary: {
@@ -18,7 +18,6 @@ export interface ChildOverview {
     totalPoints: number;
     currentStreak: number;
     longestStreak: number;
-    trophyCount: number;
     stickerCount: number;
   };
 }

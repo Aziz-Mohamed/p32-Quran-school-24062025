@@ -7,7 +7,7 @@ export interface ProfileViewData {
   /** Present only if the profile belongs to a student */
   studentData?: {
     student: Tables<'students'>;
-    currentLevel: Tables<'levels'> | null;
+    currentLevel: number;
     class: Tables<'classes'> | null;
     totalPoints: number;
     currentStreak: number;

@@ -212,7 +212,7 @@ class AdminReportsService {
   ): Promise<LevelDistributionBucket[]> {
     let query = supabase
       .from('students')
-      .select('current_level, levels!students_current_level_fkey(title)')
+      .select('current_level')
       .eq('school_id', schoolId)
       .eq('is_active', true);
 
@@ -225,9 +225,8 @@ class AdminReportsService {
 
     const levelCounts = new Map<number, { title: string; count: number }>();
     for (const student of data ?? []) {
-      const levelNum = student.current_level ?? 1;
-      const levelData = student.levels as { title: string } | null;
-      const title = levelData?.title ?? `Level ${levelNum}`;
+      const levelNum = student.current_level ?? 0;
+      const title = `Level ${levelNum}`;
       const existing = levelCounts.get(levelNum);
       if (existing) {
         existing.count++;

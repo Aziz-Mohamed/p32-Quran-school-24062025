@@ -98,12 +98,11 @@ export interface ChildAttendanceSummary {
 
 export interface ChildGamificationSummary {
   totalStickers: number;
-  achievementsUnlocked: number;
   currentLevel: number;
-  currentLevelTitle: string;
   currentStreak: number;
   longestStreak: number;
   totalPoints: number;
+  activeCertifications: number;
 }
 
 export interface ChildProgressReport {

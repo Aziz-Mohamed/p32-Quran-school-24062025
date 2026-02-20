@@ -38,22 +38,16 @@ export function ChildGamificationSummary({
       {data && (
         <View style={styles.grid}>
           <GamificationItem
+            icon="layers"
+            iconColor={colors.primary[500]}
+            label={t('reports.gamification.currentLevel')}
+            value={`${data.currentLevel}/240`}
+          />
+          <GamificationItem
             icon="star"
             iconColor={colors.secondary[500]}
             label={t('reports.gamification.totalStickers')}
             value={data.totalStickers}
-          />
-          <GamificationItem
-            icon="trophy"
-            iconColor={colors.semantic.warning}
-            label={t('reports.gamification.achievements')}
-            value={data.achievementsUnlocked}
-          />
-          <GamificationItem
-            icon="layers"
-            iconColor={colors.primary[500]}
-            label={t('reports.gamification.currentLevel')}
-            value={data.currentLevelTitle}
           />
           <GamificationItem
             icon="flame"

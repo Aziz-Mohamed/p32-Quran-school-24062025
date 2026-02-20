@@ -6,24 +6,12 @@ export interface LeaderboardEntry {
   student: Tables<'students'>;
   profile: Tables<'profiles'>;
   totalPoints: number;
-  currentLevel: Tables<'levels'> | null;
+  currentLevel: number;
   currentStreak: number;
 }
 
-/** Trophy definition with the student's earned status */
-export interface TrophyWithStatus extends Tables<'trophies'> {
-  earned: boolean;
-  earnedAt: string | null;
-}
-
-/** Achievement definition with the student's earned status */
-export interface AchievementWithStatus extends Tables<'achievements'> {
-  earned: boolean;
-  earnedAt: string | null;
-}
-
 /** Sticker tier type matching the DB CHECK constraint */
-export type StickerTier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'seasonal' | 'trophy';
+export type StickerTier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'seasonal';
 
 /** A single award record shown in the detail view */
 export interface AwardRecord {
@@ -68,12 +56,47 @@ export interface AwardedSticker {
 /** Summary of a student's gamification progress */
 export interface GamificationSummary {
   totalPoints: number;
-  currentLevel: Tables<'levels'> | null;
+  currentLevel: number;
   currentStreak: number;
   longestStreak: number;
-  trophiesEarned: number;
-  trophiesTotal: number;
-  achievementsEarned: number;
-  achievementsTotal: number;
   totalStickers: number;
+  activeCertifications: number;
+}
+
+/** Rubʿ certification row with teacher name join */
+export type RubCertification = Tables<'student_rub_certifications'> & {
+  profiles: { full_name: string } | null;
+};
+
+/** Rubʿ reference row (static 240-row table) */
+export type RubReference = Tables<'quran_rub_reference'>;
+
+/** Freshness state derived from client-side computation */
+export type FreshnessState = 'fresh' | 'fading' | 'warning' | 'critical' | 'dormant' | 'uncertified';
+
+/** Computed freshness info for a certification */
+export interface FreshnessInfo {
+  percentage: number;
+  state: FreshnessState;
+  daysUntilDormant: number;
+  intervalDays: number;
+}
+
+/** Certification enriched with client-side computed freshness */
+export interface EnrichedCertification extends RubCertification {
+  freshness: FreshnessInfo;
+}
+
+/** A single rubʿ slot in the progress map (reference + optional certification) */
+export interface RubProgressItem {
+  reference: RubReference;
+  certification: EnrichedCertification | null;
+  state: FreshnessState;
+}
+
+/** Input for certifying a new rubʿ */
+export interface CertificationInput {
+  studentId: string;
+  rubNumber: number;
+  certifiedBy: string;
 }

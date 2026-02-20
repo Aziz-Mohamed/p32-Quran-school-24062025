@@ -33,7 +33,7 @@ class TeacherReportsService {
         .lte('session_date', dateRange.endDate),
       supabase
         .from('students')
-        .select('id, current_level, levels!students_current_level_fkey(title)')
+        .select('id, current_level')
         .eq('class_id', classId)
         .eq('is_active', true),
     ]);
@@ -69,9 +69,8 @@ class TeacherReportsService {
     // Level distribution
     const levelCounts = new Map<number, { title: string; count: number }>();
     for (const student of levelData.data ?? []) {
-      const levelNum = student.current_level ?? 1;
-      const levelInfo = student.levels as { title: string } | null;
-      const title = levelInfo?.title ?? `Level ${levelNum}`;
+      const levelNum = student.current_level ?? 0;
+      const title = `Level ${levelNum}`;
       const existing = levelCounts.get(levelNum);
       if (existing) existing.count++;
       else levelCounts.set(levelNum, { title, count: 1 });

@@ -107,10 +107,10 @@ class ParentReportsService {
   async getChildGamificationSummary(
     studentId: string,
   ): Promise<ChildGamificationSummary> {
-    const [studentData, stickerCount, achievementCount] = await Promise.all([
+    const [studentData, stickerCount, certCount] = await Promise.all([
       supabase
         .from('students')
-        .select('total_points, current_level, current_streak, longest_streak, levels!students_current_level_fkey(title)')
+        .select('total_points, current_level, current_streak, longest_streak')
         .eq('id', studentId)
         .single(),
       supabase
@@ -118,24 +118,23 @@ class ParentReportsService {
         .select('id', { count: 'exact', head: true })
         .eq('student_id', studentId),
       supabase
-        .from('student_achievements')
+        .from('student_rub_certifications')
         .select('id', { count: 'exact', head: true })
-        .eq('student_id', studentId),
+        .eq('student_id', studentId)
+        .is('dormant_since', null),
     ]);
 
     if (studentData.error) throw studentData.error;
 
     const student = studentData.data;
-    const levelInfo = student.levels as { title: string } | null;
 
     return {
       totalStickers: stickerCount.count ?? 0,
-      achievementsUnlocked: achievementCount.count ?? 0,
-      currentLevel: student.current_level ?? 1,
-      currentLevelTitle: levelInfo?.title ?? `Level ${student.current_level ?? 1}`,
+      currentLevel: student.current_level ?? 0,
       currentStreak: student.current_streak,
       longestStreak: student.longest_streak,
       totalPoints: student.total_points,
+      activeCertifications: certCount.count ?? 0,
     };
   }
 }
