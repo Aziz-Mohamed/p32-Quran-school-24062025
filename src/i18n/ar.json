@@ -396,6 +396,19 @@
     "attendanceCalendar": "تقويم الحضور",
     "recentSessions": "الحصص الأخيرة",
     "yourChild": "طفلك",
+    "sessionDetail": {
+      "title": "تفاصيل الحصّة",
+      "teacher": "المعلّم",
+      "scores": "الدرجات",
+      "memorization": "الحفظ",
+      "tajweed": "التجويد",
+      "recitation": "القراءة",
+      "recitations": "التسميعات",
+      "notes": "ملاحظات المعلّم",
+      "homework": "الواجب",
+      "due": "التسليم",
+      "pending": "قيد الانتظار"
+    },
     "children": {
       "emptyTitle": "لا يوجد أبناء مرتبطون",
       "emptyDescription": "اطلب من إدارة المدرسة ربط أبنائك بحسابك"

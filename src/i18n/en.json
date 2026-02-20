@@ -396,6 +396,19 @@
     "attendanceCalendar": "Attendance Calendar",
     "recentSessions": "Recent Sessions",
     "yourChild": "Your Child",
+    "sessionDetail": {
+      "title": "Session Details",
+      "teacher": "Teacher",
+      "scores": "Scores",
+      "memorization": "Memorization",
+      "tajweed": "Tajweed",
+      "recitation": "Recitation",
+      "recitations": "Recitations",
+      "notes": "Teacher Notes",
+      "homework": "Homework",
+      "due": "Due",
+      "pending": "Pending"
+    },
     "children": {
       "emptyTitle": "No Children Linked",
       "emptyDescription": "Ask your school admin to link your children to your account"
