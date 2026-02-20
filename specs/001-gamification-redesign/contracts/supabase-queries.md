@@ -119,11 +119,15 @@ async recordGoodRevision(certificationId: string, isDormantRecovery: boolean, re
 **User Story**: US-2 Scenario 3
 
 ```typescript
-async recordPoorRevision(certificationId: string) {
+async recordPoorRevision(certificationId: string, intervalDays: number) {
+  // Set last_reviewed_at to (now - interval/2) so freshness formula yields 50%
+  const halfIntervalMs = (intervalDays / 2) * 24 * 60 * 60 * 1000;
+  const adjustedTime = new Date(Date.now() - halfIntervalMs).toISOString();
+
   return supabase
     .from('student_rub_certifications')
     .update({
-      last_reviewed_at: new Date().toISOString(),
+      last_reviewed_at: adjustedTime,
       // review_count unchanged
       // dormant_since unchanged (poor revision does NOT restore dormancy)
     })

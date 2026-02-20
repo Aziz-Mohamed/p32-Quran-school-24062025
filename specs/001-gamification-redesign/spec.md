@@ -11,6 +11,21 @@
 
 - Q: Can a teacher undo or delete a certification given by mistake? → A: Teacher can undo within a grace period (e.g., tap "Undo" within 30 seconds after certifying).
 
+### Session 2026-02-21 (Checklist Resolution)
+
+- Undo grace period: exactly 30 seconds, client-side `setTimeout`, toast/snackbar at bottom, auto-dismisses.
+- Undo navigation: navigating away or backgrounding cancels the undo opportunity.
+- Freshness rounding: `Math.floor()` — 0.4% rounds to 0% (dormant).
+- Poor revision 50%: set `last_reviewed_at` to `now - (interval_days * 0.5)` so formula yields 50%.
+- Dormancy tier boundaries: inclusive lower end (0-30 includes day 30, 30-90 starts at day 31).
+- Warning count threshold: rubʿ in warning (25-49%) + critical (1-24%) states.
+- Admin: same UX as teacher, RLS handles access — no separate scenarios.
+- Concurrent revision: last-write-wins (single-teacher-per-class makes it unlikely).
+- Class transfer: certifications belong to student, new teacher gets access via class RLS.
+- Offline: requires connectivity; standard error toast on failure.
+- Accessibility: textual labels alongside freshness colors.
+- Migration 00009: independent system, no conflict.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Teacher Certifies a Rubʿ (Priority: P1)
@@ -127,9 +142,14 @@ The student's dashboard prominently displays their current level as a rubʿ coun
 - What happens when a rubʿ goes dormant and the teacher marks a "Poor" revision? A poor revision does NOT restore a dormant rubʿ — only a "Good" revision or re-certification (for 90+ day dormancy) can restore it.
 - What happens if a student's last active rubʿ goes dormant? Their level drops to 0. The progress map shows all previously certified rubʿ in gray (dormant) state.
 - What happens when multiple rubʿ go dormant simultaneously (e.g., after a long absence)? Level drops by the total count of newly dormant rubʿ. Each rubʿ is processed independently.
-- What happens when the decay interval calculation falls between defined thresholds in the review_count table? The system uses the interval for the highest matching review count threshold (e.g., review_count of 4 uses the threshold for 3, which is 45 days).
+- What happens when the decay interval calculation falls between defined thresholds in the review_count table? The decay table uses ranges (0, 1, 2, 3, 4-5, 6-8, 9-11, 12+), so every integer value maps to exactly one range (e.g., review_count of 4 falls in the 4-5 range → 60 days).
 - What happens when a teacher is reassigned to a different class? They lose certification/revision access for students no longer in their class.
 - What happens when a teacher certifies the wrong rubʿ by mistake? The system shows an "Undo" option for ~30 seconds after certification. After the grace period expires, the certification is permanent.
+- What happens when the teacher navigates away before the undo period expires? The undo timer is local to the screen — navigating away cancels the undo opportunity and the certification becomes permanent.
+- What happens when the app goes to background during the undo grace period? The timer continues. If it fires while backgrounded, undo is unavailable on return.
+- What happens when two teachers (or teacher + admin) attempt to revise the same rubʿ concurrently? Last-write-wins. The UNIQUE constraint prevents duplicate certifications. In practice, single-teacher-per-class makes this extremely unlikely.
+- What happens when a student transfers to a different class? Certifications belong to the student (via student_id FK), not the class. The new teacher gains access via class-based RLS; certifications are preserved.
+- What happens when a rubʿ crosses from one freshness state to another while the map is being viewed? Freshness is computed on data fetch, not in real-time. Visual state updates on next fetch or screen focus, not while the user is actively viewing.
 
 ## Requirements *(mandatory)*
 
@@ -137,23 +157,23 @@ The student's dashboard prominently displays their current level as a rubʿ coun
 
 - **FR-001**: System MUST allow teachers to certify individual rubʿ for students in their class, recording which teacher certified it and when.
 - **FR-002**: System MUST allow teachers to record revisions for certified rubʿ, with exactly two quality options: "Good" and "Poor."
-- **FR-003**: System MUST compute each certified rubʿ's freshness as a percentage (0-100%) based on time elapsed since last revision and the spaced repetition decay interval.
-- **FR-004**: System MUST calculate a student's level as the count of certified rubʿ that are currently active (freshness > 0%).
+- **FR-003**: System MUST compute each certified rubʿ's freshness as a percentage (0-100%) based on time elapsed since last revision and the spaced repetition decay interval. Freshness uses `Math.floor()` — a value of 0.4% rounds to 0% (dormant).
+- **FR-004**: System MUST calculate a student's level as the count of certified rubʿ that are currently active (freshness > 0%, i.e., `Math.floor(freshness) >= 1`).
 - **FR-005**: System MUST apply the spaced repetition decay model where more successful reviews result in longer intervals before dormancy (14 days for 0 reviews, up to 120 days for 12+ reviews).
 - **FR-006**: A "Good" revision MUST reset freshness to 100%, increment review count by 1, and extend the decay interval per the spaced repetition table.
-- **FR-007**: A "Poor" revision MUST reset freshness to 50%, leave review count unchanged, and keep the decay interval the same.
-- **FR-008**: System MUST support tiered dormant recovery: 0-30 days dormant requires a good revision; 30-90 days dormant requires a good revision but resets review count to 0; 90+ days dormant requires full re-certification by teacher.
-- **FR-009**: System MUST display a rubʿ progress map organized by juz (30 juz rows, each expandable to 8 rubʿ), with color-coded freshness states per rubʿ.
+- **FR-007**: A "Poor" revision MUST reset freshness to 50%, leave review count unchanged, and keep the decay interval the same. Implementation: set `last_reviewed_at` to `now - (interval_days * 0.5 days)` so the decay formula yields exactly 50%.
+- **FR-008**: System MUST support tiered dormant recovery: 0-30 days dormant requires a good revision; 30-90 days dormant requires a good revision but resets review count to 0; 90+ days dormant requires full re-certification by teacher. Boundaries are inclusive on the lower end (exactly 30 days → 0-30 tier; exactly 31 days → 30-90 tier; exactly 90 days → 30-90 tier; 91 days → 90+ tier).
+- **FR-009**: System MUST display a rubʿ progress map organized by juz (30 juz rows, each expandable to 8 rubʿ), with color-coded freshness states per rubʿ. Loading state: standard spinner while fetching data. Empty state (zero certifications): all 240 rubʿ shown as dashed-gray (uncertified).
 - **FR-010**: The progress map MUST be interactive for teachers (tap to certify/revise) and read-only for students.
 - **FR-011**: System MUST store a static reference of all 240 rubʿ with their verse boundaries (juz, hizb, quarter, start surah/ayah, end surah/ayah).
 - **FR-012**: System MUST remove all trophy and achievement functionality — tables, screens, notification preferences, and related code.
 - **FR-013**: System MUST remove the 10 trophy-tier stickers from the sticker catalog, leaving 39 stickers across 5 tiers.
 - **FR-014**: Sticker points MUST only affect leaderboard ranking, NOT the student's level.
-- **FR-015**: The student's level MUST be displayed on their dashboard with a progress bar (level / 240) and a count of rubʿ needing revision.
+- **FR-015**: The student's level MUST be displayed on their dashboard with a progress bar (level / 240) and a count of rubʿ needing revision. "Needing revision" = rubʿ in warning (25-49%) or critical (1-24%) freshness states.
 - **FR-016**: Decay MUST run continuously with no pause mechanism for school breaks or vacations.
 - **FR-017**: System MUST enforce that only teachers assigned to a student's class (or admins) can certify or record revisions for that student.
 - **FR-018**: Each student can have at most one certification record per rubʿ (uniqueness enforced).
-- **FR-019**: System MUST provide a brief undo grace period (~30 seconds) after a teacher certifies a rubʿ, allowing the teacher to reverse an accidental certification. After the grace period, the certification is permanent.
+- **FR-019**: System MUST provide an undo grace period of 30 seconds (client-side `setTimeout`) after a teacher certifies a rubʿ, allowing the teacher to reverse an accidental certification. The undo is presented as a toast/snackbar at the bottom of the screen with an "Undo" action button; it auto-dismisses when the timer expires. After the grace period, the certification is permanent.
 
 ### Key Entities
 
@@ -166,7 +186,7 @@ The student's dashboard prominently displays their current level as a rubʿ coun
 
 ### Measurable Outcomes
 
-- **SC-001**: Teachers can certify a rubʿ for a student in under 10 seconds (open profile → tap rubʿ → confirm).
+- **SC-001**: Teachers can certify a rubʿ for a student in under 10 seconds on a typical modern smartphone (2020+) with stable internet (4G/WiFi). This is a usability target, not a hard SLA.
 - **SC-002**: Teachers can record a revision (Good/Poor) in under 5 seconds (tap rubʿ → select quality).
 - **SC-003**: Students can view their full 30-juz progress map and identify which rubʿ need revision in under 15 seconds.
 - **SC-004**: The student's displayed level always matches the actual count of active (non-dormant) certified rubʿ — zero discrepancy.
@@ -184,3 +204,9 @@ The student's dashboard prominently displays their current level as a rubʿ coun
 - Notifications for fading rubʿ are a future enhancement — not in scope for this feature's initial delivery.
 - Parent and admin views of rubʿ progress follow existing role-based patterns (parents see children, admins see school) and will use the same progress map component in read-only mode.
 - Bulk certification (certifying multiple rubʿ at once) is not in scope for the initial delivery.
+- Admin certification/revision follows the same UX paths as teachers — no separate admin acceptance scenarios needed. RLS grants admin access at the school level.
+- Certification/revision actions require network connectivity (Supabase SDK). On network failure, a standard error toast is shown. No offline queue or optimistic updates for mutations.
+- Freshness colors include textual labels alongside colors (e.g., percentage value, state name) to ensure accessibility for colorblind users. Colors are supplementary, not the sole indicator.
+- Rubʿ-related i18n terms (rubʿ, juz, hizb, surah names) are provided in both Arabic and English. Number formatting uses locale defaults (`Intl.NumberFormat`). No forced Arabic-Indic numeral conversion.
+- Progress map uses logical CSS (`paddingStart`/`paddingEnd`, `flexDirection: 'row'`). Juz list and rubʿ blocks reflow naturally in RTL mode without additional layout logic.
+- This feature is independent of the existing memorization tracking system (migration 00009: `recitations`, `memorization_progress`, `memorization_assignments`). Migration 00009 tracks fine-grained verse-level session data with SM-2 scoring. This feature tracks coarse-grained rubʿ-level certification for gamification leveling. They coexist without conflict or data dependency.
