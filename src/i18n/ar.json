@@ -191,7 +191,8 @@
       "readyToLearn": "مستعدّ للتعلّم اليوم؟",
       "levelProgress": "تقدّم المستوى",
       "sessions": "الحصص",
-      "stickers": "الملصقات"
+      "stickers": "الملصقات",
+      "rubCertified": "ربع مُجاز"
     },
     "myLessons": "دروسي",
     "myProgress": "تقدّمي",
@@ -1046,6 +1047,36 @@
       "mustBeAfterFrom": "يجب أن تكون >= من الآية",
       "selectDueDate": "يرجى تحديد تاريخ التسليم",
       "recitationError": "التسميع #{{number}} لـ{{name}}: {{errors}}"
+    }
+  },
+  "gamification": {
+    "progressMap": "خريطة تقدم الأرباع",
+    "juz": "جزء",
+    "hizb": "حزب",
+    "rub": "ربع",
+    "surah": "سورة",
+    "verseRange": "الآيات",
+    "levelLabel": "المستوى {{level}} / {{total}}",
+    "rubCertified": "{{count}} ربع مُجاز",
+    "revisionWarning": "{{count}} ربع يحتاج مراجعة",
+    "certifyTitle": "إجازة الربع",
+    "certifyMessage": "سيُثبت هذا أن الطالب قد حفظ هذا الربع.",
+    "certify": "إجازة",
+    "certifiedSuccess": "الربع {{rub}} تمت إجازته!",
+    "freshness": {
+      "fresh": "طازج",
+      "fading": "يتلاشى",
+      "warning": "يحتاج مراجعة",
+      "critical": "عاجل",
+      "dormant": "خامل"
+    },
+    "revision": {
+      "good": "جيد",
+      "poor": "ضعيف",
+      "goodDesc": "الطالب تلا بشكل صحيح — تُعاد النضارة إلى 100%",
+      "poorDesc": "الطالب يحتاج مزيداً من التمرين — تُعاد النضارة إلى 50%",
+      "recertify": "إعادة إجازة",
+      "recertifyDesc": "خامل لأكثر من 90 يوماً — يتطلب إعادة إجازة كاملة"
     }
   }
 }

@@ -191,7 +191,8 @@
       "readyToLearn": "Ready to learn today?",
       "levelProgress": "Level Progress",
       "sessions": "Sessions",
-      "stickers": "Stickers"
+      "stickers": "Stickers",
+      "rubCertified": "rubʿ certified"
     },
     "myLessons": "My Lessons",
     "myProgress": "My Progress",
@@ -1046,6 +1047,36 @@
       "mustBeAfterFrom": "Must be >= from ayah",
       "selectDueDate": "Please set a due date",
       "recitationError": "Recitation #{{number}} for {{name}}: {{errors}}"
+    }
+  },
+  "gamification": {
+    "progressMap": "Rubʿ Progress Map",
+    "juz": "Juz",
+    "hizb": "Hizb",
+    "rub": "Rubʿ",
+    "surah": "Surah",
+    "verseRange": "Verses",
+    "levelLabel": "Level {{level}} / {{total}}",
+    "rubCertified": "{{count}} rubʿ certified",
+    "revisionWarning": "{{count}} rubʿ need revision",
+    "certifyTitle": "Certify Rubʿ",
+    "certifyMessage": "This will certify that the student has memorized this rubʿ.",
+    "certify": "Certify",
+    "certifiedSuccess": "Rubʿ {{rub}} certified!",
+    "freshness": {
+      "fresh": "Fresh",
+      "fading": "Fading",
+      "warning": "Needs Revision",
+      "critical": "Urgent",
+      "dormant": "Dormant"
+    },
+    "revision": {
+      "good": "Good",
+      "poor": "Poor",
+      "goodDesc": "Student recited correctly — freshness resets to 100%",
+      "poorDesc": "Student needs more practice — freshness resets to 50%",
+      "recertify": "Re-certify",
+      "recertifyDesc": "Dormant over 90 days — requires full re-certification"
     }
   }
 }
