@@ -342,7 +342,8 @@ const styles = StyleSheet.create({
   },
   recitationFooter: {
     flexDirection: 'row',
-    marginTop: normalize(2),
+    justifyContent: 'center',
+    marginTop: spacing.sm,
   },
   notesContainer: {
     backgroundColor: colors.neutral[50],
