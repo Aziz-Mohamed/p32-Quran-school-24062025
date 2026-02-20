@@ -40,7 +40,11 @@ export const useCompleteHomework = () => {
 
   return useMutation({
     mutationKey: ['complete-homework'],
-    mutationFn: (homeworkId: string) => homeworkService.completeHomework(homeworkId),
+    mutationFn: async (homeworkId: string) => {
+      const { data, error } = await homeworkService.completeHomework(homeworkId);
+      if (error) throw error;
+      return data;
+    },
     onSuccess: (_data, homeworkId) => {
       mutationTracker.record('homework', homeworkId);
       queryClient.invalidateQueries({ queryKey: ['homework'] });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { I18nManager, StyleSheet, View, Text } from 'react-native';
+import { Alert, I18nManager, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -56,7 +56,12 @@ export default function StudentHomeworkDetailScreen() {
 
   const handleComplete = () => {
     completeHomework(homework.id, {
-      onSuccess: () => router.back(),
+      onSuccess: () => {
+        refetch();
+      },
+      onError: (err) => {
+        Alert.alert(t('common.error'), err.message);
+      },
     });
   };
 
