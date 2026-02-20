@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { RevisionCard, useSessionRecitations } from '@/features/memorization';
 import { useSessionById } from '@/features/sessions/hooks/useSessions';
+import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -17,7 +18,7 @@ import { spacing } from '@/theme/spacing';
 // ─── Session Detail Screen ───────────────────────────────────────────────────
 
 export default function SessionDetailScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
@@ -43,7 +44,10 @@ export default function SessionDetailScreen() {
 
         {/* Header */}
         <Text style={styles.title}>{t('teacher.sessions.detailTitle')}</Text>
-        <Text style={styles.subtitle}>{session.session_date}</Text>
+        <Text style={styles.subtitle}>
+          {formatSessionDate(session.session_date, i18n.language).date}{' '}
+          <Text style={styles.subtitleWeekday}>({formatSessionDate(session.session_date, i18n.language).weekday})</Text>
+        </Text>
 
         {/* Student Info */}
         <Card variant="outlined" style={styles.section}>
@@ -160,6 +164,10 @@ const styles = StyleSheet.create({
   subtitle: {
     ...typography.textStyles.body,
     color: lightTheme.textSecondary,
+  },
+  subtitleWeekday: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[400],
   },
   section: {
     gap: spacing.sm,

@@ -14,6 +14,7 @@ import { useTeacherDashboard } from '@/features/dashboard/hooks/useTeacherDashbo
 import { useTeacherUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
 import { GpsCheckinCard } from '@/features/work-attendance/components/GpsCheckinCard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -22,7 +23,7 @@ import { normalize } from '@/theme/normalize';
 // ─── Teacher Dashboard ────────────────────────────────────────────────────────
 
 export default function TeacherDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { profile, schoolId } = useAuth();
   const router = useRouter();
   const theme = useRoleTheme();
@@ -163,7 +164,10 @@ export default function TeacherDashboard() {
                   <Text style={styles.sessionStudentName} numberOfLines={1}>
                     {session.student?.profiles?.full_name ?? t('common.noResults')}
                   </Text>
-                  <Text style={styles.sessionDate}>{session.session_date}</Text>
+                  <Text style={styles.sessionDate}>
+                    {formatSessionDate(session.session_date, i18n.language).date}{' '}
+                    <Text style={styles.sessionWeekday}>({formatSessionDate(session.session_date, i18n.language).weekday})</Text>
+                  </Text>
                 </View>
                 <View style={styles.sessionScores}>
                   {session.memorization_score != null && (
@@ -315,6 +319,10 @@ const styles = StyleSheet.create({
     ...typography.textStyles.label,
     color: colors.neutral[500],
     marginTop: normalize(2),
+  },
+  sessionWeekday: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[400],
   },
   sessionScores: {
     flexDirection: 'row',
