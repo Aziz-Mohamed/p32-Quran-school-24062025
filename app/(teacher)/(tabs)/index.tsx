@@ -78,7 +78,7 @@ export default function TeacherDashboard() {
           <Button
             title={t('scheduling.nextSession')}
             onPress={handleNextSession}
-            variant={theme.tag}
+            variant={theme.tag as 'violet'}
             size="md"
             icon={<Ionicons name="arrow-forward-circle" size={20} color={colors.white} />}
             style={styles.actionButton}
@@ -89,7 +89,7 @@ export default function TeacherDashboard() {
             variant="ghost"
             size="md"
             icon={<Ionicons name="star" size={20} color={colors.secondary[500]} />}
-            style={[styles.actionButton, { backgroundColor: colors.secondary[50] }]}
+            style={{ ...styles.actionButton, backgroundColor: colors.secondary[50] }}
           />
         </View>
 
