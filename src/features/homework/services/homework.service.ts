@@ -11,7 +11,7 @@ class HomeworkService {
     let query = supabase
       .from('homework')
       .select(
-        '*, sessions(session_date, profiles!sessions_teacher_id_fkey(full_name))',
+        '*, sessions(session_date, profiles!sessions_teacher_id_fkey(full_name), recitations(surah_number, from_ayah, to_ayah))',
       )
       .eq('student_id', studentId);
 

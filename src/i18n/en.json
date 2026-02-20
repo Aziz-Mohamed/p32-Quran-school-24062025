@@ -234,6 +234,14 @@
       "due": "Due",
       "pending": "Pending"
     },
+    "homework": {
+      "title": "Homework",
+      "pending": "Pending",
+      "completed": "Completed",
+      "emptyPending": "No pending homework",
+      "emptyCompleted": "No completed homework",
+      "viewAll": "View All"
+    },
     "homeworkDetail": {
       "title": "Homework Details",
       "description": "Description",

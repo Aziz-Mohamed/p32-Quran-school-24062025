@@ -234,6 +234,14 @@
       "due": "التسليم",
       "pending": "قيد الانتظار"
     },
+    "homework": {
+      "title": "الواجبات",
+      "pending": "قيد الانتظار",
+      "completed": "مكتمل",
+      "emptyPending": "لا توجد واجبات معلّقة",
+      "emptyCompleted": "لا توجد واجبات مكتملة",
+      "viewAll": "عرض الكل"
+    },
     "homeworkDetail": {
       "title": "تفاصيل الواجب",
       "description": "الوصف",

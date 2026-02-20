@@ -167,7 +167,12 @@ export default function StudentDashboard() {
         {/* Current Homework */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{t('student.dashboard.currentHomework')}</Text>
-          <Badge label={String((data?.homework ?? []).length)} variant={theme.tag} />
+          <Button
+            title={t('student.homework.viewAll')}
+            onPress={() => router.push('/(student)/homework')}
+            variant="ghost"
+            size="sm"
+          />
         </View>
         {(data?.homework ?? []).length === 0 ? (
           <Card variant="outlined" style={styles.emptyCard}>
