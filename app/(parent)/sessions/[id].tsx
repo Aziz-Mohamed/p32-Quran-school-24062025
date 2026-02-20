@@ -115,21 +115,21 @@ export default function ParentSessionDetailScreen() {
                   </View>
                   <View style={styles.recitationScores}>
                     {recitation.accuracy_score != null && (
-                      <View style={styles.miniScore}>
-                        <Ionicons name="checkmark-circle-outline" size={normalize(14)} color={colors.primary[500]} />
-                        <Text style={styles.miniScoreText}>{recitation.accuracy_score}/5</Text>
+                      <View style={styles.miniScorePill}>
+                        <Text style={styles.miniScoreLabel}>{t('parent.sessionDetail.memorization')}:</Text>
+                        <Text style={[styles.miniScoreValue, { color: colors.primary[600] }]}>{recitation.accuracy_score}/5</Text>
                       </View>
                     )}
                     {recitation.tajweed_score != null && (
-                      <View style={styles.miniScore}>
-                        <Ionicons name="musical-notes-outline" size={normalize(14)} color={colors.accent.violet[500]} />
-                        <Text style={styles.miniScoreText}>{recitation.tajweed_score}/5</Text>
+                      <View style={styles.miniScorePill}>
+                        <Text style={styles.miniScoreLabel}>{t('parent.sessionDetail.tajweed')}:</Text>
+                        <Text style={[styles.miniScoreValue, { color: colors.accent.violet[600] }]}>{recitation.tajweed_score}/5</Text>
                       </View>
                     )}
                     {recitation.fluency_score != null && (
-                      <View style={styles.miniScore}>
-                        <Ionicons name="water-outline" size={normalize(14)} color={colors.accent.sky[500]} />
-                        <Text style={styles.miniScoreText}>{recitation.fluency_score}/5</Text>
+                      <View style={styles.miniScorePill}>
+                        <Text style={styles.miniScoreLabel}>{t('parent.sessionDetail.recitation')}:</Text>
+                        <Text style={[styles.miniScoreValue, { color: colors.accent.sky[600] }]}>{recitation.fluency_score}/5</Text>
                       </View>
                     )}
                     {recitation.needs_repeat && (
@@ -318,15 +318,23 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     flexWrap: 'wrap',
   },
-  miniScore: {
+  miniScorePill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: normalize(4),
+    backgroundColor: colors.neutral[50],
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(3),
+    borderRadius: normalize(6),
   },
-  miniScoreText: {
+  miniScoreLabel: {
+    fontSize: normalize(11),
     fontFamily: typography.fontFamily.semiBold,
-    fontSize: typography.fontSize.xs,
-    color: lightTheme.textSecondary,
+    color: colors.neutral[500],
+  },
+  miniScoreValue: {
+    fontSize: normalize(12),
+    fontFamily: typography.fontFamily.bold,
   },
   notesContainer: {
     backgroundColor: colors.neutral[50],

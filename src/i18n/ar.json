@@ -220,6 +220,20 @@
       "emptyTitle": "لا توجد حصص بعد",
       "emptyDescription": "سيظهر سجل حصصك هنا"
     },
+    "sessionDetail": {
+      "title": "تفاصيل الحصّة",
+      "scores": "الدرجات",
+      "memorization": "الحفظ",
+      "tajweed": "التجويد",
+      "recitation": "القراءة",
+      "recitations": "التسميعات",
+      "accuracy": "الدقة",
+      "fluency": "الطلاقة",
+      "notes": "ملاحظات المعلّم",
+      "homework": "الواجب",
+      "due": "التسليم",
+      "pending": "قيد الانتظار"
+    },
     "stickers": {
       "title": "ملصقاتي",
       "subtitle": "مجموعة ملصقات التراث",

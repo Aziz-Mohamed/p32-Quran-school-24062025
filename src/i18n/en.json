@@ -220,6 +220,20 @@
       "emptyTitle": "No Sessions Yet",
       "emptyDescription": "Your session history will appear here"
     },
+    "sessionDetail": {
+      "title": "Session Details",
+      "scores": "Scores",
+      "memorization": "Memorization",
+      "tajweed": "Tajweed",
+      "recitation": "Recitation",
+      "recitations": "Recitations",
+      "accuracy": "Accuracy",
+      "fluency": "Fluency",
+      "notes": "Teacher Notes",
+      "homework": "Homework",
+      "due": "Due",
+      "pending": "Pending"
+    },
     "stickers": {
       "title": "My Stickers",
       "subtitle": "Your heritage sticker collection",

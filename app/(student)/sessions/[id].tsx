@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { I18nManager, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,6 +12,7 @@ import { LoadingState, ErrorState } from '@/components/feedback';
 import { useSessionRecitations } from '@/features/memorization';
 import { RecitationTypeChip } from '@/features/memorization/components/RecitationTypeChip';
 import { useSessionById } from '@/features/sessions/hooks/useSessions';
+import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { formatSessionDate } from '@/lib/helpers';
 import { getSurah, formatVerseRange } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
@@ -25,6 +26,7 @@ export default function StudentSessionDetailScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const theme = useRoleTheme();
 
   const { data: session, isLoading, error, refetch } = useSessionById(id);
   const { data: recitations = [] } = useSessionRecitations(id);
@@ -41,28 +43,47 @@ export default function StudentSessionDetailScreen() {
           onPress={() => router.back()}
           variant="ghost"
           size="sm"
+          icon={<Ionicons name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"} size={20} color={theme.primary} />}
         />
 
-        <Text style={styles.title}>{t('teacher.sessions.detailTitle')}</Text>
-        <Text style={styles.subtitle}>
-          {formatSessionDate(session.session_date, i18n.language).date}{' '}
-          <Text style={styles.subtitleWeekday}>({formatSessionDate(session.session_date, i18n.language).weekday})</Text>
-        </Text>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>{t('student.sessionDetail.title')}</Text>
+          <View style={styles.dateRow}>
+            <Ionicons name="calendar-outline" size={16} color={colors.neutral[400]} />
+            <Text style={styles.dateText}>
+              {formatSessionDate(session.session_date, i18n.language).date}{' '}
+              <Text style={styles.dateWeekday}>({formatSessionDate(session.session_date, i18n.language).weekday})</Text>
+            </Text>
+          </View>
+        </View>
 
         {/* Scores */}
-        <Card variant="outlined" style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('teacher.sessions.scores')}</Text>
+        <Card variant="default" style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('student.sessionDetail.scores')}</Text>
           <View style={styles.scoresGrid}>
-            <ScoreDisplay label={t('teacher.sessions.memorization')} value={session.memorization_score} />
-            <ScoreDisplay label={t('teacher.sessions.tajweed')} value={session.tajweed_score} />
-            <ScoreDisplay label={t('teacher.sessions.recitation')} value={session.recitation_quality} />
+            <ScoreDisplay
+              label={t('student.sessionDetail.memorization')}
+              value={session.memorization_score}
+              color={theme.primary}
+            />
+            <ScoreDisplay
+              label={t('student.sessionDetail.tajweed')}
+              value={session.tajweed_score}
+              color={colors.accent.violet[500]}
+            />
+            <ScoreDisplay
+              label={t('student.sessionDetail.recitation')}
+              value={session.recitation_quality}
+              color={colors.accent.sky[500]}
+            />
           </View>
         </Card>
 
         {/* Recitations */}
         {recitations.length > 0 && (
-          <Card variant="outlined" style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('memorization.recitations')}</Text>
+          <Card variant="default" style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('student.sessionDetail.recitations')}</Text>
             {recitations.map((recitation: any) => {
               const surah = getSurah(recitation.surah_number);
               const range = formatVerseRange(recitation.surah_number, recitation.from_ayah, recitation.to_ayah);
@@ -79,21 +100,21 @@ export default function StudentSessionDetailScreen() {
                   </View>
                   <View style={styles.recitationScores}>
                     {recitation.accuracy_score != null && (
-                      <View style={styles.miniScore}>
-                        <Ionicons name="checkmark-circle-outline" size={normalize(14)} color={colors.primary[500]} />
-                        <Text style={styles.miniScoreText}>{recitation.accuracy_score}/5</Text>
+                      <View style={styles.miniScorePill}>
+                        <Text style={styles.miniScoreLabel}>{t('student.sessionDetail.accuracy')}:</Text>
+                        <Text style={[styles.miniScoreValue, { color: colors.primary[600] }]}>{recitation.accuracy_score}/5</Text>
                       </View>
                     )}
                     {recitation.tajweed_score != null && (
-                      <View style={styles.miniScore}>
-                        <Ionicons name="musical-notes-outline" size={normalize(14)} color={colors.accent.violet[500]} />
-                        <Text style={styles.miniScoreText}>{recitation.tajweed_score}/5</Text>
+                      <View style={styles.miniScorePill}>
+                        <Text style={styles.miniScoreLabel}>{t('student.sessionDetail.tajweed')}:</Text>
+                        <Text style={[styles.miniScoreValue, { color: colors.accent.violet[600] }]}>{recitation.tajweed_score}/5</Text>
                       </View>
                     )}
                     {recitation.fluency_score != null && (
-                      <View style={styles.miniScore}>
-                        <Ionicons name="water-outline" size={normalize(14)} color={colors.accent.sky[500]} />
-                        <Text style={styles.miniScoreText}>{recitation.fluency_score}/5</Text>
+                      <View style={styles.miniScorePill}>
+                        <Text style={styles.miniScoreLabel}>{t('student.sessionDetail.fluency')}:</Text>
+                        <Text style={[styles.miniScoreValue, { color: colors.accent.sky[600] }]}>{recitation.fluency_score}/5</Text>
                       </View>
                     )}
                     {recitation.needs_repeat && (
@@ -111,25 +132,27 @@ export default function StudentSessionDetailScreen() {
 
         {/* Notes */}
         {session.notes && (
-          <Card variant="outlined" style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('teacher.sessions.notes')}</Text>
-            <Text style={styles.bodyText}>{session.notes}</Text>
+          <Card variant="default" style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('student.sessionDetail.notes')}</Text>
+            <View style={styles.notesContainer}>
+              <Text style={styles.notesText}>{session.notes}</Text>
+            </View>
           </Card>
         )}
 
         {/* Homework */}
         {(session as any).homework && (session as any).homework.length > 0 && (
-          <Card variant="outlined" style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('teacher.sessions.homework')}</Text>
+          <Card variant="default" style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('student.sessionDetail.homework')}</Text>
             {(session as any).homework.map((hw: any) => (
               <View key={hw.id} style={styles.homeworkItem}>
-                <Text style={styles.bodyText}>{hw.description}</Text>
+                <Text style={styles.homeworkText}>{hw.description}</Text>
                 <View style={styles.homeworkMeta}>
                   <Text style={styles.caption}>
-                    {t('teacher.sessions.due')}: {hw.due_date}
+                    {t('student.sessionDetail.due')}: {hw.due_date}
                   </Text>
                   <Badge
-                    label={hw.is_completed ? t('common.done') : t('teacher.sessions.pending')}
+                    label={hw.is_completed ? t('common.done') : t('student.sessionDetail.pending')}
                     variant={hw.is_completed ? 'success' : 'warning'}
                     size="sm"
                   />
@@ -143,11 +166,24 @@ export default function StudentSessionDetailScreen() {
   );
 }
 
-function ScoreDisplay({ label, value }: { label: string; value: number | null }) {
+// ─── Score Display Helper ────────────────────────────────────────────────────
+
+function ScoreDisplay({ label, value, color }: { label: string; value: number | null; color: string }) {
+  if (value == null) {
+    return (
+      <View style={styles.scoreItem}>
+        <Text style={styles.scoreLabel}>{label}</Text>
+        <Text style={[styles.scoreValue, { color: colors.neutral[300] }]}>—</Text>
+      </View>
+    );
+  }
+  const isHigh = value >= 4;
   return (
     <View style={styles.scoreItem}>
       <Text style={styles.scoreLabel}>{label}</Text>
-      <Text style={styles.scoreValue}>{value != null ? `${value}/5` : '—'}</Text>
+      <View style={[styles.scoreValueContainer, { backgroundColor: isHigh ? colors.primary[50] : colors.neutral[50] }]}>
+        <Text style={[styles.scoreValue, { color: isHigh ? colors.primary[600] : color }]}>{value}/5</Text>
+      </View>
     </View>
   );
 }
@@ -160,32 +196,35 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.md,
   },
+  header: {
+    gap: normalize(4),
+  },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
+    fontSize: normalize(24),
   },
-  subtitle: {
+  dateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(6),
+  },
+  dateText: {
     ...typography.textStyles.body,
-    color: lightTheme.textSecondary,
+    color: colors.neutral[500],
   },
-  subtitleWeekday: {
+  dateWeekday: {
     ...typography.textStyles.caption,
     color: colors.neutral[400],
   },
   section: {
+    padding: spacing.md,
     gap: spacing.sm,
   },
   sectionTitle: {
     ...typography.textStyles.subheading,
     color: lightTheme.text,
-  },
-  bodyText: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
-  },
-  caption: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
+    fontSize: normalize(16),
   },
   scoresGrid: {
     flexDirection: 'row',
@@ -198,21 +237,17 @@ const styles = StyleSheet.create({
   },
   scoreLabel: {
     ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
+    color: colors.neutral[500],
+    textAlign: 'center',
+  },
+  scoreValueContainer: {
+    paddingHorizontal: normalize(12),
+    paddingVertical: normalize(6),
+    borderRadius: normalize(10),
   },
   scoreValue: {
     ...typography.textStyles.heading,
-    color: lightTheme.primary,
-    fontSize: typography.fontSize.xl,
-  },
-  homeworkItem: {
-    gap: spacing.xs,
-    paddingTop: spacing.xs,
-  },
-  homeworkMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    fontSize: normalize(20),
   },
   recitationItem: {
     gap: spacing.xs,
@@ -243,22 +278,59 @@ const styles = StyleSheet.create({
   recitationScores: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
+    gap: spacing.sm,
     flexWrap: 'wrap',
   },
-  miniScore: {
+  miniScorePill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: normalize(4),
+    backgroundColor: colors.neutral[50],
+    paddingHorizontal: normalize(8),
+    paddingVertical: normalize(3),
+    borderRadius: normalize(6),
   },
-  miniScoreText: {
+  miniScoreLabel: {
+    fontSize: normalize(11),
     fontFamily: typography.fontFamily.semiBold,
-    fontSize: typography.fontSize.xs,
-    color: lightTheme.textSecondary,
+    color: colors.neutral[500],
+  },
+  miniScoreValue: {
+    fontSize: normalize(12),
+    fontFamily: typography.fontFamily.bold,
   },
   mistakeNotes: {
     ...typography.textStyles.caption,
     color: lightTheme.textSecondary,
     fontStyle: 'italic',
+  },
+  notesContainer: {
+    backgroundColor: colors.neutral[50],
+    padding: spacing.md,
+    borderRadius: normalize(10),
+    borderLeftWidth: 3,
+    borderLeftColor: colors.neutral[200],
+  },
+  notesText: {
+    ...typography.textStyles.body,
+    color: colors.neutral[700],
+    fontStyle: 'italic',
+  },
+  homeworkItem: {
+    gap: spacing.xs,
+    paddingTop: spacing.xs,
+  },
+  homeworkText: {
+    ...typography.textStyles.body,
+    color: lightTheme.text,
+  },
+  homeworkMeta: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  caption: {
+    ...typography.textStyles.caption,
+    color: lightTheme.textSecondary,
   },
 });
