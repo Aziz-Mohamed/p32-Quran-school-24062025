@@ -13,6 +13,7 @@ import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useSessions } from '@/features/sessions/hooks/useSessions';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,7 +22,7 @@ import { normalize } from '@/theme/normalize';
 // ─── Student Session History ─────────────────────────────────────────────────
 
 export default function StudentSessionsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { profile } = useAuth();
   const theme = useRoleTheme();
@@ -72,7 +73,10 @@ export default function StudentSessionsScreen() {
                   <View style={styles.sessionInfo}>
                     <View style={styles.dateRow}>
                       <Ionicons name="calendar-outline" size={12} color={colors.neutral[400]} />
-                      <Text style={styles.sessionDate}>{item.session_date}</Text>
+                      <Text style={styles.sessionDate}>
+                        {formatSessionDate(item.session_date, i18n.language).date}{' '}
+                        <Text style={styles.sessionWeekday}>({formatSessionDate(item.session_date, i18n.language).weekday})</Text>
+                      </Text>
                     </View>
                     <Text style={styles.teacherName}>
                       {t('common.teacher')}: {item.teacher?.full_name ?? '—'}
@@ -150,6 +154,10 @@ const styles = StyleSheet.create({
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[900],
     fontSize: normalize(16),
+  },
+  sessionWeekday: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[400],
   },
   teacherName: {
     ...typography.textStyles.label,

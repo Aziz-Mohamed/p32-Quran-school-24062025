@@ -11,7 +11,7 @@ class HomeworkService {
     let query = supabase
       .from('homework')
       .select(
-        '*, sessions(session_date, profiles!sessions_teacher_id_fkey(full_name))',
+        '*, sessions(session_date, profiles!sessions_teacher_id_fkey(full_name), recitations(surah_number, from_ayah, to_ayah))',
       )
       .eq('student_id', studentId);
 
@@ -39,6 +39,20 @@ class HomeworkService {
     }
 
     return query;
+  }
+
+  /**
+   * HW-001b: Get a single homework assignment by ID.
+   * Includes the related session and teacher name.
+   */
+  async getHomeworkById(id: string) {
+    return supabase
+      .from('homework')
+      .select(
+        '*, sessions(session_date, profiles!sessions_teacher_id_fkey(full_name))',
+      )
+      .eq('id', id)
+      .single();
   }
 
   /**

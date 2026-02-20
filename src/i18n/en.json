@@ -56,9 +56,9 @@
       "sat": "Sat"
     },
     "scoreAbbrev": {
-      "memorization": "M",
-      "tajweed": "T",
-      "recitation": "R"
+      "memorization": "Memorization",
+      "tajweed": "Tajweed",
+      "recitation": "Recitation"
     }
   },
   "iconCategories": {
@@ -219,6 +219,40 @@
       "title": "Session History",
       "emptyTitle": "No Sessions Yet",
       "emptyDescription": "Your session history will appear here"
+    },
+    "sessionDetail": {
+      "title": "Session Details",
+      "scores": "Scores",
+      "memorization": "Memorization",
+      "tajweed": "Tajweed",
+      "recitation": "Recitation",
+      "recitations": "Recitations",
+      "accuracy": "Accuracy",
+      "fluency": "Fluency",
+      "notes": "Teacher Notes",
+      "homework": "Homework",
+      "due": "Due",
+      "pending": "Pending"
+    },
+    "homework": {
+      "title": "Homework",
+      "pending": "Pending",
+      "completed": "Completed",
+      "emptyPending": "No pending homework",
+      "emptyCompleted": "No completed homework",
+      "viewAll": "View All"
+    },
+    "homeworkDetail": {
+      "title": "Homework Details",
+      "description": "Description",
+      "dueDate": "Due Date",
+      "session": "Related Session",
+      "teacher": "Teacher",
+      "markComplete": "Mark as Complete",
+      "completed": "Completed",
+      "overdue": "Overdue",
+      "pending": "Pending",
+      "noDueDate": "No due date"
     },
     "stickers": {
       "title": "My Stickers",
@@ -396,6 +430,19 @@
     "attendanceCalendar": "Attendance Calendar",
     "recentSessions": "Recent Sessions",
     "yourChild": "Your Child",
+    "sessionDetail": {
+      "title": "Session Details",
+      "teacher": "Teacher",
+      "scores": "Scores",
+      "memorization": "Memorization",
+      "tajweed": "Tajweed",
+      "recitation": "Recitation",
+      "recitations": "Recitations",
+      "notes": "Teacher Notes",
+      "homework": "Homework",
+      "due": "Due",
+      "pending": "Pending"
+    },
     "children": {
       "emptyTitle": "No Children Linked",
       "emptyDescription": "Ask your school admin to link your children to your account"

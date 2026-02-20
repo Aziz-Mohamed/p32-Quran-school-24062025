@@ -56,9 +56,9 @@
       "sat": "سبت"
     },
     "scoreAbbrev": {
-      "memorization": "ح",
-      "tajweed": "ت",
-      "recitation": "ق"
+      "memorization": "الحفظ",
+      "tajweed": "التجويد",
+      "recitation": "القراءة"
     }
   },
   "iconCategories": {
@@ -219,6 +219,40 @@
       "title": "سجل الحصص",
       "emptyTitle": "لا توجد حصص بعد",
       "emptyDescription": "سيظهر سجل حصصك هنا"
+    },
+    "sessionDetail": {
+      "title": "تفاصيل الحصّة",
+      "scores": "الدرجات",
+      "memorization": "الحفظ",
+      "tajweed": "التجويد",
+      "recitation": "القراءة",
+      "recitations": "التسميعات",
+      "accuracy": "الدقة",
+      "fluency": "الطلاقة",
+      "notes": "ملاحظات المعلّم",
+      "homework": "الواجب",
+      "due": "التسليم",
+      "pending": "قيد الانتظار"
+    },
+    "homework": {
+      "title": "الواجبات",
+      "pending": "قيد الانتظار",
+      "completed": "مكتمل",
+      "emptyPending": "لا توجد واجبات معلّقة",
+      "emptyCompleted": "لا توجد واجبات مكتملة",
+      "viewAll": "عرض الكل"
+    },
+    "homeworkDetail": {
+      "title": "تفاصيل الواجب",
+      "description": "الوصف",
+      "dueDate": "تاريخ التسليم",
+      "session": "الحصّة المرتبطة",
+      "teacher": "المعلّم",
+      "markComplete": "تحديد كمكتمل",
+      "completed": "مكتمل",
+      "overdue": "متأخّر",
+      "pending": "قيد الانتظار",
+      "noDueDate": "بدون تاريخ تسليم"
     },
     "stickers": {
       "title": "ملصقاتي",
@@ -396,6 +430,19 @@
     "attendanceCalendar": "تقويم الحضور",
     "recentSessions": "الحصص الأخيرة",
     "yourChild": "طفلك",
+    "sessionDetail": {
+      "title": "تفاصيل الحصّة",
+      "teacher": "المعلّم",
+      "scores": "الدرجات",
+      "memorization": "الحفظ",
+      "tajweed": "التجويد",
+      "recitation": "القراءة",
+      "recitations": "التسميعات",
+      "notes": "ملاحظات المعلّم",
+      "homework": "الواجب",
+      "due": "التسليم",
+      "pending": "قيد الانتظار"
+    },
     "children": {
       "emptyTitle": "لا يوجد أبناء مرتبطون",
       "emptyDescription": "اطلب من إدارة المدرسة ربط أبنائك بحسابك"

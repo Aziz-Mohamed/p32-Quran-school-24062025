@@ -30,12 +30,30 @@ export const formatDate = (
   date: Date | string,
   locale: string = 'en-US',
 ): string => {
-  const d = typeof date === 'string' ? new Date(date) : date;
+  const d = typeof date === 'string' ? new Date(date + (date.length === 10 ? 'T00:00:00' : '')) : date;
   return d.toLocaleDateString(locale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
   });
+};
+
+/**
+ * Splits a session date (YYYY-MM-DD) into a main date and weekday for separate styling.
+ * e.g. { date: "10 Feb 2026", weekday: "Tue" } (en) or { date: "١٠ فبراير ٢٠٢٦", weekday: "الثلاثاء" } (ar)
+ */
+export const formatSessionDate = (
+  dateStr: string,
+  locale: string = 'en',
+): { date: string; weekday: string } => {
+  const d = new Date(dateStr + 'T00:00:00');
+  const day = d.toLocaleDateString(locale, { day: 'numeric' });
+  const month = d.toLocaleDateString(locale, { month: 'short' });
+  const year = d.toLocaleDateString(locale, { year: 'numeric' });
+  return {
+    date: `${day} ${month} ${year}`,
+    weekday: d.toLocaleDateString(locale, { weekday: 'short' }),
+  };
 };
 
 /**

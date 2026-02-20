@@ -23,10 +23,10 @@ class StudentDashboardService {
         .eq('id', studentId)
         .single(),
 
-      // Current (incomplete) homework, ordered by due date
+      // Current (incomplete) homework with session recitations for surah/ayat display
       supabase
         .from('homework')
-        .select('*')
+        .select('*, sessions(recitations(surah_number, from_ayah, to_ayah))')
         .eq('student_id', studentId)
         .eq('is_completed', false)
         .order('due_date', { ascending: true }),

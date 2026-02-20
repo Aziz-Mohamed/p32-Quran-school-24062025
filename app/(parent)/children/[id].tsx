@@ -13,6 +13,7 @@ import { useChildDetail } from '@/features/children/hooks/useChildren';
 import { useAttendanceRate } from '@/features/attendance/hooks/useAttendance';
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,7 +22,7 @@ import { normalize } from '@/theme/normalize';
 // ─── Child Detail Screen ─────────────────────────────────────────────────────
 
 export default function ChildDetailScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useRoleTheme();
@@ -127,11 +128,14 @@ export default function ChildDetailScreen() {
           </Card>
         ) : (
           recentSessions.map((session: any) => (
-            <Card key={session.id} variant="default" style={styles.sessionCard}>
+            <Card key={session.id} variant="default" onPress={() => router.push(`/(parent)/sessions/${session.id}`)} style={styles.sessionCard}>
               <View style={styles.sessionHeaderRow}>
                 <View style={styles.dateGroup}>
                   <Ionicons name="time-outline" size={16} color={theme.primary} />
-                  <Text style={styles.sessionDate}>{session.session_date}</Text>
+                  <Text style={styles.sessionDate}>
+                    {formatSessionDate(session.session_date, i18n.language).date}{' '}
+                    <Text style={styles.sessionWeekday}>({formatSessionDate(session.session_date, i18n.language).weekday})</Text>
+                  </Text>
                 </View>
                 <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.neutral[300]} />
               </View>
@@ -261,6 +265,10 @@ const styles = StyleSheet.create({
   sessionDate: {
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[800],
+  },
+  sessionWeekday: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[400],
   },
   scoresRow: {
     flexDirection: 'row',

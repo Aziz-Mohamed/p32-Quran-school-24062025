@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useSessions } from '@/features/sessions/hooks/useSessions';
+import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -19,7 +20,7 @@ import { normalize } from '@/theme/normalize';
 // ─── Sessions List Screen ────────────────────────────────────────────────────
 
 export default function SessionsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const router = useRouter();
   const { profile } = useAuth();
 
@@ -70,15 +71,18 @@ export default function SessionsScreen() {
                     </Text>
                     <View style={styles.dateRow}>
                       <Ionicons name="calendar-outline" size={12} color={colors.neutral[400]} />
-                      <Text style={styles.sessionDate}>{item.session_date}</Text>
+                      <Text style={styles.sessionDate}>
+                        {formatSessionDate(item.session_date, i18n.language).date}{' '}
+                        <Text style={styles.sessionWeekday}>({formatSessionDate(item.session_date, i18n.language).weekday})</Text>
+                      </Text>
                     </View>
                   </View>
                   <View style={styles.scores}>
                     {item.memorization_score != null && (
-                      <Badge 
-                        label={`M: ${item.memorization_score}`} 
-                        variant={item.memorization_score >= 4 ? "success" : "warning"} 
-                        size="sm" 
+                      <Badge
+                        label={`${t('common.scoreAbbrev.memorization')}: ${item.memorization_score}/5`}
+                        variant={item.memorization_score >= 4 ? "success" : "warning"}
+                        size="sm"
                       />
                     )}
                     <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.neutral[300]} />
@@ -158,6 +162,10 @@ const styles = StyleSheet.create({
   sessionDate: {
     ...typography.textStyles.label,
     color: colors.neutral[500],
+  },
+  sessionWeekday: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[400],
   },
   scores: {
     flexDirection: 'row',
