@@ -173,7 +173,7 @@ export default function StudentDashboard() {
           </Card>
         ) : (
           data!.homework!.map((hw: any) => (
-            <Card key={hw.id} variant="default" style={styles.homeworkCard}>
+            <Card key={hw.id} variant="default" onPress={() => router.push(`/(student)/homework/${hw.id}`)} style={styles.homeworkCard}>
               <View style={styles.homeworkContent}>
                 <View style={[styles.homeworkIcon, { backgroundColor: theme.primaryLight }]}>
                   <Ionicons name="book" size={20} color={theme.primary} />

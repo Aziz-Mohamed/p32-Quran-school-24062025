@@ -234,6 +234,18 @@
       "due": "Due",
       "pending": "Pending"
     },
+    "homeworkDetail": {
+      "title": "Homework Details",
+      "description": "Description",
+      "dueDate": "Due Date",
+      "session": "Related Session",
+      "teacher": "Teacher",
+      "markComplete": "Mark as Complete",
+      "completed": "Completed",
+      "overdue": "Overdue",
+      "pending": "Pending",
+      "noDueDate": "No due date"
+    },
     "stickers": {
       "title": "My Stickers",
       "subtitle": "Your heritage sticker collection",

@@ -42,6 +42,20 @@ class HomeworkService {
   }
 
   /**
+   * HW-001b: Get a single homework assignment by ID.
+   * Includes the related session and teacher name.
+   */
+  async getHomeworkById(id: string) {
+    return supabase
+      .from('homework')
+      .select(
+        '*, sessions(session_date, profiles!sessions_teacher_id_fkey(full_name))',
+      )
+      .eq('id', id)
+      .single();
+  }
+
+  /**
    * HW-002: Mark a homework assignment as completed.
    * The DB trigger handle_homework_points will auto-add points.
    */

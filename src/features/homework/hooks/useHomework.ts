@@ -22,6 +22,19 @@ export const useStudentHomework = (
   });
 };
 
+export const useHomeworkById = (id: string | undefined) => {
+  return useQuery({
+    queryKey: ['homework', id],
+    queryFn: async () => {
+      if (!id) throw new Error('Homework ID is required');
+      const { data, error } = await homeworkService.getHomeworkById(id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+};
+
 export const useCompleteHomework = () => {
   const queryClient = useQueryClient();
 

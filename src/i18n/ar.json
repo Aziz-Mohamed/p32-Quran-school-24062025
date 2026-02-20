@@ -234,6 +234,18 @@
       "due": "التسليم",
       "pending": "قيد الانتظار"
     },
+    "homeworkDetail": {
+      "title": "تفاصيل الواجب",
+      "description": "الوصف",
+      "dueDate": "تاريخ التسليم",
+      "session": "الحصّة المرتبطة",
+      "teacher": "المعلّم",
+      "markComplete": "تحديد كمكتمل",
+      "completed": "مكتمل",
+      "overdue": "متأخّر",
+      "pending": "قيد الانتظار",
+      "noDueDate": "بدون تاريخ تسليم"
+    },
     "stickers": {
       "title": "ملصقاتي",
       "subtitle": "مجموعة ملصقات التراث",
