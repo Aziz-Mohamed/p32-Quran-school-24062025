@@ -101,7 +101,7 @@ export default function ParentSessionDetailScreen() {
             <Text style={styles.sectionTitle}>{t('parent.sessionDetail.recitations')}</Text>
             {recitations.map((recitation: any) => {
               const surah = getSurah(recitation.surah_number);
-              const range = formatVerseRange(recitation.surah_number, recitation.from_ayah, recitation.to_ayah);
+              const range = formatVerseRange(recitation.surah_number, recitation.from_ayah, recitation.to_ayah, i18n.language as 'ar' | 'en');
               return (
                 <View key={recitation.id} style={styles.recitationItem}>
                   <View style={styles.recitationHeader}>
