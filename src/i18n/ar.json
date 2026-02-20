@@ -56,9 +56,9 @@
       "sat": "سبت"
     },
     "scoreAbbrev": {
-      "memorization": "ح",
-      "tajweed": "ت",
-      "recitation": "ق"
+      "memorization": "الحفظ",
+      "tajweed": "التجويد",
+      "recitation": "القراءة"
     }
   },
   "iconCategories": {

@@ -56,9 +56,9 @@
       "sat": "Sat"
     },
     "scoreAbbrev": {
-      "memorization": "M",
-      "tajweed": "T",
-      "recitation": "R"
+      "memorization": "Memorization",
+      "tajweed": "Tajweed",
+      "recitation": "Recitation"
     }
   },
   "iconCategories": {
