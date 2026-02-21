@@ -14,7 +14,6 @@ class StudentDashboardService {
       sessionsCountResult,
       stickersCountResult,
       activeCertCountResult,
-      lastSessionResult,
     ] = await Promise.all([
       // Student record (no levels join — current_level is a plain integer now)
       supabase
@@ -49,15 +48,6 @@ class StudentDashboardService {
         .select('id', { count: 'exact', head: true })
         .eq('student_id', studentId)
         .is('dormant_since', null),
-
-      // Last session with recitations for context
-      supabase
-        .from('sessions')
-        .select('id, session_date, recitations(surah_number, from_ayah, to_ayah)')
-        .eq('student_id', studentId)
-        .order('session_date', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
     ]);
 
     return {
@@ -71,7 +61,6 @@ class StudentDashboardService {
       stickersError: stickersCountResult.error,
       activeCertCount: activeCertCountResult.count ?? 0,
       activeCertError: activeCertCountResult.error,
-      lastSession: lastSessionResult.data,
     };
   }
 }

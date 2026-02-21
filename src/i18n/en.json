@@ -203,16 +203,7 @@
       "levelProgress": "Level Progress",
       "sessions": "Sessions",
       "stickers": "Stickers",
-      "rubCertified": "rubʿ certified",
-      "todaysSchedule": "Today's Schedule",
-      "itemsToday": "{{count}} items due today",
-      "allCaughtUp": "All caught up!",
-      "quranJourney": "Quran Journey",
-      "quranMemorized": "{{pct}}% of Quran memorized",
-      "lastSession": "Last session",
-      "today": "Today",
-      "yesterday": "Yesterday",
-      "daysAgo": "{{count}} days ago"
+      "rubCertified": "rubʿ certified"
     },
     "myLessons": "My Lessons",
     "myProgress": "My Progress",

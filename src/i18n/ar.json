@@ -203,16 +203,7 @@
       "levelProgress": "تقدّم المستوى",
       "sessions": "الحصص",
       "stickers": "الملصقات",
-      "rubCertified": "ربع مُجاز",
-      "todaysSchedule": "جدول اليوم",
-      "itemsToday": "{{count}} عناصر مطلوبة اليوم",
-      "allCaughtUp": "أنجزت كل شيء!",
-      "quranJourney": "رحلة القرآن",
-      "quranMemorized": "{{pct}}% من القرآن محفوظ",
-      "lastSession": "آخر حصة",
-      "today": "اليوم",
-      "yesterday": "أمس",
-      "daysAgo": "منذ {{count}} أيام"
+      "rubCertified": "ربع مُجاز"
     },
     "myLessons": "دروسي",
     "myProgress": "تقدّمي",
