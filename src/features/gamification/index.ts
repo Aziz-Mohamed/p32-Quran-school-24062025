@@ -29,6 +29,8 @@ export { useCertifyRub } from './hooks/useCertifyRub';
 export { useUndoCertification } from './hooks/useUndoCertification';
 export { useRecordRevision } from './hooks/useRecordRevision';
 export { useRequestRevision } from './hooks/useRequestRevision';
+export { useRevisionHomework } from './hooks/useRevisionHomework';
+export type { HomeworkItem } from './hooks/useRevisionHomework';
 export { useDormancySync } from './hooks/useDormancySync';
 
 export { RubProgressMap } from './components/RubProgressMap';

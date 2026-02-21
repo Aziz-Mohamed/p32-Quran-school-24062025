@@ -187,18 +187,25 @@
       "noCertifications": "لا يوجد ربع مُجاز بعد",
       "noCertificationsDesc": "ستظهر الأرباع هنا بعد أن يُجيز معلّمك حفظك",
       "fullMap": "الخريطة الكاملة",
-      "todaysPlan": "خطة اليوم",
+      "todaysPlan": "واجبات المراجعة",
       "viewMode": {
         "rub": "ربع",
         "hizb": "حزب",
         "juz": "جزء"
       },
-      "addAllToPlan": "إضافة الكل لخطة المراجعة",
+      "addAllToPlan": "إضافة الكل لواجبات المراجعة",
       "addingToPlan": "جارٍ الإضافة...",
+      "revisionHomework": "واجبات المراجعة",
+      "noHomework": "لا يوجد واجبات مراجعة",
+      "markRecited": "تم التسميع",
+      "homeworkCompleted": "تم تسميعه",
+      "removeHomework": "تمت الإزالة من الواجبات",
       "itemsNeedRevision": "{{count}} تحتاج مراجعة",
-      "batchAddedToPlan": "تمت إضافة {{count}} ربع للخطة",
+      "batchAddedToPlan": "تمت إضافة {{count}} ربع للواجبات",
       "certifiedRub": "أرباع محفوظة",
-      "needRevision": "تحتاج مراجعة"
+      "needRevision": "تحتاج مراجعة",
+      "plannedItems": "واجبات المراجعة",
+      "plannedItemsCount": "{{count}} واجبات"
     },
     "dashboard": {
       "title": "لوحة الطالب",
@@ -215,7 +222,7 @@
       "sessions": "الحصص",
       "stickers": "الملصقات",
       "rubCertified": "ربع مُجاز",
-      "todaysTasks": "مهام اليوم",
+      "todaysTasks": "واجبات الحفظ",
       "seeAll": "عرض الكل {{count}}",
       "allCaughtUp": "أحسنت! لا مهام متبقية",
       "nothingDueToday": "لا توجد مهام اليوم",
@@ -978,6 +985,14 @@
     "surahsComplete": "سور مكتملة",
     "inProgress": "قيد التعلّم",
     "averageAccuracy": "متوسط الدقة",
+    "summary": {
+      "ayahs": "{{count}} آية",
+      "surahs": "{{count}} سورة"
+    },
+    "ayahsMemorizedLabel": "آية محفوظة",
+    "newAyahCount": "{{count}} آية جديدة",
+    "yourJourney": "رحلتك",
+    "surahMap": "خريطة تقدم السور",
     "noProgressYet": "لا يوجد تقدّم في الحفظ بعد.",
     "noProgressDescription": "أكمل التسميعات لرؤية تقدّمك هنا.",
     "todaysRevisionPlan": "خطة المراجعة اليومية",
@@ -994,7 +1009,8 @@
     "sections": {
       "new_hifz": "الحفظ الجديد",
       "recent_review": "المراجعة القريبة",
-      "old_review": "المراجعة البعيدة"
+      "old_review": "المراجعة البعيدة",
+      "recent_practice": "تابع التدريب"
     },
     "revisionLabels": {
       "new": "جديد",
@@ -1086,13 +1102,14 @@
       "lastReviewed": "آخر مراجعة",
       "daysAgo": "منذ {{count}} يوم",
       "neverReviewed": "لم تتم المراجعة",
-      "addToPlan": "أضف إلى خطة المراجعة",
-      "addToPlanDesc": "يُضاف إلى جدول الحفظ الخاص بك",
-      "alreadyInPlan": "موجود في خطة المراجعة",
-      "addedToPlan": "تمت الإضافة إلى خطة المراجعة!",
+      "addToPlan": "أضف لواجبات المراجعة",
+      "addToPlanDesc": "يُضاف إلى واجبات المراجعة",
+      "alreadyInPlan": "موجود في واجباتك",
+      "addedToPlan": "تمت الإضافة للواجبات!",
       "askTeacher": "اطلب من معلّمك",
       "askTeacherDesc": "اطلب من معلّمك إضافة هذا إلى مراجعتك",
-      "needsRecertNote": "هذا الربع يحتاج إعادة إجازة من معلّمك"
+      "needsRecertNote": "هذا الربع يحتاج إعادة إجازة من معلّمك",
+      "mushafPage": "صفحة المصحف"
     }
   }
 }

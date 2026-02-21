@@ -21,7 +21,7 @@ export { revisionScheduleService } from './services/revision-schedule.service';
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 export { useCreateRecitation, useCreateRecitations, useRecitations, useSessionRecitations } from './hooks/useRecitations';
 export { useMemorizationProgress, useUpsertProgress } from './hooks/useMemorizationProgress';
-export { useCreateAssignment, useAssignments, useCompleteAssignment, useCancelAssignment } from './hooks/useAssignments';
+export { useCreateAssignment, useAssignments, useCompleteAssignment, useCompleteRevisionHomework, useCancelAssignment } from './hooks/useAssignments';
 export { useRevisionSchedule } from './hooks/useRevisionSchedule';
 export { useMemorizationStats } from './hooks/useMemorizationStats';
 
@@ -36,3 +36,5 @@ export { RecitationForm, EMPTY_RECITATION, validateRecitationForm } from './comp
 export type { RecitationFormData } from './components/RecitationForm';
 export { RevisionCard } from './components/RevisionCard';
 export { MemorizationProgressBar } from './components/MemorizationProgressBar';
+export { MemorizationHealthCard } from './components/MemorizationHealthCard';
+export { MemorizationRow } from './components/MemorizationRow';

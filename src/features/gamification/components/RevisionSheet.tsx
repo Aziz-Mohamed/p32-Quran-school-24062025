@@ -8,7 +8,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
-import { formatRubVerseRange } from '@/lib/quran-metadata';
+import { formatRubVerseRange, getMushafPage } from '@/lib/quran-metadata';
 import i18next from 'i18next';
 
 type RevisionAction = 'good' | 'poor' | 'recertify';
@@ -54,6 +54,7 @@ export function RevisionSheet(props: RevisionSheetProps) {
   const needsRecertification = isDormant && dormantDays >= 90;
 
   const juz = Math.ceil(certification.rub_number / 8);
+  const mushafPage = getMushafPage(certification.rub_number);
   const lang = i18next.language?.startsWith('ar') ? 'ar' : 'en';
 
   // Verse range from reference data
@@ -130,6 +131,12 @@ export function RevisionSheet(props: RevisionSheetProps) {
               <InfoRow
                 label={t('gamification.revision.certifiedBy')}
                 value={teacherName}
+              />
+            )}
+            {mushafPage != null && (
+              <InfoRow
+                label={t('gamification.revision.mushafPage')}
+                value={`${mushafPage}`}
               />
             )}
             <InfoRow

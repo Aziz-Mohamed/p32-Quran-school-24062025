@@ -45,6 +45,20 @@ export const useCompleteAssignment = () => {
   });
 };
 
+export const useCompleteRevisionHomework = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationKey: ['complete-revision-homework'],
+    mutationFn: (assignmentId: string) =>
+      assignmentService.completeRevisionHomework(assignmentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      queryClient.invalidateQueries({ queryKey: ['revision-schedule'] });
+    },
+  });
+};
+
 export const useCancelAssignment = () => {
   const queryClient = useQueryClient();
 

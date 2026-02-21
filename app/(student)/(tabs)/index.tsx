@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { I18nManager, Pressable, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
@@ -11,7 +11,8 @@ import { LoadingState, ErrorState } from '@/components/feedback';
 import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
-import { useRubCertifications } from '@/features/gamification';
+import { useRubCertifications, useRevisionHomework } from '@/features/gamification';
+import type { EnrichedCertification } from '@/features/gamification';
 import { useMemorizationStats } from '@/features/memorization';
 import { getSurah } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
@@ -27,7 +28,6 @@ const MAX_PREVIEW_ITEMS = 4;
 const TYPE_CONFIG = {
   new_hifz: { labelKey: 'student.dashboard.newHifz', color: colors.accent.indigo[500], bg: colors.accent.indigo[50] },
   recent_review: { labelKey: 'student.dashboard.review', color: colors.secondary[500], bg: colors.secondary[50] },
-  old_review: { labelKey: 'student.dashboard.review', color: colors.primary[500], bg: colors.primary[50] },
 } as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -55,7 +55,7 @@ function TaskRow({ item, isRTL, t }: { item: any; isRTL: boolean; t: (key: strin
   const ayahRange = item.from_ayah === item.to_ayah
     ? `${item.from_ayah}`
     : `${item.from_ayah}-${item.to_ayah}`;
-  const config = TYPE_CONFIG[item.review_type as keyof typeof TYPE_CONFIG] ?? TYPE_CONFIG.old_review;
+  const config = TYPE_CONFIG[item.review_type as keyof typeof TYPE_CONFIG] ?? TYPE_CONFIG.recent_review;
 
   return (
     <View style={styles.taskRow}>
@@ -71,6 +71,39 @@ function TaskRow({ item, isRTL, t }: { item: any; isRTL: boolean; t: (key: strin
   );
 }
 
+const FRESHNESS_DOT_COLORS: Record<string, string> = {
+  fresh: '#22C55E',
+  fading: '#EAB308',
+  warning: '#F97316',
+  critical: '#EF4444',
+  dormant: '#9CA3AF',
+};
+
+function HomeworkRow({ item, enriched, t }: {
+  item: { assignmentId: string; rubNumber: number; juz: number };
+  enriched: EnrichedCertification[];
+  t: (key: string, opts?: any) => string;
+}) {
+  const cert = enriched.find((c) => c.rub_number === item.rubNumber);
+  const dotColor = cert
+    ? (FRESHNESS_DOT_COLORS[cert.freshness.state] ?? colors.primary[400])
+    : colors.primary[400];
+
+  return (
+    <View style={styles.taskRow}>
+      <View style={[styles.taskDot, { backgroundColor: dotColor }]} />
+      <View style={styles.taskInfo}>
+        <Text style={styles.taskSurah} numberOfLines={1}>
+          {t('gamification.rub')} {item.rubNumber}
+        </Text>
+        <Text style={styles.taskAyah}>
+          {t('gamification.juz')} {item.juz}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 // ─── Student Dashboard ────────────────────────────────────────────────────────
 
 export default function StudentDashboard() {
@@ -80,10 +113,24 @@ export default function StudentDashboard() {
   const isRTL = I18nManager.isRTL;
 
   const { data, isLoading, error, refetch } = useStudentDashboard(profile?.id);
-  const { criticalCount } = useRubCertifications(profile?.id);
+  const { enriched } = useRubCertifications(profile?.id);
+  const { homeworkItems } = useRevisionHomework(profile?.id);
   const { data: memStats } = useMemorizationStats(profile?.id);
   const todayStr = new Date().toISOString().split('T')[0];
   const { data: revisionSchedule = [] } = useRevisionSchedule(profile?.id, todayStr);
+
+  const homeworkRubSet = useMemo(
+    () => new Set(homeworkItems.map((h) => h.rubNumber)),
+    [homeworkItems],
+  );
+
+  const effectiveCriticalCount = useMemo(
+    () => enriched.filter(
+      (c) => (c.freshness.state === 'critical' || c.freshness.state === 'warning')
+        && !homeworkRubSet.has(c.rub_number),
+    ).length,
+    [enriched, homeworkRubSet],
+  );
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
@@ -92,10 +139,14 @@ export default function StudentDashboard() {
   const attendance = getAttendanceBadge(data?.todayAttendance?.status, t);
   const chevron = isRTL ? 'chevron-back' : 'chevron-forward';
 
-  const totalItems = revisionSchedule.length;
-  const previewItems = revisionSchedule.slice(0, MAX_PREVIEW_ITEMS);
+  // Only show new_hifz + recent_review (old_review lives on Revision Health tab)
+  const filteredSchedule = revisionSchedule.filter(
+    (item: any) => item.review_type !== 'old_review',
+  );
+  const totalItems = filteredSchedule.length;
+  const previewItems = filteredSchedule.slice(0, MAX_PREVIEW_ITEMS);
   const hasMore = totalItems > MAX_PREVIEW_ITEMS;
-  const hasWarning = criticalCount > 0;
+  const hasWarning = effectiveCriticalCount > 0;
 
   return (
     <Screen scroll hasTabBar>
@@ -202,16 +253,51 @@ export default function StudentDashboard() {
             </View>
           )}
 
-          {/* Inline revision warning */}
-          {hasWarning && (
-            <View style={[styles.warningRow, totalItems > 0 && styles.warningRowBorder]}>
-              <Ionicons name="alert-circle" size={16} color="#92400E" />
-              <Text style={styles.warningText}>
-                {t('gamification.revisionWarning', { count: criticalCount })}
-              </Text>
-            </View>
-          )}
         </Card>
+
+        {/* 3b. Revision Homework */}
+        {(homeworkItems.length > 0 || hasWarning) && (
+          <Card
+            variant="default"
+            onPress={() => router.push('/(student)/(tabs)/lessons')}
+            style={styles.tasksCard}
+          >
+            <View style={styles.tasksHeader}>
+              <View style={[styles.tasksIcon, { backgroundColor: colors.secondary[50] }]}>
+                <Ionicons name="book-outline" size={20} color={colors.secondary[500]} />
+              </View>
+              <Text style={styles.tasksTitle}>{t('student.revision.revisionHomework')}</Text>
+              {homeworkItems.length > 0 && (
+                <View style={styles.homeworkBadge}>
+                  <Text style={styles.homeworkBadgeText}>{homeworkItems.length}</Text>
+                </View>
+              )}
+              <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
+            </View>
+
+            {homeworkItems.length > 0 && (
+              <View style={styles.tasksList}>
+                {homeworkItems.slice(0, MAX_PREVIEW_ITEMS).map((item) => (
+                  <HomeworkRow key={item.assignmentId} item={item} enriched={enriched} t={t} />
+                ))}
+              </View>
+            )}
+            {homeworkItems.length > MAX_PREVIEW_ITEMS && (
+              <Text style={styles.seeAll}>
+                {t('student.dashboard.seeAll', { count: homeworkItems.length })} {isRTL ? '←' : '→'}
+              </Text>
+            )}
+
+            {hasWarning && (
+              <View style={[styles.warningRow, homeworkItems.length > 0 && styles.warningRowBorder]}>
+                <Ionicons name="alert-circle" size={16} color="#92400E" />
+                <Text style={styles.warningText}>
+                  {t('gamification.revisionWarning', { count: effectiveCriticalCount })}
+                </Text>
+              </View>
+            )}
+          </Card>
+        )}
 
         {/* 4. Explore */}
         <View style={styles.exploreRow}>
@@ -434,6 +520,21 @@ const styles = StyleSheet.create({
   statLabel: {
     fontFamily: typography.fontFamily.medium,
     fontSize: normalize(11),
+  },
+
+  // Homework Badge
+  homeworkBadge: {
+    backgroundColor: colors.secondary[100],
+    paddingHorizontal: spacing.sm,
+    paddingVertical: normalize(2),
+    borderRadius: radius.full,
+    minWidth: normalize(24),
+    alignItems: 'center',
+  },
+  homeworkBadgeText: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(11),
+    color: colors.secondary[600],
   },
 
   // Explore Pills

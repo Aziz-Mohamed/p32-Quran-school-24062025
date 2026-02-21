@@ -187,18 +187,25 @@
       "noCertifications": "No rubʿ certified yet",
       "noCertificationsDesc": "Rubʿ will appear here once your teacher certifies your memorization",
       "fullMap": "Full Map",
-      "todaysPlan": "Today's Plan",
+      "todaysPlan": "Revision Homework",
       "viewMode": {
         "rub": "Rubʿ",
         "hizb": "Hizb",
         "juz": "Juz"
       },
-      "addAllToPlan": "Add all to revision plan",
+      "addAllToPlan": "Add all to revision homework",
       "addingToPlan": "Adding...",
+      "revisionHomework": "Revision Homework",
+      "noHomework": "No pending revision homework",
+      "markRecited": "Mark as recited",
+      "homeworkCompleted": "Marked as recited",
+      "removeHomework": "Removed from homework",
       "itemsNeedRevision": "{{count}} need revision",
-      "batchAddedToPlan": "{{count}} rubʿ added to plan",
+      "batchAddedToPlan": "{{count}} rubʿ added to homework",
       "certifiedRub": "Certified rubʿ",
-      "needRevision": "Need revision"
+      "needRevision": "Need revision",
+      "plannedItems": "Revision Homework",
+      "plannedItemsCount": "{{count}} items"
     },
     "dashboard": {
       "title": "Student Dashboard",
@@ -215,7 +222,7 @@
       "sessions": "Sessions",
       "stickers": "Stickers",
       "rubCertified": "rubʿ certified",
-      "todaysTasks": "Today's Tasks",
+      "todaysTasks": "Memorization Homework",
       "seeAll": "See all {{count}}",
       "allCaughtUp": "All caught up!",
       "nothingDueToday": "No tasks due today",
@@ -978,6 +985,14 @@
     "surahsComplete": "Surahs Complete",
     "inProgress": "In Progress",
     "averageAccuracy": "Average Accuracy",
+    "summary": {
+      "ayahs": "{{count}} ayahs",
+      "surahs": "{{count}} surahs"
+    },
+    "ayahsMemorizedLabel": "ayahs memorized",
+    "newAyahCount": "{{count}} new ayahs",
+    "yourJourney": "Your Journey",
+    "surahMap": "Surah Progress Map",
     "noProgressYet": "No memorization progress yet.",
     "noProgressDescription": "Complete recitations to see your progress here.",
     "todaysRevisionPlan": "Today's Revision Plan",
@@ -994,7 +1009,8 @@
     "sections": {
       "new_hifz": "New Memorization",
       "recent_review": "Recent Revision",
-      "old_review": "Older Revision"
+      "old_review": "Older Revision",
+      "recent_practice": "Continue Practicing"
     },
     "revisionLabels": {
       "new": "New",
@@ -1086,13 +1102,14 @@
       "lastReviewed": "Last Revision",
       "daysAgo": "{{count}} days ago",
       "neverReviewed": "Never",
-      "addToPlan": "Add to My Revision Plan",
-      "addToPlanDesc": "Adds to your memorization schedule",
-      "alreadyInPlan": "Already in your revision plan",
-      "addedToPlan": "Added to revision plan!",
+      "addToPlan": "Add to Revision Homework",
+      "addToPlanDesc": "Adds to your revision homework",
+      "alreadyInPlan": "Already in your homework",
+      "addedToPlan": "Added to homework!",
       "askTeacher": "Ask your teacher",
       "askTeacherDesc": "Ask your teacher to add this to your revision",
-      "needsRecertNote": "This rubʿ needs re-certification by your teacher"
+      "needsRecertNote": "This rubʿ needs re-certification by your teacher",
+      "mushafPage": "Mushaf Page"
     }
   }
 }

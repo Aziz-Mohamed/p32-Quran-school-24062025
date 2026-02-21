@@ -14,13 +14,14 @@ import {
   useRubCertifications,
   useRubReference,
   useRequestRevision,
+  useRevisionHomework,
   RevisionWarning,
   RevisionSheet,
 } from '@/features/gamification';
 import type { EnrichedCertification, RubReference, FreshnessState } from '@/features/gamification';
+import { useCancelAssignment } from '@/features/memorization';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
-import { assignmentService } from '@/features/memorization/services/assignment.service';
-import { useQuery } from '@tanstack/react-query';
+import { getMushafPageRange } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -99,7 +100,6 @@ export default function RevisionHealthScreen() {
   const {
     enriched,
     activeCount,
-    criticalCount,
     dormantCount,
     isLoading,
     error,
@@ -123,41 +123,33 @@ export default function RevisionHealthScreen() {
   const canSelfAssign = dashboardData?.student?.can_self_assign ?? false;
   const schoolId = dashboardData?.student?.school_id ?? '';
 
-  // "Add to Plan" mutation
+  // "Add to Homework" mutation
   const requestRevision = useRequestRevision();
+  // "Remove from Homework" mutation
+  const cancelAssignment = useCancelAssignment();
 
-  // Pending assignments for "already in plan" check
-  const { data: pendingAssignments } = useQuery({
-    queryKey: ['assignments', 'pending-revision', profile?.id],
-    queryFn: async () => {
-      if (!profile?.id) throw new Error('No profile');
-      const { data, error } = await assignmentService.getAssignments({
-        studentId: profile.id,
-        assignmentType: 'old_review',
-        status: 'pending',
-      });
-      if (error) throw error;
-      return data ?? [];
-    },
-    enabled: !!profile?.id,
-    staleTime: 1000 * 60,
-  });
+  // Revision homework data (shared hook)
+  const { homeworkItems, pendingKeys } = useRevisionHomework(profile?.id);
 
-  // Build a set of surah:fromAyah keys that are already in plan
-  const pendingKeys = useMemo(() => {
-    const keys = new Set<string>();
-    if (pendingAssignments) {
-      for (const a of pendingAssignments) {
-        keys.add(`${a.surah_number}:${a.from_ayah}`);
-      }
-    }
-    return keys;
-  }, [pendingAssignments]);
+  // Smart warning: exclude rubʿ already covered by homework
+  const homeworkRubSet = useMemo(
+    () => new Set(homeworkItems.map((h) => h.rubNumber)),
+    [homeworkItems],
+  );
+  const effectiveCriticalCount = useMemo(
+    () => enriched.filter(
+      (c) => (c.freshness.state === 'critical' || c.freshness.state === 'warning')
+        && !homeworkRubSet.has(c.rub_number),
+    ).length,
+    [enriched, homeworkRubSet],
+  );
 
   const [viewMode, setViewMode] = useState<ViewMode>('rub');
+  const [viewModeOpen, setViewModeOpen] = useState(false);
   const [selectedCert, setSelectedCert] = useState<EnrichedCertification | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<CertGroup | null>(null);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
 
   // Health counts (always computed from raw enriched, regardless of view mode)
   const healthCounts = useMemo(() => {
@@ -178,7 +170,8 @@ export default function RevisionHealthScreen() {
       const rest: EnrichedCertification[] = [];
 
       for (const cert of enriched) {
-        if (cert.freshness.state === 'warning' || cert.freshness.state === 'critical') {
+        const needsAttention = cert.freshness.state === 'warning' || cert.freshness.state === 'critical';
+        if (needsAttention && !homeworkRubSet.has(cert.rub_number)) {
           attention.push(cert);
         } else {
           rest.push(cert);
@@ -192,14 +185,14 @@ export default function RevisionHealthScreen() {
       if (attention.length > 0) {
         result.push({
           title: `${t('student.revision.needsAttention')} (${attention.length})`,
-          data: attention,
+          data: collapsedSections.attention ? [] : attention,
           key: 'attention',
         });
       }
       if (rest.length > 0) {
         result.push({
           title: `${t('student.revision.allCertified')} (${rest.length})`,
-          data: rest,
+          data: collapsedSections.certified ? [] : rest,
           key: 'certified',
         });
       }
@@ -228,7 +221,8 @@ export default function RevisionHealthScreen() {
 
       const worstState = getWorstState(children);
       const needsRevisionCount = children.filter(
-        (c) => c.freshness.state === 'warning' || c.freshness.state === 'critical',
+        (c) => (c.freshness.state === 'warning' || c.freshness.state === 'critical')
+          && !homeworkRubSet.has(c.rub_number),
       ).length;
 
       const group: CertGroup = {
@@ -255,19 +249,19 @@ export default function RevisionHealthScreen() {
     if (attention.length > 0) {
       result.push({
         title: `${t('student.revision.needsAttention')} (${attention.length})`,
-        data: attention,
+        data: collapsedSections.attention ? [] : attention,
         key: 'attention',
       });
     }
     if (rest.length > 0) {
       result.push({
         title: `${t('student.revision.allCertified')} (${rest.length})`,
-        data: rest,
+        data: collapsedSections.certified ? [] : rest,
         key: 'certified',
       });
     }
     return result;
-  }, [enriched, viewMode, t]);
+  }, [enriched, viewMode, collapsedSections, homeworkRubSet, t]);
 
   const handleCertPress = (cert: EnrichedCertification) => {
     setSelectedCert(cert);
@@ -325,13 +319,25 @@ export default function RevisionHealthScreen() {
     }
   }, [selectedGroup, profile?.id, schoolId, canSelfAssign, isAlreadyInPlan, rubReferenceMap, requestRevision, t]);
 
+  const handleRemoveHomework = useCallback((assignmentId: string) => {
+    cancelAssignment.mutate(assignmentId, {
+      onSuccess: () => {
+        Alert.alert('', t('student.revision.removeHomework'));
+      },
+    });
+  }, [cancelAssignment, t]);
+
+  const toggleSection = useCallback((key: string) => {
+    setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
+
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
 
   // Empty state — no certifications at all
   if (enriched.length === 0) {
     return (
-      <Screen scroll={false} hasTabBar>
+      <Screen scroll={false}>
         <EmptyState
           icon="pulse-outline"
           title={t('student.revision.noCertifications')}
@@ -343,7 +349,8 @@ export default function RevisionHealthScreen() {
 
   const chevron = I18nManager.isRTL ? 'chevron-back' : 'chevron-forward';
   const needsAttentionCount = enriched.filter(
-    (c) => c.freshness.state === 'warning' || c.freshness.state === 'critical',
+    (c) => (c.freshness.state === 'warning' || c.freshness.state === 'critical')
+      && !homeworkRubSet.has(c.rub_number),
   ).length;
 
   const freshCount = healthCounts.fresh ?? 0;
@@ -355,9 +362,49 @@ export default function RevisionHealthScreen() {
   const selectedRef = selectedCert ? rubReferenceMap.get(selectedCert.rub_number) ?? null : null;
 
   return (
-    <Screen scroll={false} hasTabBar>
+    <Screen scroll={false}>
       <View style={styles.container}>
-        <Text style={styles.title}>{t('student.revision.title')}</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.title}>{t('student.revision.title')}</Text>
+          <View>
+            <Pressable
+              style={styles.viewModeButton}
+              onPress={() => setViewModeOpen((v) => !v)}
+            >
+              <Text style={styles.viewModeLabel}>
+                {t(`student.revision.viewMode.${viewMode}`)}
+              </Text>
+              <Ionicons
+                name={viewModeOpen ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color={colors.primary[500]}
+              />
+            </Pressable>
+            {viewModeOpen && (
+              <View style={styles.viewModeDropdown}>
+                {VIEW_MODES.map((mode) => (
+                  <Pressable
+                    key={mode}
+                    style={[
+                      styles.viewModeOption,
+                      viewMode === mode && styles.viewModeOptionActive,
+                    ]}
+                    onPress={() => { setViewMode(mode); setViewModeOpen(false); }}
+                  >
+                    <Text
+                      style={[
+                        styles.viewModeOptionText,
+                        viewMode === mode && styles.viewModeOptionTextActive,
+                      ]}
+                    >
+                      {t(`student.revision.viewMode.${mode}`)}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
 
         <SectionList
           sections={sections}
@@ -366,32 +413,6 @@ export default function RevisionHealthScreen() {
           stickySectionHeadersEnabled={false}
           ListHeaderComponent={
             <>
-              {/* View Mode Segment Control */}
-              <View style={styles.segmentRow}>
-                {VIEW_MODES.map((mode) => {
-                  const isActive = viewMode === mode;
-                  return (
-                    <Pressable
-                      key={mode}
-                      style={[
-                        styles.segmentButton,
-                        isActive && styles.segmentButtonActive,
-                      ]}
-                      onPress={() => setViewMode(mode)}
-                    >
-                      <Text
-                        style={[
-                          styles.segmentText,
-                          isActive && styles.segmentTextActive,
-                        ]}
-                      >
-                        {t(`student.revision.viewMode.${mode}`)}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
               {/* Health Summary Card */}
               <Card variant="default" style={styles.healthCard}>
                 <View style={styles.healthRow}>
@@ -425,7 +446,49 @@ export default function RevisionHealthScreen() {
               </Card>
 
               {/* Revision Warning */}
-              <RevisionWarning count={criticalCount} />
+              <RevisionWarning count={effectiveCriticalCount} />
+
+              {/* Revision Plan — pending old_review assignments due today, shown as rubʿ */}
+              {homeworkItems.length > 0 && (
+                <Card variant="default" style={styles.planCard}>
+                  <View style={styles.planHeader}>
+                    <Ionicons name="book-outline" size={18} color={colors.primary[500]} />
+                    <Text style={styles.planTitle}>{t('student.revision.plannedItems')}</Text>
+                    <View style={styles.planBadge}>
+                      <Text style={styles.planBadgeText}>{homeworkItems.length}</Text>
+                    </View>
+                  </View>
+                  {homeworkItems.map((item) => {
+                    const cert = enriched.find((c) => c.rub_number === item.rubNumber);
+                    const dotColor = cert
+                      ? (FRESHNESS_DOT_COLORS[cert.freshness.state] ?? colors.primary[400])
+                      : colors.primary[400];
+
+                    return (
+                      <View key={item.assignmentId} style={styles.planRow}>
+                        <Pressable
+                          style={({ pressed }) => [styles.planRowContent, pressed && styles.rubRowPressed]}
+                          onPress={() => {
+                            if (cert) handleCertPress(cert);
+                          }}
+                        >
+                          <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
+                          <Text style={[styles.rubTitle, { flex: 1 }]} numberOfLines={1}>
+                            {t('gamification.rub')} {item.rubNumber} {'\u00B7'} {t('gamification.juz')} {item.juz}
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}
+                          onPress={() => handleRemoveHomework(item.assignmentId)}
+                          hitSlop={8}
+                        >
+                          <Ionicons name="close-circle" size={20} color={colors.neutral[300]} />
+                        </Pressable>
+                      </View>
+                    );
+                  })}
+                </Card>
+              )}
 
               {/* All-fresh success state */}
               {needsAttentionCount === 0 && enriched.length > 0 && (
@@ -439,11 +502,22 @@ export default function RevisionHealthScreen() {
               )}
             </>
           }
-          renderSectionHeader={({ section }) => (
-            <View style={styles.sectionHeaderContainer}>
-              <Text style={styles.sectionHeader}>{section.title}</Text>
-            </View>
-          )}
+          renderSectionHeader={({ section }) => {
+            const isCollapsed = collapsedSections[section.key] ?? false;
+            return (
+              <Pressable
+                style={styles.sectionHeaderContainer}
+                onPress={() => toggleSection(section.key)}
+              >
+                <Text style={styles.sectionHeader}>{section.title}</Text>
+                <Ionicons
+                  name={isCollapsed ? 'chevron-down' : 'chevron-up'}
+                  size={16}
+                  color={colors.neutral[400]}
+                />
+              </Pressable>
+            );
+          }}
           renderItem={({ item, section }) => {
             if (isGroup(item)) {
               const dotColor = FRESHNESS_DOT_COLORS[item.worstState] ?? colors.neutral[400];
@@ -495,15 +569,6 @@ export default function RevisionHealthScreen() {
                 <Ionicons name="map" size={16} color={colors.accent.violet[500]} />
                 <Text style={[styles.pillText, { color: colors.accent.violet[600] }]}>
                   {t('student.revision.fullMap')}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={[styles.pill, { backgroundColor: colors.accent.indigo[50] }]}
-                onPress={() => router.push('/(student)/(tabs)/memorization')}
-              >
-                <Ionicons name="book" size={16} color={colors.accent.indigo[500]} />
-                <Text style={[styles.pillText, { color: colors.accent.indigo[600] }]}>
-                  {t('student.revision.todaysPlan')}
                 </Text>
               </Pressable>
             </View>
@@ -639,6 +704,11 @@ function GroupRevisionSheet({
   const nonDormantCount = group.children.filter((c) => c.freshness.state !== 'dormant').length;
   const allInPlan = eligibleCount === 0 && nonDormantCount > 0;
 
+  // Page range for the group
+  const firstRub = group.children[0]?.rub_number;
+  const lastRub = group.children[group.children.length - 1]?.rub_number;
+  const pageRange = firstRub && lastRub ? getMushafPageRange(firstRub, lastRub) : undefined;
+
   return (
     <Modal visible={!!group} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.sheetOverlay} onPress={onClose}>
@@ -663,6 +733,16 @@ function GroupRevisionSheet({
               <Text style={styles.sheetInfoLabel}>{t('student.revision.needRevision')}</Text>
               <Text style={styles.sheetInfoValue}>{group.needsRevisionCount}</Text>
             </View>
+            {pageRange && (
+              <View style={styles.sheetInfoRow}>
+                <Text style={styles.sheetInfoLabel}>{t('gamification.revision.mushafPage')}</Text>
+                <Text style={styles.sheetInfoValue}>
+                  {pageRange.startPage === pageRange.endPage
+                    ? `${pageRange.startPage}`
+                    : `${pageRange.startPage}-${pageRange.endPage}`}
+                </Text>
+              </View>
+            )}
             {/* Freshness bar */}
             <View style={styles.sheetBarRow}>
               <View style={styles.sheetBarTrack}>
@@ -741,47 +821,67 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing.lg,
     paddingTop: 0,
+    paddingBottom: 110,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
+    zIndex: 10,
   },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
     fontSize: normalize(24),
-    marginBottom: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
   },
 
-  // Segment Control
-  segmentRow: {
+  // View Mode Dropdown
+  viewModeButton: {
     flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  segmentButton: {
-    flex: 1,
     alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    backgroundColor: colors.white,
+    gap: normalize(4),
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
   },
-  segmentButtonActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
-  },
-  segmentText: {
+  viewModeLabel: {
     fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(14),
+    color: colors.primary[500],
+  },
+  viewModeDropdown: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    paddingVertical: normalize(4),
+    minWidth: normalize(100),
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)',
+  },
+  viewModeOption: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  viewModeOptionActive: {
+    backgroundColor: colors.primary[50],
+  },
+  viewModeOptionText: {
+    fontFamily: typography.fontFamily.medium,
     fontSize: normalize(13),
     color: colors.neutral[600],
   },
-  segmentTextActive: {
-    color: colors.white,
+  viewModeOptionTextActive: {
+    color: colors.primary[600],
+    fontFamily: typography.fontFamily.semiBold,
   },
 
   // Health Summary
   healthCard: {
     padding: spacing.md,
+    marginTop: spacing.sm,
     marginBottom: spacing.md,
   },
   healthRow: {
@@ -859,10 +959,65 @@ const styles = StyleSheet.create({
     marginTop: normalize(2),
   },
 
+  // Today's Plan
+  planCard: {
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  planHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  planTitle: {
+    flex: 1,
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(14),
+    color: colors.neutral[800],
+  },
+  planBadge: {
+    backgroundColor: colors.primary[100],
+    paddingHorizontal: spacing.sm,
+    paddingVertical: normalize(2),
+    borderRadius: radius.full,
+    minWidth: normalize(24),
+    alignItems: 'center',
+  },
+  planBadgeText: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(11),
+    color: colors.primary[600],
+  },
+  planRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.neutral[100],
+  },
+  planRowContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  removeButton: {
+    padding: spacing.sm,
+    borderRadius: radius.full,
+  },
+  removeButtonPressed: {
+    backgroundColor: colors.neutral[100],
+  },
+
   // Section Headers
   sectionHeaderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: spacing.md,
     marginBottom: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   sectionHeader: {
     ...typography.textStyles.subheading,

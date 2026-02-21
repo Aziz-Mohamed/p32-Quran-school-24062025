@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { I18nManager, Pressable, StyleSheet, View, Text } from 'react-native';
+import { Alert, I18nManager, Pressable, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +24,7 @@ import type { EnrichedCertification, RubReference } from '@/features/gamificatio
 import { useAttendanceRate } from '@/features/attendance/hooks/useAttendance';
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { MemorizationProgressBar } from '@/features/memorization';
+import { useAssignments, useCompleteRevisionHomework } from '@/features/memorization';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
@@ -66,6 +67,34 @@ export default function TeacherStudentDetailScreen() {
     }
     return map;
   }, [rubReferenceList]);
+
+  // Revision homework data
+  const { data: homeworkAssignments = [] } = useAssignments({
+    studentId: id,
+    status: 'pending',
+    assignmentType: 'old_review',
+  });
+  const completeHomework = useCompleteRevisionHomework();
+
+  const reverseRubMap = React.useMemo(() => {
+    const map = new Map<string, number>();
+    if (rubReferenceList) {
+      for (const ref of rubReferenceList) {
+        map.set(`${ref.start_surah}:${ref.start_ayah}`, ref.rub_number);
+      }
+    }
+    return map;
+  }, [rubReferenceList]);
+
+  const homeworkItems = React.useMemo(() => {
+    const items: { assignmentId: string; rubNumber: number; juz: number }[] = [];
+    for (const a of homeworkAssignments) {
+      const rubNumber = reverseRubMap.get(`${a.surah_number}:${a.from_ayah}`);
+      if (!rubNumber) continue;
+      items.push({ assignmentId: a.id, rubNumber, juz: Math.ceil(rubNumber / 8) });
+    }
+    return items;
+  }, [homeworkAssignments, reverseRubMap]);
 
   // Undo state
   const [undoInfo, setUndoInfo] = useState<{ certId: string; rubNumber: number } | null>(null);
@@ -251,6 +280,40 @@ export default function TeacherStudentDetailScreen() {
                   icon={<Ionicons name="add-circle-outline" size={16} color={theme.primary} />}
                 />
               </View>
+            </Card>
+          </>
+        )}
+
+        {/* Revision Homework */}
+        {homeworkItems.length > 0 && (
+          <>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>{t('student.revision.revisionHomework')}</Text>
+              <Badge label={String(homeworkItems.length)} variant="warning" />
+            </View>
+            <Card variant="default" style={styles.homeworkCard}>
+              {homeworkItems.map((item) => (
+                <View key={item.assignmentId} style={styles.homeworkRow}>
+                  <View style={styles.homeworkInfo}>
+                    <Text style={styles.homeworkTitle}>
+                      {t('gamification.rub')} {item.rubNumber} {'\u00B7'} {t('gamification.juz')} {item.juz}
+                    </Text>
+                  </View>
+                  <Pressable
+                    style={({ pressed }) => [styles.homeworkAction, pressed && { opacity: 0.7 }]}
+                    onPress={() => {
+                      completeHomework.mutate(item.assignmentId, {
+                        onSuccess: () => {
+                          Alert.alert('', t('student.revision.homeworkCompleted'));
+                        },
+                      });
+                    }}
+                  >
+                    <Ionicons name="checkmark-circle" size={20} color={colors.semantic.success} />
+                    <Text style={styles.homeworkActionText}>{t('student.revision.markRecited')}</Text>
+                  </Pressable>
+                </View>
+              ))}
             </Card>
           </>
         )}
@@ -563,6 +626,38 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.bold,
     fontSize: normalize(13),
     color: colors.white,
+  },
+  homeworkCard: {
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  homeworkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.xs,
+  },
+  homeworkInfo: {
+    flex: 1,
+  },
+  homeworkTitle: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(14),
+    color: colors.neutral[800],
+  },
+  homeworkAction: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(4),
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: colors.semantic.success + '15',
+    borderRadius: radius.sm,
+  },
+  homeworkActionText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(12),
+    color: colors.semantic.success,
   },
   emptyCard: {
     padding: spacing.xl,
