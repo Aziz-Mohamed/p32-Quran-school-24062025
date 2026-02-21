@@ -154,6 +154,29 @@ export default function RevisionHealthScreen() {
     return keys;
   }, [pendingAssignments]);
 
+  // Reverse map: surah:fromAyah → rub_number (for displaying plan items as rubʿ)
+  const reverseRubMap = useMemo(() => {
+    const map = new Map<string, number>();
+    if (rubReferenceList) {
+      for (const ref of rubReferenceList) {
+        map.set(`${ref.start_surah}:${ref.start_ayah}`, ref.rub_number);
+      }
+    }
+    return map;
+  }, [rubReferenceList]);
+
+  // Revision homework: all pending old_review assignments mapped to rubʿ numbers
+  const homeworkItems = useMemo(() => {
+    if (!pendingAssignments) return [];
+    const items: { assignmentId: string; rubNumber: number; juz: number }[] = [];
+    for (const a of pendingAssignments) {
+      const rubNumber = reverseRubMap.get(`${a.surah_number}:${a.from_ayah}`);
+      if (!rubNumber) continue;
+      items.push({ assignmentId: a.id, rubNumber, juz: Math.ceil(rubNumber / 8) });
+    }
+    return items;
+  }, [pendingAssignments, reverseRubMap]);
+
   const [viewMode, setViewMode] = useState<ViewMode>('rub');
   const [selectedCert, setSelectedCert] = useState<EnrichedCertification | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -427,6 +450,41 @@ export default function RevisionHealthScreen() {
               {/* Revision Warning */}
               <RevisionWarning count={criticalCount} />
 
+              {/* Revision Plan — pending old_review assignments due today, shown as rubʿ */}
+              {homeworkItems.length > 0 && (
+                <Card variant="default" style={styles.planCard}>
+                  <View style={styles.planHeader}>
+                    <Ionicons name="book-outline" size={18} color={colors.primary[500]} />
+                    <Text style={styles.planTitle}>{t('student.revision.plannedItems')}</Text>
+                    <View style={styles.planBadge}>
+                      <Text style={styles.planBadgeText}>{homeworkItems.length}</Text>
+                    </View>
+                  </View>
+                  {homeworkItems.map((item) => {
+                    const cert = enriched.find((c) => c.rub_number === item.rubNumber);
+                    const dotColor = cert
+                      ? (FRESHNESS_DOT_COLORS[cert.freshness.state] ?? colors.primary[400])
+                      : colors.primary[400];
+
+                    return (
+                      <Pressable
+                        key={item.assignmentId}
+                        style={({ pressed }) => [styles.planRow, pressed && styles.rubRowPressed]}
+                        onPress={() => {
+                          if (cert) handleCertPress(cert);
+                        }}
+                      >
+                        <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
+                        <Text style={[styles.rubTitle, { flex: 1 }]} numberOfLines={1}>
+                          {t('gamification.rub')} {item.rubNumber} {'\u00B7'} {t('gamification.juz')} {item.juz}
+                        </Text>
+                        <Ionicons name={chevron as any} size={16} color={colors.neutral[300]} />
+                      </Pressable>
+                    );
+                  })}
+                </Card>
+              )}
+
               {/* All-fresh success state */}
               {needsAttentionCount === 0 && enriched.length > 0 && (
                 <Card variant="outlined" style={styles.allFreshCard}>
@@ -495,15 +553,6 @@ export default function RevisionHealthScreen() {
                 <Ionicons name="map" size={16} color={colors.accent.violet[500]} />
                 <Text style={[styles.pillText, { color: colors.accent.violet[600] }]}>
                   {t('student.revision.fullMap')}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={[styles.pill, { backgroundColor: colors.accent.indigo[50] }]}
-                onPress={() => router.push('/(student)/(tabs)/memorization')}
-              >
-                <Ionicons name="book" size={16} color={colors.accent.indigo[500]} />
-                <Text style={[styles.pillText, { color: colors.accent.indigo[600] }]}>
-                  {t('student.revision.todaysPlan')}
                 </Text>
               </Pressable>
             </View>
@@ -857,6 +906,45 @@ const styles = StyleSheet.create({
     fontSize: normalize(12),
     color: colors.neutral[500],
     marginTop: normalize(2),
+  },
+
+  // Today's Plan
+  planCard: {
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  planHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  planTitle: {
+    flex: 1,
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(14),
+    color: colors.neutral[800],
+  },
+  planBadge: {
+    backgroundColor: colors.primary[100],
+    paddingHorizontal: spacing.sm,
+    paddingVertical: normalize(2),
+    borderRadius: radius.full,
+    minWidth: normalize(24),
+    alignItems: 'center',
+  },
+  planBadgeText: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(11),
+    color: colors.primary[600],
+  },
+  planRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.neutral[100],
   },
 
   // Section Headers

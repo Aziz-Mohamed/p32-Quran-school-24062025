@@ -53,6 +53,18 @@ class AssignmentService {
       .single();
   }
 
+  async completeRevisionHomework(assignmentId: string) {
+    return supabase
+      .from('memorization_assignments')
+      .update({
+        status: 'completed',
+        completed_at: new Date().toISOString(),
+      })
+      .eq('id', assignmentId)
+      .select()
+      .single();
+  }
+
   async cancelAssignment(assignmentId: string) {
     return supabase
       .from('memorization_assignments')

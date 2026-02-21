@@ -187,18 +187,24 @@
       "noCertifications": "No rubʿ certified yet",
       "noCertificationsDesc": "Rubʿ will appear here once your teacher certifies your memorization",
       "fullMap": "Full Map",
-      "todaysPlan": "Today's Plan",
+      "todaysPlan": "Revision Homework",
       "viewMode": {
         "rub": "Rubʿ",
         "hizb": "Hizb",
         "juz": "Juz"
       },
-      "addAllToPlan": "Add all to revision plan",
+      "addAllToPlan": "Add all to revision homework",
       "addingToPlan": "Adding...",
+      "revisionHomework": "Revision Homework",
+      "noHomework": "No pending revision homework",
+      "markRecited": "Mark as recited",
+      "homeworkCompleted": "Marked as recited",
       "itemsNeedRevision": "{{count}} need revision",
-      "batchAddedToPlan": "{{count}} rubʿ added to plan",
+      "batchAddedToPlan": "{{count}} rubʿ added to homework",
       "certifiedRub": "Certified rubʿ",
-      "needRevision": "Need revision"
+      "needRevision": "Need revision",
+      "plannedItems": "Revision Homework",
+      "plannedItemsCount": "{{count}} items"
     },
     "dashboard": {
       "title": "Student Dashboard",
@@ -1087,10 +1093,10 @@
       "lastReviewed": "Last Revision",
       "daysAgo": "{{count}} days ago",
       "neverReviewed": "Never",
-      "addToPlan": "Add to My Revision Plan",
-      "addToPlanDesc": "Adds to your memorization schedule",
-      "alreadyInPlan": "Already in your revision plan",
-      "addedToPlan": "Added to revision plan!",
+      "addToPlan": "Add to Revision Homework",
+      "addToPlanDesc": "Adds to your revision homework",
+      "alreadyInPlan": "Already in your homework",
+      "addedToPlan": "Added to homework!",
       "askTeacher": "Ask your teacher",
       "askTeacherDesc": "Ask your teacher to add this to your revision",
       "needsRecertNote": "This rubʿ needs re-certification by your teacher"

@@ -21,7 +21,7 @@ export { revisionScheduleService } from './services/revision-schedule.service';
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 export { useCreateRecitation, useCreateRecitations, useRecitations, useSessionRecitations } from './hooks/useRecitations';
 export { useMemorizationProgress, useUpsertProgress } from './hooks/useMemorizationProgress';
-export { useCreateAssignment, useAssignments, useCompleteAssignment, useCancelAssignment } from './hooks/useAssignments';
+export { useCreateAssignment, useAssignments, useCompleteAssignment, useCompleteRevisionHomework, useCancelAssignment } from './hooks/useAssignments';
 export { useRevisionSchedule } from './hooks/useRevisionSchedule';
 export { useMemorizationStats } from './hooks/useMemorizationStats';
 
