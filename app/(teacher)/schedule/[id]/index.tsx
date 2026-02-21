@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View, Text, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -13,6 +13,8 @@ import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateSessionStatus } from '@/features/scheduling/hooks/useScheduledSessions';
 import { scheduledSessionService } from '@/features/scheduling/services/scheduled-session.service';
+import { SessionRecitationPlanList } from '@/features/scheduling/components/SessionRecitationPlanList';
+import { useStudents } from '@/features/students/hooks/useStudents';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -24,7 +26,7 @@ export default function SessionDetailScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { schoolId } = useAuth();
+  const { profile, schoolId } = useAuth();
 
   const { data: session, isLoading, error, refetch } = useQuery({
     queryKey: ['scheduled-session', id],
@@ -37,6 +39,30 @@ export default function SessionDetailScreen() {
     },
     enabled: !!id && !!schoolId,
   });
+
+  // Fetch students for class sessions
+  const isClassSession = session?.session_type === 'class';
+  const classStudentFilters = isClassSession && session?.class_id
+    ? { classId: session.class_id }
+    : undefined;
+  const { data: classStudents = [] } = useStudents(classStudentFilters);
+
+  const studentList = useMemo(() => {
+    if (!session) return [];
+    if (isClassSession) {
+      return classStudents.map((s: any) => ({
+        id: s.id,
+        name: s.profiles?.full_name ?? '—',
+      }));
+    }
+    if (session.student_id) {
+      return [{
+        id: session.student_id,
+        name: (session as any).student?.profiles?.full_name ?? '—',
+      }];
+    }
+    return [];
+  }, [session, isClassSession, classStudents]);
 
   const updateStatus = useUpdateSessionStatus();
 
@@ -128,6 +154,19 @@ export default function SessionDetailScreen() {
             />
           )}
         </Card>
+
+        {/* Recitation Plans */}
+        {profile?.id && schoolId && session.status !== 'cancelled' && (
+          <SessionRecitationPlanList
+            sessionId={id!}
+            schoolId={schoolId}
+            userId={profile.id}
+            sessionDate={session.session_date}
+            role="teacher"
+            isClassSession={!!isClassSession}
+            students={studentList.length > 0 ? studentList : undefined}
+          />
+        )}
 
         {/* Actions */}
         <View style={styles.actions}>
