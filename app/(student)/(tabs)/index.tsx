@@ -119,6 +119,19 @@ export default function StudentDashboard() {
   const todayStr = new Date().toISOString().split('T')[0];
   const { data: revisionSchedule = [] } = useRevisionSchedule(profile?.id, todayStr);
 
+  const homeworkRubSet = useMemo(
+    () => new Set(homeworkItems.map((h) => h.rubNumber)),
+    [homeworkItems],
+  );
+
+  const effectiveCriticalCount = useMemo(
+    () => enriched.filter(
+      (c) => (c.freshness.state === 'critical' || c.freshness.state === 'warning')
+        && !homeworkRubSet.has(c.rub_number),
+    ).length,
+    [enriched, homeworkRubSet],
+  );
+
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
 
@@ -133,19 +146,6 @@ export default function StudentDashboard() {
   const totalItems = filteredSchedule.length;
   const previewItems = filteredSchedule.slice(0, MAX_PREVIEW_ITEMS);
   const hasMore = totalItems > MAX_PREVIEW_ITEMS;
-  const homeworkRubSet = useMemo(
-    () => new Set(homeworkItems.map((h) => h.rubNumber)),
-    [homeworkItems],
-  );
-
-  const effectiveCriticalCount = useMemo(
-    () => enriched.filter(
-      (c) => (c.freshness.state === 'critical' || c.freshness.state === 'warning')
-        && !homeworkRubSet.has(c.rub_number),
-    ).length,
-    [enriched, homeworkRubSet],
-  );
-
   const hasWarning = effectiveCriticalCount > 0;
 
   return (

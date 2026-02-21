@@ -170,7 +170,8 @@ export default function RevisionHealthScreen() {
       const rest: EnrichedCertification[] = [];
 
       for (const cert of enriched) {
-        if (cert.freshness.state === 'warning' || cert.freshness.state === 'critical') {
+        const needsAttention = cert.freshness.state === 'warning' || cert.freshness.state === 'critical';
+        if (needsAttention && !homeworkRubSet.has(cert.rub_number)) {
           attention.push(cert);
         } else {
           rest.push(cert);
@@ -220,7 +221,8 @@ export default function RevisionHealthScreen() {
 
       const worstState = getWorstState(children);
       const needsRevisionCount = children.filter(
-        (c) => c.freshness.state === 'warning' || c.freshness.state === 'critical',
+        (c) => (c.freshness.state === 'warning' || c.freshness.state === 'critical')
+          && !homeworkRubSet.has(c.rub_number),
       ).length;
 
       const group: CertGroup = {
@@ -259,7 +261,7 @@ export default function RevisionHealthScreen() {
       });
     }
     return result;
-  }, [enriched, viewMode, collapsedSections, t]);
+  }, [enriched, viewMode, collapsedSections, homeworkRubSet, t]);
 
   const handleCertPress = (cert: EnrichedCertification) => {
     setSelectedCert(cert);
@@ -347,7 +349,8 @@ export default function RevisionHealthScreen() {
 
   const chevron = I18nManager.isRTL ? 'chevron-back' : 'chevron-forward';
   const needsAttentionCount = enriched.filter(
-    (c) => c.freshness.state === 'warning' || c.freshness.state === 'critical',
+    (c) => (c.freshness.state === 'warning' || c.freshness.state === 'critical')
+      && !homeworkRubSet.has(c.rub_number),
   ).length;
 
   const freshCount = healthCounts.fresh ?? 0;
@@ -479,7 +482,7 @@ export default function RevisionHealthScreen() {
                           onPress={() => handleRemoveHomework(item.assignmentId)}
                           hitSlop={8}
                         >
-                          <Ionicons name="close" size={16} color={colors.neutral[400]} />
+                          <Ionicons name="close-circle" size={20} color={colors.neutral[300]} />
                         </Pressable>
                       </View>
                     );
