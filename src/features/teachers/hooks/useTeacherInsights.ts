@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 
 /**
  * Hook to fetch top performing students in a teacher's classes.
- * Ranked by total_points descending.
+ * Ranked by current_level descending.
  */
 export function useTopPerformers(teacherId: string | undefined) {
   return useQuery({
@@ -16,7 +16,7 @@ export function useTopPerformers(teacherId: string | undefined) {
         )
         .eq('classes.teacher_id', teacherId!)
         .eq('is_active', true)
-        .order('total_points', { ascending: false })
+        .order('current_level', { ascending: false })
         .limit(20);
       if (error) throw error;
       return data ?? [];
@@ -27,7 +27,7 @@ export function useTopPerformers(teacherId: string | undefined) {
 
 /**
  * Hook to fetch students in a teacher's classes who may need support.
- * Returns students with lowest total_points or zero streak.
+ * Returns students with lowest current_level or zero streak.
  */
 export function useNeedsSupport(teacherId: string | undefined) {
   return useQuery({
@@ -40,7 +40,7 @@ export function useNeedsSupport(teacherId: string | undefined) {
         )
         .eq('classes.teacher_id', teacherId!)
         .eq('is_active', true)
-        .order('total_points', { ascending: true })
+        .order('current_level', { ascending: true })
         .limit(20);
       if (error) throw error;
       return data ?? [];

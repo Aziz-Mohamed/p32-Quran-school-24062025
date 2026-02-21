@@ -22,7 +22,7 @@ class GamificationService {
     return supabase
       .from('student_stickers')
       .select(
-        '*, stickers(id, name_ar, name_en, tier, image_path, points_value), profiles!student_stickers_awarded_by_fkey(full_name)',
+        '*, stickers(id, name_ar, name_en, tier, image_path), profiles!student_stickers_awarded_by_fkey(full_name)',
       )
       .eq('student_id', studentId)
       .order('awarded_at', { ascending: false });
@@ -30,7 +30,6 @@ class GamificationService {
 
   /**
    * GS-003: Award a sticker to a student.
-   * The DB trigger handle_sticker_points will auto-add points.
    */
   async awardSticker(input: {
     studentId: string;
@@ -72,20 +71,9 @@ class GamificationService {
   }
 
   /**
-   * GS-004: Get class leaderboard ranked by total_points.
-   * Supports 'all-time' period. Weekly period requires a dedicated RPC
-   * function to filter by date range -- falls back to all-time for now.
+   * GS-004: Get class leaderboard ranked by current_level (rubʿ-based).
    */
-  async getLeaderboard(classId: string, period: 'weekly' | 'all-time') {
-    // TODO: 'weekly' period requires an RPC that sums points earned within
-    // the last 7 days. Until that RPC exists, both periods return all-time.
-    if (period === 'weekly') {
-      // Placeholder: weekly leaderboard needs a server-side RPC like
-      // get_weekly_leaderboard(class_id UUID, since TIMESTAMPTZ)
-      // that aggregates student_stickers.points + achievement points
-      // earned after `since`. For now, fall through to all-time.
-    }
-
+  async getLeaderboard(classId: string) {
     return supabase
       .from('students')
       .select(
@@ -93,7 +81,7 @@ class GamificationService {
       )
       .eq('class_id', classId)
       .eq('is_active', true)
-      .order('total_points', { ascending: false })
+      .order('current_level', { ascending: false })
       .limit(10);
   }
 

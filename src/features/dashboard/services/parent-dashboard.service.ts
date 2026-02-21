@@ -12,7 +12,6 @@ const DEFAULT_STATS: ParentAggregateStats = {
   absentToday: 0,
   notMarkedToday: 0,
   averageAttendanceRate: -1,
-  totalPoints: 0,
   totalStickers: 0,
   totalStreakDays: 0,
 };
@@ -110,7 +109,6 @@ class ParentDashboardService {
         currentLevel: child.current_level ?? 0,
         todayStatus: (todayMap.get(child.id) as ChildQuickStatus['todayStatus']) ?? null,
         attendanceRate: rate,
-        totalPoints: child.total_points ?? 0,
         currentStreak: child.current_streak ?? 0,
       };
     });
@@ -133,7 +131,6 @@ class ParentDashboardService {
       absentToday,
       notMarkedToday: childrenStatus.length - presentToday - absentToday,
       averageAttendanceRate: avgRate,
-      totalPoints: childrenStatus.reduce((sum, c) => sum + c.totalPoints, 0),
       totalStickers: stickerCountRes.count ?? 0,
       totalStreakDays: childrenStatus.reduce((sum, c) => sum + c.currentStreak, 0),
     };

@@ -53,16 +53,16 @@ class ChildrenService {
   async getClassStanding(studentId: string, classId: string) {
     const { data, error } = await supabase
       .from('students')
-      .select('id, total_points')
+      .select('id, current_level')
       .eq('class_id', classId)
       .eq('is_active', true)
-      .order('total_points', { ascending: false });
+      .order('current_level', { ascending: false });
 
     if (error) return { data: null, error };
 
     const standings = (data ?? []).map((s, index) => ({
       rank: index + 1,
-      points: s.total_points,
+      level: s.current_level,
       isCurrentStudent: s.id === studentId,
     }));
 

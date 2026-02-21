@@ -110,7 +110,7 @@ class ParentReportsService {
     const [studentData, stickerCount, certCount] = await Promise.all([
       supabase
         .from('students')
-        .select('total_points, current_level, current_streak, longest_streak')
+        .select('current_level, current_streak, longest_streak')
         .eq('id', studentId)
         .single(),
       supabase
@@ -133,7 +133,6 @@ class ParentReportsService {
       currentLevel: student.current_level ?? 0,
       currentStreak: student.current_streak,
       longestStreak: student.longest_streak,
-      totalPoints: student.total_points,
       activeCertifications: certCount.count ?? 0,
     };
   }
