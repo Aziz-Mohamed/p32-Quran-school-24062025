@@ -41,9 +41,13 @@ export function MemorizationRow({ item, onPress, style }: MemorizationRowProps) 
   const { t } = useTranslation();
 
   const surah = SURAHS[item.surah_number - 1];
+  const isRTL = I18nManager.isRTL;
+  const surahName = surah
+    ? (isRTL ? surah.nameArabic : surah.nameEnglish)
+    : `Surah ${item.surah_number}`;
   const dotColor = STATUS_DOT_COLORS[item.status] ?? colors.neutral[400];
   const bgColor = STATUS_BG_COLORS[item.status] ?? colors.neutral[50];
-  const chevron = I18nManager.isRTL ? 'chevron-back' : 'chevron-forward';
+  const chevron = isRTL ? 'chevron-back' : 'chevron-forward';
 
   return (
     <Pressable
@@ -53,7 +57,7 @@ export function MemorizationRow({ item, onPress, style }: MemorizationRowProps) 
       <View style={[styles.dot, { backgroundColor: dotColor }]} />
       <View style={styles.info}>
         <Text style={styles.title} numberOfLines={1}>
-          {surah?.nameArabic ?? `Surah ${item.surah_number}`}
+          {surahName}
           {' \u00B7 '}
           {t('memorization.ayahRange', { from: item.from_ayah, to: item.to_ayah })}
         </Text>

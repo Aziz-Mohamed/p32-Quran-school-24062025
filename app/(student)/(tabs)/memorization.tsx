@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { StyleSheet, View, Text, Pressable } from 'react-native';
+import { I18nManager, StyleSheet, View, Text, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -33,6 +33,7 @@ export default function MemorizationScreen() {
     studentId: profile?.id ?? '',
   });
 
+  const isRTL = I18nManager.isRTL;
   const [practiceCollapsed, setPracticeCollapsed] = useState(false);
 
   // Split schedule into new_hifz (prominent) and recent_review (compact)
@@ -101,31 +102,42 @@ export default function MemorizationScreen() {
             {newHifzItems.map((item, index) => {
               const surah = SURAHS[item.surah_number - 1];
               const ayahCount = item.to_ayah - item.from_ayah + 1;
+              const primaryName = surah
+                ? (isRTL ? surah.nameArabic : surah.nameEnglish)
+                : `Surah ${item.surah_number}`;
+              const secondaryName = surah
+                ? (isRTL ? surah.nameEnglish : surah.nameArabic)
+                : undefined;
               return (
                 <Card
                   key={item.progress_id ?? `new-${item.surah_number}-${item.from_ayah}-${index}`}
                   variant="default"
                   style={styles.newHifzCard}
                 >
-                  <View style={styles.newHifzAccent} />
                   <View style={styles.newHifzContent}>
-                    <Text style={styles.newHifzSurah}>
-                      {surah?.nameArabic ?? `Surah ${item.surah_number}`}
-                    </Text>
-                    <Text style={styles.newHifzEnglish}>
-                      {surah?.nameEnglish}
-                    </Text>
+                    <View style={styles.newHifzNameRow}>
+                      <Text style={isRTL ? styles.newHifzSurahArabic : styles.newHifzSurah}>
+                        {primaryName}
+                      </Text>
+                      {secondaryName && (
+                        <Text style={styles.newHifzSecondary}>
+                          {secondaryName}
+                        </Text>
+                      )}
+                    </View>
                     <Text style={styles.newHifzRange}>
                       {t('memorization.ayahRange', { from: item.from_ayah, to: item.to_ayah })}
                       {'  ·  '}
                       {t('memorization.newAyahCount', { count: ayahCount })}
                     </Text>
                   </View>
-                  <Ionicons
-                    name="book-outline"
-                    size={20}
-                    color={colors.accent.indigo[500]}
-                  />
+                  <View style={styles.newHifzIconCircle}>
+                    <Ionicons
+                      name="book-outline"
+                      size={18}
+                      color={colors.accent.indigo[600]}
+                    />
+                  </View>
                 </Card>
               );
             })}
@@ -177,8 +189,8 @@ export default function MemorizationScreen() {
               {surahsWithProgress.map((surah) => (
                 <View key={surah.number} style={styles.journeyRow}>
                   <Text style={styles.journeyNum}>{surah.number}</Text>
-                  <Text style={styles.journeyName} numberOfLines={1}>
-                    {surah.nameArabic}
+                  <Text style={isRTL ? styles.journeyNameArabic : styles.journeyName} numberOfLines={1}>
+                    {isRTL ? surah.nameArabic : surah.nameEnglish}
                   </Text>
                   <View style={styles.journeyBarContainer}>
                     <ProgressBar
@@ -232,37 +244,47 @@ const styles = StyleSheet.create({
   newHifzCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: colors.accent.indigo[50],
     padding: spacing.md,
-    paddingLeft: 0,
     marginBottom: spacing.sm,
-    overflow: 'hidden',
-  },
-  newHifzAccent: {
-    width: normalize(4),
-    alignSelf: 'stretch',
-    backgroundColor: colors.accent.indigo[500],
-    borderRadius: radius.xs,
-    marginRight: spacing.md,
   },
   newHifzContent: {
     flex: 1,
     gap: normalize(2),
   },
+  newHifzNameRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: spacing.sm,
+  },
   newHifzSurah: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(17),
+    color: lightTheme.text,
+  },
+  newHifzSurahArabic: {
     fontFamily: typography.fontFamily.arabicBold,
     fontSize: normalize(18),
     color: lightTheme.text,
   },
-  newHifzEnglish: {
+  newHifzSecondary: {
     fontFamily: typography.fontFamily.regular,
     fontSize: normalize(12),
-    color: lightTheme.textSecondary,
+    color: colors.neutral[500],
   },
   newHifzRange: {
     fontFamily: typography.fontFamily.medium,
     fontSize: normalize(13),
     color: colors.accent.indigo[600],
     marginTop: spacing.xs,
+  },
+  newHifzIconCircle: {
+    width: normalize(36),
+    height: normalize(36),
+    borderRadius: normalize(18),
+    backgroundColor: colors.accent.indigo[100],
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
   // Journey Section — COMPACT
@@ -290,6 +312,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   journeyName: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(12),
+    color: lightTheme.text,
+    width: normalize(80),
+  },
+  journeyNameArabic: {
     fontFamily: typography.fontFamily.arabicBold,
     fontSize: normalize(13),
     color: lightTheme.text,
