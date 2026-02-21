@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { gamificationService } from '../services/gamification.service';
 import { getDecayInterval } from '../utils/freshness';
 
-interface RevisionInput {
+export interface RevisionInput {
   certificationId: string;
   studentId: string;
   reviewCount: number;
@@ -83,5 +83,55 @@ export const useRecordRevision = () => {
     },
   });
 
-  return { goodRevision, poorRevision, recertify };
+  const batchGoodRevision = useMutation({
+    mutationKey: ['batch-good-revision'],
+    mutationFn: async (inputs: RevisionInput[]) => {
+      const results = await Promise.all(
+        inputs.map((input) => {
+          const dormantDays = input.dormantSince
+            ? (Date.now() - Date.parse(input.dormantSince)) / (24 * 60 * 60 * 1000)
+            : 0;
+          const resetReviewCount = dormantDays >= 30 && dormantDays < 90;
+          return gamificationService.recordGoodRevision(
+            input.certificationId,
+            resetReviewCount,
+          );
+        }),
+      );
+      return results;
+    },
+    onSuccess: (_data, variables) => {
+      // Invalidate once for the batch
+      const studentId = variables[0]?.studentId;
+      if (studentId) {
+        queryClient.invalidateQueries({ queryKey: ['rub-certifications', studentId] });
+        queryClient.invalidateQueries({ queryKey: ['student-dashboard', studentId] });
+      }
+    },
+  });
+
+  const batchPoorRevision = useMutation({
+    mutationKey: ['batch-poor-revision'],
+    mutationFn: async (inputs: RevisionInput[]) => {
+      const results = await Promise.all(
+        inputs.map((input) => {
+          const intervalDays = getDecayInterval(input.reviewCount);
+          return gamificationService.recordPoorRevision(
+            input.certificationId,
+            intervalDays,
+          );
+        }),
+      );
+      return results;
+    },
+    onSuccess: (_data, variables) => {
+      const studentId = variables[0]?.studentId;
+      if (studentId) {
+        queryClient.invalidateQueries({ queryKey: ['rub-certifications', studentId] });
+        queryClient.invalidateQueries({ queryKey: ['student-dashboard', studentId] });
+      }
+    },
+  });
+
+  return { goodRevision, poorRevision, recertify, batchGoodRevision, batchPoorRevision };
 };

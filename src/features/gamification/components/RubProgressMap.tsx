@@ -23,6 +23,7 @@ interface RubProgressMapProps {
   mode: 'interactive' | 'readonly';
   onCertify?: (rubNumber: number) => void;
   onCertifiedRubPress?: (certification: EnrichedCertification) => void;
+  onJuzAction?: (juzNumber: number, action: 'good' | 'poor') => void;
 }
 
 interface JuzGroup {
@@ -35,6 +36,7 @@ export function RubProgressMap({
   mode,
   onCertify,
   onCertifiedRubPress,
+  onJuzAction,
 }: RubProgressMapProps) {
   const { t } = useTranslation();
   const { data: rubReference = [], isLoading: refLoading, error: refError } = useRubReference();
@@ -147,6 +149,7 @@ export function RubProgressMap({
             juzNumber={item.juzNumber}
             items={item.items}
             onRubPress={mode === 'interactive' ? handleRubPress : undefined}
+            onJuzAction={mode === 'interactive' ? onJuzAction : undefined}
           />
         )}
         estimatedItemSize={56}

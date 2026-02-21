@@ -187,7 +187,16 @@
       "noCertifications": "لا يوجد ربع مُجاز بعد",
       "noCertificationsDesc": "ستظهر الأرباع هنا بعد أن يُجيز معلّمك حفظك",
       "fullMap": "الخريطة الكاملة",
-      "todaysPlan": "خطة اليوم"
+      "todaysPlan": "خطة اليوم",
+      "viewMode": {
+        "rub": "ربع",
+        "hizb": "حزب",
+        "juz": "جزء"
+      },
+      "addAllToPlan": "إضافة الكل لخطة المراجعة",
+      "addingToPlan": "جارٍ الإضافة...",
+      "itemsNeedRevision": "{{count}} تحتاج مراجعة",
+      "batchAddedToPlan": "تمت إضافة {{count}} ربع للخطة"
     },
     "dashboard": {
       "title": "لوحة الطالب",
@@ -1065,6 +1074,10 @@
       "poorDesc": "الطالب يحتاج مزيداً من التمرين — تُعاد النضارة إلى 50%",
       "recertify": "إعادة إجازة",
       "recertifyDesc": "خامل لأكثر من 90 يوماً — يتطلب إعادة إجازة كاملة",
+      "markJuzGood": "تقييم الجزء جيد",
+      "markJuzPoor": "تقييم الجزء ضعيف",
+      "batchConfirm": "تقييم كل {{count}} ربع في الجزء {{juz}} كـ{{action}}؟",
+      "batchSuccess": "تم تقييم {{count}} ربع بنجاح",
       "certifiedOn": "تاريخ الإجازة",
       "certifiedBy": "المعلّم",
       "timesReviewed": "المراجعات",

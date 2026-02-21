@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Alert, I18nManager, Pressable, SectionList, StyleSheet, View, Text } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, I18nManager, Pressable, SectionList, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -17,7 +17,7 @@ import {
   RevisionWarning,
   RevisionSheet,
 } from '@/features/gamification';
-import type { EnrichedCertification, RubReference } from '@/features/gamification';
+import type { EnrichedCertification, RubReference, FreshnessState } from '@/features/gamification';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { assignmentService } from '@/features/memorization/services/assignment.service';
 import { useQuery } from '@tanstack/react-query';
@@ -26,6 +26,26 @@ import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+
+type ViewMode = 'rub' | 'hizb' | 'juz';
+
+interface CertGroup {
+  _type: 'group';
+  id: string;
+  groupNumber: number;
+  juzNumber: number;
+  children: EnrichedCertification[];
+  worstState: FreshnessState;
+  needsRevisionCount: number;
+}
+
+type SectionItem = EnrichedCertification | CertGroup;
+
+function isGroup(item: SectionItem): item is CertGroup {
+  return '_type' in item && item._type === 'group';
+}
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -44,6 +64,29 @@ const FRESHNESS_BG_COLORS: Record<string, string> = {
   critical: '#FEE2E2',
   dormant: '#F3F4F6',
 };
+
+const STATE_PRIORITY: Record<string, number> = {
+  fresh: 1,
+  fading: 2,
+  dormant: 3,
+  warning: 4,
+  critical: 5,
+};
+
+const VIEW_MODES: ViewMode[] = ['rub', 'hizb', 'juz'];
+
+function getWorstState(children: EnrichedCertification[]): FreshnessState {
+  let worst: FreshnessState = 'fresh';
+  let worstPriority = 0;
+  for (const c of children) {
+    const p = STATE_PRIORITY[c.freshness.state] ?? 0;
+    if (p > worstPriority) {
+      worstPriority = p;
+      worst = c.freshness.state;
+    }
+  }
+  return worst;
+}
 
 // ─── Revision Health Screen ───────────────────────────────────────────────────
 
@@ -111,49 +154,131 @@ export default function RevisionHealthScreen() {
     return keys;
   }, [pendingAssignments]);
 
+  const [viewMode, setViewMode] = useState<ViewMode>('rub');
   const [selectedCert, setSelectedCert] = useState<EnrichedCertification | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
+  const [batchAdding, setBatchAdding] = useState(false);
 
-  // Group certifications into "needs attention" vs "all certified"
-  const { needsAttention, allCertified, healthCounts } = useMemo(() => {
-    const attention: EnrichedCertification[] = [];
-    const rest: EnrichedCertification[] = [];
+  // Health counts (always computed from raw enriched, regardless of view mode)
+  const healthCounts = useMemo(() => {
     const counts: Record<string, number> = {
-      fresh: 0,
-      fading: 0,
-      warning: 0,
-      critical: 0,
-      dormant: 0,
+      fresh: 0, fading: 0, warning: 0, critical: 0, dormant: 0,
     };
-
     for (const cert of enriched) {
       counts[cert.freshness.state] = (counts[cert.freshness.state] ?? 0) + 1;
+    }
+    return counts;
+  }, [enriched]);
 
-      if (cert.freshness.state === 'warning' || cert.freshness.state === 'critical') {
-        attention.push(cert);
+  // Build sections based on view mode
+  const sections = useMemo((): { title: string; data: SectionItem[]; key: string }[] => {
+    if (viewMode === 'rub') {
+      // Current behavior — individual rubʿ rows
+      const attention: EnrichedCertification[] = [];
+      const rest: EnrichedCertification[] = [];
+
+      for (const cert of enriched) {
+        if (cert.freshness.state === 'warning' || cert.freshness.state === 'critical') {
+          attention.push(cert);
+        } else {
+          rest.push(cert);
+        }
+      }
+
+      attention.sort((a, b) => a.freshness.daysUntilDormant - b.freshness.daysUntilDormant);
+      rest.sort((a, b) => a.freshness.percentage - b.freshness.percentage);
+
+      const result: { title: string; data: SectionItem[]; key: string }[] = [];
+      if (attention.length > 0) {
+        result.push({
+          title: `${t('student.revision.needsAttention')} (${attention.length})`,
+          data: attention,
+          key: 'attention',
+        });
+      }
+      if (rest.length > 0) {
+        result.push({
+          title: `${t('student.revision.allCertified')} (${rest.length})`,
+          data: rest,
+          key: 'certified',
+        });
+      }
+      return result;
+    }
+
+    // Group mode (hizb or juz)
+    const divisor = viewMode === 'hizb' ? 2 : 8;
+    const groupMap = new Map<number, EnrichedCertification[]>();
+
+    for (const cert of enriched) {
+      const groupNum = Math.ceil(cert.rub_number / divisor);
+      const existing = groupMap.get(groupNum);
+      if (existing) existing.push(cert);
+      else groupMap.set(groupNum, [cert]);
+    }
+
+    const attention: CertGroup[] = [];
+    const rest: CertGroup[] = [];
+
+    for (const [groupNumber, children] of groupMap) {
+      // For hizb: 4 hizbs per juz. For juz: groupNumber IS the juz number
+      const juzNumber = viewMode === 'juz'
+        ? groupNumber
+        : Math.ceil(groupNumber / 4);
+
+      const worstState = getWorstState(children);
+      const needsRevisionCount = children.filter(
+        (c) => c.freshness.state === 'warning' || c.freshness.state === 'critical',
+      ).length;
+
+      const group: CertGroup = {
+        _type: 'group',
+        id: `${viewMode}-${groupNumber}`,
+        groupNumber,
+        juzNumber,
+        children: children.sort((a, b) => a.rub_number - b.rub_number),
+        worstState,
+        needsRevisionCount,
+      };
+
+      if (needsRevisionCount > 0) {
+        attention.push(group);
       } else {
-        rest.push(cert);
+        rest.push(group);
       }
     }
 
-    // Sort attention by urgency (fewest days left first)
-    attention.sort((a, b) => a.freshness.daysUntilDormant - b.freshness.daysUntilDormant);
-    // Sort rest by freshness % ascending (weakest first)
-    rest.sort((a, b) => a.freshness.percentage - b.freshness.percentage);
+    attention.sort((a, b) => a.groupNumber - b.groupNumber);
+    rest.sort((a, b) => a.groupNumber - b.groupNumber);
 
-    return { needsAttention: attention, allCertified: rest, healthCounts: counts };
-  }, [enriched]);
+    const result: { title: string; data: SectionItem[]; key: string }[] = [];
+    if (attention.length > 0) {
+      result.push({
+        title: `${t('student.revision.needsAttention')} (${attention.length})`,
+        data: attention,
+        key: 'attention',
+      });
+    }
+    if (rest.length > 0) {
+      result.push({
+        title: `${t('student.revision.allCertified')} (${rest.length})`,
+        data: rest,
+        key: 'certified',
+      });
+    }
+    return result;
+  }, [enriched, viewMode, t]);
 
   const handleCertPress = (cert: EnrichedCertification) => {
     setSelectedCert(cert);
     setSheetVisible(true);
   };
 
-  const isAlreadyInPlan = (cert: EnrichedCertification): boolean => {
+  const isAlreadyInPlan = useCallback((cert: EnrichedCertification): boolean => {
     const ref = rubReferenceMap.get(cert.rub_number);
     if (!ref) return false;
     return pendingKeys.has(`${ref.start_surah}:${ref.start_ayah}`);
-  };
+  }, [rubReferenceMap, pendingKeys]);
 
   const handleAddToPlan = () => {
     if (!selectedCert || !profile?.id || !schoolId) return;
@@ -172,6 +297,32 @@ export default function RevisionHealthScreen() {
     );
   };
 
+  const handleBatchAddToPlan = useCallback(async (children: EnrichedCertification[]) => {
+    if (!profile?.id || !schoolId || !canSelfAssign) return;
+
+    const eligible = children.filter((c) => {
+      if (c.freshness.state === 'fresh' || c.freshness.state === 'dormant') return false;
+      return !isAlreadyInPlan(c);
+    });
+
+    if (eligible.length === 0) return;
+
+    setBatchAdding(true);
+    try {
+      const promises = eligible.map((cert) => {
+        const ref = rubReferenceMap.get(cert.rub_number);
+        if (!ref) return Promise.resolve();
+        return requestRevision.mutateAsync({ studentId: profile.id!, schoolId, reference: ref });
+      });
+      await Promise.all(promises);
+      Alert.alert('', t('student.revision.batchAddedToPlan', { count: eligible.length }));
+    } catch {
+      // Individual failures handled by TanStack Query
+    } finally {
+      setBatchAdding(false);
+    }
+  }, [profile?.id, schoolId, canSelfAssign, isAlreadyInPlan, rubReferenceMap, requestRevision, t]);
+
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
 
@@ -189,25 +340,9 @@ export default function RevisionHealthScreen() {
   }
 
   const chevron = I18nManager.isRTL ? 'chevron-back' : 'chevron-forward';
-
-  // Build sections for SectionList
-  const sections: { title: string; data: EnrichedCertification[]; key: string }[] = [];
-
-  if (needsAttention.length > 0) {
-    sections.push({
-      title: `${t('student.revision.needsAttention')} (${needsAttention.length})`,
-      data: needsAttention,
-      key: 'attention',
-    });
-  }
-
-  if (allCertified.length > 0) {
-    sections.push({
-      title: `${t('student.revision.allCertified')} (${allCertified.length})`,
-      data: allCertified,
-      key: 'certified',
-    });
-  }
+  const needsAttentionCount = enriched.filter(
+    (c) => c.freshness.state === 'warning' || c.freshness.state === 'critical',
+  ).length;
 
   const freshCount = healthCounts.fresh ?? 0;
   const fadingCount = healthCounts.fading ?? 0;
@@ -224,20 +359,44 @@ export default function RevisionHealthScreen() {
 
         <SectionList
           sections={sections}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => isGroup(item) ? item.id : item.id}
           contentContainerStyle={styles.listContent}
           stickySectionHeadersEnabled={false}
           ListHeaderComponent={
             <>
+              {/* View Mode Segment Control */}
+              <View style={styles.segmentRow}>
+                {VIEW_MODES.map((mode) => {
+                  const isActive = viewMode === mode;
+                  return (
+                    <Pressable
+                      key={mode}
+                      style={[
+                        styles.segmentButton,
+                        isActive && styles.segmentButtonActive,
+                      ]}
+                      onPress={() => setViewMode(mode)}
+                    >
+                      <Text
+                        style={[
+                          styles.segmentText,
+                          isActive && styles.segmentTextActive,
+                        ]}
+                      >
+                        {t(`student.revision.viewMode.${mode}`)}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
               {/* Health Summary Card */}
               <Card variant="default" style={styles.healthCard}>
                 <View style={styles.healthRow}>
-                  {/* Left: Level ring placeholder */}
                   <View style={styles.healthLevel}>
                     <Text style={styles.healthLevelNumber}>{activeCount}</Text>
                     <Text style={styles.healthLevelTotal}>/240</Text>
                   </View>
-                  {/* Right: State breakdown */}
                   <View style={styles.healthBreakdown}>
                     {freshCount > 0 && (
                       <HealthLine color={FRESHNESS_DOT_COLORS.fresh} count={freshCount} label={t('gamification.freshness.fresh')} />
@@ -267,7 +426,7 @@ export default function RevisionHealthScreen() {
               <RevisionWarning count={criticalCount} />
 
               {/* All-fresh success state */}
-              {needsAttention.length === 0 && enriched.length > 0 && (
+              {needsAttentionCount === 0 && enriched.length > 0 && (
                 <Card variant="outlined" style={styles.allFreshCard}>
                   <Ionicons name="checkmark-circle" size={24} color={colors.primary[500]} />
                   <View style={styles.allFreshText}>
@@ -283,15 +442,32 @@ export default function RevisionHealthScreen() {
               <Text style={styles.sectionHeader}>{section.title}</Text>
             </View>
           )}
-          renderItem={({ item, section }) => (
-            <RubRow
-              cert={item}
-              showDaysLeft={section.key === 'attention'}
-              chevron={chevron}
-              onPress={() => handleCertPress(item)}
-              t={t}
-            />
-          )}
+          renderItem={({ item, section }) => {
+            if (isGroup(item)) {
+              return (
+                <GroupRow
+                  group={item}
+                  viewMode={viewMode}
+                  showDaysLeft={section.key === 'attention'}
+                  chevron={chevron}
+                  onCertPress={handleCertPress}
+                  onBatchAdd={canSelfAssign ? handleBatchAddToPlan : undefined}
+                  batchAdding={batchAdding}
+                  isAlreadyInPlan={isAlreadyInPlan}
+                  t={t}
+                />
+              );
+            }
+            return (
+              <RubRow
+                cert={item}
+                showDaysLeft={section.key === 'attention'}
+                chevron={chevron}
+                onPress={() => handleCertPress(item)}
+                t={t}
+              />
+            );
+          }}
           ListFooterComponent={
             <View style={styles.quickLinks}>
               <Pressable
@@ -354,12 +530,14 @@ function RubRow({
   chevron,
   onPress,
   t,
+  indented,
 }: {
   cert: EnrichedCertification;
   showDaysLeft: boolean;
   chevron: string;
   onPress: () => void;
   t: (key: string, opts?: any) => string;
+  indented?: boolean;
 }) {
   const juz = Math.ceil(cert.rub_number / 8);
   const dotColor = FRESHNESS_DOT_COLORS[cert.freshness.state] ?? colors.neutral[400];
@@ -367,7 +545,11 @@ function RubRow({
 
   return (
     <Pressable
-      style={({ pressed }) => [styles.rubRow, pressed && styles.rubRowPressed]}
+      style={({ pressed }) => [
+        styles.rubRow,
+        indented && styles.rubRowIndented,
+        pressed && styles.rubRowPressed,
+      ]}
       onPress={onPress}
     >
       <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
@@ -388,6 +570,119 @@ function RubRow({
   );
 }
 
+function GroupRow({
+  group,
+  viewMode,
+  showDaysLeft,
+  chevron,
+  onCertPress,
+  onBatchAdd,
+  batchAdding,
+  isAlreadyInPlan,
+  t,
+}: {
+  group: CertGroup;
+  viewMode: ViewMode;
+  showDaysLeft: boolean;
+  chevron: string;
+  onCertPress: (cert: EnrichedCertification) => void;
+  onBatchAdd?: (children: EnrichedCertification[]) => void;
+  batchAdding: boolean;
+  isAlreadyInPlan: (cert: EnrichedCertification) => boolean;
+  t: (key: string, opts?: any) => string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  const dotColor = FRESHNESS_DOT_COLORS[group.worstState] ?? colors.neutral[400];
+  const bgColor = FRESHNESS_BG_COLORS[group.worstState] ?? colors.neutral[50];
+
+  const label = viewMode === 'juz'
+    ? `${t('gamification.juz')} ${group.groupNumber}`
+    : `${t('gamification.hizb')} ${group.groupNumber} ${'\u00B7'} ${t('gamification.juz')} ${group.juzNumber}`;
+
+  const totalChildren = group.children.length;
+  const divisor = viewMode === 'hizb' ? 2 : 8;
+
+  // Count eligible items for batch add (non-fresh, non-dormant, not already in plan)
+  const eligibleForPlan = onBatchAdd
+    ? group.children.filter((c) => {
+        if (c.freshness.state === 'fresh' || c.freshness.state === 'dormant') return false;
+        return !isAlreadyInPlan(c);
+      }).length
+    : 0;
+
+  return (
+    <View style={styles.groupContainer}>
+      <Pressable
+        style={({ pressed }) => [styles.groupRow, pressed && styles.rubRowPressed]}
+        onPress={() => setExpanded((prev) => !prev)}
+      >
+        <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
+        <View style={styles.rubInfo}>
+          <Text style={styles.rubTitle}>{label}</Text>
+          {group.needsRevisionCount > 0 ? (
+            <View style={[styles.rubChip, { backgroundColor: bgColor }]}>
+              <Text style={[styles.rubChipText, { color: dotColor }]}>
+                {t('student.revision.itemsNeedRevision', { count: group.needsRevisionCount })}
+              </Text>
+            </View>
+          ) : (
+            <View style={[styles.rubChip, { backgroundColor: bgColor }]}>
+              <Text style={[styles.rubChipText, { color: dotColor }]}>
+                {t(`gamification.freshness.${group.worstState}`)}
+              </Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.groupCountBadge}>
+          <Text style={styles.groupCountText}>{totalChildren}/{divisor}</Text>
+        </View>
+        <Ionicons
+          name={expanded ? 'chevron-down' : (chevron as any)}
+          size={16}
+          color={colors.neutral[300]}
+        />
+      </Pressable>
+
+      {expanded && (
+        <View style={styles.groupChildren}>
+          {group.children.map((cert) => (
+            <RubRow
+              key={cert.id}
+              cert={cert}
+              showDaysLeft={showDaysLeft}
+              chevron={chevron}
+              onPress={() => onCertPress(cert)}
+              t={t}
+              indented
+            />
+          ))}
+
+          {/* Batch "Add to Plan" button */}
+          {onBatchAdd && eligibleForPlan > 0 && (
+            <Pressable
+              style={({ pressed }) => [styles.batchAddButton, pressed && styles.rubRowPressed]}
+              onPress={() => onBatchAdd(group.children)}
+              disabled={batchAdding}
+            >
+              {batchAdding ? (
+                <ActivityIndicator size="small" color={colors.primary[500]} />
+              ) : (
+                <Ionicons name="add-circle-outline" size={18} color={colors.primary[500]} />
+              )}
+              <Text style={styles.batchAddText}>
+                {batchAdding
+                  ? t('student.revision.addingToPlan')
+                  : `${t('student.revision.addAllToPlan')} (${eligibleForPlan})`}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
@@ -405,6 +700,34 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
+  },
+
+  // Segment Control
+  segmentRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  segmentButton: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.neutral[200],
+    backgroundColor: colors.white,
+  },
+  segmentButtonActive: {
+    backgroundColor: colors.primary[500],
+    borderColor: colors.primary[500],
+  },
+  segmentText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(13),
+    color: colors.neutral[600],
+  },
+  segmentTextActive: {
+    color: colors.white,
   },
 
   // Health Summary
@@ -510,6 +833,11 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
   },
+  rubRowIndented: {
+    marginStart: spacing.md,
+    backgroundColor: colors.neutral[50],
+    boxShadow: 'none',
+  },
   rubRowPressed: {
     opacity: 0.7,
   },
@@ -536,6 +864,56 @@ const styles = StyleSheet.create({
   rubChipText: {
     fontFamily: typography.fontFamily.medium,
     fontSize: normalize(11),
+  },
+
+  // Group Rows
+  groupContainer: {
+    marginBottom: spacing.sm,
+  },
+  groupRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.md,
+    gap: spacing.md,
+    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
+  },
+  groupCountBadge: {
+    backgroundColor: colors.neutral[100],
+    paddingHorizontal: spacing.sm,
+    paddingVertical: normalize(2),
+    borderRadius: radius.full,
+  },
+  groupCountText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(11),
+    color: colors.neutral[600],
+  },
+  groupChildren: {
+    marginTop: spacing.xs,
+    gap: spacing.xs,
+  },
+
+  // Batch Add Button
+  batchAddButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    marginStart: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.primary[50],
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.primary[200],
+  },
+  batchAddText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(12),
+    color: colors.primary[600],
   },
 
   // Quick Links

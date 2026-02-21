@@ -187,7 +187,16 @@
       "noCertifications": "No rubʿ certified yet",
       "noCertificationsDesc": "Rubʿ will appear here once your teacher certifies your memorization",
       "fullMap": "Full Map",
-      "todaysPlan": "Today's Plan"
+      "todaysPlan": "Today's Plan",
+      "viewMode": {
+        "rub": "Rubʿ",
+        "hizb": "Hizb",
+        "juz": "Juz"
+      },
+      "addAllToPlan": "Add all to revision plan",
+      "addingToPlan": "Adding...",
+      "itemsNeedRevision": "{{count}} need revision",
+      "batchAddedToPlan": "{{count}} rubʿ added to plan"
     },
     "dashboard": {
       "title": "Student Dashboard",
@@ -1065,6 +1074,10 @@
       "poorDesc": "Student needs more practice — freshness resets to 50%",
       "recertify": "Re-certify",
       "recertifyDesc": "Dormant over 90 days — requires full re-certification",
+      "markJuzGood": "Mark Juz Good",
+      "markJuzPoor": "Mark Juz Poor",
+      "batchConfirm": "Mark all {{count}} rubʿ in Juz {{juz}} as {{action}}?",
+      "batchSuccess": "{{count}} rubʿ marked successfully",
       "certifiedOn": "Certified",
       "certifiedBy": "Teacher",
       "timesReviewed": "Revisions",

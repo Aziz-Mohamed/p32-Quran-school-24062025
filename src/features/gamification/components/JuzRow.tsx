@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -21,19 +21,44 @@ interface JuzRowProps {
   juzNumber: number;
   items: RubProgressItem[];
   onRubPress?: (item: RubProgressItem) => void;
+  onJuzAction?: (juzNumber: number, action: 'good' | 'poor') => void;
 }
 
-export function JuzRow({ juzNumber, items, onRubPress }: JuzRowProps) {
+export function JuzRow({ juzNumber, items, onRubPress, onJuzAction }: JuzRowProps) {
   const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
   const [showContent, setShowContent] = useState(false);
   const expandAnim = useSharedValue(0);
 
   const certifiedCount = items.filter((i) => i.state !== 'uncertified').length;
+  const certifiedNonDormant = items.filter(
+    (i) => i.state !== 'uncertified' && i.state !== 'dormant',
+  ).length;
   const total = items.length;
   const progress = total > 0 ? certifiedCount / total : 0;
 
   const hideContent = useCallback(() => setShowContent(false), []);
+
+  const handleBatchAction = useCallback(() => {
+    if (!onJuzAction || certifiedNonDormant === 0) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Alert.alert(
+      `${t('gamification.juz')} ${juzNumber}`,
+      t('gamification.revision.batchConfirm', { count: certifiedNonDormant, juz: juzNumber, action: '' }),
+      [
+        {
+          text: t('gamification.revision.markJuzGood'),
+          onPress: () => onJuzAction(juzNumber, 'good'),
+        },
+        {
+          text: t('gamification.revision.markJuzPoor'),
+          onPress: () => onJuzAction(juzNumber, 'poor'),
+          style: 'destructive',
+        },
+        { text: t('common.cancel'), style: 'cancel' },
+      ],
+    );
+  }, [onJuzAction, certifiedNonDormant, juzNumber, t]);
 
   const toggleExpanded = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -78,6 +103,15 @@ export function JuzRow({ juzNumber, items, onRubPress }: JuzRowProps) {
           <View style={styles.miniBar}>
             <View style={[styles.miniBarFill, { width: `${progress * 100}%` }]} />
           </View>
+          {onJuzAction && certifiedNonDormant > 0 && (
+            <Pressable
+              onPress={handleBatchAction}
+              hitSlop={8}
+              style={styles.batchActionButton}
+            >
+              <Ionicons name="checkmark-done-circle-outline" size={22} color={colors.primary[500]} />
+            </Pressable>
+          )}
           <Animated.View style={chevronStyle}>
             <Ionicons name="chevron-forward" size={18} color={colors.neutral[400]} />
           </Animated.View>
@@ -160,6 +194,9 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: normalize(3),
     backgroundColor: colors.primary[500],
+  },
+  batchActionButton: {
+    padding: normalize(2),
   },
   rubGrid: {
     flexDirection: 'row',
