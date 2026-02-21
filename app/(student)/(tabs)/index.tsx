@@ -6,18 +6,29 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
-import { Badge, ProgressBar } from '@/components/ui';
+import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
-import { useRoleTheme } from '@/hooks/useRoleTheme';
-import { useRubCertifications, RevisionWarning } from '@/features/gamification';
+import { useRubCertifications } from '@/features/gamification';
+import { useMemorizationStats } from '@/features/memorization';
+import { getSurah } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
+
+// ─── Constants ───────────────────────────────────────────────────────────────
+
+const MAX_PREVIEW_ITEMS = 4;
+
+const TYPE_CONFIG = {
+  new_hifz: { labelKey: 'student.dashboard.newHifz', color: colors.accent.indigo[500], bg: colors.accent.indigo[50] },
+  recent_review: { labelKey: 'student.dashboard.review', color: colors.secondary[500], bg: colors.secondary[50] },
+  old_review: { labelKey: 'student.dashboard.review', color: colors.primary[500], bg: colors.primary[50] },
+} as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -36,16 +47,41 @@ function getAttendanceBadge(status: string | null | undefined, t: (key: string) 
   }
 }
 
+function TaskRow({ item, isRTL, t }: { item: any; isRTL: boolean; t: (key: string) => string }) {
+  const surah = getSurah(item.surah_number);
+  const surahName = surah
+    ? (isRTL ? surah.nameArabic : surah.nameEnglish)
+    : `${item.surah_number}`;
+  const ayahRange = item.from_ayah === item.to_ayah
+    ? `${item.from_ayah}`
+    : `${item.from_ayah}-${item.to_ayah}`;
+  const config = TYPE_CONFIG[item.review_type as keyof typeof TYPE_CONFIG] ?? TYPE_CONFIG.old_review;
+
+  return (
+    <View style={styles.taskRow}>
+      <View style={[styles.taskDot, { backgroundColor: config.color }]} />
+      <View style={styles.taskInfo}>
+        <Text style={styles.taskSurah} numberOfLines={1}>{surahName}</Text>
+        <Text style={styles.taskAyah}>{ayahRange}</Text>
+      </View>
+      <View style={[styles.taskBadge, { backgroundColor: config.bg }]}>
+        <Text style={[styles.taskBadgeText, { color: config.color }]}>{t(config.labelKey)}</Text>
+      </View>
+    </View>
+  );
+}
+
 // ─── Student Dashboard ────────────────────────────────────────────────────────
 
 export default function StudentDashboard() {
   const { t } = useTranslation();
   const { profile } = useAuth();
   const router = useRouter();
-  const theme = useRoleTheme();
+  const isRTL = I18nManager.isRTL;
 
   const { data, isLoading, error, refetch } = useStudentDashboard(profile?.id);
-  const { activeCount, criticalCount } = useRubCertifications(profile?.id);
+  const { criticalCount } = useRubCertifications(profile?.id);
+  const { data: memStats } = useMemorizationStats(profile?.id);
   const todayStr = new Date().toISOString().split('T')[0];
   const { data: revisionSchedule = [] } = useRevisionSchedule(profile?.id, todayStr);
 
@@ -53,9 +89,13 @@ export default function StudentDashboard() {
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
 
   const student = data?.student;
-  const currentLevel = activeCount;
   const attendance = getAttendanceBadge(data?.todayAttendance?.status, t);
-  const chevron = I18nManager.isRTL ? 'chevron-back' : 'chevron-forward';
+  const chevron = isRTL ? 'chevron-back' : 'chevron-forward';
+
+  const totalItems = revisionSchedule.length;
+  const previewItems = revisionSchedule.slice(0, MAX_PREVIEW_ITEMS);
+  const hasMore = totalItems > MAX_PREVIEW_ITEMS;
+  const hasWarning = criticalCount > 0;
 
   return (
     <Screen scroll hasTabBar>
@@ -64,7 +104,7 @@ export default function StudentDashboard() {
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <Text style={styles.greeting}>
-              {t('dashboard.welcome', { name: profile?.full_name?.split(' ')[0] ?? '' })} {'\uD83D\uDC4B'}
+              {t('dashboard.welcome', { name: profile?.full_name?.split(' ')[0] ?? '' })}
             </Text>
             <Text style={styles.subtitle}>{t('student.dashboard.readyToLearn')}</Text>
           </View>
@@ -75,97 +115,105 @@ export default function StudentDashboard() {
           />
         </View>
 
-        {/* 2. Today's Revision Plan */}
-        {revisionSchedule.length > 0 && (() => {
-          const newCount = revisionSchedule.filter((i: any) => i.review_type === 'new_hifz').length;
-          const recentCount = revisionSchedule.filter((i: any) => i.review_type === 'recent_review').length;
-          const oldCount = revisionSchedule.filter((i: any) => i.review_type === 'old_review').length;
-          return (
-            <Card
-              variant="default"
-              onPress={() => router.push('/(student)/(tabs)/memorization')}
-              style={styles.revisionPlanCard}
-            >
-              <View style={styles.revisionPlanHeader}>
-                <View style={[styles.revisionPlanIcon, { backgroundColor: colors.accent.indigo[50] }]}>
-                  <Ionicons name="book" size={20} color={colors.accent.indigo[500]} />
-                </View>
-                <Text style={styles.revisionPlanTitle}>{t('memorization.todaysRevisionPlan')}</Text>
-                <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
+        {/* 2. Streak + Progress Card */}
+        <Card variant="default" style={styles.heroCard}>
+          {/* Streak Banner */}
+          <View style={styles.streakBanner}>
+            <View style={styles.streakLeft}>
+              <Ionicons name="flame" size={normalize(28)} color={colors.accent.rose[500]} />
+              <View>
+                <Text style={styles.streakNumber}>{student?.current_streak ?? 0}</Text>
+                <Text style={styles.streakLabel}>{t('student.dashboard.dayStreak')}</Text>
               </View>
-              <View style={styles.revisionPlanStats}>
-                {newCount > 0 && (
-                  <View style={styles.revisionPlanStat}>
-                    <Text style={[styles.revisionPlanCount, { color: colors.accent.indigo[600] }]}>{newCount}</Text>
-                    <Text style={styles.revisionPlanLabel}>{t('memorization.revisionLabels.new')}</Text>
-                  </View>
-                )}
-                {recentCount > 0 && (
-                  <View style={styles.revisionPlanStat}>
-                    <Text style={[styles.revisionPlanCount, { color: colors.secondary[600] }]}>{recentCount}</Text>
-                    <Text style={styles.revisionPlanLabel}>{t('memorization.revisionLabels.recent')}</Text>
-                  </View>
-                )}
-                {oldCount > 0 && (
-                  <View style={styles.revisionPlanStat}>
-                    <Text style={[styles.revisionPlanCount, { color: colors.primary[600] }]}>{oldCount}</Text>
-                    <Text style={styles.revisionPlanLabel}>{t('memorization.revisionLabels.older')}</Text>
-                  </View>
-                )}
-              </View>
-            </Card>
-          );
-        })()}
-
-        {/* 3. Revision Warning */}
-        <RevisionWarning count={criticalCount} />
-
-        {/* 4. Progress Strip */}
-        <Card
-          variant="default"
-          onPress={() => router.push('/(student)/rub-progress')}
-          style={styles.progressStrip}
-        >
-          <View style={styles.progressStripHeader}>
-            <Text style={styles.progressStripLevel}>
-              {t('gamification.levelLabel', { level: currentLevel, total: 240 })}
-            </Text>
-            <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
-          </View>
-          <ProgressBar
-            progress={currentLevel / 240}
-            variant={theme.tag}
-            height={8}
-          />
-          <View style={styles.progressStripDivider} />
-          <View style={styles.progressStripStats}>
-            <View style={styles.progressStripStat}>
-              <Ionicons name="flame-outline" size={16} color={colors.accent.rose[500]} />
-              <Text style={styles.progressStripStatValue}>
-                {student?.current_streak ?? 0}
-              </Text>
-              <Text style={styles.progressStripStatLabel}>{t('student.streak')}</Text>
             </View>
-            <View style={styles.progressStripStatSeparator} />
-            <View style={styles.progressStripStat}>
-              <Ionicons name="star-outline" size={16} color={colors.secondary[500]} />
-              <Text style={styles.progressStripStatValue}>
+            {(student?.current_streak ?? 0) > 0 ? (
+              <Text style={styles.bestStreak}>
+                {t('student.dashboard.bestStreak', { count: student?.longest_streak ?? 0 })}
+              </Text>
+            ) : (
+              <Text style={styles.startStreak}>{t('student.dashboard.startStreak')}</Text>
+            )}
+          </View>
+
+          <View style={styles.heroDivider} />
+
+          {/* Stats Row */}
+          <View style={styles.statsRow}>
+            <View style={[styles.statBlock, { backgroundColor: colors.accent.indigo[50] }]}>
+              <Text style={[styles.statValue, { color: colors.accent.indigo[600] }]}>
+                {memStats?.quran_percentage != null
+                  ? `${memStats.quran_percentage.toFixed(1)}%`
+                  : '0%'}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.accent.indigo[500] }]}>
+                {t('student.dashboard.quranMemorized')}
+              </Text>
+            </View>
+            <View style={[styles.statBlock, { backgroundColor: colors.secondary[50] }]}>
+              <Text style={[styles.statValue, { color: colors.secondary[600] }]}>
                 {data?.totalStickers ?? 0}
               </Text>
-              <Text style={styles.progressStripStatLabel}>{t('student.dashboard.stickers')}</Text>
+              <Text style={[styles.statLabel, { color: colors.secondary[500] }]}>
+                {t('student.dashboard.stickers')}
+              </Text>
             </View>
-            <View style={styles.progressStripStatSeparator} />
-            <View style={styles.progressStripStat}>
-              <Ionicons name="calendar-outline" size={16} color={colors.accent.indigo[500]} />
-              <Text style={styles.progressStripStatValue}>
+            <View style={[styles.statBlock, { backgroundColor: colors.primary[50] }]}>
+              <Text style={[styles.statValue, { color: colors.primary[600] }]}>
                 {data?.totalSessions ?? 0}
               </Text>
-              <Text style={styles.progressStripStatLabel}>{t('student.dashboard.sessions')}</Text>
+              <Text style={[styles.statLabel, { color: colors.primary[500] }]}>
+                {t('student.dashboard.sessions')}
+              </Text>
             </View>
           </View>
         </Card>
 
-        {/* 6. Explore */}
+        {/* 3. Today's Tasks */}
+        <Card
+          variant="default"
+          onPress={() => router.push('/(student)/(tabs)/memorization')}
+          style={styles.tasksCard}
+        >
+          <View style={styles.tasksHeader}>
+            <View style={[styles.tasksIcon, { backgroundColor: colors.accent.indigo[50] }]}>
+              <Ionicons name="book" size={20} color={colors.accent.indigo[500]} />
+            </View>
+            <Text style={styles.tasksTitle}>{t('student.dashboard.todaysTasks')}</Text>
+            <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
+          </View>
+
+          {totalItems > 0 ? (
+            <>
+              <View style={styles.tasksList}>
+                {previewItems.map((item: any, idx: number) => (
+                  <TaskRow key={item.progress_id ?? `${item.surah_number}-${item.from_ayah}-${idx}`} item={item} isRTL={isRTL} t={t} />
+                ))}
+              </View>
+              {hasMore && (
+                <Text style={styles.seeAll}>
+                  {t('student.dashboard.seeAll', { count: totalItems })} {isRTL ? '←' : '→'}
+                </Text>
+              )}
+            </>
+          ) : (
+            <View style={styles.emptyState}>
+              <Ionicons name="checkmark-circle" size={20} color={colors.secondary[500]} />
+              <Text style={styles.emptyStateText}>{t('student.dashboard.allCaughtUp')}</Text>
+            </View>
+          )}
+
+          {/* Inline revision warning */}
+          {hasWarning && (
+            <View style={[styles.warningRow, totalItems > 0 && styles.warningRowBorder]}>
+              <Ionicons name="alert-circle" size={16} color="#92400E" />
+              <Text style={styles.warningText}>
+                {t('gamification.revisionWarning', { count: criticalCount })}
+              </Text>
+            </View>
+          )}
+        </Card>
+
+        {/* 4. Explore */}
         <View style={styles.exploreRow}>
           <Pressable
             style={[styles.explorePill, { backgroundColor: colors.accent.violet[50] }]}
@@ -219,89 +267,173 @@ const styles = StyleSheet.create({
     color: lightTheme.textSecondary,
     marginTop: normalize(2),
   },
-  // Revision Plan
-  revisionPlanCard: {
+
+  // Today's Tasks Card
+  tasksCard: {
     padding: spacing.md,
   },
-  revisionPlanHeader: {
+  tasksHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    marginBottom: spacing.md,
   },
-  revisionPlanIcon: {
+  tasksIcon: {
     width: normalize(36),
     height: normalize(36),
     borderRadius: normalize(10),
     alignItems: 'center',
     justifyContent: 'center',
   },
-  revisionPlanTitle: {
+  tasksTitle: {
     flex: 1,
     ...typography.textStyles.bodyMedium,
     color: lightTheme.text,
   },
-  revisionPlanStats: {
+  tasksList: {
+    marginTop: spacing.md,
+    gap: spacing.sm,
+  },
+  taskRow: {
     flexDirection: 'row',
-    gap: spacing.lg,
-    justifyContent: 'center',
-  },
-  revisionPlanStat: {
     alignItems: 'center',
-    gap: normalize(2),
+    gap: spacing.sm,
   },
-  revisionPlanCount: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: normalize(20),
+  taskDot: {
+    width: normalize(8),
+    height: normalize(8),
+    borderRadius: normalize(4),
   },
-  revisionPlanLabel: {
-    ...typography.textStyles.label,
+  taskInfo: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  taskSurah: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(13),
+    color: colors.neutral[900],
+    flexShrink: 1,
+  },
+  taskAyah: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: normalize(12),
     color: colors.neutral[500],
   },
-
-  // Progress Strip
-  progressStrip: {
-    padding: spacing.md,
-    marginTop: spacing.sm,
+  taskBadge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: normalize(2),
+    borderRadius: radius.full,
   },
-  progressStripHeader: {
+  taskBadgeText: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(11),
+  },
+  seeAll: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(12),
+    color: colors.accent.indigo[500],
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    paddingTop: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.neutral[100],
+  },
+  emptyState: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.secondary[50],
+    borderRadius: radius.md,
+  },
+  emptyStateText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(13),
+    color: colors.secondary[700],
+  },
+  warningRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: '#FEF3C7',
+    borderRadius: radius.sm,
+  },
+  warningRowBorder: {
+    marginTop: spacing.md,
+  },
+  warningText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(12),
+    color: '#92400E',
+    flex: 1,
+  },
+
+  // Hero Card (Streak + Stats)
+  heroCard: {
+    padding: spacing.md,
+  },
+  streakBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: spacing.sm,
   },
-  progressStripLevel: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[900],
-  },
-  progressStripDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: colors.neutral[100],
-    marginVertical: spacing.sm,
-  },
-  progressStripStats: {
+  streakLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
+    gap: spacing.sm,
   },
-  progressStripStat: {
+  streakNumber: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(26),
+    color: colors.neutral[900],
+    lineHeight: normalize(30),
+  },
+  streakLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(12),
+    color: colors.neutral[500],
+  },
+  bestStreak: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(12),
+    color: colors.neutral[400],
+  },
+  startStreak: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(12),
+    color: colors.accent.rose[500],
+    flexShrink: 1,
+    textAlign: 'right' as const,
+  },
+  heroDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.neutral[100],
+    marginVertical: spacing.md,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  statBlock: {
+    flex: 1,
     alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
     gap: normalize(2),
   },
-  progressStripStatValue: {
-    fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(14),
-    color: colors.neutral[900],
+  statValue: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(16),
   },
-  progressStripStatLabel: {
-    ...typography.textStyles.label,
-    color: colors.neutral[500],
+  statLabel: {
+    fontFamily: typography.fontFamily.medium,
     fontSize: normalize(11),
-  },
-  progressStripStatSeparator: {
-    width: StyleSheet.hairlineWidth,
-    height: normalize(28),
-    backgroundColor: colors.neutral[200],
   },
 
   // Explore Pills

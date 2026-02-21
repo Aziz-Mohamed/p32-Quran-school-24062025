@@ -187,7 +187,18 @@
       "noCertifications": "No rubʿ certified yet",
       "noCertificationsDesc": "Rubʿ will appear here once your teacher certifies your memorization",
       "fullMap": "Full Map",
-      "todaysPlan": "Today's Plan"
+      "todaysPlan": "Today's Plan",
+      "viewMode": {
+        "rub": "Rubʿ",
+        "hizb": "Hizb",
+        "juz": "Juz"
+      },
+      "addAllToPlan": "Add all to revision plan",
+      "addingToPlan": "Adding...",
+      "itemsNeedRevision": "{{count}} need revision",
+      "batchAddedToPlan": "{{count}} rubʿ added to plan",
+      "certifiedRub": "Certified rubʿ",
+      "needRevision": "Need revision"
     },
     "dashboard": {
       "title": "Student Dashboard",
@@ -203,7 +214,17 @@
       "levelProgress": "Level Progress",
       "sessions": "Sessions",
       "stickers": "Stickers",
-      "rubCertified": "rubʿ certified"
+      "rubCertified": "rubʿ certified",
+      "todaysTasks": "Today's Tasks",
+      "seeAll": "See all {{count}}",
+      "allCaughtUp": "All caught up!",
+      "nothingDueToday": "No tasks due today",
+      "newHifz": "New",
+      "review": "Revision",
+      "dayStreak": "day streak",
+      "bestStreak": "Best: {{count}}",
+      "startStreak": "Start your streak today!",
+      "quranMemorized": "Quran"
     },
     "myLessons": "My Lessons",
     "myProgress": "My Progress",
@@ -856,10 +877,10 @@
       "totalAyahs": "Total Ayahs",
       "totalRecitations": "Recitations",
       "avgProgress": "Avg Progress",
-      "needReview": "Need Review",
+      "needReview": "Need Revision",
       "memorized": "Memorized",
       "inProgress": "In Progress",
-      "needsReviewLabel": "Need Review",
+      "needsReviewLabel": "Need Revision",
       "recitations": "Recitations",
       "avgAccuracy": "Avg Accuracy",
       "noData": "No memorization data yet. Students will appear here once they start recording recitations."
@@ -942,14 +963,14 @@
     "recitations": "Recitations",
     "addRecitation": "Add Recitation",
     "noRecitations": "No recitations added. Tap \"Add Recitation\" to track verse-level progress.",
-    "needsReview": "Needs Review",
+    "needsReview": "Needs Revision",
     "needsRepeat": "Needs Repeat",
     "viewDetails": "View Details",
     "studentMemorization": "{{name}} — Memorization",
     "surahsStarted": "Surahs ({{count}} started)",
     "ayahRange": "Ayah {{from}}–{{to}}",
-    "needReviewCount": "{{count}} need review",
-    "reviewCount": "{{count}} review(s)",
+    "needReviewCount": "{{count}} need revision",
+    "reviewCount": "{{count}} revision(s)",
     "quranProgress": "Quran Progress",
     "quranMemorization": "Quran Memorization",
     "ayahsMemorized": "{{memorized}} / {{total}} ayahs memorized",
@@ -968,12 +989,12 @@
       "new": "New",
       "learning": "Learning",
       "memorized": "Memorized",
-      "needs_review": "Needs Review"
+      "needs_review": "Needs Revision"
     },
     "sections": {
       "new_hifz": "New Memorization",
-      "recent_review": "Recent Review",
-      "old_review": "Older Review"
+      "recent_review": "Recent Revision",
+      "old_review": "Older Revision"
     },
     "revisionLabels": {
       "new": "New",
@@ -983,8 +1004,8 @@
     "recitationType": {
       "title": "Recitation Type",
       "new_hifz": "New Hifz",
-      "recent_review": "Recent Review",
-      "old_review": "Old Review"
+      "recent_review": "Recent Revision",
+      "old_review": "Old Revision"
     },
     "recitationForm": {
       "title": "Recitation #{{number}}",
@@ -1007,7 +1028,7 @@
     },
     "assignment": {
       "title": "Assign Memorization",
-      "subtitle": "Assign new memorization or review to a student",
+      "subtitle": "Assign new memorization or revision to a student",
       "studentLabel": "Student",
       "selectStudent": "Select student...",
       "dueDate": "Due Date",
@@ -1055,10 +1076,14 @@
       "poorDesc": "Student needs more practice — freshness resets to 50%",
       "recertify": "Re-certify",
       "recertifyDesc": "Dormant over 90 days — requires full re-certification",
+      "markJuzGood": "Mark Juz Good",
+      "markJuzPoor": "Mark Juz Poor",
+      "batchConfirm": "Mark all {{count}} rubʿ in Juz {{juz}} as {{action}}?",
+      "batchSuccess": "{{count}} rubʿ marked successfully",
       "certifiedOn": "Certified",
       "certifiedBy": "Teacher",
-      "timesReviewed": "Reviews",
-      "lastReviewed": "Last Review",
+      "timesReviewed": "Revisions",
+      "lastReviewed": "Last Revision",
       "daysAgo": "{{count}} days ago",
       "neverReviewed": "Never",
       "addToPlan": "Add to My Revision Plan",

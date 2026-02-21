@@ -18,7 +18,7 @@ import { useCertifyRub } from '@/features/gamification/hooks/useCertifyRub';
 import { useUndoCertification } from '@/features/gamification/hooks/useUndoCertification';
 import { RubProgressMap } from '@/features/gamification/components/RubProgressMap';
 import { RevisionSheet } from '@/features/gamification/components/RevisionSheet';
-import { useRecordRevision } from '@/features/gamification/hooks/useRecordRevision';
+import { useRecordRevision, type RevisionInput } from '@/features/gamification/hooks/useRecordRevision';
 import { useRubReference } from '@/features/gamification/hooks/useRubReference';
 import type { EnrichedCertification, RubReference } from '@/features/gamification/types/gamification.types';
 import { useAttendanceRate } from '@/features/attendance/hooks/useAttendance';
@@ -50,10 +50,10 @@ export default function TeacherStudentDetailScreen() {
   const { data: stickers = [] } = useStudentStickers(id);
   const { data: attendanceData } = useAttendanceRate(id);
   const { data: memStats } = useMemorizationStats(id);
-  const { activeCount } = useRubCertifications(id);
+  const { enriched, activeCount } = useRubCertifications(id);
   const certifyMutation = useCertifyRub();
   const undoMutation = useUndoCertification();
-  const { goodRevision, poorRevision, recertify } = useRecordRevision();
+  const { goodRevision, poorRevision, recertify, batchGoodRevision, batchPoorRevision } = useRecordRevision();
 
   // Rubʿ reference data for verse ranges in RevisionSheet
   const { data: rubReferenceList } = useRubReference();
@@ -132,6 +132,33 @@ export default function TeacherStudentDetailScreen() {
       setRevisionCert(null);
     },
     [revisionCert, id, profile?.id, goodRevision, poorRevision, recertify],
+  );
+
+  const handleJuzAction = useCallback(
+    (juzNumber: number, action: 'good' | 'poor') => {
+      if (!id) return;
+      // Find all certified non-dormant rubʿ in this juz
+      const targets = enriched.filter(
+        (cert) =>
+          Math.ceil(cert.rub_number / 8) === juzNumber &&
+          cert.freshness.state !== 'dormant',
+      );
+      if (targets.length === 0) return;
+
+      const inputs: RevisionInput[] = targets.map((cert) => ({
+        certificationId: cert.id,
+        studentId: id,
+        reviewCount: cert.review_count,
+        dormantSince: cert.dormant_since,
+      }));
+
+      if (action === 'good') {
+        batchGoodRevision.mutate(inputs);
+      } else {
+        batchPoorRevision.mutate(inputs);
+      }
+    },
+    [id, enriched, batchGoodRevision, batchPoorRevision],
   );
 
   // Cleanup timer
@@ -272,6 +299,7 @@ export default function TeacherStudentDetailScreen() {
             mode="interactive"
             onCertify={handleCertify}
             onCertifiedRubPress={handleCertifiedRubPress}
+            onJuzAction={handleJuzAction}
           />
         </View>
 
