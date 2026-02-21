@@ -69,13 +69,14 @@ export default function TopPerformersScreen() {
                   </Text>
                   <Text style={styles.studentMeta}>
                     {student.classes?.name ?? ''}
-                    {student.levels ? ` · ${student.levels.title}` : ''}
+                    {` · ${t('common.level')} ${student.current_level ?? 0}`}
                   </Text>
                 </View>
-                <View style={styles.pointsContainer}>
-                  <Text style={styles.pointsValue}>{student.total_points ?? 0}</Text>
-                  <Text style={styles.pointsLabel}>{t('student.points')}</Text>
-                </View>
+                <Badge
+                  label={`${t('common.level')} ${student.current_level ?? 0}`}
+                  variant="indigo"
+                  size="md"
+                />
               </View>
             </Card>
           ))
@@ -133,16 +134,5 @@ const styles = StyleSheet.create({
     ...typography.textStyles.caption,
     color: lightTheme.textSecondary,
     marginTop: normalize(2),
-  },
-  pointsContainer: {
-    alignItems: 'center',
-  },
-  pointsValue: {
-    ...typography.textStyles.subheading,
-    color: colors.primary[500],
-  },
-  pointsLabel: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
   },
 });

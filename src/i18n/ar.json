@@ -18,7 +18,6 @@
     "inactive": "غير نشط",
     "remove": "إزالة",
     "success": "نجاح",
-    "pts": "نقاط",
     "signOut": "تسجيل الخروج",
     "language": "اللغة",
     "english": "English",
@@ -33,6 +32,7 @@
     "notFound": "الصفحة غير موجودة",
     "goHome": "الرئيسية",
     "close": "إغلاق",
+    "undo": "تراجع",
     "select": "...اختر",
     "selectDate": "...اختر التاريخ",
     "clearSearch": "مسح البحث",
@@ -190,14 +190,14 @@
       "readyToLearn": "مستعدّ للتعلّم اليوم؟",
       "levelProgress": "تقدّم المستوى",
       "sessions": "الحصص",
-      "stickers": "الملصقات"
+      "stickers": "الملصقات",
+      "rubCertified": "ربع مُجاز"
     },
     "myLessons": "دروسي",
     "myProgress": "تقدّمي",
     "myStickers": "ملصقاتي",
     "trophyRoom": "غرفة الجوائز",
     "currentLevel": "المستوى الحالي",
-    "points": "النقاط",
     "streak": "سلسلة الإنجاز",
     "lessons": {
       "title": "الدروس",
@@ -263,7 +263,6 @@
       "emptyDescription": "اكسب ملصقات من معلّميك",
       "count": "×{{count}}",
       "newSticker": "ملصق جديد!",
-      "points": "نقاط",
       "tapToDismiss": "اضغط للإغلاق",
       "tier": {
         "bronze": "نجمة برونزية",
@@ -275,7 +274,6 @@
       },
       "detail": {
         "timesEarned": "مرات الحصول",
-        "totalPoints": "مجموع النقاط",
         "firstEarned": "أول حصول",
         "lastEarned": "آخر حصول",
         "awardedBy": "منحه",
@@ -332,7 +330,7 @@
     "needsSupport": "يحتاج دعمًا",
     "needsSupportDesc": "الطلاب الذين قد يحتاجون اهتمامًا إضافيًا",
     "topPerformers": "الأكثر تميّزًا",
-    "topPerformersDesc": "الطلاب مرتبون حسب النقاط المكتسبة",
+    "topPerformersDesc": "الطلاب مرتبون حسب المستوى",
     "insights": {
       "emptyTitle": "لا يوجد طلاب بعد",
       "emptyDescription": "سيظهر الطلاب هنا بعد تعيينهم لفصولك",
@@ -412,7 +410,6 @@
       "absentAlert": "{{name}} كان غائباً اليوم",
       "allPresent": "جميع الأبناء حاضرون اليوم!",
       "averageAttendance": "متوسط الحضور",
-      "totalPoints": "إجمالي النقاط",
       "totalStickers": "إجمالي الملصقات",
       "activeStreaks": "سلسلة النشاط",
       "childrenStatus": "أبنائي",
@@ -812,11 +809,38 @@
     "gamification": {
       "title": "المكافآت والتقدم",
       "totalStickers": "إجمالي الملصقات",
-      "achievements": "الإنجازات",
       "currentLevel": "المستوى الحالي",
       "currentStreak": "السلسلة الحالية",
       "longestStreak": "أطول سلسلة",
-      "totalPoints": "إجمالي النقاط"
+      "activeCerts": "الإجازات النشطة",
+      "progressMap": "خريطة تقدم الأرباع",
+      "juz": "جزء",
+      "hizb": "حزب",
+      "rub": "ربع",
+      "surah": "سورة",
+      "verseRange": "الآيات",
+      "levelLabel": "المستوى {{level}} / {{total}}",
+      "rubCertified": "{{count}} ربع مُجاز",
+      "revisionWarning": "{{count}} ربع يحتاج مراجعة",
+      "certifyTitle": "إجازة الربع",
+      "certifyMessage": "سيُثبت هذا أن الطالب قد حفظ هذا الربع.",
+      "certify": "إجازة",
+      "certifiedSuccess": "الربع {{rub}} تمت إجازته!",
+      "freshness": {
+        "fresh": "طازج",
+        "fading": "يتلاشى",
+        "warning": "يحتاج مراجعة",
+        "critical": "عاجل",
+        "dormant": "خامل"
+      },
+      "revision": {
+        "good": "جيد",
+        "poor": "ضعيف",
+        "goodDesc": "الطالب تلا بشكل صحيح — تُعاد النضارة إلى 100%",
+        "poorDesc": "الطالب يحتاج مزيداً من التمرين — تُعاد النضارة إلى 50%",
+        "recertify": "إعادة إجازة",
+        "recertifyDesc": "خامل لأكثر من 90 يوماً — يتطلب إعادة إجازة كاملة"
+      }
     },
     "legend": {
       "memorization": "الحفظ",
@@ -1017,6 +1041,36 @@
       "mustBeAfterFrom": "يجب أن تكون >= من الآية",
       "selectDueDate": "يرجى تحديد تاريخ التسليم",
       "recitationError": "التسميع #{{number}} لـ{{name}}: {{errors}}"
+    }
+  },
+  "gamification": {
+    "progressMap": "خريطة تقدم الأرباع",
+    "juz": "جزء",
+    "hizb": "حزب",
+    "rub": "ربع",
+    "surah": "سورة",
+    "verseRange": "الآيات",
+    "levelLabel": "المستوى {{level}} / {{total}}",
+    "rubCertified": "{{count}} ربع مُجاز",
+    "revisionWarning": "{{count}} ربع يحتاج مراجعة",
+    "certifyTitle": "إجازة الربع",
+    "certifyMessage": "سيُثبت هذا أن الطالب قد حفظ هذا الربع.",
+    "certify": "إجازة",
+    "certifiedSuccess": "الربع {{rub}} تمت إجازته!",
+    "freshness": {
+      "fresh": "طازج",
+      "fading": "يتلاشى",
+      "warning": "يحتاج مراجعة",
+      "critical": "عاجل",
+      "dormant": "خامل"
+    },
+    "revision": {
+      "good": "جيد",
+      "poor": "ضعيف",
+      "goodDesc": "الطالب تلا بشكل صحيح — تُعاد النضارة إلى 100%",
+      "poorDesc": "الطالب يحتاج مزيداً من التمرين — تُعاد النضارة إلى 50%",
+      "recertify": "إعادة إجازة",
+      "recertifyDesc": "خامل لأكثر من 90 يوماً — يتطلب إعادة إجازة كاملة"
     }
   }
 }

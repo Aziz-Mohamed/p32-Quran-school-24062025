@@ -80,7 +80,7 @@ export default function ClassStandingScreen() {
                     </Text>
                   )}
                 </View>
-                <Text style={styles.pointsValue}>{entry.points} {t('common.pts')}</Text>
+                <Text style={styles.levelValue}>{t('common.level')} {entry.level}</Text>
               </View>
             </Card>
           ))
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     ...typography.textStyles.body,
     color: lightTheme.textSecondary,
   },
-  pointsValue: {
+  levelValue: {
     ...typography.textStyles.body,
     color: lightTheme.text,
     fontFamily: typography.fontFamily.medium,

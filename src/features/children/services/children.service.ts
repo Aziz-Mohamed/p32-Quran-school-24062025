@@ -7,7 +7,7 @@ class ChildrenService {
   async getChildren(parentId: string) {
     return supabase
       .from('students')
-      .select('*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name), levels!students_current_level_fkey(level_number, title)')
+      .select('*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name)')
       .eq('parent_id', parentId)
       .eq('is_active', true)
       .order('full_name', { referencedTable: 'profiles', ascending: true });
@@ -21,7 +21,7 @@ class ChildrenService {
     const [studentResult, sessionsResult, stickerCountResult] = await Promise.all([
       supabase
         .from('students')
-        .select('*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name, id), levels!students_current_level_fkey(level_number, title, points_required)')
+        .select('*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name, id)')
         .eq('id', studentId)
         .single(),
       supabase
@@ -53,16 +53,16 @@ class ChildrenService {
   async getClassStanding(studentId: string, classId: string) {
     const { data, error } = await supabase
       .from('students')
-      .select('id, total_points')
+      .select('id, current_level')
       .eq('class_id', classId)
       .eq('is_active', true)
-      .order('total_points', { ascending: false });
+      .order('current_level', { ascending: false });
 
     if (error) return { data: null, error };
 
     const standings = (data ?? []).map((s, index) => ({
       rank: index + 1,
-      points: s.total_points,
+      level: s.current_level,
       isCurrentStudent: s.id === studentId,
     }));
 

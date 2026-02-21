@@ -21,7 +21,6 @@ export const TIER_COLORS: Record<StickerTier, string> = {
   gold: '#B8860B',    // deep real gold
   diamond: '#4E97B8', // ice-blue diamond
   seasonal: '#8B5E83',  // muted plum
-  trophy: '#9B7500',  // rich trophy amber
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -136,7 +135,7 @@ const styles = StyleSheet.create({
   newDot: {
     position: 'absolute',
     top: normalize(8),
-    right: normalize(8),
+    end: normalize(8),
     width: normalize(14),
     height: normalize(14),
     borderRadius: normalize(7),

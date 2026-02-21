@@ -11,15 +11,15 @@ class StudentDashboardService {
     const [
       studentResult,
       homeworkResult,
-      achievementsResult,
       attendanceResult,
       sessionsCountResult,
       stickersCountResult,
+      activeCertCountResult,
     ] = await Promise.all([
-      // Student record with their current level details
+      // Student record (no levels join — current_level is a plain integer now)
       supabase
         .from('students')
-        .select('*, levels!students_current_level_fkey(*)')
+        .select('*')
         .eq('id', studentId)
         .single(),
 
@@ -30,14 +30,6 @@ class StudentDashboardService {
         .eq('student_id', studentId)
         .eq('is_completed', false)
         .order('due_date', { ascending: true }),
-
-      // Recent achievements (last 5)
-      supabase
-        .from('student_achievements')
-        .select('*, achievements(*)')
-        .eq('student_id', studentId)
-        .order('earned_at', { ascending: false })
-        .limit(5),
 
       // Today's attendance record (if any)
       supabase
@@ -58,6 +50,13 @@ class StudentDashboardService {
         .from('student_stickers')
         .select('id', { count: 'exact', head: true })
         .eq('student_id', studentId),
+
+      // Active certification count (= rubʿ level)
+      supabase
+        .from('student_rub_certifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('student_id', studentId)
+        .is('dormant_since', null),
     ]);
 
     return {
@@ -65,14 +64,14 @@ class StudentDashboardService {
       studentError: studentResult.error,
       homework: homeworkResult.data,
       homeworkError: homeworkResult.error,
-      recentAchievements: achievementsResult.data,
-      achievementsError: achievementsResult.error,
       todayAttendance: attendanceResult.data,
       attendanceError: attendanceResult.error,
       totalSessions: sessionsCountResult.count ?? 0,
       sessionsError: sessionsCountResult.error,
       totalStickers: stickersCountResult.count ?? 0,
       stickersError: stickersCountResult.error,
+      activeCertCount: activeCertCountResult.count ?? 0,
+      activeCertError: activeCertCountResult.error,
     };
   }
 }

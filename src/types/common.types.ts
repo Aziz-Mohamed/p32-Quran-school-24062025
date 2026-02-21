@@ -22,7 +22,7 @@ export type AssignmentStatus = 'pending' | 'completed' | 'overdue' | 'cancelled'
 
 // ─── Gamification ───────────────────────────────────────────────────────────
 
-export type StickerTier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'seasonal' | 'trophy';
+export type StickerTier = 'bronze' | 'silver' | 'gold' | 'diamond' | 'seasonal';
 
 // ─── Locale ─────────────────────────────────────────────────────────────────
 

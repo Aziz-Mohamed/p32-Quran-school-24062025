@@ -74,7 +74,6 @@ export const useStickerCollection = (studentId: string | undefined) => {
             name_en: mostRecent.stickers.name_en,
             tier: mostRecent.stickers.tier as StickerTier,
             image_path: mostRecent.stickers.image_path,
-            points_value: mostRecent.stickers.points_value,
             is_active: true,
             created_at: '',
           },

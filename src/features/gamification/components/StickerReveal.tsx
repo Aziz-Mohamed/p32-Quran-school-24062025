@@ -32,7 +32,6 @@ const TIER_GLOW: Record<StickerTier, string> = {
   gold: '#D4A843',     // rich gold glow
   diamond: '#90CAE8',  // ice diamond glow
   seasonal: '#C9A3C3',  // soft plum glow
-  trophy: '#CDAA3D',   // trophy amber glow
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -162,11 +161,6 @@ export function StickerReveal({ sticker, onDismiss }: StickerRevealProps) {
               {t('student.stickers.newSticker')}
             </Text>
             <Text style={styles.stickerName}>{name}</Text>
-            {sticker.stickers && (
-              <Text style={styles.pointsText}>
-                +{sticker.stickers.points_value} {t('student.stickers.points')}
-              </Text>
-            )}
             <Text style={styles.tapHint}>
               {t('student.stickers.tapToDismiss')}
             </Text>
@@ -232,10 +226,6 @@ const styles = StyleSheet.create({
     ...typography.textStyles.subheading,
     color: colors.white,
     textAlign: 'center',
-  },
-  pointsText: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.secondary[300],
   },
   tapHint: {
     ...typography.textStyles.caption,

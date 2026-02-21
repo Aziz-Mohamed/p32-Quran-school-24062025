@@ -14,36 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      achievements: {
-        Row: {
-          badge_image_url: string | null
-          criteria: Json | null
-          description: string | null
-          id: string
-          is_active: boolean
-          name: string
-          points_reward: number
-        }
-        Insert: {
-          badge_image_url?: string | null
-          criteria?: Json | null
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          name: string
-          points_reward?: number
-        }
-        Update: {
-          badge_image_url?: string | null
-          criteria?: Json | null
-          description?: string | null
-          id?: string
-          is_active?: boolean
-          name?: string
-          points_reward?: number
-        }
-        Relationships: []
-      }
       attendance: {
         Row: {
           class_id: string
@@ -375,30 +345,6 @@ export type Database = {
           },
         ]
       }
-      levels: {
-        Row: {
-          created_at: string
-          id: string
-          level_number: number
-          points_required: number
-          title: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          level_number: number
-          points_required: number
-          title: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          level_number?: number
-          points_required?: number
-          title?: string
-        }
-        Relationships: []
-      }
       memorization_assignments: {
         Row: {
           assigned_by: string
@@ -706,6 +652,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      quran_rub_reference: {
+        Row: {
+          end_ayah: number
+          end_surah: number
+          hizb_number: number
+          juz_number: number
+          quarter_in_hizb: number
+          rub_number: number
+          start_ayah: number
+          start_surah: number
+        }
+        Insert: {
+          end_ayah: number
+          end_surah: number
+          hizb_number: number
+          juz_number: number
+          quarter_in_hizb: number
+          rub_number: number
+          start_ayah: number
+          start_surah: number
+        }
+        Update: {
+          end_ayah?: number
+          end_surah?: number
+          hizb_number?: number
+          juz_number?: number
+          quarter_in_hizb?: number
+          rub_number?: number
+          start_ayah?: number
+          start_surah?: number
+        }
+        Relationships: []
       }
       recitations: {
         Row: {
@@ -1057,7 +1036,6 @@ export type Database = {
           is_active: boolean
           name_ar: string
           name_en: string
-          points_value: number
           tier: string
         }
         Insert: {
@@ -1067,7 +1045,6 @@ export type Database = {
           is_active?: boolean
           name_ar: string
           name_en: string
-          points_value?: number
           tier?: string
         }
         Update: {
@@ -1077,40 +1054,64 @@ export type Database = {
           is_active?: boolean
           name_ar?: string
           name_en?: string
-          points_value?: number
           tier?: string
         }
         Relationships: []
       }
-      student_achievements: {
+      student_rub_certifications: {
         Row: {
-          achievement_id: string
-          earned_at: string
+          certified_at: string
+          certified_by: string
+          created_at: string
+          dormant_since: string | null
           id: string
+          last_reviewed_at: string
+          review_count: number
+          rub_number: number
           student_id: string
+          updated_at: string
         }
         Insert: {
-          achievement_id: string
-          earned_at?: string
+          certified_at?: string
+          certified_by: string
+          created_at?: string
+          dormant_since?: string | null
           id?: string
+          last_reviewed_at?: string
+          review_count?: number
+          rub_number: number
           student_id: string
+          updated_at?: string
         }
         Update: {
-          achievement_id?: string
-          earned_at?: string
+          certified_at?: string
+          certified_by?: string
+          created_at?: string
+          dormant_since?: string | null
           id?: string
+          last_reviewed_at?: string
+          review_count?: number
+          rub_number?: number
           student_id?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "student_achievements_achievement_id_fkey"
-            columns: ["achievement_id"]
+            foreignKeyName: "student_rub_certifications_certified_by_fkey"
+            columns: ["certified_by"]
             isOneToOne: false
-            referencedRelation: "achievements"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "student_achievements_student_id_fkey"
+            foreignKeyName: "student_rub_certifications_rub_number_fkey"
+            columns: ["rub_number"]
+            isOneToOne: false
+            referencedRelation: "quran_rub_reference"
+            referencedColumns: ["rub_number"]
+          },
+          {
+            foreignKeyName: "student_rub_certifications_student_id_fkey"
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
@@ -1170,47 +1171,11 @@ export type Database = {
           },
         ]
       }
-      student_trophies: {
-        Row: {
-          earned_at: string
-          id: string
-          student_id: string
-          trophy_id: string
-        }
-        Insert: {
-          earned_at?: string
-          id?: string
-          student_id: string
-          trophy_id: string
-        }
-        Update: {
-          earned_at?: string
-          id?: string
-          student_id?: string
-          trophy_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "student_trophies_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "student_trophies_trophy_id_fkey"
-            columns: ["trophy_id"]
-            isOneToOne: false
-            referencedRelation: "trophies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       students: {
         Row: {
           can_self_assign: boolean
           class_id: string | null
-          current_level: number | null
+          current_level: number
           current_streak: number
           date_of_birth: string | null
           enrollment_date: string
@@ -1219,13 +1184,12 @@ export type Database = {
           longest_streak: number
           parent_id: string | null
           school_id: string
-          total_points: number
           updated_at: string
         }
         Insert: {
           can_self_assign?: boolean
           class_id?: string | null
-          current_level?: number | null
+          current_level?: number
           current_streak?: number
           date_of_birth?: string | null
           enrollment_date?: string
@@ -1234,13 +1198,12 @@ export type Database = {
           longest_streak?: number
           parent_id?: string | null
           school_id: string
-          total_points?: number
           updated_at?: string
         }
         Update: {
           can_self_assign?: boolean
           class_id?: string | null
-          current_level?: number | null
+          current_level?: number
           current_streak?: number
           date_of_birth?: string | null
           enrollment_date?: string
@@ -1249,7 +1212,6 @@ export type Database = {
           longest_streak?: number
           parent_id?: string | null
           school_id?: string
-          total_points?: number
           updated_at?: string
         }
         Relationships: [
@@ -1259,13 +1221,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "classes"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "students_current_level_fkey"
-            columns: ["current_level"]
-            isOneToOne: false
-            referencedRelation: "levels"
-            referencedColumns: ["level_number"]
           },
           {
             foreignKeyName: "students_id_fkey"
@@ -1439,33 +1394,6 @@ export type Database = {
           },
         ]
       }
-      trophies: {
-        Row: {
-          criteria: Json | null
-          description: string | null
-          id: string
-          image_url: string
-          is_active: boolean
-          name: string
-        }
-        Insert: {
-          criteria?: Json | null
-          description?: string | null
-          id?: string
-          image_url: string
-          is_active?: boolean
-          name: string
-        }
-        Update: {
-          criteria?: Json | null
-          description?: string | null
-          id?: string
-          image_url?: string
-          is_active?: boolean
-          name?: string
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
@@ -1605,6 +1533,7 @@ export type Database = {
       }
       get_user_role: { Args: never; Returns: string }
       get_user_school_id: { Args: never; Returns: string }
+      increment_review_count: { Args: { cert_id: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

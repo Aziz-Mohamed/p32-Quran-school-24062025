@@ -16,6 +16,8 @@
 - No new storage — subscribes to existing Supabase PostgreSQL tables via Realtime (003-realtime-updates)
 - TypeScript 5.9 (strict mode), Deno (Edge Functions) + expo-notifications, expo-device, expo-constants, @supabase/supabase-js 2, Expo Push API (004-push-notifications)
 - Supabase PostgreSQL — 2 new tables (`push_tokens`, `notification_preferences`), 1 altered table (`schools` — timezone column) (004-push-notifications)
+- TypeScript 5.9 (strict mode) + React Native 0.83, Expo ~54, Expo Router v6, TanStack Query 5, Supabase JS 2, react-native-reanimated 4, i18next + react-i18next, @gorhom/bottom-sheet 5 (001-gamification-redesign)
+- Supabase PostgreSQL (remote) — 2 new tables, 5 dropped tables, 3 modified tables/functions (001-gamification-redesign)
 
 ## Recent Changes
 - 001-mvp-phase1: Added TypeScript 5.9 (strict mode) / React Native 0.83 / React 19 + Expo ~54, Expo Router v6, TanStack Query 5, Zustand 5, Supabase JS 2, react-hook-form 7 + zod 4, react-native-reanimated 4, i18next + react-i18next, FlashList 2, expo-image 3, react-native-calendars, victory-native, @gorhom/bottom-sheet 5

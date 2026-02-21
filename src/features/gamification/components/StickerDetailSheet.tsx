@@ -90,17 +90,11 @@ export function StickerDetailSheet({ item, onClose }: StickerDetailSheetProps) {
             {/* Name */}
             <Text style={styles.stickerName}>{name}</Text>
 
-            {/* Tier + Points row */}
+            {/* Tier badge */}
             <View style={styles.badgeRow}>
               <View style={styles.tierBadge}>
                 <Text style={[styles.tierLabel, { color: tierColor }]}>
                   {t(`student.stickers.tier.${tier}`)}
-                </Text>
-              </View>
-              <View style={styles.pointsBadge}>
-                <Ionicons name="star" size={normalize(14)} color={colors.gamification.gold} />
-                <Text style={styles.pointsText}>
-                  {item.sticker.points_value} {t('student.stickers.points')}
                 </Text>
               </View>
             </View>
@@ -111,11 +105,6 @@ export function StickerDetailSheet({ item, onClose }: StickerDetailSheetProps) {
                 <StatItem
                   label={t('student.stickers.detail.timesEarned')}
                   value={`${item.count}x`}
-                />
-                <View style={styles.statDivider} />
-                <StatItem
-                  label={t('student.stickers.detail.totalPoints')}
-                  value={`${item.count * item.sticker.points_value}`}
                 />
                 <View style={styles.statDivider} />
                 <StatItem
@@ -226,7 +215,7 @@ const styles = StyleSheet.create({
   closeButton: {
     position: 'absolute',
     top: spacing.md,
-    right: spacing.md,
+    end: spacing.md,
     zIndex: 1,
     padding: spacing.xs,
     backgroundColor: colors.neutral[50],
@@ -276,17 +265,6 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.semiBold,
     letterSpacing: 0.5,
   },
-  pointsBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: normalize(4),
-  },
-  pointsText: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[600],
-    fontFamily: typography.fontFamily.semiBold,
-  },
-
   // ─── Stats ─────────────────────────────────────────
   statsContainer: {
     flexDirection: 'row',

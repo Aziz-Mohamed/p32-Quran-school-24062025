@@ -65,20 +65,16 @@ export default function ChildrenScreen() {
                     </Text>
                     <Text style={styles.childMeta}>
                       {child.classes?.name ?? t('admin.students.noClass')}
-                      {child.levels ? ` · ${child.levels.title}` : ''}
+                      {` · Lvl ${child.current_level ?? 0}`}
                     </Text>
-                    <View style={styles.statsRow}>
-                      <View style={styles.statItem}>
-                        <Ionicons name="sparkles" size={12} color={colors.gamification.gold} />
-                        <Text style={styles.statText}>{child.total_points}</Text>
-                      </View>
-                      {child.current_streak > 0 && (
+                    {child.current_streak > 0 && (
+                      <View style={styles.statsRow}>
                         <View style={styles.statItem}>
                           <Ionicons name="flame" size={12} color={colors.accent.rose[500]} />
                           <Text style={styles.statText}>{child.current_streak}</Text>
                         </View>
-                      )}
-                    </View>
+                      </View>
+                    )}
                   </View>
                   <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={20} color={colors.neutral[300]} />
                 </View>

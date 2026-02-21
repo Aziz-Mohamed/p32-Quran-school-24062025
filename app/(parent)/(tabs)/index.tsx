@@ -136,12 +136,6 @@ export default function ParentDashboard() {
             <Text style={styles.statLabel}>{t('parent.dashboard.averageAttendance')}</Text>
           </Card>
           <Card variant="default" style={styles.statCard}>
-            <Text style={[styles.statValue, { color: colors.gamification.gold }]}>
-              {(stats?.totalPoints ?? 0).toLocaleString()}
-            </Text>
-            <Text style={styles.statLabel}>{t('parent.dashboard.totalPoints')}</Text>
-          </Card>
-          <Card variant="default" style={styles.statCard}>
             <Text style={[styles.statValue, { color: colors.accent.violet[500] }]}>
               {stats?.totalStickers ?? 0}
             </Text>
@@ -216,7 +210,7 @@ function ChildStatusRow({
           <Text style={styles.childName} numberOfLines={1}>{child.name}</Text>
           <Text style={styles.childMeta} numberOfLines={1}>
             {child.className ?? '—'}
-            {child.levelTitle ? ` · ${child.levelTitle}` : ''}
+            {` · ${t('common.level')} ${child.currentLevel}/240`}
           </Text>
         </View>
         <View style={styles.childBadges}>

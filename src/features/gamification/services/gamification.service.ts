@@ -22,7 +22,7 @@ class GamificationService {
     return supabase
       .from('student_stickers')
       .select(
-        '*, stickers(id, name_ar, name_en, tier, image_path, points_value), profiles!student_stickers_awarded_by_fkey(full_name)',
+        '*, stickers(id, name_ar, name_en, tier, image_path), profiles!student_stickers_awarded_by_fkey(full_name)',
       )
       .eq('student_id', studentId)
       .order('awarded_at', { ascending: false });
@@ -30,7 +30,6 @@ class GamificationService {
 
   /**
    * GS-003: Award a sticker to a student.
-   * The DB trigger handle_sticker_points will auto-add points.
    */
   async awardSticker(input: {
     studentId: string;
@@ -72,70 +71,18 @@ class GamificationService {
   }
 
   /**
-   * GS-004: Get class leaderboard ranked by total_points.
-   * Supports 'all-time' period. Weekly period requires a dedicated RPC
-   * function to filter by date range -- falls back to all-time for now.
+   * GS-004: Get class leaderboard ranked by current_level (rubʿ-based).
    */
-  async getLeaderboard(classId: string, period: 'weekly' | 'all-time') {
-    // TODO: 'weekly' period requires an RPC that sums points earned within
-    // the last 7 days. Until that RPC exists, both periods return all-time.
-    if (period === 'weekly') {
-      // Placeholder: weekly leaderboard needs a server-side RPC like
-      // get_weekly_leaderboard(class_id UUID, since TIMESTAMPTZ)
-      // that aggregates student_stickers.points + achievement points
-      // earned after `since`. For now, fall through to all-time.
-    }
-
+  async getLeaderboard(classId: string) {
     return supabase
       .from('students')
       .select(
-        '*, profiles!students_id_fkey!inner(full_name, avatar_url), levels!students_current_level_fkey(level_number, title)',
+        '*, profiles!students_id_fkey!inner(full_name, avatar_url)',
       )
       .eq('class_id', classId)
       .eq('is_active', true)
-      .order('total_points', { ascending: false })
+      .order('current_level', { ascending: false })
       .limit(10);
-  }
-
-  /**
-   * GS-005: Get all trophies alongside which ones this student has earned.
-   * Returns both lists so the UI can render earned vs locked states.
-   */
-  async getStudentTrophies(studentId: string) {
-    const [allTrophiesResult, earnedResult] = await Promise.all([
-      supabase.from('trophies').select('*').order('name'),
-      supabase
-        .from('student_trophies')
-        .select('trophy_id, earned_at')
-        .eq('student_id', studentId),
-    ]);
-
-    return {
-      allTrophies: allTrophiesResult.data,
-      trophiesError: allTrophiesResult.error,
-      earnedTrophies: earnedResult.data,
-      earnedError: earnedResult.error,
-    };
-  }
-
-  /**
-   * GS-006: Get all achievements earned by a student.
-   * Includes the full achievement details via join.
-   */
-  async getStudentAchievements(studentId: string) {
-    return supabase
-      .from('student_achievements')
-      .select('*, achievements(*)')
-      .eq('student_id', studentId)
-      .order('earned_at', { ascending: false });
-  }
-
-  /**
-   * GS-007: Get all level definitions, ordered by level_number.
-   * Used to display progression tiers in the UI.
-   */
-  async getLevels() {
-    return supabase.from('levels').select('*').order('level_number');
   }
 
   /**
@@ -143,6 +90,130 @@ class GamificationService {
    */
   async getStickerById(id: string) {
     return supabase.from('stickers').select('*').eq('id', id).single();
+  }
+
+  /**
+   * GS-008: Get all rubʿ certifications for a student (active + dormant).
+   * Client computes freshness from last_reviewed_at, review_count, dormant_since.
+   */
+  async getRubCertifications(studentId: string) {
+    return supabase
+      .from('student_rub_certifications')
+      .select('*, profiles!student_rub_certifications_certified_by_fkey(full_name)')
+      .eq('student_id', studentId)
+      .order('rub_number');
+  }
+
+  /**
+   * GS-009: Teacher certifies a new rubʿ for a student.
+   */
+  async certifyRub(input: { studentId: string; rubNumber: number; certifiedBy: string }) {
+    return supabase
+      .from('student_rub_certifications')
+      .insert({
+        student_id: input.studentId,
+        rub_number: input.rubNumber,
+        certified_by: input.certifiedBy,
+      })
+      .select()
+      .single();
+  }
+
+  /**
+   * GS-010: Undo a certification (grace period delete).
+   */
+  async undoCertification(certificationId: string) {
+    return supabase
+      .from('student_rub_certifications')
+      .delete()
+      .eq('id', certificationId);
+  }
+
+  /**
+   * GS-011: Record a "Good" revision. Uses RPC for atomic review_count increment.
+   * If resetReviewCount is true (30-90d dormancy recovery), resets count to 0.
+   */
+  async recordGoodRevision(certificationId: string, resetReviewCount: boolean) {
+    if (resetReviewCount) {
+      // 30-90 day dormancy recovery: reset review count + restore
+      return supabase
+        .from('student_rub_certifications')
+        .update({
+          last_reviewed_at: new Date().toISOString(),
+          dormant_since: null,
+          review_count: 0,
+        })
+        .eq('id', certificationId)
+        .select()
+        .single();
+    }
+
+    // Normal good revision: atomic increment via RPC
+    return supabase.rpc('increment_review_count', { cert_id: certificationId });
+  }
+
+  /**
+   * GS-012: Record a "Poor" revision. Sets last_reviewed_at to yield ~50% freshness.
+   * Does NOT clear dormant_since (poor revision cannot restore dormancy).
+   */
+  async recordPoorRevision(certificationId: string, intervalDays: number) {
+    const halfIntervalMs = (intervalDays / 2) * 24 * 60 * 60 * 1000;
+    const adjustedTime = new Date(Date.now() - halfIntervalMs).toISOString();
+
+    return supabase
+      .from('student_rub_certifications')
+      .update({ last_reviewed_at: adjustedTime })
+      .eq('id', certificationId)
+      .select()
+      .single();
+  }
+
+  /**
+   * GS-013: Re-certify a rubʿ dormant for 90+ days. Full reset.
+   */
+  async recertifyRub(certificationId: string, certifiedBy: string) {
+    return supabase
+      .from('student_rub_certifications')
+      .update({
+        certified_by: certifiedBy,
+        certified_at: new Date().toISOString(),
+        review_count: 0,
+        last_reviewed_at: new Date().toISOString(),
+        dormant_since: null,
+      })
+      .eq('id', certificationId)
+      .select()
+      .single();
+  }
+
+  /**
+   * GS-014: Get the static 240-row Quran rubʿ reference data.
+   */
+  async getRubReference() {
+    return supabase
+      .from('quran_rub_reference')
+      .select('*')
+      .order('rub_number');
+  }
+
+  /**
+   * GS-015: Batch update dormancy for certifications that have decayed to 0%.
+   */
+  async markDormant(certificationIds: string[]) {
+    return supabase
+      .from('student_rub_certifications')
+      .update({ dormant_since: new Date().toISOString() })
+      .in('id', certificationIds);
+  }
+
+  /**
+   * GS-016: Update the cached current_level on the students table.
+   */
+  async updateStudentLevel(studentId: string, level: number) {
+    return supabase
+      .from('students')
+      .update({ current_level: level })
+      .eq('id', studentId);
   }
 }
 

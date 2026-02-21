@@ -67,20 +67,18 @@ export default function ChildDetailScreen() {
                 variant="sky"
                 size="sm"
               />
-              {(student as any).levels && (
-                <Badge
-                  label={(student as any).levels.title ?? `${t('common.level')} ${(student as any).levels.level_number}`}
-                  variant="indigo"
-                  size="sm"
-                />
-              )}
+              <Badge
+                label={`${t('common.level')} ${(student as any).current_level ?? 0}/240`}
+                variant="indigo"
+                size="sm"
+              />
             </View>
           </View>
         </Card>
 
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
-          <StatCard label={t('student.points')} value={student.total_points} color={colors.gamification.gold} />
+          <StatCard label={t('common.level')} value={`${(student as any).current_level ?? 0}/240`} color={colors.primary[500]} />
           <StatCard label={t('student.streak')} value={student.current_streak} color={colors.accent.rose[500]} />
           <StatCard label={t('navigation.stickers')} value={stickerCount} color={colors.accent.violet[500]} />
           <StatCard label={t('dashboard.attendanceRate')} value={`${attendanceRate?.rate ?? '—'}%`} color={colors.accent.sky[500]} />

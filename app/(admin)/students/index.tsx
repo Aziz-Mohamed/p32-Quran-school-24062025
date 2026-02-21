@@ -87,13 +87,11 @@ export default function AdminStudentsScreen() {
                     </Text>
                   </View>
                   <View style={styles.studentBadges}>
-                    {item.levels && (
-                      <Badge
-                        label={item.levels.title ?? `Lvl ${item.levels.level_number}`}
-                        variant="info"
-                        size="sm"
-                      />
-                    )}
+                    <Badge
+                      label={`Lvl ${item.current_level ?? 0}`}
+                      variant="info"
+                      size="sm"
+                    />
                     <Badge
                       label={item.is_active ? t('common.active') : t('common.inactive')}
                       variant={item.is_active ? 'success' : 'warning'}

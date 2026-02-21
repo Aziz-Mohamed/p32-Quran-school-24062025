@@ -63,7 +63,6 @@ export interface CreateMemberResponse {
     class_id: string | null;
     parent_id: string | null;
     current_level: number;
-    total_points: number;
   };
 }
 

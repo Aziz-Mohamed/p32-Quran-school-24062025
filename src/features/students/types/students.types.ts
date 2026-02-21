@@ -6,7 +6,7 @@ type Student = Tables<'students'>;
 /** Student record with the associated profile data */
 export interface StudentWithProfile extends Student {
   profile: Tables<'profiles'>;
-  level: Tables<'levels'> | null;
+  currentLevel: number;
   class: Tables<'classes'> | null;
   parent: Tables<'profiles'> | null;
 }

@@ -19,8 +19,8 @@ type Attendance = Tables<'attendance'>;
 export interface StudentDashboardData {
   profile: Profile;
   student: Student;
-  currentLevel: Tables<'levels'> | null;
-  totalPoints: number;
+  currentLevel: number;
+  activeCertCount: number;
   currentStreak: number;
   longestStreak: number;
   recentSessions: Session[];
@@ -31,8 +31,6 @@ export interface StudentDashboardData {
     absentDays: number;
   };
   recentStickers: Array<Tables<'student_stickers'> & { sticker: Tables<'stickers'> }>;
-  trophyCount: number;
-  achievementCount: number;
 }
 
 /** Summary statistics for a teacher's dashboard */
@@ -53,7 +51,6 @@ export interface ParentAggregateStats {
   absentToday: number;
   notMarkedToday: number;
   averageAttendanceRate: number; // 0-100, -1 if N/A
-  totalPoints: number;
   totalStickers: number;
   totalStreakDays: number;
 }
@@ -64,10 +61,9 @@ export interface ChildQuickStatus {
   name: string;
   avatarUrl: string | null;
   className: string | null;
-  levelTitle: string | null;
+  currentLevel: number;
   todayStatus: 'present' | 'absent' | 'late' | 'excused' | null;
   attendanceRate: number; // 0-100, -1 if N/A
-  totalPoints: number;
   currentStreak: number;
 }
 

@@ -12,7 +12,6 @@ const DEFAULT_STATS: ParentAggregateStats = {
   absentToday: 0,
   notMarkedToday: 0,
   averageAttendanceRate: -1,
-  totalPoints: 0,
   totalStickers: 0,
   totalStreakDays: 0,
 };
@@ -30,7 +29,7 @@ class ParentDashboardService {
     const { data: children, error: childrenError } = await supabase
       .from('students')
       .select(
-        '*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name), levels!students_current_level_fkey(level_number, title)',
+        '*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name)',
       )
       .eq('parent_id', parentId)
       .eq('is_active', true);
@@ -107,10 +106,9 @@ class ParentDashboardService {
         name: child.profiles?.full_name ?? '',
         avatarUrl: child.profiles?.avatar_url ?? null,
         className: child.classes?.name ?? null,
-        levelTitle: child.levels?.title ?? null,
+        currentLevel: child.current_level ?? 0,
         todayStatus: (todayMap.get(child.id) as ChildQuickStatus['todayStatus']) ?? null,
         attendanceRate: rate,
-        totalPoints: child.total_points ?? 0,
         currentStreak: child.current_streak ?? 0,
       };
     });
@@ -133,7 +131,6 @@ class ParentDashboardService {
       absentToday,
       notMarkedToday: childrenStatus.length - presentToday - absentToday,
       averageAttendanceRate: avgRate,
-      totalPoints: childrenStatus.reduce((sum, c) => sum + c.totalPoints, 0),
       totalStickers: stickerCountRes.count ?? 0,
       totalStreakDays: childrenStatus.reduce((sum, c) => sum + c.currentStreak, 0),
     };
