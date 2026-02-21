@@ -32,8 +32,6 @@ interface EvalData {
   tajweed_score: number | null;
   recitation_quality: number | null;
   notes: string;
-  homework_assigned: string;
-  homework_due_date: string | null;
 }
 
 const STATUS_COLORS: Record<AttendanceStatus, string> = {
@@ -50,8 +48,6 @@ const EMPTY_EVAL: EvalData = {
   tajweed_score: null,
   recitation_quality: null,
   notes: '',
-  homework_assigned: '',
-  homework_due_date: null,
 };
 
 // ─── Session Workspace Screen ───────────────────────────────────────────────
@@ -349,14 +345,6 @@ export default function SessionWorkspaceScreen() {
                       placeholder={t('teacher.sessions.notesPlaceholder')}
                       value={evalData.notes}
                       onChangeText={(v) => updateEval(student.id, 'notes', v)}
-                      multiline
-                    />
-
-                    <TextField
-                      label={t('teacher.sessions.homeworkDescription')}
-                      placeholder={t('teacher.sessions.homeworkPlaceholder')}
-                      value={evalData.homework_assigned}
-                      onChangeText={(v) => updateEval(student.id, 'homework_assigned', v)}
                       multiline
                     />
 

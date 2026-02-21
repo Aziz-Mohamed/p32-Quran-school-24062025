@@ -43,7 +43,6 @@ type NotificationCategory =
   | "sticker_awarded"
   | "trophy_earned"
   | "achievement_unlocked"
-  | "homework_assigned"
   | "attendance_marked"
   | "session_completed";
 
@@ -53,7 +52,6 @@ const TABLE_TO_CATEGORY: Record<string, NotificationCategory> = {
   student_stickers: "sticker_awarded",
   student_trophies: "trophy_earned",
   student_achievements: "achievement_unlocked",
-  homework: "homework_assigned",
   attendance: "attendance_marked",
   sessions: "session_completed",
 };
@@ -257,31 +255,6 @@ async function buildNotificationContent(
           ? `حققت إنجاز: ${achievementName}!`
           : `You unlocked: ${achievementName}!`,
         data: { screen: "/(student)/(tabs)/stickers" },
-      };
-    }
-
-    case "homework_assigned": {
-      const description = (record.description as string) ?? "";
-      const dueDate = record.due_date as string | null;
-      const duePart = dueDate
-        ? lang === "ar" ? `، تسليم ${dueDate}` : `, due ${dueDate}`
-        : "";
-
-      if (isParent) {
-        return {
-          title: lang === "ar" ? "واجب جديد" : "New Homework",
-          body: lang === "ar"
-            ? `${childName} لديه واجب جديد: ${description}${duePart}`
-            : `${childName} has new homework: ${description}${duePart}`,
-          data: { screen: "/(parent)/(tabs)/children" },
-        };
-      }
-      return {
-        title: lang === "ar" ? "واجب جديد" : "New Homework",
-        body: lang === "ar"
-          ? `لديك واجب جديد: ${description}${duePart}`
-          : `New homework: ${description}${duePart}`,
-        data: { screen: "/(student)/(tabs)/index" },
       };
     }
 

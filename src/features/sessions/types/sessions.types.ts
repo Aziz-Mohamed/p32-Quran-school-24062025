@@ -14,8 +14,6 @@ export interface CreateSessionInput {
   tajweed_score?: number | null;
   recitation_quality?: number | null;
   notes?: string | null;
-  homework_assigned?: string | null;
-  homework_due_date?: string | null;
 }
 
 /** Filters for querying sessions */

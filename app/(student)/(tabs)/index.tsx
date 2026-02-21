@@ -7,15 +7,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { Badge, ProgressBar } from '@/components/ui';
-import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { useRubCertifications, RevisionWarning } from '@/features/gamification';
-import { formatSessionDate } from '@/lib/helpers';
-import { formatVerseRange } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -42,7 +39,7 @@ function getAttendanceBadge(status: string | null | undefined, t: (key: string) 
 // ─── Student Dashboard ────────────────────────────────────────────────────────
 
 export default function StudentDashboard() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { profile } = useAuth();
   const router = useRouter();
   const theme = useRoleTheme();
@@ -123,58 +120,7 @@ export default function StudentDashboard() {
         {/* 3. Revision Warning */}
         <RevisionWarning count={criticalCount} />
 
-        {/* 4. Current Homework */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('student.dashboard.currentHomework')}</Text>
-          <Button
-            title={t('student.homework.viewAll')}
-            onPress={() => router.push('/(student)/homework')}
-            variant="ghost"
-            size="sm"
-          />
-        </View>
-        {(data?.homework ?? []).length === 0 ? (
-          <Card variant="outlined" style={styles.emptyCard}>
-            <Text style={styles.emptyText}>{t('student.dashboard.noHomework')}</Text>
-          </Card>
-        ) : (
-          data!.homework!.map((hw: any) => {
-            const isOverdue = hw.due_date && new Date(hw.due_date + 'T00:00:00') < new Date(new Date().toISOString().split('T')[0] + 'T00:00:00');
-            const rec = hw.sessions?.recitations?.[0];
-            const verse = rec ? formatVerseRange(rec.surah_number, rec.from_ayah, rec.to_ayah, i18n.language as 'ar' | 'en') : null;
-            return (
-              <Card key={hw.id} variant="default" onPress={() => router.push(`/(student)/homework/${hw.id}`)} style={styles.homeworkCard}>
-                <View style={styles.homeworkContent}>
-                  <View style={styles.homeworkIcon}>
-                    <Ionicons name="book-outline" size={20} color={colors.accent.indigo[500]} />
-                  </View>
-                  <View style={styles.homeworkInfo}>
-                    {verse ? (
-                      <Text numberOfLines={1}>
-                        <Text style={styles.homeworkSurah}>{verse}</Text>
-                        {'  '}
-                        <Text style={styles.homeworkType}>{hw.description.split(' ')[0]}</Text>
-                      </Text>
-                    ) : (
-                      <Text style={styles.homeworkSurah} numberOfLines={1}>{hw.description}</Text>
-                    )}
-                    <Text style={styles.homeworkDue}>
-                      <Text style={styles.homeworkDueLabel}>{t('teacher.sessions.due')}  </Text>
-                      <Text style={isOverdue ? styles.homeworkOverdue : undefined}>
-                        {hw.due_date
-                          ? formatSessionDate(hw.due_date, i18n.language).date
-                          : t('student.homeworkDetail.noDueDate')}
-                      </Text>
-                    </Text>
-                  </View>
-                  <Ionicons name={chevron} size={16} color={colors.neutral[300]} />
-                </View>
-              </Card>
-            );
-          })
-        )}
-
-        {/* 5. Progress Strip */}
+        {/* 4. Progress Strip */}
         <Card
           variant="default"
           onPress={() => router.push('/(student)/rub-progress')}
@@ -273,26 +219,6 @@ const styles = StyleSheet.create({
     color: lightTheme.textSecondary,
     marginTop: normalize(2),
   },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: spacing.sm,
-  },
-  sectionTitle: {
-    ...typography.textStyles.subheading,
-    color: lightTheme.text,
-  },
-  emptyCard: {
-    padding: spacing.xl,
-    alignItems: 'center',
-    borderStyle: 'dashed',
-  },
-  emptyText: {
-    ...typography.textStyles.body,
-    color: lightTheme.textSecondary,
-  },
-
   // Revision Plan
   revisionPlanCard: {
     padding: spacing.md,
@@ -331,49 +257,6 @@ const styles = StyleSheet.create({
   revisionPlanLabel: {
     ...typography.textStyles.label,
     color: colors.neutral[500],
-  },
-
-  // Homework
-  homeworkCard: {
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-  },
-  homeworkContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  homeworkIcon: {
-    width: normalize(40),
-    height: normalize(40),
-    borderRadius: normalize(12),
-    backgroundColor: colors.accent.indigo[50],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  homeworkInfo: {
-    flex: 1,
-    gap: normalize(3),
-  },
-  homeworkSurah: {
-    fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(14),
-    color: lightTheme.text,
-  },
-  homeworkType: {
-    fontFamily: typography.fontFamily.regular,
-    fontSize: normalize(12),
-    color: colors.neutral[400],
-  },
-  homeworkDue: {
-    ...typography.textStyles.caption,
-    color: colors.neutral[400],
-  },
-  homeworkDueLabel: {
-    color: colors.neutral[300],
-  },
-  homeworkOverdue: {
-    color: colors.accent.rose[500],
   },
 
   // Progress Strip

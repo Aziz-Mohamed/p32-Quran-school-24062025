@@ -7,7 +7,6 @@ export interface ChildOverview {
   class: Tables<'classes'> | null;
   currentLevel: number;
   recentSessions: Tables<'sessions'>[];
-  upcomingHomework: Tables<'homework'>[];
   attendanceSummary: {
     totalDays: number;
     presentDays: number;

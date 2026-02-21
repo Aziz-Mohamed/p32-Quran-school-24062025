@@ -110,27 +110,6 @@ export default function SessionDetailScreen() {
           </Card>
         )}
 
-        {/* Homework */}
-        {(session as any).homework && (session as any).homework.length > 0 && (
-          <Card variant="outlined" style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('teacher.sessions.homework')}</Text>
-            {(session as any).homework.map((hw: any) => (
-              <View key={hw.id} style={styles.homeworkItem}>
-                <Text style={styles.bodyText}>{hw.description}</Text>
-                <View style={styles.homeworkMeta}>
-                  <Text style={styles.caption}>
-                    {t('teacher.sessions.due')}: {hw.due_date}
-                  </Text>
-                  <Badge
-                    label={hw.is_completed ? t('common.done') : t('teacher.sessions.pending')}
-                    variant={hw.is_completed ? 'success' : 'warning'}
-                    size="sm"
-                  />
-                </View>
-              </View>
-            ))}
-          </Card>
-        )}
       </View>
     </Screen>
   );
@@ -201,14 +180,5 @@ const styles = StyleSheet.create({
     ...typography.textStyles.heading,
     color: lightTheme.primary,
     fontSize: typography.fontSize.xl,
-  },
-  homeworkItem: {
-    gap: spacing.xs,
-    paddingTop: spacing.xs,
-  },
-  homeworkMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
 });

@@ -23,13 +23,6 @@ export const NOTIFICATION_CATEGORIES: CategoryConfig[] = [
     deepLink: { screen: '/(student)/(tabs)/stickers' },
   },
   {
-    id: 'homework_assigned',
-    labelKey: 'notifications.categories.homeworkAssigned',
-    roles: ['student', 'parent'],
-    preferenceColumn: 'homework_assigned',
-    deepLink: { screen: '/(student)/(tabs)/index' },
-  },
-  {
     id: 'attendance_marked',
     labelKey: 'notifications.categories.attendanceMarked',
     roles: ['parent'],
@@ -42,13 +35,6 @@ export const NOTIFICATION_CATEGORIES: CategoryConfig[] = [
     roles: ['student', 'parent'],
     preferenceColumn: 'session_completed',
     deepLink: { screen: '/(student)/sessions/index' },
-  },
-  {
-    id: 'homework_reminder',
-    labelKey: 'notifications.categories.homeworkReminder',
-    roles: ['student', 'parent'],
-    preferenceColumn: 'homework_reminder',
-    deepLink: { screen: '/(student)/(tabs)/index' },
   },
   {
     id: 'daily_summary',
@@ -80,7 +66,6 @@ export const TABLE_TO_CATEGORY: Record<string, CategoryConfig['id']> = {
   student_stickers: 'sticker_awarded',
   student_trophies: 'trophy_earned',
   student_achievements: 'achievement_unlocked',
-  homework: 'homework_assigned',
   attendance: 'attendance_marked',
   sessions: 'session_completed',
 };

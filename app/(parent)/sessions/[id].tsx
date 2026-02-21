@@ -162,27 +162,6 @@ export default function ParentSessionDetailScreen() {
           </Card>
         )}
 
-        {/* Homework */}
-        {(session as any).homework && (session as any).homework.length > 0 && (
-          <Card variant="default" style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('parent.sessionDetail.homework')}</Text>
-            {(session as any).homework.map((hw: any) => (
-              <View key={hw.id} style={styles.homeworkItem}>
-                <Text style={styles.homeworkText}>{hw.description}</Text>
-                <View style={styles.homeworkMeta}>
-                  <Text style={styles.caption}>
-                    {t('parent.sessionDetail.due')}: {hw.due_date}
-                  </Text>
-                  <Badge
-                    label={hw.is_completed ? t('common.done') : t('parent.sessionDetail.pending')}
-                    variant={hw.is_completed ? 'success' : 'warning'}
-                    size="sm"
-                  />
-                </View>
-              </View>
-            ))}
-          </Card>
-        )}
       </View>
     </Screen>
   );
@@ -356,19 +335,6 @@ const styles = StyleSheet.create({
     ...typography.textStyles.body,
     color: colors.neutral[700],
     fontStyle: 'italic',
-  },
-  homeworkItem: {
-    gap: spacing.xs,
-    paddingTop: spacing.xs,
-  },
-  homeworkText: {
-    ...typography.textStyles.body,
-    color: lightTheme.text,
-  },
-  homeworkMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   caption: {
     ...typography.textStyles.caption,

@@ -4,9 +4,7 @@ import type { CreateSessionInput, SessionFilters } from '../types/sessions.types
 class SessionsService {
   /**
    * SS-001: Create a new session record.
-   * Looks up the teacher's school_id from their profile, inserts the session,
-   * and optionally creates a homework record if homework details are provided.
-   * The DB trigger handle_session_points will auto-add points.
+   * Looks up the teacher's school_id from their profile and inserts the session.
    */
   async createSession(input: CreateSessionInput) {
     // Fetch the teacher's school_id from their profile
@@ -42,17 +40,6 @@ class SessionsService {
 
     if (sessionError || !session) {
       return { data: null, error: sessionError };
-    }
-
-    // If homework details are provided, create a homework record
-    if (input.homework_assigned && input.homework_due_date) {
-      await supabase.from('homework').insert({
-        student_id: input.student_id,
-        session_id: session.id,
-        school_id: schoolId,
-        description: input.homework_assigned,
-        due_date: input.homework_due_date,
-      });
     }
 
     return { data: session, error: null };
@@ -99,14 +86,13 @@ class SessionsService {
   }
 
   /**
-   * SS-003: Retrieve a single session by its ID with full details
-   * including teacher, student, lesson, and associated homework.
+   * SS-003: Retrieve a single session by its ID with full details.
    */
   async getSessionById(id: string) {
     return supabase
       .from('sessions')
       .select(
-        '*, teacher:profiles!sessions_teacher_id_fkey(full_name, avatar_url), student:students!sessions_student_id_fkey(profiles!students_id_fkey(full_name, avatar_url)), lessons(title), homework(*)',
+        '*, teacher:profiles!sessions_teacher_id_fkey(full_name, avatar_url), student:students!sessions_student_id_fkey(profiles!students_id_fkey(full_name, avatar_url)), lessons(title)',
       )
       .eq('id', id)
       .single();

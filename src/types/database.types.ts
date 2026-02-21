@@ -188,64 +188,6 @@ export type Database = {
           },
         ]
       }
-      homework: {
-        Row: {
-          completed_at: string | null
-          created_at: string
-          description: string
-          due_date: string | null
-          id: string
-          is_completed: boolean
-          school_id: string
-          session_id: string | null
-          student_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string
-          description: string
-          due_date?: string | null
-          id?: string
-          is_completed?: boolean
-          school_id: string
-          session_id?: string | null
-          student_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string
-          description?: string
-          due_date?: string | null
-          id?: string
-          is_completed?: boolean
-          school_id?: string
-          session_id?: string | null
-          student_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "homework_school_id_fkey"
-            columns: ["school_id"]
-            isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "homework_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "sessions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "homework_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       lesson_progress: {
         Row: {
           completed_at: string | null
@@ -512,8 +454,6 @@ export type Database = {
           attendance_marked: boolean
           created_at: string
           daily_summary: boolean
-          homework_assigned: boolean
-          homework_reminder: boolean
           quiet_hours_enabled: boolean
           quiet_hours_end: string | null
           quiet_hours_start: string | null
@@ -529,8 +469,6 @@ export type Database = {
           attendance_marked?: boolean
           created_at?: string
           daily_summary?: boolean
-          homework_assigned?: boolean
-          homework_reminder?: boolean
           quiet_hours_enabled?: boolean
           quiet_hours_end?: string | null
           quiet_hours_start?: string | null
@@ -546,8 +484,6 @@ export type Database = {
           attendance_marked?: boolean
           created_at?: string
           daily_summary?: boolean
-          homework_assigned?: boolean
-          homework_reminder?: boolean
           quiet_hours_enabled?: boolean
           quiet_hours_end?: string | null
           quiet_hours_start?: string | null
@@ -945,8 +881,6 @@ export type Database = {
         Row: {
           class_id: string | null
           created_at: string
-          homework_assigned: string | null
-          homework_due_date: string | null
           id: string
           lesson_id: string | null
           memorization_score: number | null
@@ -961,8 +895,6 @@ export type Database = {
         Insert: {
           class_id?: string | null
           created_at?: string
-          homework_assigned?: string | null
-          homework_due_date?: string | null
           id?: string
           lesson_id?: string | null
           memorization_score?: number | null
@@ -977,8 +909,6 @@ export type Database = {
         Update: {
           class_id?: string | null
           created_at?: string
-          homework_assigned?: string | null
-          homework_due_date?: string | null
           id?: string
           lesson_id?: string | null
           memorization_score?: number | null

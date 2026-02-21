@@ -11,10 +11,8 @@ export type NotificationCategory =
   | 'sticker_awarded'
   | 'trophy_earned'
   | 'achievement_unlocked'
-  | 'homework_assigned'
   | 'attendance_marked'
   | 'session_completed'
-  | 'homework_reminder'
   | 'daily_summary'
   | 'student_alert';
 
@@ -59,10 +57,8 @@ export interface NotificationPreferencesForm {
   sticker_awarded: boolean;
   trophy_earned: boolean;
   achievement_unlocked: boolean;
-  homework_assigned: boolean;
   attendance_marked: boolean;
   session_completed: boolean;
-  homework_reminder: boolean;
   daily_summary: boolean;
   student_alert: boolean;
   quiet_hours_enabled: boolean;

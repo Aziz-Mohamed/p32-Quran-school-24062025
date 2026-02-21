@@ -13,8 +13,6 @@ interface EvalData {
   tajweed_score: number | null;
   recitation_quality: number | null;
   notes: string;
-  homework_assigned: string;
-  homework_due_date: string | null;
 }
 
 interface CompleteSessionInput {
@@ -74,8 +72,6 @@ export function useCompleteSessionWorkspace() {
           tajweed_score: evalData.tajweed_score,
           recitation_quality: evalData.recitation_quality,
           notes: evalData.notes.trim() || null,
-          homework_assigned: evalData.homework_assigned.trim() || null,
-          homework_due_date: evalData.homework_due_date,
         });
 
         if (sessionError) throw sessionError;
