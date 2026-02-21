@@ -196,7 +196,9 @@
       "addAllToPlan": "إضافة الكل لخطة المراجعة",
       "addingToPlan": "جارٍ الإضافة...",
       "itemsNeedRevision": "{{count}} تحتاج مراجعة",
-      "batchAddedToPlan": "تمت إضافة {{count}} ربع للخطة"
+      "batchAddedToPlan": "تمت إضافة {{count}} ربع للخطة",
+      "certifiedRub": "أرباع محفوظة",
+      "needRevision": "تحتاج مراجعة"
     },
     "dashboard": {
       "title": "لوحة الطالب",

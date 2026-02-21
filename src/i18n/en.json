@@ -196,7 +196,9 @@
       "addAllToPlan": "Add all to revision plan",
       "addingToPlan": "Adding...",
       "itemsNeedRevision": "{{count}} need revision",
-      "batchAddedToPlan": "{{count}} rubʿ added to plan"
+      "batchAddedToPlan": "{{count}} rubʿ added to plan",
+      "certifiedRub": "Certified rubʿ",
+      "needRevision": "Need revision"
     },
     "dashboard": {
       "title": "Student Dashboard",

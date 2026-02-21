@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, I18nManager, Pressable, SectionList, StyleSheet, View, Text } from 'react-native';
+import { ActivityIndicator, Alert, I18nManager, Modal, Pressable, SectionList, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -157,7 +157,7 @@ export default function RevisionHealthScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('rub');
   const [selectedCert, setSelectedCert] = useState<EnrichedCertification | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
-  const [batchAdding, setBatchAdding] = useState(false);
+  const [selectedGroup, setSelectedGroup] = useState<CertGroup | null>(null);
 
   // Health counts (always computed from raw enriched, regardless of view mode)
   const healthCounts = useMemo(() => {
@@ -274,6 +274,10 @@ export default function RevisionHealthScreen() {
     setSheetVisible(true);
   };
 
+  const handleGroupPress = (group: CertGroup) => {
+    setSelectedGroup(group);
+  };
+
   const isAlreadyInPlan = useCallback((cert: EnrichedCertification): boolean => {
     const ref = rubReferenceMap.get(cert.rub_number);
     if (!ref) return false;
@@ -297,17 +301,16 @@ export default function RevisionHealthScreen() {
     );
   };
 
-  const handleBatchAddToPlan = useCallback(async (children: EnrichedCertification[]) => {
-    if (!profile?.id || !schoolId || !canSelfAssign) return;
+  const handleGroupAddToPlan = useCallback(async () => {
+    if (!selectedGroup || !profile?.id || !schoolId || !canSelfAssign) return;
 
-    const eligible = children.filter((c) => {
-      if (c.freshness.state === 'fresh' || c.freshness.state === 'dormant') return false;
+    const eligible = selectedGroup.children.filter((c) => {
+      if (c.freshness.state === 'dormant') return false;
       return !isAlreadyInPlan(c);
     });
 
     if (eligible.length === 0) return;
 
-    setBatchAdding(true);
     try {
       const promises = eligible.map((cert) => {
         const ref = rubReferenceMap.get(cert.rub_number);
@@ -316,12 +319,11 @@ export default function RevisionHealthScreen() {
       });
       await Promise.all(promises);
       Alert.alert('', t('student.revision.batchAddedToPlan', { count: eligible.length }));
+      setSelectedGroup(null);
     } catch {
       // Individual failures handled by TanStack Query
-    } finally {
-      setBatchAdding(false);
     }
-  }, [profile?.id, schoolId, canSelfAssign, isAlreadyInPlan, rubReferenceMap, requestRevision, t]);
+  }, [selectedGroup, profile?.id, schoolId, canSelfAssign, isAlreadyInPlan, rubReferenceMap, requestRevision, t]);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
@@ -444,18 +446,34 @@ export default function RevisionHealthScreen() {
           )}
           renderItem={({ item, section }) => {
             if (isGroup(item)) {
+              const dotColor = FRESHNESS_DOT_COLORS[item.worstState] ?? colors.neutral[400];
+              const bgColor = FRESHNESS_BG_COLORS[item.worstState] ?? colors.neutral[50];
+              const label = viewMode === 'juz'
+                ? `${t('gamification.juz')} ${item.groupNumber}`
+                : `${t('gamification.hizb')} ${item.groupNumber} ${'\u00B7'} ${t('gamification.juz')} ${item.juzNumber}`;
+              const divisor = viewMode === 'hizb' ? 2 : 8;
+
               return (
-                <GroupRow
-                  group={item}
-                  viewMode={viewMode}
-                  showDaysLeft={section.key === 'attention'}
-                  chevron={chevron}
-                  onCertPress={handleCertPress}
-                  onBatchAdd={canSelfAssign ? handleBatchAddToPlan : undefined}
-                  batchAdding={batchAdding}
-                  isAlreadyInPlan={isAlreadyInPlan}
-                  t={t}
-                />
+                <Pressable
+                  style={({ pressed }) => [styles.rubRow, pressed && styles.rubRowPressed]}
+                  onPress={() => handleGroupPress(item)}
+                >
+                  <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
+                  <View style={styles.rubInfo}>
+                    <Text style={styles.rubTitle}>{label}</Text>
+                    <View style={[styles.rubChip, { backgroundColor: bgColor }]}>
+                      <Text style={[styles.rubChipText, { color: dotColor }]}>
+                        {item.needsRevisionCount > 0
+                          ? t('student.revision.itemsNeedRevision', { count: item.needsRevisionCount })
+                          : t(`gamification.freshness.${item.worstState}`)}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.groupCountBadge}>
+                    <Text style={styles.groupCountText}>{item.children.length}/{divisor}</Text>
+                  </View>
+                  <Ionicons name={chevron as any} size={16} color={colors.neutral[300]} />
+                </Pressable>
               );
             }
             return (
@@ -492,7 +510,7 @@ export default function RevisionHealthScreen() {
           }
         />
 
-        {/* Revision Sheet */}
+        {/* Revision Sheet (single rubʿ) */}
         <RevisionSheet
           mode="student"
           visible={sheetVisible}
@@ -506,6 +524,17 @@ export default function RevisionHealthScreen() {
             setSheetVisible(false);
             setSelectedCert(null);
           }}
+        />
+
+        {/* Group Revision Sheet (hizb/juz) */}
+        <GroupRevisionSheet
+          group={selectedGroup}
+          viewMode={viewMode}
+          canSelfAssign={canSelfAssign}
+          isAdding={requestRevision.isPending}
+          isAlreadyInPlan={isAlreadyInPlan}
+          onAddToPlan={handleGroupAddToPlan}
+          onClose={() => setSelectedGroup(null)}
         />
       </View>
     </Screen>
@@ -530,14 +559,12 @@ function RubRow({
   chevron,
   onPress,
   t,
-  indented,
 }: {
   cert: EnrichedCertification;
   showDaysLeft: boolean;
   chevron: string;
   onPress: () => void;
   t: (key: string, opts?: any) => string;
-  indented?: boolean;
 }) {
   const juz = Math.ceil(cert.rub_number / 8);
   const dotColor = FRESHNESS_DOT_COLORS[cert.freshness.state] ?? colors.neutral[400];
@@ -547,7 +574,6 @@ function RubRow({
     <Pressable
       style={({ pressed }) => [
         styles.rubRow,
-        indented && styles.rubRowIndented,
         pressed && styles.rubRowPressed,
       ]}
       onPress={onPress}
@@ -570,116 +596,139 @@ function RubRow({
   );
 }
 
-function GroupRow({
+function GroupRevisionSheet({
   group,
   viewMode,
-  showDaysLeft,
-  chevron,
-  onCertPress,
-  onBatchAdd,
-  batchAdding,
+  canSelfAssign,
+  isAdding,
   isAlreadyInPlan,
-  t,
+  onAddToPlan,
+  onClose,
 }: {
-  group: CertGroup;
+  group: CertGroup | null;
   viewMode: ViewMode;
-  showDaysLeft: boolean;
-  chevron: string;
-  onCertPress: (cert: EnrichedCertification) => void;
-  onBatchAdd?: (children: EnrichedCertification[]) => void;
-  batchAdding: boolean;
+  canSelfAssign: boolean;
+  isAdding: boolean;
   isAlreadyInPlan: (cert: EnrichedCertification) => boolean;
-  t: (key: string, opts?: any) => string;
+  onAddToPlan: () => void;
+  onClose: () => void;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const { t } = useTranslation();
+
+  if (!group) return null;
 
   const dotColor = FRESHNESS_DOT_COLORS[group.worstState] ?? colors.neutral[400];
   const bgColor = FRESHNESS_BG_COLORS[group.worstState] ?? colors.neutral[50];
+  const divisor = viewMode === 'hizb' ? 2 : 8;
 
   const label = viewMode === 'juz'
     ? `${t('gamification.juz')} ${group.groupNumber}`
     : `${t('gamification.hizb')} ${group.groupNumber} ${'\u00B7'} ${t('gamification.juz')} ${group.juzNumber}`;
 
-  const totalChildren = group.children.length;
-  const divisor = viewMode === 'hizb' ? 2 : 8;
+  // Count eligible for plan (any non-dormant rubʿ not already in plan — same as individual rubʿ behavior)
+  const eligibleCount = group.children.filter((c) => {
+    if (c.freshness.state === 'dormant') return false;
+    return !isAlreadyInPlan(c);
+  }).length;
 
-  // Count eligible items for batch add (non-fresh, non-dormant, not already in plan)
-  const eligibleForPlan = onBatchAdd
-    ? group.children.filter((c) => {
-        if (c.freshness.state === 'fresh' || c.freshness.state === 'dormant') return false;
-        return !isAlreadyInPlan(c);
-      }).length
+  // Average freshness
+  const avgFreshness = group.children.length > 0
+    ? Math.round(group.children.reduce((sum, c) => sum + c.freshness.percentage, 0) / group.children.length)
     : 0;
 
+  const nonDormantCount = group.children.filter((c) => c.freshness.state !== 'dormant').length;
+  const allInPlan = eligibleCount === 0 && nonDormantCount > 0;
+
   return (
-    <View style={styles.groupContainer}>
-      <Pressable
-        style={({ pressed }) => [styles.groupRow, pressed && styles.rubRowPressed]}
-        onPress={() => setExpanded((prev) => !prev)}
-      >
-        <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
-        <View style={styles.rubInfo}>
-          <Text style={styles.rubTitle}>{label}</Text>
-          {group.needsRevisionCount > 0 ? (
-            <View style={[styles.rubChip, { backgroundColor: bgColor }]}>
-              <Text style={[styles.rubChipText, { color: dotColor }]}>
-                {t('student.revision.itemsNeedRevision', { count: group.needsRevisionCount })}
-              </Text>
-            </View>
-          ) : (
-            <View style={[styles.rubChip, { backgroundColor: bgColor }]}>
-              <Text style={[styles.rubChipText, { color: dotColor }]}>
+    <Modal visible={!!group} transparent animationType="fade" onRequestClose={onClose}>
+      <Pressable style={styles.sheetOverlay} onPress={onClose}>
+        <Pressable style={styles.sheetContent} onPress={() => {}}>
+          {/* Header */}
+          <View style={styles.sheetHeader}>
+            <Text style={styles.sheetTitle}>{label}</Text>
+            <View style={[styles.sheetChip, { backgroundColor: bgColor }]}>
+              <Text style={[styles.sheetChipText, { color: dotColor }]}>
                 {t(`gamification.freshness.${group.worstState}`)}
               </Text>
             </View>
-          )}
-        </View>
-        <View style={styles.groupCountBadge}>
-          <Text style={styles.groupCountText}>{totalChildren}/{divisor}</Text>
-        </View>
-        <Ionicons
-          name={expanded ? 'chevron-down' : (chevron as any)}
-          size={16}
-          color={colors.neutral[300]}
-        />
-      </Pressable>
+          </View>
 
-      {expanded && (
-        <View style={styles.groupChildren}>
-          {group.children.map((cert) => (
-            <RubRow
-              key={cert.id}
-              cert={cert}
-              showDaysLeft={showDaysLeft}
-              chevron={chevron}
-              onPress={() => onCertPress(cert)}
-              t={t}
-              indented
-            />
-          ))}
+          {/* Info Card */}
+          <View style={styles.sheetInfo}>
+            <View style={styles.sheetInfoRow}>
+              <Text style={styles.sheetInfoLabel}>{t('student.revision.certifiedRub')}</Text>
+              <Text style={styles.sheetInfoValue}>{group.children.length}/{divisor}</Text>
+            </View>
+            <View style={styles.sheetInfoRow}>
+              <Text style={styles.sheetInfoLabel}>{t('student.revision.needRevision')}</Text>
+              <Text style={styles.sheetInfoValue}>{group.needsRevisionCount}</Text>
+            </View>
+            {/* Freshness bar */}
+            <View style={styles.sheetBarRow}>
+              <View style={styles.sheetBarTrack}>
+                <View
+                  style={[
+                    styles.sheetBarFill,
+                    { width: `${avgFreshness}%`, backgroundColor: dotColor },
+                  ]}
+                />
+              </View>
+              <Text style={styles.sheetBarPercent}>{avgFreshness}%</Text>
+            </View>
+          </View>
 
-          {/* Batch "Add to Plan" button */}
-          {onBatchAdd && eligibleForPlan > 0 && (
+          {/* Action */}
+          {canSelfAssign && eligibleCount > 0 && (
             <Pressable
-              style={({ pressed }) => [styles.batchAddButton, pressed && styles.rubRowPressed]}
-              onPress={() => onBatchAdd(group.children)}
-              disabled={batchAdding}
+              style={({ pressed }) => [styles.sheetPlanButton, pressed && styles.sheetPressed]}
+              onPress={onAddToPlan}
+              disabled={isAdding}
             >
-              {batchAdding ? (
+              {isAdding ? (
                 <ActivityIndicator size="small" color={colors.primary[500]} />
               ) : (
-                <Ionicons name="add-circle-outline" size={18} color={colors.primary[500]} />
+                <Ionicons name="book-outline" size={22} color={colors.primary[500]} />
               )}
-              <Text style={styles.batchAddText}>
-                {batchAdding
-                  ? t('student.revision.addingToPlan')
-                  : `${t('student.revision.addAllToPlan')} (${eligibleForPlan})`}
-              </Text>
+              <View style={styles.sheetPlanText}>
+                <Text style={styles.sheetPlanLabel}>
+                  {isAdding
+                    ? t('student.revision.addingToPlan')
+                    : `${t('student.revision.addAllToPlan')} (${eligibleCount})`}
+                </Text>
+              </View>
             </Pressable>
           )}
-        </View>
-      )}
-    </View>
+
+          {allInPlan && (
+            <View style={[styles.sheetPlanButton, styles.sheetPlanDisabled]}>
+              <Ionicons name="checkmark-circle" size={22} color={colors.primary[500]} />
+              <View style={styles.sheetPlanText}>
+                <Text style={[styles.sheetPlanLabel, { color: colors.primary[600] }]}>
+                  {t('gamification.revision.alreadyInPlan')}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {!canSelfAssign && (
+            <View style={styles.sheetInfoMessage}>
+              <Ionicons name="person" size={20} color={colors.neutral[500]} />
+              <Text style={styles.sheetInfoMessageText}>
+                {t('gamification.revision.askTeacherDesc')}
+              </Text>
+            </View>
+          )}
+
+          {/* Cancel */}
+          <Pressable
+            style={({ pressed }) => [styles.sheetCancel, pressed && styles.sheetPressed]}
+            onPress={onClose}
+          >
+            <Text style={styles.sheetCancelText}>{t('common.cancel')}</Text>
+          </Pressable>
+        </Pressable>
+      </Pressable>
+    </Modal>
   );
 }
 
@@ -833,11 +882,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
   },
-  rubRowIndented: {
-    marginStart: spacing.md,
-    backgroundColor: colors.neutral[50],
-    boxShadow: 'none',
-  },
   rubRowPressed: {
     opacity: 0.7,
   },
@@ -866,20 +910,7 @@ const styles = StyleSheet.create({
     fontSize: normalize(11),
   },
 
-  // Group Rows
-  groupContainer: {
-    marginBottom: spacing.sm,
-  },
-  groupRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
-    gap: spacing.md,
-    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
-  },
+  // Group count badge (used in flat group rows)
   groupCountBadge: {
     backgroundColor: colors.neutral[100],
     paddingHorizontal: spacing.sm,
@@ -891,29 +922,137 @@ const styles = StyleSheet.create({
     fontSize: normalize(11),
     color: colors.neutral[600],
   },
-  groupChildren: {
-    marginTop: spacing.xs,
-    gap: spacing.xs,
-  },
 
-  // Batch Add Button
-  batchAddButton: {
+  // Group Revision Sheet
+  sheetOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  sheetContent: {
+    backgroundColor: colors.white,
+    borderTopStartRadius: radius.xl,
+    borderTopEndRadius: radius.xl,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing['3xl'],
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: spacing.base,
+  },
+  sheetTitle: {
+    ...typography.textStyles.subheading,
+    color: lightTheme.text,
+  },
+  sheetChip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.full,
+    marginStart: spacing.sm,
+  },
+  sheetChipText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(12),
+  },
+  sheetInfo: {
+    backgroundColor: colors.neutral[50],
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.base,
+    gap: spacing.sm,
+  },
+  sheetInfoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sheetInfoLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(13),
+    color: colors.neutral[500],
+  },
+  sheetInfoValue: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(13),
+    color: colors.neutral[800],
+  },
+  sheetBarRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: spacing.sm,
-    marginStart: spacing.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
+    marginTop: spacing.xs,
+  },
+  sheetBarTrack: {
+    flex: 1,
+    height: normalize(6),
+    backgroundColor: colors.neutral[200],
+    borderRadius: radius.full,
+    overflow: 'hidden',
+  },
+  sheetBarFill: {
+    height: '100%',
+    borderRadius: radius.full,
+  },
+  sheetBarPercent: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(12),
+    color: colors.neutral[600],
+    minWidth: normalize(32),
+    textAlign: 'right',
+  },
+  sheetPlanButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.base,
     backgroundColor: colors.primary[50],
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.primary[200],
+    marginBottom: spacing.lg,
   },
-  batchAddText: {
-    fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(12),
+  sheetPlanDisabled: {
+    opacity: 0.8,
+    borderColor: colors.primary[100],
+  },
+  sheetPlanText: {
+    flex: 1,
+  },
+  sheetPlanLabel: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(15),
     color: colors.primary[600],
+  },
+  sheetInfoMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.base,
+    backgroundColor: colors.neutral[50],
+    borderRadius: radius.md,
+    marginBottom: spacing.lg,
+  },
+  sheetInfoMessageText: {
+    flex: 1,
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(13),
+    color: colors.neutral[600],
+  },
+  sheetPressed: {
+    opacity: 0.7,
+  },
+  sheetCancel: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+  },
+  sheetCancelText: {
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[500],
   },
 
   // Quick Links
