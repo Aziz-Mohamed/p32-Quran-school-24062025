@@ -19,7 +19,8 @@ import { useUndoCertification } from '@/features/gamification/hooks/useUndoCerti
 import { RubProgressMap } from '@/features/gamification/components/RubProgressMap';
 import { RevisionSheet } from '@/features/gamification/components/RevisionSheet';
 import { useRecordRevision } from '@/features/gamification/hooks/useRecordRevision';
-import type { EnrichedCertification } from '@/features/gamification/types/gamification.types';
+import { useRubReference } from '@/features/gamification/hooks/useRubReference';
+import type { EnrichedCertification, RubReference } from '@/features/gamification/types/gamification.types';
 import { useAttendanceRate } from '@/features/attendance/hooks/useAttendance';
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { MemorizationProgressBar } from '@/features/memorization';
@@ -53,6 +54,18 @@ export default function TeacherStudentDetailScreen() {
   const certifyMutation = useCertifyRub();
   const undoMutation = useUndoCertification();
   const { goodRevision, poorRevision, recertify } = useRecordRevision();
+
+  // Rubʿ reference data for verse ranges in RevisionSheet
+  const { data: rubReferenceList } = useRubReference();
+  const rubReferenceMap = React.useMemo(() => {
+    const map = new Map<number, RubReference>();
+    if (rubReferenceList) {
+      for (const ref of rubReferenceList) {
+        map.set(ref.rub_number, ref);
+      }
+    }
+    return map;
+  }, [rubReferenceList]);
 
   // Undo state
   const [undoInfo, setUndoInfo] = useState<{ certId: string; rubNumber: number } | null>(null);
@@ -264,8 +277,10 @@ export default function TeacherStudentDetailScreen() {
 
         {/* Revision Sheet */}
         <RevisionSheet
+          mode="teacher"
           visible={!!revisionCert}
           certification={revisionCert}
+          reference={revisionCert ? rubReferenceMap.get(revisionCert.rub_number) ?? null : null}
           onAction={handleRevisionAction}
           onClose={() => setRevisionCert(null)}
         />

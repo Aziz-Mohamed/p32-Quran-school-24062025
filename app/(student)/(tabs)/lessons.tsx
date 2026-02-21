@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { I18nManager, Pressable, SectionList, StyleSheet, View, Text } from 'react-native';
+import { Alert, I18nManager, Pressable, SectionList, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,11 +12,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
 import {
   useRubCertifications,
+  useRubReference,
+  useRequestRevision,
   RevisionWarning,
   RevisionSheet,
-  useRecordRevision,
 } from '@/features/gamification';
-import type { EnrichedCertification } from '@/features/gamification';
+import type { EnrichedCertification, RubReference } from '@/features/gamification';
+import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
+import { assignmentService } from '@/features/memorization/services/assignment.service';
+import { useQuery } from '@tanstack/react-query';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -59,7 +63,53 @@ export default function RevisionHealthScreen() {
     refetch,
   } = useRubCertifications(profile?.id);
 
-  const { goodRevision, poorRevision, recertify } = useRecordRevision();
+  // Rubʿ reference data for verse ranges
+  const { data: rubReferenceList } = useRubReference();
+  const rubReferenceMap = useMemo(() => {
+    const map = new Map<number, RubReference>();
+    if (rubReferenceList) {
+      for (const ref of rubReferenceList) {
+        map.set(ref.rub_number, ref);
+      }
+    }
+    return map;
+  }, [rubReferenceList]);
+
+  // Student data for can_self_assign and school_id
+  const { data: dashboardData } = useStudentDashboard(profile?.id);
+  const canSelfAssign = dashboardData?.student?.can_self_assign ?? false;
+  const schoolId = dashboardData?.student?.school_id ?? '';
+
+  // "Add to Plan" mutation
+  const requestRevision = useRequestRevision();
+
+  // Pending assignments for "already in plan" check
+  const { data: pendingAssignments } = useQuery({
+    queryKey: ['assignments', 'pending-revision', profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) throw new Error('No profile');
+      const { data, error } = await assignmentService.getAssignments({
+        studentId: profile.id,
+        assignmentType: 'old_review',
+        status: 'pending',
+      });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!profile?.id,
+    staleTime: 1000 * 60,
+  });
+
+  // Build a set of surah:fromAyah keys that are already in plan
+  const pendingKeys = useMemo(() => {
+    const keys = new Set<string>();
+    if (pendingAssignments) {
+      for (const a of pendingAssignments) {
+        keys.add(`${a.surah_number}:${a.from_ayah}`);
+      }
+    }
+    return keys;
+  }, [pendingAssignments]);
 
   const [selectedCert, setSelectedCert] = useState<EnrichedCertification | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -99,30 +149,27 @@ export default function RevisionHealthScreen() {
     setSheetVisible(true);
   };
 
-  const handleRevisionAction = (action: 'good' | 'poor' | 'recertify') => {
-    if (!selectedCert || !profile?.id) return;
+  const isAlreadyInPlan = (cert: EnrichedCertification): boolean => {
+    const ref = rubReferenceMap.get(cert.rub_number);
+    if (!ref) return false;
+    return pendingKeys.has(`${ref.start_surah}:${ref.start_ayah}`);
+  };
 
-    const input = {
-      certificationId: selectedCert.id,
-      studentId: profile.id,
-      reviewCount: selectedCert.review_count,
-      dormantSince: selectedCert.dormant_since,
-    };
+  const handleAddToPlan = () => {
+    if (!selectedCert || !profile?.id || !schoolId) return;
+    const ref = rubReferenceMap.get(selectedCert.rub_number);
+    if (!ref) return;
 
-    if (action === 'good') {
-      goodRevision.mutate(input);
-    } else if (action === 'poor') {
-      poorRevision.mutate(input);
-    } else if (action === 'recertify') {
-      recertify.mutate({
-        certificationId: selectedCert.id,
-        studentId: profile.id,
-        certifiedBy: profile.id,
-      });
-    }
-
-    setSheetVisible(false);
-    setSelectedCert(null);
+    requestRevision.mutate(
+      { studentId: profile.id, schoolId, reference: ref },
+      {
+        onSuccess: () => {
+          Alert.alert('', t('gamification.revision.addedToPlan'));
+          setSheetVisible(false);
+          setSelectedCert(null);
+        },
+      },
+    );
   };
 
   if (isLoading) return <LoadingState />;
@@ -167,6 +214,8 @@ export default function RevisionHealthScreen() {
   const warningCount = healthCounts.warning ?? 0;
   const criticalCountLocal = healthCounts.critical ?? 0;
   const dormantCountLocal = healthCounts.dormant ?? 0;
+
+  const selectedRef = selectedCert ? rubReferenceMap.get(selectedCert.rub_number) ?? null : null;
 
   return (
     <Screen scroll={false} hasTabBar>
@@ -269,9 +318,14 @@ export default function RevisionHealthScreen() {
 
         {/* Revision Sheet */}
         <RevisionSheet
+          mode="student"
           visible={sheetVisible}
           certification={selectedCert}
-          onAction={handleRevisionAction}
+          reference={selectedRef}
+          canSelfAssign={canSelfAssign}
+          alreadyInPlan={selectedCert ? isAlreadyInPlan(selectedCert) : false}
+          isAddingToPlan={requestRevision.isPending}
+          onAddToPlan={handleAddToPlan}
           onClose={() => {
             setSheetVisible(false);
             setSelectedCert(null);
