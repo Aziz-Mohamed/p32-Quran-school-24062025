@@ -142,6 +142,7 @@ export default function RevisionHealthScreen() {
   );
 
   const [viewMode, setViewMode] = useState<ViewMode>('rub');
+  const [viewModeOpen, setViewModeOpen] = useState(false);
   const [selectedCert, setSelectedCert] = useState<EnrichedCertification | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<CertGroup | null>(null);
@@ -344,7 +345,47 @@ export default function RevisionHealthScreen() {
   return (
     <Screen scroll={false}>
       <View style={styles.container}>
-        <Text style={styles.title}>{t('student.revision.title')}</Text>
+        <View style={styles.headerRow}>
+          <Text style={styles.title}>{t('student.revision.title')}</Text>
+          <View>
+            <Pressable
+              style={styles.viewModeButton}
+              onPress={() => setViewModeOpen((v) => !v)}
+            >
+              <Text style={styles.viewModeLabel}>
+                {t(`student.revision.viewMode.${viewMode}`)}
+              </Text>
+              <Ionicons
+                name={viewModeOpen ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color={colors.primary[500]}
+              />
+            </Pressable>
+            {viewModeOpen && (
+              <View style={styles.viewModeDropdown}>
+                {VIEW_MODES.map((mode) => (
+                  <Pressable
+                    key={mode}
+                    style={[
+                      styles.viewModeOption,
+                      viewMode === mode && styles.viewModeOptionActive,
+                    ]}
+                    onPress={() => { setViewMode(mode); setViewModeOpen(false); }}
+                  >
+                    <Text
+                      style={[
+                        styles.viewModeOptionText,
+                        viewMode === mode && styles.viewModeOptionTextActive,
+                      ]}
+                    >
+                      {t(`student.revision.viewMode.${mode}`)}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+          </View>
+        </View>
 
         <SectionList
           sections={sections}
@@ -353,32 +394,6 @@ export default function RevisionHealthScreen() {
           stickySectionHeadersEnabled={false}
           ListHeaderComponent={
             <>
-              {/* View Mode Segment Control */}
-              <View style={styles.segmentRow}>
-                {VIEW_MODES.map((mode) => {
-                  const isActive = viewMode === mode;
-                  return (
-                    <Pressable
-                      key={mode}
-                      style={[
-                        styles.segmentButton,
-                        isActive && styles.segmentButtonActive,
-                      ]}
-                      onPress={() => setViewMode(mode)}
-                    >
-                      <Text
-                        style={[
-                          styles.segmentText,
-                          isActive && styles.segmentTextActive,
-                        ]}
-                      >
-                        {t(`student.revision.viewMode.${mode}`)}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-
               {/* Health Summary Card */}
               <Card variant="default" style={styles.healthCard}>
                 <View style={styles.healthRow}>
@@ -771,41 +786,59 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 110,
   },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
+    zIndex: 10,
+  },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
     fontSize: normalize(24),
-    marginBottom: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
   },
 
-  // Segment Control
-  segmentRow: {
+  // View Mode Dropdown
+  viewModeButton: {
     flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  segmentButton: {
-    flex: 1,
     alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    backgroundColor: colors.white,
+    gap: normalize(4),
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
   },
-  segmentButtonActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
-  },
-  segmentText: {
+  viewModeLabel: {
     fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(14),
+    color: colors.primary[500],
+  },
+  viewModeDropdown: {
+    position: 'absolute',
+    top: '100%',
+    right: 0,
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    paddingVertical: normalize(4),
+    minWidth: normalize(100),
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)',
+  },
+  viewModeOption: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+  },
+  viewModeOptionActive: {
+    backgroundColor: colors.primary[50],
+  },
+  viewModeOptionText: {
+    fontFamily: typography.fontFamily.medium,
     fontSize: normalize(13),
     color: colors.neutral[600],
   },
-  segmentTextActive: {
-    color: colors.white,
+  viewModeOptionTextActive: {
+    color: colors.primary[600],
+    fontFamily: typography.fontFamily.semiBold,
   },
 
   // Health Summary
