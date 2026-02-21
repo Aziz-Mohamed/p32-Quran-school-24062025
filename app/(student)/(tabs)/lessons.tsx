@@ -342,7 +342,7 @@ export default function RevisionHealthScreen() {
   const selectedRef = selectedCert ? rubReferenceMap.get(selectedCert.rub_number) ?? null : null;
 
   return (
-    <Screen scroll={false} hasTabBar>
+    <Screen scroll={false}>
       <View style={styles.container}>
         <Text style={styles.title}>{t('student.revision.title')}</Text>
 
@@ -769,6 +769,7 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing.lg,
     paddingTop: 0,
+    paddingBottom: 110,
   },
   title: {
     ...typography.textStyles.heading,

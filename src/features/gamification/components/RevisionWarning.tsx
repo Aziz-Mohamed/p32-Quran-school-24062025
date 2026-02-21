@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     borderRadius: normalize(8),
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
   },
   text: {
     fontFamily: typography.fontFamily.semiBold,
