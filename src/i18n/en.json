@@ -170,10 +170,24 @@
   "student": {
     "tabs": {
       "dashboard": "Dashboard",
-      "lessons": "Lessons",
+      "revision": "Revision",
       "memorization": "Memorization",
       "stickers": "Stickers",
       "profile": "Profile"
+    },
+    "revision": {
+      "title": "Revision Health",
+      "healthSummary": "{{active}} / {{total}} rubʿ certified",
+      "needsAttention": "Needs Attention",
+      "allCertified": "All Certified",
+      "daysLeft": "{{count}} days left",
+      "freshness": "{{percentage}}%",
+      "allFresh": "All memorization is fresh!",
+      "allFreshDesc": "No rubʿ need revision right now",
+      "noCertifications": "No rubʿ certified yet",
+      "noCertificationsDesc": "Rubʿ will appear here once your teacher certifies your memorization",
+      "fullMap": "Full Map",
+      "todaysPlan": "Today's Plan"
     },
     "dashboard": {
       "title": "Student Dashboard",
@@ -1070,7 +1084,20 @@
       "goodDesc": "Student recited correctly — freshness resets to 100%",
       "poorDesc": "Student needs more practice — freshness resets to 50%",
       "recertify": "Re-certify",
-      "recertifyDesc": "Dormant over 90 days — requires full re-certification"
+      "recertifyDesc": "Dormant over 90 days — requires full re-certification",
+      "certifiedOn": "Certified",
+      "certifiedBy": "Teacher",
+      "timesReviewed": "Reviews",
+      "lastReviewed": "Last Review",
+      "daysAgo": "{{count}} days ago",
+      "neverReviewed": "Never",
+      "addToPlan": "Add to My Revision Plan",
+      "addToPlanDesc": "Adds to your memorization schedule",
+      "alreadyInPlan": "Already in your revision plan",
+      "addedToPlan": "Added to revision plan!",
+      "askTeacher": "Ask your teacher",
+      "askTeacherDesc": "Ask your teacher to add this to your revision",
+      "needsRecertNote": "This rubʿ needs re-certification by your teacher"
     }
   }
 }

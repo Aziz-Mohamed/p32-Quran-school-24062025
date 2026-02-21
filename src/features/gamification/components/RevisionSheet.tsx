@@ -1,38 +1,48 @@
 import React from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import type { EnrichedCertification } from '../types/gamification.types';
+import type { EnrichedCertification, RubReference } from '../types/gamification.types';
 import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
+import { formatRubVerseRange } from '@/lib/quran-metadata';
+import i18next from 'i18next';
 
 type RevisionAction = 'good' | 'poor' | 'recertify';
 
-interface RevisionSheetProps {
+interface RevisionSheetBaseProps {
   visible: boolean;
   certification: EnrichedCertification | null;
-  onAction: (action: RevisionAction) => void;
+  reference?: RubReference | null;
   onClose: () => void;
 }
+
+interface TeacherRevisionSheetProps extends RevisionSheetBaseProps {
+  mode: 'teacher';
+  onAction: (action: RevisionAction) => void;
+}
+
+interface StudentRevisionSheetProps extends RevisionSheetBaseProps {
+  mode: 'student';
+  canSelfAssign: boolean;
+  alreadyInPlan: boolean;
+  isAddingToPlan?: boolean;
+  onAddToPlan: () => void;
+}
+
+export type RevisionSheetProps = TeacherRevisionSheetProps | StudentRevisionSheetProps;
 
 /**
  * Revision modal for certified rubʿ.
  *
- * For active rubʿ: shows "Good" and "Poor" options.
- * For dormant rubʿ:
- *   - 0-90 days: shows "Good" revision (restores)
- *   - 90+ days: shows "Re-certify" option
- *   - "Poor" is disabled for dormant rubʿ (cannot restore dormancy)
+ * Student mode: shows info section + "Add to Plan" action
+ * Teacher mode: shows info section + Good/Poor/Recertify actions
  */
-export function RevisionSheet({
-  visible,
-  certification,
-  onAction,
-  onClose,
-}: RevisionSheetProps) {
+export function RevisionSheet(props: RevisionSheetProps) {
+  const { visible, certification, reference, onClose, mode } = props;
   const { t } = useTranslation();
 
   if (!certification) return null;
@@ -42,6 +52,41 @@ export function RevisionSheet({
     ? (Date.now() - Date.parse(certification.dormant_since)) / (24 * 60 * 60 * 1000)
     : 0;
   const needsRecertification = isDormant && dormantDays >= 90;
+
+  const juz = Math.ceil(certification.rub_number / 8);
+  const lang = i18next.language?.startsWith('ar') ? 'ar' : 'en';
+
+  // Verse range from reference data
+  const verseRange = reference
+    ? formatRubVerseRange(
+        reference.start_surah,
+        reference.start_ayah,
+        reference.end_surah,
+        reference.end_ayah,
+        lang,
+      )
+    : null;
+
+  // Teacher name from joined profile
+  const teacherName = certification.profiles?.full_name ?? null;
+
+  // Relative time for last review
+  const lastReviewedText = certification.last_reviewed_at
+    ? t('gamification.revision.daysAgo', {
+        count: Math.floor(
+          (Date.now() - Date.parse(certification.last_reviewed_at)) / (24 * 60 * 60 * 1000),
+        ),
+      })
+    : t('gamification.revision.neverReviewed');
+
+  // Certified date formatted
+  const certifiedDate = certification.certified_at
+    ? new Date(certification.certified_at).toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : null;
 
   return (
     <Modal
@@ -54,56 +99,85 @@ export function RevisionSheet({
         <Pressable style={styles.sheet} onPress={() => {}}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.title}>
-              {t('gamification.rub')} {certification.rub_number}
-            </Text>
-            <View style={[
-              styles.freshnessChip,
-              { backgroundColor: FRESHNESS_CHIP_COLORS[certification.freshness.state] },
-            ]}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.title}>
+                {t('gamification.rub')} {certification.rub_number} {'\u00B7'}{' '}
+                {t('gamification.juz')} {juz}
+              </Text>
+              {verseRange && <Text style={styles.verseRange}>{verseRange}</Text>}
+            </View>
+            <View
+              style={[
+                styles.freshnessChip,
+                { backgroundColor: FRESHNESS_CHIP_COLORS[certification.freshness.state] },
+              ]}
+            >
               <Text style={styles.freshnessText}>
                 {t(`gamification.freshness.${certification.freshness.state}`)}
               </Text>
             </View>
           </View>
 
-          {/* Info */}
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{t('gamification.freshness.fresh')}</Text>
-            <Text style={styles.infoValue}>{certification.freshness.percentage}%</Text>
+          {/* Info Section */}
+          <View style={styles.infoCard}>
+            {certifiedDate && (
+              <InfoRow
+                label={t('gamification.revision.certifiedOn')}
+                value={certifiedDate}
+              />
+            )}
+            {teacherName && (
+              <InfoRow
+                label={t('gamification.revision.certifiedBy')}
+                value={teacherName}
+              />
+            )}
+            <InfoRow
+              label={t('gamification.revision.timesReviewed')}
+              value={`${certification.review_count} ${certification.review_count === 1 ? 'time' : 'times'}`}
+            />
+            <InfoRow
+              label={t('gamification.revision.lastReviewed')}
+              value={lastReviewedText}
+            />
+            {/* Freshness bar */}
+            <View style={styles.freshnessBarRow}>
+              <View style={styles.freshnessBarTrack}>
+                <View
+                  style={[
+                    styles.freshnessBarFill,
+                    {
+                      width: `${certification.freshness.percentage}%`,
+                      backgroundColor:
+                        FRESHNESS_BAR_COLORS[certification.freshness.state] ?? colors.neutral[300],
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={styles.freshnessPercent}>
+                {certification.freshness.percentage}%
+              </Text>
+            </View>
           </View>
 
-          {/* Actions */}
-          <View style={styles.actions}>
-            {needsRecertification ? (
-              <ActionButton
-                icon="refresh-circle"
-                label={t('gamification.revision.recertify')}
-                description={t('gamification.revision.recertifyDesc')}
-                color={colors.accent.violet[500]}
-                onPress={() => onAction('recertify')}
-              />
-            ) : (
-              <>
-                <ActionButton
-                  icon="checkmark-circle"
-                  label={t('gamification.revision.good')}
-                  description={t('gamification.revision.goodDesc')}
-                  color={colors.primary[500]}
-                  onPress={() => onAction('good')}
-                />
-                {!isDormant && (
-                  <ActionButton
-                    icon="alert-circle"
-                    label={t('gamification.revision.poor')}
-                    description={t('gamification.revision.poorDesc')}
-                    color={colors.secondary[500]}
-                    onPress={() => onAction('poor')}
-                  />
-                )}
-              </>
-            )}
-          </View>
+          {/* Actions — differ by mode */}
+          {mode === 'student' ? (
+            <StudentActions
+              needsRecertification={needsRecertification}
+              canSelfAssign={props.canSelfAssign}
+              alreadyInPlan={props.alreadyInPlan}
+              isAddingToPlan={props.isAddingToPlan}
+              onAddToPlan={props.onAddToPlan}
+              t={t}
+            />
+          ) : (
+            <TeacherActions
+              isDormant={isDormant}
+              needsRecertification={needsRecertification}
+              onAction={props.onAction}
+              t={t}
+            />
+          )}
 
           {/* Cancel */}
           <Pressable
@@ -116,6 +190,144 @@ export function RevisionSheet({
         </Pressable>
       </Pressable>
     </Modal>
+  );
+}
+
+// ─── Sub-Components ────────────────────────────────────────────────────────────
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <View style={styles.infoRow}>
+      <Text style={styles.infoLabel}>{label}</Text>
+      <Text style={styles.infoValue}>{value}</Text>
+    </View>
+  );
+}
+
+function StudentActions({
+  needsRecertification,
+  canSelfAssign,
+  alreadyInPlan,
+  isAddingToPlan,
+  onAddToPlan,
+  t,
+}: {
+  needsRecertification: boolean;
+  canSelfAssign: boolean;
+  alreadyInPlan: boolean;
+  isAddingToPlan?: boolean;
+  onAddToPlan: () => void;
+  t: (key: string) => string;
+}) {
+  if (needsRecertification) {
+    return (
+      <View style={styles.actions}>
+        <View style={styles.infoMessage}>
+          <Ionicons name="information-circle" size={20} color={colors.neutral[500]} />
+          <Text style={styles.infoMessageText}>
+            {t('gamification.revision.needsRecertNote')}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (!canSelfAssign) {
+    return (
+      <View style={styles.actions}>
+        <View style={styles.infoMessage}>
+          <Ionicons name="person" size={20} color={colors.neutral[500]} />
+          <Text style={styles.infoMessageText}>
+            {t('gamification.revision.askTeacherDesc')}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  if (alreadyInPlan) {
+    return (
+      <View style={styles.actions}>
+        <View style={[styles.planButton, styles.planButtonDisabled]}>
+          <Ionicons name="checkmark-circle" size={22} color={colors.primary[500]} />
+          <View style={styles.planButtonText}>
+            <Text style={[styles.planButtonLabel, { color: colors.primary[600] }]}>
+              {t('gamification.revision.alreadyInPlan')}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.actions}>
+      <Pressable
+        style={({ pressed }) => [styles.planButton, pressed && styles.pressed]}
+        onPress={onAddToPlan}
+        disabled={isAddingToPlan}
+        accessibilityRole="button"
+      >
+        {isAddingToPlan ? (
+          <ActivityIndicator size="small" color={colors.primary[500]} />
+        ) : (
+          <Ionicons name="book-outline" size={22} color={colors.primary[500]} />
+        )}
+        <View style={styles.planButtonText}>
+          <Text style={[styles.planButtonLabel, { color: colors.primary[600] }]}>
+            {t('gamification.revision.addToPlan')}
+          </Text>
+          <Text style={styles.planButtonDesc}>
+            {t('gamification.revision.addToPlanDesc')}
+          </Text>
+        </View>
+      </Pressable>
+    </View>
+  );
+}
+
+function TeacherActions({
+  isDormant,
+  needsRecertification,
+  onAction,
+  t,
+}: {
+  isDormant: boolean;
+  needsRecertification: boolean;
+  onAction: (action: RevisionAction) => void;
+  t: (key: string) => string;
+}) {
+  return (
+    <View style={styles.actions}>
+      {needsRecertification ? (
+        <ActionButton
+          icon="refresh-circle"
+          label={t('gamification.revision.recertify')}
+          description={t('gamification.revision.recertifyDesc')}
+          color={colors.accent.violet[500]}
+          onPress={() => onAction('recertify')}
+        />
+      ) : (
+        <>
+          <ActionButton
+            icon="checkmark-circle"
+            label={t('gamification.revision.good')}
+            description={t('gamification.revision.goodDesc')}
+            color={colors.primary[500]}
+            onPress={() => onAction('good')}
+          />
+          {!isDormant && (
+            <ActionButton
+              icon="alert-circle"
+              label={t('gamification.revision.poor')}
+              description={t('gamification.revision.poorDesc')}
+              color={colors.secondary[500]}
+              onPress={() => onAction('poor')}
+            />
+          )}
+        </>
+      )}
+    </View>
   );
 }
 
@@ -147,6 +359,8 @@ function ActionButton({
   );
 }
 
+// ─── Constants ─────────────────────────────────────────────────────────────────
+
 const FRESHNESS_CHIP_COLORS: Record<string, string> = {
   fresh: '#DCFCE7',
   fading: '#FEF9C3',
@@ -155,6 +369,16 @@ const FRESHNESS_CHIP_COLORS: Record<string, string> = {
   dormant: '#F3F4F6',
   uncertified: '#F3F4F6',
 };
+
+const FRESHNESS_BAR_COLORS: Record<string, string> = {
+  fresh: '#22C55E',
+  fading: '#EAB308',
+  warning: '#F97316',
+  critical: '#EF4444',
+  dormant: '#9CA3AF',
+};
+
+// ─── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   overlay: {
@@ -172,32 +396,48 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     marginBottom: spacing.base,
+  },
+  headerLeft: {
+    flex: 1,
+    gap: normalize(2),
   },
   title: {
     ...typography.textStyles.subheading,
     color: lightTheme.text,
   },
+  verseRange: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: normalize(13),
+    color: colors.neutral[500],
+    marginTop: normalize(2),
+  },
   freshnessChip: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radius.full,
+    marginStart: spacing.sm,
   },
   freshnessText: {
     fontFamily: typography.fontFamily.semiBold,
     fontSize: normalize(12),
     color: colors.neutral[700],
   },
+
+  // Info Card
+  infoCard: {
+    backgroundColor: colors.neutral[50],
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.base,
+    gap: spacing.sm,
+  },
   infoRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.neutral[50],
-    borderRadius: radius.sm,
-    marginBottom: spacing.base,
+    alignItems: 'center',
   },
   infoLabel: {
     fontFamily: typography.fontFamily.medium,
@@ -205,10 +445,38 @@ const styles = StyleSheet.create({
     color: colors.neutral[500],
   },
   infoValue: {
-    fontFamily: typography.fontFamily.bold,
+    fontFamily: typography.fontFamily.semiBold,
     fontSize: normalize(13),
     color: colors.neutral[800],
   },
+
+  // Freshness bar
+  freshnessBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.xs,
+  },
+  freshnessBarTrack: {
+    flex: 1,
+    height: normalize(6),
+    backgroundColor: colors.neutral[200],
+    borderRadius: radius.full,
+    overflow: 'hidden',
+  },
+  freshnessBarFill: {
+    height: '100%',
+    borderRadius: radius.full,
+  },
+  freshnessPercent: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(12),
+    color: colors.neutral[600],
+    minWidth: normalize(32),
+    textAlign: 'right',
+  },
+
+  // Actions
   actions: {
     gap: spacing.md,
     marginBottom: spacing.lg,
@@ -238,6 +506,55 @@ const styles = StyleSheet.create({
     fontSize: normalize(12),
     color: colors.neutral[500],
   },
+
+  // Student plan button
+  planButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.base,
+    backgroundColor: colors.primary[50],
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.primary[200],
+  },
+  planButtonDisabled: {
+    opacity: 0.8,
+    borderColor: colors.primary[100],
+  },
+  planButtonText: {
+    flex: 1,
+    gap: normalize(2),
+  },
+  planButtonLabel: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(15),
+  },
+  planButtonDesc: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: normalize(12),
+    color: colors.neutral[500],
+  },
+
+  // Info message (dormant / no self-assign)
+  infoMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.base,
+    backgroundColor: colors.neutral[50],
+    borderRadius: radius.md,
+  },
+  infoMessageText: {
+    flex: 1,
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(13),
+    color: colors.neutral[600],
+  },
+
+  // Cancel
   cancelButton: {
     alignItems: 'center',
     paddingVertical: spacing.md,

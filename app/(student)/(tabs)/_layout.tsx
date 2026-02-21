@@ -30,9 +30,9 @@ export default function StudentTabsLayout() {
       <Tabs.Screen
         name="lessons"
         options={{
-          title: t('student.tabs.lessons'),
+          title: t('student.tabs.revision'),
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "library" : "library-outline"} size={24} color={color} />
+            <Ionicons name={focused ? "pulse" : "pulse-outline"} size={24} color={color} />
           ),
         }}
       />

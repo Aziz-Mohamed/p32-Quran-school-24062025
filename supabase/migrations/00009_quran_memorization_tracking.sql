@@ -10,7 +10,7 @@
 -- ============================================================================
 
 ALTER TABLE students
-  ADD COLUMN IF NOT EXISTS can_self_assign BOOLEAN NOT NULL DEFAULT false;
+  ADD COLUMN IF NOT EXISTS can_self_assign BOOLEAN NOT NULL DEFAULT true;
 
 -- ============================================================================
 -- SECTION 2: New tables
