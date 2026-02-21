@@ -938,6 +938,36 @@
       "completeSession": "إنهاء الحصة",
       "openWorkspace": "فتح ورشة العمل",
       "noStudents": "لا يوجد طلاب لهذه الحصة."
+    },
+    "recitationPlan": {
+      "title": "خطط التسميع",
+      "setForAll": "تعيين للجميع",
+      "setPlan": "تعيين خطة",
+      "editPlan": "تعديل الخطة",
+      "removePlan": "إزالة الخطة",
+      "myPlan": "خطتي",
+      "sessionDefault": "الخطة الافتراضية",
+      "noPlanSet": "لا توجد خطة",
+      "setBy": "بواسطة {{name}}",
+      "fromAssignment": "من الواجب",
+      "manual": "يدوي",
+      "suggestFromAssignments": "اقتراح من الواجبات",
+      "noSuggestions": "لا توجد واجبات مستحقة قبل هذه الحصة",
+      "selectionMode": "طريقة الاختيار",
+      "modes": {
+        "ayah_range": "نطاق الآيات",
+        "rub": "ربع",
+        "hizb": "حزب",
+        "juz": "جزء"
+      },
+      "rubNumber": "رقم الربع",
+      "hizbNumber": "رقم الحزب",
+      "juzNumber": "رقم الجزء",
+      "resolvedRange": "{{startSurah}} {{startAyah}} – {{endSurah}} {{endAyah}}",
+      "planSaved": "تم حفظ الخطة بنجاح",
+      "planDeleted": "تم إزالة الخطة",
+      "setForAllWarning": "سيتم استبدال جميع خطط الطلاب الفردية بخطة واحدة للحصة.",
+      "prefilledFromPlan": "تم التعبئة من خطة التسميع"
     }
   },
   "workAttendance": {
