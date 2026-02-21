@@ -9,10 +9,12 @@ import { Card } from '@/components/ui/Card';
 import { Badge, ProgressBar } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
+import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
-import { useRubCertifications, RevisionWarning } from '@/features/gamification';
+import { useRubCertifications } from '@/features/gamification';
+import { getSurah } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -36,6 +38,17 @@ function getAttendanceBadge(status: string | null | undefined, t: (key: string) 
   }
 }
 
+function formatRelativeDate(dateStr: string, t: (key: string, opts?: Record<string, unknown>) => string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return t('student.dashboard.today');
+  if (diffDays === 1) return t('student.dashboard.yesterday');
+  return t('student.dashboard.daysAgo', { count: diffDays });
+}
+
 // ─── Student Dashboard ────────────────────────────────────────────────────────
 
 export default function StudentDashboard() {
@@ -48,14 +61,30 @@ export default function StudentDashboard() {
   const { activeCount, criticalCount } = useRubCertifications(profile?.id);
   const todayStr = new Date().toISOString().split('T')[0];
   const { data: revisionSchedule = [] } = useRevisionSchedule(profile?.id, todayStr);
+  const { data: memStats } = useMemorizationStats(profile?.id);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
 
   const student = data?.student;
-  const currentLevel = activeCount;
   const attendance = getAttendanceBadge(data?.todayAttendance?.status, t);
   const chevron = I18nManager.isRTL ? 'chevron-back' : 'chevron-forward';
+
+  const newCount = revisionSchedule.filter((i: any) => i.review_type === 'new_hifz').length;
+  const recentCount = revisionSchedule.filter((i: any) => i.review_type === 'recent_review').length;
+  const oldCount = revisionSchedule.filter((i: any) => i.review_type === 'old_review').length;
+  const totalItems = revisionSchedule.length;
+  const hasPlan = totalItems > 0;
+  const hasWarning = criticalCount > 0;
+
+  // Last session info
+  const lastSession = data?.lastSession;
+  const lastSessionRecitations = lastSession?.recitations as Array<{ surah_number: number; from_ayah: number; to_ayah: number }> | undefined;
+  const lastSessionSurahInfo = lastSessionRecitations?.[0]
+    ? getSurah(lastSessionRecitations[0].surah_number)
+    : null;
+
+  const quranPct = memStats?.quran_percentage ?? 0;
 
   return (
     <Screen scroll hasTabBar>
@@ -64,7 +93,7 @@ export default function StudentDashboard() {
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <Text style={styles.greeting}>
-              {t('dashboard.welcome', { name: profile?.full_name?.split(' ')[0] ?? '' })} {'\uD83D\uDC4B'}
+              {t('dashboard.welcome', { name: profile?.full_name?.split(' ')[0] ?? '' })}
             </Text>
             <Text style={styles.subtitle}>{t('student.dashboard.readyToLearn')}</Text>
           </View>
@@ -75,118 +104,146 @@ export default function StudentDashboard() {
           />
         </View>
 
-        {/* 2. Today's Revision Plan */}
-        {revisionSchedule.length > 0 && (() => {
-          const newCount = revisionSchedule.filter((i: any) => i.review_type === 'new_hifz').length;
-          const recentCount = revisionSchedule.filter((i: any) => i.review_type === 'recent_review').length;
-          const oldCount = revisionSchedule.filter((i: any) => i.review_type === 'old_review').length;
-          return (
-            <Card
-              variant="default"
-              onPress={() => router.push('/(student)/(tabs)/memorization')}
-              style={styles.revisionPlanCard}
-            >
-              <View style={styles.revisionPlanHeader}>
-                <View style={[styles.revisionPlanIcon, { backgroundColor: colors.accent.indigo[50] }]}>
-                  <Ionicons name="book" size={20} color={colors.accent.indigo[500]} />
+        {/* 2. Today's Plan (merged with revision warning) */}
+        <Card
+          variant="default"
+          onPress={() => router.push('/(student)/(tabs)/memorization')}
+          style={styles.todayCard}
+        >
+          <View style={styles.todayHeader}>
+            <View style={[styles.todayIcon, { backgroundColor: colors.accent.indigo[50] }]}>
+              <Ionicons name="book" size={20} color={colors.accent.indigo[500]} />
+            </View>
+            <View style={styles.todayHeaderText}>
+              <Text style={styles.todayTitle}>{t('student.dashboard.todaysSchedule')}</Text>
+              {hasPlan && (
+                <Text style={styles.todaySubtitle}>
+                  {t('student.dashboard.itemsToday', { count: totalItems })}
+                </Text>
+              )}
+            </View>
+            <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
+          </View>
+
+          {hasPlan ? (
+            <View style={styles.todayStats}>
+              {newCount > 0 && (
+                <View style={[styles.todayStat, { backgroundColor: colors.accent.indigo[50] }]}>
+                  <Text style={[styles.todayStatCount, { color: colors.accent.indigo[600] }]}>{newCount}</Text>
+                  <Text style={[styles.todayStatLabel, { color: colors.accent.indigo[500] }]}>{t('memorization.revisionLabels.new')}</Text>
                 </View>
-                <Text style={styles.revisionPlanTitle}>{t('memorization.todaysRevisionPlan')}</Text>
-                <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
-              </View>
-              <View style={styles.revisionPlanStats}>
-                {newCount > 0 && (
-                  <View style={styles.revisionPlanStat}>
-                    <Text style={[styles.revisionPlanCount, { color: colors.accent.indigo[600] }]}>{newCount}</Text>
-                    <Text style={styles.revisionPlanLabel}>{t('memorization.revisionLabels.new')}</Text>
-                  </View>
-                )}
-                {recentCount > 0 && (
-                  <View style={styles.revisionPlanStat}>
-                    <Text style={[styles.revisionPlanCount, { color: colors.secondary[600] }]}>{recentCount}</Text>
-                    <Text style={styles.revisionPlanLabel}>{t('memorization.revisionLabels.recent')}</Text>
-                  </View>
-                )}
-                {oldCount > 0 && (
-                  <View style={styles.revisionPlanStat}>
-                    <Text style={[styles.revisionPlanCount, { color: colors.primary[600] }]}>{oldCount}</Text>
-                    <Text style={styles.revisionPlanLabel}>{t('memorization.revisionLabels.older')}</Text>
-                  </View>
-                )}
-              </View>
-            </Card>
-          );
-        })()}
+              )}
+              {recentCount > 0 && (
+                <View style={[styles.todayStat, { backgroundColor: colors.secondary[50] }]}>
+                  <Text style={[styles.todayStatCount, { color: colors.secondary[600] }]}>{recentCount}</Text>
+                  <Text style={[styles.todayStatLabel, { color: colors.secondary[500] }]}>{t('memorization.revisionLabels.recent')}</Text>
+                </View>
+              )}
+              {oldCount > 0 && (
+                <View style={[styles.todayStat, { backgroundColor: colors.primary[50] }]}>
+                  <Text style={[styles.todayStatCount, { color: colors.primary[600] }]}>{oldCount}</Text>
+                  <Text style={[styles.todayStatLabel, { color: colors.primary[500] }]}>{t('memorization.revisionLabels.older')}</Text>
+                </View>
+              )}
+            </View>
+          ) : !hasWarning ? (
+            <View style={styles.todayCaughtUp}>
+              <Ionicons name="checkmark-circle" size={20} color={colors.secondary[500]} />
+              <Text style={styles.todayCaughtUpText}>{t('student.dashboard.allCaughtUp')}</Text>
+            </View>
+          ) : null}
 
-        {/* 3. Revision Warning */}
-        <RevisionWarning count={criticalCount} />
+          {/* Inline revision warning */}
+          {hasWarning && (
+            <View style={[styles.warningRow, hasPlan && styles.warningRowWithBorder]}>
+              <Ionicons name="alert-circle" size={16} color="#92400E" />
+              <Text style={styles.warningText}>
+                {t('gamification.revisionWarning', { count: criticalCount })}
+              </Text>
+            </View>
+          )}
+        </Card>
 
-        {/* 4. Progress Strip */}
+        {/* 3. Last Session */}
+        {lastSession && (
+          <Pressable
+            style={styles.lastSession}
+            onPress={() => router.push('/(student)/sessions')}
+          >
+            <Ionicons name="time-outline" size={16} color={colors.neutral[400]} />
+            <Text style={styles.lastSessionText}>
+              {t('student.dashboard.lastSession')}: {formatRelativeDate(lastSession.session_date, t)}
+              {lastSessionSurahInfo ? ` \u00B7 ${I18nManager.isRTL ? lastSessionSurahInfo.nameArabic : lastSessionSurahInfo.nameEnglish}` : ''}
+            </Text>
+            <Ionicons name={chevron} size={14} color={colors.neutral[300]} />
+          </Pressable>
+        )}
+
+        {/* 4. Quran Journey */}
         <Card
           variant="default"
           onPress={() => router.push('/(student)/rub-progress')}
-          style={styles.progressStrip}
+          style={styles.journeyCard}
         >
-          <View style={styles.progressStripHeader}>
-            <Text style={styles.progressStripLevel}>
-              {t('gamification.levelLabel', { level: currentLevel, total: 240 })}
+          <View style={styles.journeyHeader}>
+            <Text style={styles.journeyTitle}>{t('student.dashboard.quranJourney')}</Text>
+            <Text style={styles.journeyCount}>
+              {activeCount} / 240 {t('student.dashboard.rubCertified')}
             </Text>
-            <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
           </View>
           <ProgressBar
-            progress={currentLevel / 240}
+            progress={activeCount / 240}
             variant={theme.tag}
             height={8}
           />
-          <View style={styles.progressStripDivider} />
-          <View style={styles.progressStripStats}>
-            <View style={styles.progressStripStat}>
+          {quranPct > 0 && (
+            <Text style={styles.journeyPct}>
+              {t('student.dashboard.quranMemorized', { pct: quranPct.toFixed(1) })}
+            </Text>
+          )}
+          <View style={styles.journeyDivider} />
+          <View style={styles.journeyStats}>
+            <View style={styles.journeyStat}>
               <Ionicons name="flame-outline" size={16} color={colors.accent.rose[500]} />
-              <Text style={styles.progressStripStatValue}>
-                {student?.current_streak ?? 0}
-              </Text>
-              <Text style={styles.progressStripStatLabel}>{t('student.streak')}</Text>
+              <Text style={styles.journeyStatValue}>{student?.current_streak ?? 0}</Text>
+              <Text style={styles.journeyStatLabel}>{t('student.streak')}</Text>
             </View>
-            <View style={styles.progressStripStatSeparator} />
-            <View style={styles.progressStripStat}>
+            <View style={styles.journeyStatSep} />
+            <View style={styles.journeyStat}>
               <Ionicons name="star-outline" size={16} color={colors.secondary[500]} />
-              <Text style={styles.progressStripStatValue}>
-                {data?.totalStickers ?? 0}
-              </Text>
-              <Text style={styles.progressStripStatLabel}>{t('student.dashboard.stickers')}</Text>
+              <Text style={styles.journeyStatValue}>{data?.totalStickers ?? 0}</Text>
+              <Text style={styles.journeyStatLabel}>{t('student.dashboard.stickers')}</Text>
             </View>
-            <View style={styles.progressStripStatSeparator} />
-            <View style={styles.progressStripStat}>
+            <View style={styles.journeyStatSep} />
+            <View style={styles.journeyStat}>
               <Ionicons name="calendar-outline" size={16} color={colors.accent.indigo[500]} />
-              <Text style={styles.progressStripStatValue}>
-                {data?.totalSessions ?? 0}
-              </Text>
-              <Text style={styles.progressStripStatLabel}>{t('student.dashboard.sessions')}</Text>
+              <Text style={styles.journeyStatValue}>{data?.totalSessions ?? 0}</Text>
+              <Text style={styles.journeyStatLabel}>{t('student.dashboard.sessions')}</Text>
             </View>
           </View>
         </Card>
 
-        {/* 6. Explore */}
-        <View style={styles.exploreRow}>
+        {/* 5. Quick Links */}
+        <View style={styles.quickLinks}>
           <Pressable
-            style={[styles.explorePill, { backgroundColor: colors.accent.violet[50] }]}
+            style={[styles.quickLink, { backgroundColor: colors.accent.violet[50] }]}
             onPress={() => router.push('/(student)/rub-progress')}
           >
             <Ionicons name="map" size={16} color={colors.accent.violet[500]} />
-            <Text style={[styles.explorePillText, { color: colors.accent.violet[600] }]}>
+            <Text style={[styles.quickLinkText, { color: colors.accent.violet[600] }]}>
               {t('gamification.progressMap')}
             </Text>
           </Pressable>
           <Pressable
-            style={[styles.explorePill, { backgroundColor: colors.secondary[50] }]}
+            style={[styles.quickLink, { backgroundColor: colors.secondary[50] }]}
             onPress={() => router.push('/(student)/leaderboard')}
           >
             <Ionicons name="podium" size={16} color={colors.secondary[500]} />
-            <Text style={[styles.explorePillText, { color: colors.secondary[600] }]}>
+            <Text style={[styles.quickLinkText, { color: colors.secondary[600] }]}>
               {t('student.dashboard.viewLeaderboard')}
             </Text>
           </Pressable>
         </View>
-
       </View>
     </Screen>
   );
@@ -219,97 +276,168 @@ const styles = StyleSheet.create({
     color: lightTheme.textSecondary,
     marginTop: normalize(2),
   },
-  // Revision Plan
-  revisionPlanCard: {
+
+  // Today's Plan Card
+  todayCard: {
     padding: spacing.md,
   },
-  revisionPlanHeader: {
+  todayHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    marginBottom: spacing.md,
   },
-  revisionPlanIcon: {
+  todayIcon: {
     width: normalize(36),
     height: normalize(36),
     borderRadius: normalize(10),
     alignItems: 'center',
     justifyContent: 'center',
   },
-  revisionPlanTitle: {
+  todayHeaderText: {
     flex: 1,
+  },
+  todayTitle: {
     ...typography.textStyles.bodyMedium,
     color: lightTheme.text,
   },
-  revisionPlanStats: {
-    flexDirection: 'row',
-    gap: spacing.lg,
-    justifyContent: 'center',
+  todaySubtitle: {
+    ...typography.textStyles.label,
+    color: colors.neutral[500],
+    marginTop: normalize(1),
   },
-  revisionPlanStat: {
+  todayStats: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+  },
+  todayStat: {
+    flex: 1,
     alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderRadius: radius.md,
     gap: normalize(2),
   },
-  revisionPlanCount: {
+  todayStatCount: {
     fontFamily: typography.fontFamily.bold,
     fontSize: normalize(20),
   },
-  revisionPlanLabel: {
-    ...typography.textStyles.label,
-    color: colors.neutral[500],
+  todayStatLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(11),
+  },
+  todayCaughtUp: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.secondary[50],
+    borderRadius: radius.md,
+  },
+  todayCaughtUpText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(13),
+    color: colors.secondary[700],
+  },
+  warningRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    backgroundColor: '#FEF3C7',
+    borderRadius: radius.sm,
+  },
+  warningRowWithBorder: {
+    marginTop: spacing.md,
+  },
+  warningText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(12),
+    color: '#92400E',
+    flex: 1,
   },
 
-  // Progress Strip
-  progressStrip: {
-    padding: spacing.md,
-    marginTop: spacing.sm,
+  // Last Session
+  lastSession: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.neutral[50],
+    borderRadius: radius.md,
   },
-  progressStripHeader: {
+  lastSessionText: {
+    flex: 1,
+    fontFamily: typography.fontFamily.regular,
+    fontSize: normalize(12),
+    color: colors.neutral[600],
+  },
+
+  // Quran Journey Card
+  journeyCard: {
+    padding: spacing.md,
+  },
+  journeyHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: spacing.sm,
   },
-  progressStripLevel: {
+  journeyTitle: {
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[900],
   },
-  progressStripDivider: {
+  journeyCount: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(12),
+    color: colors.neutral[500],
+  },
+  journeyPct: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(11),
+    color: colors.neutral[500],
+    marginTop: normalize(4),
+  },
+  journeyDivider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: colors.neutral[100],
     marginVertical: spacing.sm,
   },
-  progressStripStats: {
+  journeyStats: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
   },
-  progressStripStat: {
+  journeyStat: {
     alignItems: 'center',
     gap: normalize(2),
   },
-  progressStripStatValue: {
+  journeyStatValue: {
     fontFamily: typography.fontFamily.semiBold,
     fontSize: normalize(14),
     color: colors.neutral[900],
   },
-  progressStripStatLabel: {
+  journeyStatLabel: {
     ...typography.textStyles.label,
     color: colors.neutral[500],
     fontSize: normalize(11),
   },
-  progressStripStatSeparator: {
+  journeyStatSep: {
     width: StyleSheet.hairlineWidth,
     height: normalize(28),
     backgroundColor: colors.neutral[200],
   },
 
-  // Explore Pills
-  exploreRow: {
+  // Quick Links
+  quickLinks: {
     flexDirection: 'row',
     gap: spacing.md,
   },
-  explorePill: {
+  quickLink: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -318,7 +446,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     borderRadius: radius.full,
   },
-  explorePillText: {
+  quickLinkText: {
     fontFamily: typography.fontFamily.semiBold,
     fontSize: normalize(13),
   },
