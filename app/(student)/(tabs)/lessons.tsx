@@ -14,13 +14,13 @@ import {
   useRubCertifications,
   useRubReference,
   useRequestRevision,
+  useRevisionHomework,
   RevisionWarning,
   RevisionSheet,
 } from '@/features/gamification';
 import type { EnrichedCertification, RubReference, FreshnessState } from '@/features/gamification';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
-import { assignmentService } from '@/features/memorization/services/assignment.service';
-import { useQuery } from '@tanstack/react-query';
+import { getMushafPageRange } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -123,59 +123,11 @@ export default function RevisionHealthScreen() {
   const canSelfAssign = dashboardData?.student?.can_self_assign ?? false;
   const schoolId = dashboardData?.student?.school_id ?? '';
 
-  // "Add to Plan" mutation
+  // "Add to Homework" mutation
   const requestRevision = useRequestRevision();
 
-  // Pending assignments for "already in plan" check
-  const { data: pendingAssignments } = useQuery({
-    queryKey: ['assignments', 'pending-revision', profile?.id],
-    queryFn: async () => {
-      if (!profile?.id) throw new Error('No profile');
-      const { data, error } = await assignmentService.getAssignments({
-        studentId: profile.id,
-        assignmentType: 'old_review',
-        status: 'pending',
-      });
-      if (error) throw error;
-      return data ?? [];
-    },
-    enabled: !!profile?.id,
-    staleTime: 1000 * 60,
-  });
-
-  // Build a set of surah:fromAyah keys that are already in plan
-  const pendingKeys = useMemo(() => {
-    const keys = new Set<string>();
-    if (pendingAssignments) {
-      for (const a of pendingAssignments) {
-        keys.add(`${a.surah_number}:${a.from_ayah}`);
-      }
-    }
-    return keys;
-  }, [pendingAssignments]);
-
-  // Reverse map: surah:fromAyah → rub_number (for displaying plan items as rubʿ)
-  const reverseRubMap = useMemo(() => {
-    const map = new Map<string, number>();
-    if (rubReferenceList) {
-      for (const ref of rubReferenceList) {
-        map.set(`${ref.start_surah}:${ref.start_ayah}`, ref.rub_number);
-      }
-    }
-    return map;
-  }, [rubReferenceList]);
-
-  // Revision homework: all pending old_review assignments mapped to rubʿ numbers
-  const homeworkItems = useMemo(() => {
-    if (!pendingAssignments) return [];
-    const items: { assignmentId: string; rubNumber: number; juz: number }[] = [];
-    for (const a of pendingAssignments) {
-      const rubNumber = reverseRubMap.get(`${a.surah_number}:${a.from_ayah}`);
-      if (!rubNumber) continue;
-      items.push({ assignmentId: a.id, rubNumber, juz: Math.ceil(rubNumber / 8) });
-    }
-    return items;
-  }, [pendingAssignments, reverseRubMap]);
+  // Revision homework data (shared hook)
+  const { homeworkItems, pendingKeys } = useRevisionHomework(profile?.id);
 
   const [viewMode, setViewMode] = useState<ViewMode>('rub');
   const [selectedCert, setSelectedCert] = useState<EnrichedCertification | null>(null);
@@ -688,6 +640,11 @@ function GroupRevisionSheet({
   const nonDormantCount = group.children.filter((c) => c.freshness.state !== 'dormant').length;
   const allInPlan = eligibleCount === 0 && nonDormantCount > 0;
 
+  // Page range for the group
+  const firstRub = group.children[0]?.rub_number;
+  const lastRub = group.children[group.children.length - 1]?.rub_number;
+  const pageRange = firstRub && lastRub ? getMushafPageRange(firstRub, lastRub) : undefined;
+
   return (
     <Modal visible={!!group} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={styles.sheetOverlay} onPress={onClose}>
@@ -712,6 +669,16 @@ function GroupRevisionSheet({
               <Text style={styles.sheetInfoLabel}>{t('student.revision.needRevision')}</Text>
               <Text style={styles.sheetInfoValue}>{group.needsRevisionCount}</Text>
             </View>
+            {pageRange && (
+              <View style={styles.sheetInfoRow}>
+                <Text style={styles.sheetInfoLabel}>{t('gamification.revision.mushafPage')}</Text>
+                <Text style={styles.sheetInfoValue}>
+                  {pageRange.startPage === pageRange.endPage
+                    ? `${pageRange.startPage}`
+                    : `${pageRange.startPage}-${pageRange.endPage}`}
+                </Text>
+              </View>
+            )}
             {/* Freshness bar */}
             <View style={styles.sheetBarRow}>
               <View style={styles.sheetBarTrack}>
