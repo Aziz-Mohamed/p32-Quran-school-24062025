@@ -5,7 +5,6 @@ export interface LeaderboardEntry {
   rank: number;
   student: Tables<'students'>;
   profile: Tables<'profiles'>;
-  totalPoints: number;
   currentLevel: number;
   currentStreak: number;
 }
@@ -46,7 +45,6 @@ export interface AwardedSticker {
     name_en: string;
     tier: string;
     image_path: string;
-    points_value: number;
   } | null;
   profiles: {
     full_name: string;
@@ -55,7 +53,6 @@ export interface AwardedSticker {
 
 /** Summary of a student's gamification progress */
 export interface GamificationSummary {
-  totalPoints: number;
   currentLevel: number;
   currentStreak: number;
   longestStreak: number;

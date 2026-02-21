@@ -21,7 +21,6 @@ export interface StudentDashboardData {
   student: Student;
   currentLevel: number;
   activeCertCount: number;
-  totalPoints: number;
   currentStreak: number;
   longestStreak: number;
   recentSessions: Session[];
@@ -52,7 +51,6 @@ export interface ParentAggregateStats {
   absentToday: number;
   notMarkedToday: number;
   averageAttendanceRate: number; // 0-100, -1 if N/A
-  totalPoints: number;
   totalStickers: number;
   totalStreakDays: number;
 }
@@ -66,7 +64,6 @@ export interface ChildQuickStatus {
   currentLevel: number;
   todayStatus: 'present' | 'absent' | 'late' | 'excused' | null;
   attendanceRate: number; // 0-100, -1 if N/A
-  totalPoints: number;
   currentStreak: number;
 }
 

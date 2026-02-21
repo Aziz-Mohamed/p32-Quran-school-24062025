@@ -101,7 +101,6 @@ export interface ChildGamificationSummary {
   currentLevel: number;
   currentStreak: number;
   longestStreak: number;
-  totalPoints: number;
   activeCertifications: number;
 }
 

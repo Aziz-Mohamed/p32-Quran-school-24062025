@@ -9,7 +9,6 @@ export interface ProfileViewData {
     student: Tables<'students'>;
     currentLevel: number;
     class: Tables<'classes'> | null;
-    totalPoints: number;
     currentStreak: number;
   };
   /** Present only if the profile belongs to a teacher */

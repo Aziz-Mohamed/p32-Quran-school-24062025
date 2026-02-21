@@ -15,7 +15,6 @@ export interface ChildOverview {
     attendanceRate: number;
   };
   gamification: {
-    totalPoints: number;
     currentStreak: number;
     longestStreak: number;
     stickerCount: number;
