@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { I18nManager, Pressable, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
@@ -113,7 +113,7 @@ export default function StudentDashboard() {
   const isRTL = I18nManager.isRTL;
 
   const { data, isLoading, error, refetch } = useStudentDashboard(profile?.id);
-  const { enriched, criticalCount } = useRubCertifications(profile?.id);
+  const { enriched } = useRubCertifications(profile?.id);
   const { homeworkItems } = useRevisionHomework(profile?.id);
   const { data: memStats } = useMemorizationStats(profile?.id);
   const todayStr = new Date().toISOString().split('T')[0];
@@ -133,7 +133,20 @@ export default function StudentDashboard() {
   const totalItems = filteredSchedule.length;
   const previewItems = filteredSchedule.slice(0, MAX_PREVIEW_ITEMS);
   const hasMore = totalItems > MAX_PREVIEW_ITEMS;
-  const hasWarning = criticalCount > 0;
+  const homeworkRubSet = useMemo(
+    () => new Set(homeworkItems.map((h) => h.rubNumber)),
+    [homeworkItems],
+  );
+
+  const effectiveCriticalCount = useMemo(
+    () => enriched.filter(
+      (c) => (c.freshness.state === 'critical' || c.freshness.state === 'warning')
+        && !homeworkRubSet.has(c.rub_number),
+    ).length,
+    [enriched, homeworkRubSet],
+  );
+
+  const hasWarning = effectiveCriticalCount > 0;
 
   return (
     <Screen scroll hasTabBar>
@@ -240,19 +253,10 @@ export default function StudentDashboard() {
             </View>
           )}
 
-          {/* Inline revision warning */}
-          {hasWarning && (
-            <View style={[styles.warningRow, totalItems > 0 && styles.warningRowBorder]}>
-              <Ionicons name="alert-circle" size={16} color="#92400E" />
-              <Text style={styles.warningText}>
-                {t('gamification.revisionWarning', { count: criticalCount })}
-              </Text>
-            </View>
-          )}
         </Card>
 
         {/* 3b. Revision Homework */}
-        {homeworkItems.length > 0 && (
+        {(homeworkItems.length > 0 || hasWarning) && (
           <Card
             variant="default"
             onPress={() => router.push('/(student)/(tabs)/lessons')}
@@ -263,21 +267,34 @@ export default function StudentDashboard() {
                 <Ionicons name="book-outline" size={20} color={colors.secondary[500]} />
               </View>
               <Text style={styles.tasksTitle}>{t('student.revision.revisionHomework')}</Text>
-              <View style={styles.homeworkBadge}>
-                <Text style={styles.homeworkBadgeText}>{homeworkItems.length}</Text>
-              </View>
+              {homeworkItems.length > 0 && (
+                <View style={styles.homeworkBadge}>
+                  <Text style={styles.homeworkBadgeText}>{homeworkItems.length}</Text>
+                </View>
+              )}
               <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
             </View>
 
-            <View style={styles.tasksList}>
-              {homeworkItems.slice(0, MAX_PREVIEW_ITEMS).map((item) => (
-                <HomeworkRow key={item.assignmentId} item={item} enriched={enriched} t={t} />
-              ))}
-            </View>
+            {homeworkItems.length > 0 && (
+              <View style={styles.tasksList}>
+                {homeworkItems.slice(0, MAX_PREVIEW_ITEMS).map((item) => (
+                  <HomeworkRow key={item.assignmentId} item={item} enriched={enriched} t={t} />
+                ))}
+              </View>
+            )}
             {homeworkItems.length > MAX_PREVIEW_ITEMS && (
               <Text style={styles.seeAll}>
                 {t('student.dashboard.seeAll', { count: homeworkItems.length })} {isRTL ? '←' : '→'}
               </Text>
+            )}
+
+            {hasWarning && (
+              <View style={[styles.warningRow, homeworkItems.length > 0 && styles.warningRowBorder]}>
+                <Ionicons name="alert-circle" size={16} color="#92400E" />
+                <Text style={styles.warningText}>
+                  {t('gamification.revisionWarning', { count: effectiveCriticalCount })}
+                </Text>
+              </View>
             )}
           </Card>
         )}
