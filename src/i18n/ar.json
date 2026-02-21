@@ -203,7 +203,17 @@
       "levelProgress": "تقدّم المستوى",
       "sessions": "الحصص",
       "stickers": "الملصقات",
-      "rubCertified": "ربع مُجاز"
+      "rubCertified": "ربع مُجاز",
+      "todaysTasks": "مهام اليوم",
+      "seeAll": "عرض الكل {{count}}",
+      "allCaughtUp": "أحسنت! لا مهام متبقية",
+      "nothingDueToday": "لا توجد مهام اليوم",
+      "newHifz": "جديد",
+      "review": "مراجعة",
+      "dayStreak": "يوم متتالي",
+      "bestStreak": "الأفضل: {{count}}",
+      "startStreak": "ابدأ سلسلتك اليوم!",
+      "quranMemorized": "القرآن"
     },
     "myLessons": "دروسي",
     "myProgress": "تقدّمي",
