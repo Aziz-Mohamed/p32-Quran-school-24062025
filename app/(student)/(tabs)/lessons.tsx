@@ -337,7 +337,7 @@ export default function RevisionHealthScreen() {
   // Empty state — no certifications at all
   if (enriched.length === 0) {
     return (
-      <Screen scroll={false} hasTabBar>
+      <Screen scroll={false}>
         <EmptyState
           icon="pulse-outline"
           title={t('student.revision.noCertifications')}

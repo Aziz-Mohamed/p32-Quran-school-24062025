@@ -79,7 +79,7 @@ export default function MemorizationScreen() {
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
 
   return (
-    <Screen scroll={false} hasTabBar>
+    <Screen scroll={false}>
       <View style={styles.container}>
         <View style={styles.headerRow}>
           <Text style={styles.title}>{t('memorization.title')}</Text>
@@ -168,6 +168,7 @@ const styles = StyleSheet.create({
   listContent: {
     padding: spacing.lg,
     paddingTop: spacing.sm,
+    paddingBottom: 110,
   },
   emptyContainer: {
     flex: 1,

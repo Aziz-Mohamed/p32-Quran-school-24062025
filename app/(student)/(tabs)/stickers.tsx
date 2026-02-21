@@ -61,7 +61,7 @@ export default function StickersScreen() {
   const uniqueCount = collection.length;
 
   return (
-    <Screen scroll>
+    <Screen scroll hasTabBar>
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>{t('student.stickers.title')}</Text>

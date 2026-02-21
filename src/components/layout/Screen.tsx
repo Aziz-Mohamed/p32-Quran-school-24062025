@@ -64,7 +64,7 @@ export const Screen: React.FC<ScreenProps> = ({
           {children}
         </ScrollView>
       ) : (
-        <View style={[styles.container, contentStyle, { paddingBottom: bottomPadding }]}>
+        <View style={[styles.container, contentStyle]}>
           {children}
         </View>
       )}
