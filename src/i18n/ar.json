@@ -985,6 +985,14 @@
     "surahsComplete": "سور مكتملة",
     "inProgress": "قيد التعلّم",
     "averageAccuracy": "متوسط الدقة",
+    "summary": {
+      "ayahs": "{{count}} آية",
+      "surahs": "{{count}} سورة"
+    },
+    "ayahsMemorizedLabel": "آية محفوظة",
+    "newAyahCount": "{{count}} آية جديدة",
+    "yourJourney": "رحلتك",
+    "surahMap": "خريطة تقدم السور",
     "noProgressYet": "لا يوجد تقدّم في الحفظ بعد.",
     "noProgressDescription": "أكمل التسميعات لرؤية تقدّمك هنا.",
     "todaysRevisionPlan": "خطة المراجعة اليومية",

@@ -36,3 +36,5 @@ export { RecitationForm, EMPTY_RECITATION, validateRecitationForm } from './comp
 export type { RecitationFormData } from './components/RecitationForm';
 export { RevisionCard } from './components/RevisionCard';
 export { MemorizationProgressBar } from './components/MemorizationProgressBar';
+export { MemorizationHealthCard } from './components/MemorizationHealthCard';
+export { MemorizationRow } from './components/MemorizationRow';
