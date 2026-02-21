@@ -881,6 +881,7 @@ const styles = StyleSheet.create({
   // Health Summary
   healthCard: {
     padding: spacing.md,
+    marginTop: spacing.sm,
     marginBottom: spacing.md,
   },
   healthRow: {
