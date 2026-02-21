@@ -199,6 +199,7 @@
       "noHomework": "No pending revision homework",
       "markRecited": "Mark as recited",
       "homeworkCompleted": "Marked as recited",
+      "removeHomework": "Removed from homework",
       "itemsNeedRevision": "{{count}} need revision",
       "batchAddedToPlan": "{{count}} rubʿ added to homework",
       "certifiedRub": "Certified rubʿ",

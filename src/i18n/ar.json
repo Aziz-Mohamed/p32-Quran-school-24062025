@@ -199,6 +199,7 @@
       "noHomework": "لا يوجد واجبات مراجعة",
       "markRecited": "تم التسميع",
       "homeworkCompleted": "تم تسميعه",
+      "removeHomework": "تمت الإزالة من الواجبات",
       "itemsNeedRevision": "{{count}} تحتاج مراجعة",
       "batchAddedToPlan": "تمت إضافة {{count}} ربع للواجبات",
       "certifiedRub": "أرباع محفوظة",

@@ -19,6 +19,7 @@ import {
   RevisionSheet,
 } from '@/features/gamification';
 import type { EnrichedCertification, RubReference, FreshnessState } from '@/features/gamification';
+import { useCancelAssignment } from '@/features/memorization';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { getMushafPageRange } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
@@ -124,6 +125,8 @@ export default function RevisionHealthScreen() {
 
   // "Add to Homework" mutation
   const requestRevision = useRequestRevision();
+  // "Remove from Homework" mutation
+  const cancelAssignment = useCancelAssignment();
 
   // Revision homework data (shared hook)
   const { homeworkItems, pendingKeys } = useRevisionHomework(profile?.id);
@@ -146,6 +149,7 @@ export default function RevisionHealthScreen() {
   const [selectedCert, setSelectedCert] = useState<EnrichedCertification | null>(null);
   const [sheetVisible, setSheetVisible] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<CertGroup | null>(null);
+  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
 
   // Health counts (always computed from raw enriched, regardless of view mode)
   const healthCounts = useMemo(() => {
@@ -180,14 +184,14 @@ export default function RevisionHealthScreen() {
       if (attention.length > 0) {
         result.push({
           title: `${t('student.revision.needsAttention')} (${attention.length})`,
-          data: attention,
+          data: collapsedSections.attention ? [] : attention,
           key: 'attention',
         });
       }
       if (rest.length > 0) {
         result.push({
           title: `${t('student.revision.allCertified')} (${rest.length})`,
-          data: rest,
+          data: collapsedSections.certified ? [] : rest,
           key: 'certified',
         });
       }
@@ -243,19 +247,19 @@ export default function RevisionHealthScreen() {
     if (attention.length > 0) {
       result.push({
         title: `${t('student.revision.needsAttention')} (${attention.length})`,
-        data: attention,
+        data: collapsedSections.attention ? [] : attention,
         key: 'attention',
       });
     }
     if (rest.length > 0) {
       result.push({
         title: `${t('student.revision.allCertified')} (${rest.length})`,
-        data: rest,
+        data: collapsedSections.certified ? [] : rest,
         key: 'certified',
       });
     }
     return result;
-  }, [enriched, viewMode, t]);
+  }, [enriched, viewMode, collapsedSections, t]);
 
   const handleCertPress = (cert: EnrichedCertification) => {
     setSelectedCert(cert);
@@ -312,6 +316,18 @@ export default function RevisionHealthScreen() {
       // Individual failures handled by TanStack Query
     }
   }, [selectedGroup, profile?.id, schoolId, canSelfAssign, isAlreadyInPlan, rubReferenceMap, requestRevision, t]);
+
+  const handleRemoveHomework = useCallback((assignmentId: string) => {
+    cancelAssignment.mutate(assignmentId, {
+      onSuccess: () => {
+        Alert.alert('', t('student.revision.removeHomework'));
+      },
+    });
+  }, [cancelAssignment, t]);
+
+  const toggleSection = useCallback((key: string) => {
+    setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  }, []);
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
@@ -446,19 +462,26 @@ export default function RevisionHealthScreen() {
                       : colors.primary[400];
 
                     return (
-                      <Pressable
-                        key={item.assignmentId}
-                        style={({ pressed }) => [styles.planRow, pressed && styles.rubRowPressed]}
-                        onPress={() => {
-                          if (cert) handleCertPress(cert);
-                        }}
-                      >
-                        <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
-                        <Text style={[styles.rubTitle, { flex: 1 }]} numberOfLines={1}>
-                          {t('gamification.rub')} {item.rubNumber} {'\u00B7'} {t('gamification.juz')} {item.juz}
-                        </Text>
-                        <Ionicons name={chevron as any} size={16} color={colors.neutral[300]} />
-                      </Pressable>
+                      <View key={item.assignmentId} style={styles.planRow}>
+                        <Pressable
+                          style={({ pressed }) => [styles.planRowContent, pressed && styles.rubRowPressed]}
+                          onPress={() => {
+                            if (cert) handleCertPress(cert);
+                          }}
+                        >
+                          <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
+                          <Text style={[styles.rubTitle, { flex: 1 }]} numberOfLines={1}>
+                            {t('gamification.rub')} {item.rubNumber} {'\u00B7'} {t('gamification.juz')} {item.juz}
+                          </Text>
+                        </Pressable>
+                        <Pressable
+                          style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}
+                          onPress={() => handleRemoveHomework(item.assignmentId)}
+                          hitSlop={8}
+                        >
+                          <Ionicons name="close" size={16} color={colors.neutral[400]} />
+                        </Pressable>
+                      </View>
                     );
                   })}
                 </Card>
@@ -476,11 +499,22 @@ export default function RevisionHealthScreen() {
               )}
             </>
           }
-          renderSectionHeader={({ section }) => (
-            <View style={styles.sectionHeaderContainer}>
-              <Text style={styles.sectionHeader}>{section.title}</Text>
-            </View>
-          )}
+          renderSectionHeader={({ section }) => {
+            const isCollapsed = collapsedSections[section.key] ?? false;
+            return (
+              <Pressable
+                style={styles.sectionHeaderContainer}
+                onPress={() => toggleSection(section.key)}
+              >
+                <Text style={styles.sectionHeader}>{section.title}</Text>
+                <Ionicons
+                  name={isCollapsed ? 'chevron-down' : 'chevron-up'}
+                  size={16}
+                  color={colors.neutral[400]}
+                />
+              </Pressable>
+            );
+          }}
           renderItem={({ item, section }) => {
             if (isGroup(item)) {
               const dotColor = FRESHNESS_DOT_COLORS[item.worstState] ?? colors.neutral[400];
@@ -954,16 +988,32 @@ const styles = StyleSheet.create({
   planRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.md,
-    paddingVertical: spacing.sm,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.neutral[100],
+  },
+  planRowContent: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  removeButton: {
+    padding: spacing.sm,
+    borderRadius: radius.full,
+  },
+  removeButtonPressed: {
+    backgroundColor: colors.neutral[100],
   },
 
   // Section Headers
   sectionHeaderContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginTop: spacing.md,
     marginBottom: spacing.sm,
+    paddingVertical: spacing.xs,
   },
   sectionHeader: {
     ...typography.textStyles.subheading,
