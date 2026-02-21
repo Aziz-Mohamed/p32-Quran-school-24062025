@@ -170,10 +170,24 @@
   "student": {
     "tabs": {
       "dashboard": "لوحة التحكّم",
-      "lessons": "الدروس",
+      "revision": "المراجعة",
       "memorization": "الحفظ",
       "stickers": "الملصقات",
       "profile": "الملف الشخصي"
+    },
+    "revision": {
+      "title": "صحة المراجعة",
+      "healthSummary": "{{active}} / {{total}} ربع مُجاز",
+      "needsAttention": "يحتاج انتباه",
+      "allCertified": "جميع المُجازات",
+      "daysLeft": "{{count}} يوم متبقي",
+      "freshness": "{{percentage}}%",
+      "allFresh": "كل الحفظ طازج!",
+      "allFreshDesc": "لا يوجد ربع يحتاج مراجعة حالياً",
+      "noCertifications": "لا يوجد ربع مُجاز بعد",
+      "noCertificationsDesc": "ستظهر الأرباع هنا بعد أن يُجيز معلّمك حفظك",
+      "fullMap": "الخريطة الكاملة",
+      "todaysPlan": "خطة اليوم"
     },
     "dashboard": {
       "title": "لوحة الطالب",

@@ -170,10 +170,24 @@
   "student": {
     "tabs": {
       "dashboard": "Dashboard",
-      "lessons": "Lessons",
+      "revision": "Revision",
       "memorization": "Memorization",
       "stickers": "Stickers",
       "profile": "Profile"
+    },
+    "revision": {
+      "title": "Revision Health",
+      "healthSummary": "{{active}} / {{total}} rubʿ certified",
+      "needsAttention": "Needs Attention",
+      "allCertified": "All Certified",
+      "daysLeft": "{{count}} days left",
+      "freshness": "{{percentage}}%",
+      "allFresh": "All memorization is fresh!",
+      "allFreshDesc": "No rubʿ need revision right now",
+      "noCertifications": "No rubʿ certified yet",
+      "noCertificationsDesc": "Rubʿ will appear here once your teacher certifies your memorization",
+      "fullMap": "Full Map",
+      "todaysPlan": "Today's Plan"
     },
     "dashboard": {
       "title": "Student Dashboard",
