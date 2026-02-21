@@ -877,6 +877,115 @@ export type Database = {
         }
         Relationships: []
       }
+      session_recitation_plans: {
+        Row: {
+          assignment_id: string | null
+          created_at: string
+          end_ayah: number
+          end_surah: number
+          hizb_number: number | null
+          id: string
+          juz_number: number | null
+          notes: string | null
+          recitation_type: string
+          rub_number: number | null
+          scheduled_session_id: string
+          school_id: string
+          selection_mode: string
+          set_by: string
+          source: string
+          start_ayah: number
+          start_surah: number
+          student_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          assignment_id?: string | null
+          created_at?: string
+          end_ayah: number
+          end_surah: number
+          hizb_number?: number | null
+          id?: string
+          juz_number?: number | null
+          notes?: string | null
+          recitation_type?: string
+          rub_number?: number | null
+          scheduled_session_id: string
+          school_id: string
+          selection_mode?: string
+          set_by: string
+          source?: string
+          start_ayah: number
+          start_surah: number
+          student_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assignment_id?: string | null
+          created_at?: string
+          end_ayah?: number
+          end_surah?: number
+          hizb_number?: number | null
+          id?: string
+          juz_number?: number | null
+          notes?: string | null
+          recitation_type?: string
+          rub_number?: number | null
+          scheduled_session_id?: string
+          school_id?: string
+          selection_mode?: string
+          set_by?: string
+          source?: string
+          start_ayah?: number
+          start_surah?: number
+          student_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_recitation_plans_assignment_id_fkey"
+            columns: ["assignment_id"]
+            isOneToOne: false
+            referencedRelation: "memorization_assignments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recitation_plans_rub_number_fkey"
+            columns: ["rub_number"]
+            isOneToOne: false
+            referencedRelation: "quran_rub_reference"
+            referencedColumns: ["rub_number"]
+          },
+          {
+            foreignKeyName: "session_recitation_plans_scheduled_session_id_fkey"
+            columns: ["scheduled_session_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recitation_plans_school_id_fkey"
+            columns: ["school_id"]
+            isOneToOne: false
+            referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recitation_plans_set_by_fkey"
+            columns: ["set_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recitation_plans_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sessions: {
         Row: {
           class_id: string | null
