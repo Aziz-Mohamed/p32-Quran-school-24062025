@@ -91,10 +91,6 @@ export default function StudentDetailScreen() {
             </Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{t('student.points')}</Text>
-            <Text style={styles.infoValue}>{student.total_points}</Text>
-          </View>
-          <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>{t('student.streak')}</Text>
             <Text style={styles.infoValue}>{student.current_streak}</Text>
           </View>

@@ -137,8 +137,8 @@ export default function AwardStickerScreen() {
                   >
                     {name}
                   </Text>
-                  <Text style={styles.stickerPoints}>
-                    {sticker.points_value} {t('common.pts')}
+                  <Text style={styles.stickerTier}>
+                    {t(`student.stickers.tier.${sticker.tier}`)}
                   </Text>
                 </Pressable>
               );
@@ -226,7 +226,7 @@ const styles = StyleSheet.create({
   stickerNameSelected: {
     color: colors.primary[700],
   },
-  stickerPoints: {
+  stickerTier: {
     ...typography.textStyles.caption,
     color: lightTheme.textSecondary,
     fontSize: typography.fontSize.xs,

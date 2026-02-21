@@ -62,7 +62,7 @@ export default function StudentDashboard() {
         <Card variant="primary-glow" style={styles.levelCard}>
           <View style={styles.levelHeader}>
             <Text style={styles.levelTitle}>{t('common.level')} {currentLevel}</Text>
-            <Text style={styles.levelPoints}>{student?.total_points ?? 0} {t('student.points')}</Text>
+            <Text style={styles.levelSubtitle}>{currentLevel}/240 {t('student.dashboard.rubCertified')}</Text>
           </View>
           <ProgressBar
             progress={currentLevel / 240}
@@ -79,8 +79,8 @@ export default function StudentDashboard() {
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <Card variant="default" style={styles.statCard}>
-            <Text style={[styles.statValue, { color: theme.primary }]}>{student?.total_points ?? 0}</Text>
-            <Text style={styles.statLabel}>{t('student.points')}</Text>
+            <Text style={[styles.statValue, { color: theme.primary }]}>{data?.totalStickers ?? 0}</Text>
+            <Text style={styles.statLabel}>{t('student.dashboard.stickers')}</Text>
           </Card>
           <Card variant="default" style={styles.statCard}>
             <Text style={[styles.statValue, { color: colors.accent.rose[500] }]}>
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     ...typography.textStyles.subheading,
     color: colors.neutral[900],
   },
-  levelPoints: {
+  levelSubtitle: {
     ...typography.textStyles.label,
     color: colors.neutral[500],
   },

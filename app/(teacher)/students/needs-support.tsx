@@ -69,7 +69,7 @@ export default function NeedsSupportScreen() {
                   </Text>
                 </View>
                 <View style={styles.statsContainer}>
-                  <Text style={styles.pointsValue}>{student.total_points ?? 0} {t('common.pts')}</Text>
+                  <Badge label={`${t('common.level')} ${student.current_level ?? 0}`} variant="default" size="sm" />
                   {student.current_streak === 0 && (
                     <Badge label={t('teacher.insights.noStreak')} variant="warning" size="sm" />
                   )}
@@ -127,10 +127,5 @@ const styles = StyleSheet.create({
   statsContainer: {
     alignItems: 'flex-end',
     gap: spacing.xs,
-  },
-  pointsValue: {
-    ...typography.textStyles.body,
-    color: lightTheme.textSecondary,
-    fontFamily: typography.fontFamily.medium,
   },
 });

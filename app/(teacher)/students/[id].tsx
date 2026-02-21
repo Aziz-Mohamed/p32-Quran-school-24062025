@@ -171,8 +171,8 @@ export default function TeacherStudentDetailScreen() {
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <Card variant="default" style={styles.statCard}>
-            <Text style={[styles.statValue, { color: colors.gamification.gold }]}>{student.total_points ?? 0}</Text>
-            <Text style={styles.statLabel}>{t('student.points')}</Text>
+            <Text style={[styles.statValue, { color: colors.primary[500] }]}>{activeCount}/240</Text>
+            <Text style={styles.statLabel}>{t('common.level')}</Text>
           </Card>
           <Card variant="default" style={styles.statCard}>
             <Text style={[styles.statValue, { color: colors.accent.rose[500] }]}>{student.current_streak ?? 0}</Text>
@@ -306,9 +306,9 @@ export default function TeacherStudentDetailScreen() {
                     <Text style={styles.stickerReason}>{sticker.reason}</Text>
                   )}
                 </View>
-                <View style={styles.pointsBadge}>
-                  <Text style={styles.stickerPoints}>
-                    +{sticker.stickers?.points_value ?? 0}
+                <View style={styles.tierLabel}>
+                  <Text style={styles.stickerTier}>
+                    {sticker.stickers?.tier ?? ''}
                   </Text>
                 </View>
               </View>
@@ -473,16 +473,17 @@ const styles = StyleSheet.create({
     color: colors.neutral[500],
     marginTop: normalize(2),
   },
-  pointsBadge: {
-    backgroundColor: colors.primary[50],
+  tierLabel: {
+    backgroundColor: colors.neutral[50],
     paddingHorizontal: normalize(8),
     paddingVertical: normalize(4),
     borderRadius: normalize(8),
   },
-  stickerPoints: {
-    fontSize: normalize(12),
-    fontFamily: typography.fontFamily.bold,
-    color: colors.primary[600],
+  stickerTier: {
+    fontSize: normalize(11),
+    fontFamily: typography.fontFamily.semiBold,
+    color: colors.neutral[500],
+    textTransform: 'capitalize',
   },
   memorizationCard: {
     padding: spacing.md,

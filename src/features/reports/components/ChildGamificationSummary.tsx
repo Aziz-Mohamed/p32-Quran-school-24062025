@@ -62,10 +62,10 @@ export function ChildGamificationSummary({
             value={data.longestStreak}
           />
           <GamificationItem
-            icon="diamond"
+            icon="checkmark-done"
             iconColor={colors.secondary[600]}
-            label={t('reports.gamification.totalPoints')}
-            value={data.totalPoints.toLocaleString()}
+            label={t('reports.gamification.activeCerts')}
+            value={data.activeCertifications}
           />
         </View>
       )}

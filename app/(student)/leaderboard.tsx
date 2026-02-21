@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { I18nManager, StyleSheet, View, Text, Pressable } from 'react-native';
+import React from 'react';
+import { I18nManager, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
@@ -25,11 +25,9 @@ export default function LeaderboardScreen() {
   const router = useRouter();
   const { profile } = useAuth();
   const theme = useRoleTheme();
-  const [period, setPeriod] = useState<'weekly' | 'all-time'>('all-time');
 
   const { data: entries = [], isLoading, error, refetch } = useLeaderboard(
     undefined,
-    period,
   );
 
   if (isLoading) return <LoadingState />;
@@ -47,26 +45,6 @@ export default function LeaderboardScreen() {
             icon={<Ionicons name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"} size={20} color={theme.primary} />}
           />
           <Text style={styles.title}>{t('student.leaderboard.title')}</Text>
-        </View>
-
-        {/* Period Toggle */}
-        <View style={styles.toggleContainer}>
-          <Pressable
-            onPress={() => setPeriod('weekly')}
-            style={[styles.toggleButton, period === 'weekly' && { backgroundColor: theme.primary }]}
-          >
-            <Text style={[styles.toggleText, period === 'weekly' && styles.toggleTextActive]}>
-              {t('student.leaderboard.weekly')}
-            </Text>
-          </Pressable>
-          <Pressable
-            onPress={() => setPeriod('all-time')}
-            style={[styles.toggleButton, period === 'all-time' && { backgroundColor: theme.primary }]}
-          >
-            <Text style={[styles.toggleText, period === 'all-time' && styles.toggleTextActive]}>
-              {t('student.leaderboard.allTime')}
-            </Text>
-          </Pressable>
         </View>
 
         {entries.length === 0 ? (
@@ -119,11 +97,11 @@ export default function LeaderboardScreen() {
                       </Text>
                     </View>
                     
-                    <View style={styles.pointsContainer}>
-                      <Text style={[styles.entryPoints, { color: theme.primary }]}>
-                        {item.total_points ?? 0}
+                    <View style={styles.levelBadge}>
+                      <Text style={[styles.levelValue, { color: theme.primary }]}>
+                        {item.current_level ?? 0}
                       </Text>
-                      <Text style={styles.pointsLabel}>{t('student.points')}</Text>
+                      <Text style={styles.levelLabel}>/240</Text>
                     </View>
                   </View>
                 </Card>
@@ -154,27 +132,6 @@ const styles = StyleSheet.create({
     ...typography.textStyles.heading,
     color: lightTheme.text,
     fontSize: normalize(22),
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    backgroundColor: colors.neutral[100],
-    padding: normalize(4),
-    borderRadius: normalize(16),
-    marginHorizontal: spacing.lg,
-  },
-  toggleButton: {
-    flex: 1,
-    paddingVertical: normalize(10),
-    alignItems: 'center',
-    borderRadius: normalize(12),
-  },
-  toggleText: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[500],
-    fontSize: normalize(14),
-  },
-  toggleTextActive: {
-    color: colors.white,
   },
   listContent: {
     padding: spacing.lg,
@@ -210,17 +167,18 @@ const styles = StyleSheet.create({
     ...typography.textStyles.label,
     color: colors.neutral[500],
   },
-  pointsContainer: {
-    alignItems: 'flex-end',
+  levelBadge: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
   },
-  entryPoints: {
+  levelValue: {
     ...typography.textStyles.bodyMedium,
     fontFamily: typography.fontFamily.bold,
     fontSize: normalize(18),
   },
-  pointsLabel: {
+  levelLabel: {
     ...typography.textStyles.label,
-    fontSize: normalize(10),
+    fontSize: normalize(12),
     color: colors.neutral[400],
   },
 });

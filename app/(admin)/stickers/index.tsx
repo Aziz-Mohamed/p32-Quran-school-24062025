@@ -90,13 +90,10 @@ export default function StickerCatalogScreen() {
                   />
                   <View style={styles.cardFooter}>
                     <Text style={styles.stickerName} numberOfLines={1}>{name}</Text>
-                    <View style={styles.metaRow}>
-                      <View style={styles.tierBadge}>
-                        <Text style={[styles.tierText, { color: tierColor }]}>
-                          {t(`student.stickers.tier.${tier}`)}
-                        </Text>
-                      </View>
-                      <Text style={styles.points}>{item.points_value} {t('common.pts')}</Text>
+                    <View style={styles.tierBadge}>
+                      <Text style={[styles.tierText, { color: tierColor }]}>
+                        {t(`student.stickers.tier.${tier}`)}
+                      </Text>
                     </View>
                   </View>
                 </Pressable>
@@ -170,11 +167,6 @@ const styles = StyleSheet.create({
     color: colors.neutral[800],
     fontFamily: typography.fontFamily.semiBold,
   },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
   tierBadge: {
     paddingHorizontal: normalize(8),
     paddingVertical: normalize(3),
@@ -185,10 +177,5 @@ const styles = StyleSheet.create({
     fontSize: normalize(10),
     fontFamily: typography.fontFamily.semiBold,
     letterSpacing: 0.5,
-  },
-  points: {
-    ...typography.textStyles.caption,
-    color: colors.neutral[500],
-    fontFamily: typography.fontFamily.semiBold,
   },
 });

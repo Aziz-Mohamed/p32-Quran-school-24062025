@@ -136,12 +136,6 @@ export default function ParentDashboard() {
             <Text style={styles.statLabel}>{t('parent.dashboard.averageAttendance')}</Text>
           </Card>
           <Card variant="default" style={styles.statCard}>
-            <Text style={[styles.statValue, { color: colors.gamification.gold }]}>
-              {(stats?.totalPoints ?? 0).toLocaleString()}
-            </Text>
-            <Text style={styles.statLabel}>{t('parent.dashboard.totalPoints')}</Text>
-          </Card>
-          <Card variant="default" style={styles.statCard}>
             <Text style={[styles.statValue, { color: colors.accent.violet[500] }]}>
               {stats?.totalStickers ?? 0}
             </Text>

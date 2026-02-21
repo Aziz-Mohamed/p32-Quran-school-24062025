@@ -18,7 +18,6 @@
     "inactive": "Inactive",
     "remove": "Remove",
     "success": "Success",
-    "pts": "pts",
     "signOut": "Sign Out",
     "language": "Language",
     "english": "English",
@@ -199,7 +198,6 @@
     "myStickers": "My Stickers",
     "trophyRoom": "Trophy Room",
     "currentLevel": "Current Level",
-    "points": "Points",
     "streak": "Streak",
     "lessons": {
       "title": "Lessons",
@@ -265,7 +263,6 @@
       "emptyDescription": "Earn stickers from your teachers",
       "count": "×{{count}}",
       "newSticker": "New Sticker!",
-      "points": "points",
       "tapToDismiss": "Tap to dismiss",
       "tier": {
         "bronze": "Bronze Star",
@@ -277,7 +274,6 @@
       },
       "detail": {
         "timesEarned": "Times Earned",
-        "totalPoints": "Total Points",
         "firstEarned": "First Earned",
         "lastEarned": "Last Earned",
         "awardedBy": "Awarded By",
@@ -334,7 +330,7 @@
     "needsSupport": "Needs Support",
     "needsSupportDesc": "Students who may need extra attention",
     "topPerformers": "Top Performers",
-    "topPerformersDesc": "Students ranked by total points earned",
+    "topPerformersDesc": "Students ranked by level",
     "insights": {
       "emptyTitle": "No Students Yet",
       "emptyDescription": "Students will appear here once assigned to your classes",
@@ -414,7 +410,6 @@
       "absentAlert": "{{name}} was absent today",
       "allPresent": "All children present today!",
       "averageAttendance": "Avg Attendance",
-      "totalPoints": "Total Points",
       "totalStickers": "Total Stickers",
       "activeStreaks": "Active Streaks",
       "childrenStatus": "My Children",
@@ -817,8 +812,7 @@
       "currentLevel": "Current Level",
       "currentStreak": "Current Streak",
       "longestStreak": "Longest Streak",
-      "totalPoints": "Total Points",
-      "activeCertifications": "Active Certifications",
+      "activeCerts": "Active Certifications",
       "progressMap": "Rubʿ Progress Map",
       "juz": "Juz",
       "hizb": "Hizb",

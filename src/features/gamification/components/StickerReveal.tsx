@@ -161,11 +161,6 @@ export function StickerReveal({ sticker, onDismiss }: StickerRevealProps) {
               {t('student.stickers.newSticker')}
             </Text>
             <Text style={styles.stickerName}>{name}</Text>
-            {sticker.stickers && (
-              <Text style={styles.pointsText}>
-                +{sticker.stickers.points_value} {t('student.stickers.points')}
-              </Text>
-            )}
             <Text style={styles.tapHint}>
               {t('student.stickers.tapToDismiss')}
             </Text>
@@ -231,10 +226,6 @@ const styles = StyleSheet.create({
     ...typography.textStyles.subheading,
     color: colors.white,
     textAlign: 'center',
-  },
-  pointsText: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.secondary[300],
   },
   tapHint: {
     ...typography.textStyles.caption,
