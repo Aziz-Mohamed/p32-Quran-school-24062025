@@ -994,7 +994,8 @@
     "sections": {
       "new_hifz": "الحفظ الجديد",
       "recent_review": "المراجعة القريبة",
-      "old_review": "المراجعة البعيدة"
+      "old_review": "المراجعة البعيدة",
+      "recent_practice": "تابع التدريب"
     },
     "revisionLabels": {
       "new": "جديد",

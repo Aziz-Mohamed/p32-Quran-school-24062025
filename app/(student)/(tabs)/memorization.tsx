@@ -27,14 +27,9 @@ const SECTION_CONFIG = {
     color: colors.accent.indigo[500],
   },
   recent_review: {
-    titleKey: 'memorization.sections.recent_review',
+    titleKey: 'memorization.sections.recent_practice',
     icon: 'refresh-circle' as const,
     color: colors.secondary[500],
-  },
-  old_review: {
-    titleKey: 'memorization.sections.old_review',
-    icon: 'time' as const,
-    color: colors.primary[500],
   },
 };
 
@@ -56,12 +51,11 @@ export default function MemorizationScreen() {
     setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Group schedule items by review_type
+  // Group schedule items by review_type (only new_hifz + recent_review — old review lives on Revision Health tab)
   const sections = useMemo(() => {
     const groups: Record<string, RevisionScheduleItem[]> = {
       new_hifz: [],
       recent_review: [],
-      old_review: [],
     };
 
     for (const item of schedule) {
@@ -71,7 +65,7 @@ export default function MemorizationScreen() {
       }
     }
 
-    return (['new_hifz', 'recent_review', 'old_review'] as const)
+    return (['new_hifz', 'recent_review'] as const)
       .filter((key) => groups[key].length > 0)
       .map((key) => ({
         key,

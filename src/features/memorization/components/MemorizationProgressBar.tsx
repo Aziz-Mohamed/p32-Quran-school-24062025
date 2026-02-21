@@ -78,10 +78,10 @@ export function MemorizationProgressBar({ stats, compact = false, style }: Memor
           value={inProgressAyahs}
         />
         <StatItem
-          icon="alert-circle-outline"
-          iconColor={colors.semantic.warning}
-          label={t('memorization.needsReview')}
-          value={stats.items_needing_review}
+          icon="mic-outline"
+          iconColor={colors.primary[500]}
+          label={t('memorization.totalRecitations')}
+          value={stats.total_recitations}
         />
       </View>
 

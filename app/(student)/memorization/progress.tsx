@@ -26,7 +26,6 @@ const STATUS_COLORS: Record<string, { color: string; bg: string }> = {
   new: { color: colors.accent.indigo[600], bg: colors.accent.indigo[50] },
   learning: { color: colors.secondary[700], bg: colors.secondary[50] },
   memorized: { color: colors.semantic.success, bg: '#DCFCE7' },
-  needs_review: { color: colors.semantic.warning, bg: '#FEF3C7' },
 };
 
 // ─── Progress Screen ─────────────────────────────────────────────────────────
@@ -145,7 +144,9 @@ export default function MemorizationProgressScreen() {
                 {isExpanded && (
                   <View style={styles.ayahDetails}>
                     {surah.items.map((item: any, idx: number) => {
-                      const sc = STATUS_COLORS[item.status] ?? STATUS_COLORS.new;
+                      // Map needs_review → memorized for display (revision is rubʿ-based, not surah-based)
+                      const displayStatus = item.status === 'needs_review' ? 'memorized' : item.status;
+                      const sc = STATUS_COLORS[displayStatus] ?? STATUS_COLORS.new;
                       return (
                         <View key={idx} style={styles.ayahRange}>
                           <Text style={styles.ayahRangeText}>
@@ -153,7 +154,7 @@ export default function MemorizationProgressScreen() {
                           </Text>
                           <View style={[styles.statusChip, { backgroundColor: sc.bg }]}>
                             <Text style={[styles.statusChipText, { color: sc.color }]}>
-                              {t(`memorization.status.${item.status}`)}
+                              {t(`memorization.status.${displayStatus}`)}
                             </Text>
                           </View>
                           {item.avg_accuracy != null && (

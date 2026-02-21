@@ -994,7 +994,8 @@
     "sections": {
       "new_hifz": "New Memorization",
       "recent_review": "Recent Revision",
-      "old_review": "Older Revision"
+      "old_review": "Older Revision",
+      "recent_practice": "Continue Practicing"
     },
     "revisionLabels": {
       "new": "New",

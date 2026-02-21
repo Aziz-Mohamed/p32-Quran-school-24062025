@@ -27,7 +27,6 @@ const MAX_PREVIEW_ITEMS = 4;
 const TYPE_CONFIG = {
   new_hifz: { labelKey: 'student.dashboard.newHifz', color: colors.accent.indigo[500], bg: colors.accent.indigo[50] },
   recent_review: { labelKey: 'student.dashboard.review', color: colors.secondary[500], bg: colors.secondary[50] },
-  old_review: { labelKey: 'student.dashboard.review', color: colors.primary[500], bg: colors.primary[50] },
 } as const;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -55,7 +54,7 @@ function TaskRow({ item, isRTL, t }: { item: any; isRTL: boolean; t: (key: strin
   const ayahRange = item.from_ayah === item.to_ayah
     ? `${item.from_ayah}`
     : `${item.from_ayah}-${item.to_ayah}`;
-  const config = TYPE_CONFIG[item.review_type as keyof typeof TYPE_CONFIG] ?? TYPE_CONFIG.old_review;
+  const config = TYPE_CONFIG[item.review_type as keyof typeof TYPE_CONFIG] ?? TYPE_CONFIG.recent_review;
 
   return (
     <View style={styles.taskRow}>
@@ -92,8 +91,12 @@ export default function StudentDashboard() {
   const attendance = getAttendanceBadge(data?.todayAttendance?.status, t);
   const chevron = isRTL ? 'chevron-back' : 'chevron-forward';
 
-  const totalItems = revisionSchedule.length;
-  const previewItems = revisionSchedule.slice(0, MAX_PREVIEW_ITEMS);
+  // Only show new_hifz + recent_review (old_review lives on Revision Health tab)
+  const filteredSchedule = revisionSchedule.filter(
+    (item: any) => item.review_type !== 'old_review',
+  );
+  const totalItems = filteredSchedule.length;
+  const previewItems = filteredSchedule.slice(0, MAX_PREVIEW_ITEMS);
   const hasMore = totalItems > MAX_PREVIEW_ITEMS;
   const hasWarning = criticalCount > 0;
 
