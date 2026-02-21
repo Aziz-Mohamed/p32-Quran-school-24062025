@@ -8,9 +8,11 @@ import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { MemorizationHealthCard, MemorizationRow } from '@/features/memorization';
+import { SelfAssignmentForm } from '@/features/memorization/components/SelfAssignmentForm';
 import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { useMemorizationProgress } from '@/features/memorization/hooks/useMemorizationProgress';
+import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import type { RevisionScheduleItem } from '@/features/memorization';
 import { useAuth } from '@/hooks/useAuth';
 import { SURAHS } from '@/lib/quran-metadata';
@@ -32,9 +34,14 @@ export default function MemorizationScreen() {
   const { data: progress = [], isLoading: progressLoading } = useMemorizationProgress({
     studentId: profile?.id ?? '',
   });
+  const { data: dashboardData } = useStudentDashboard(profile?.id);
+
+  const canSelfAssign = dashboardData?.student?.can_self_assign ?? false;
+  const schoolId = dashboardData?.student?.school_id ?? '';
 
   const isRTL = I18nManager.isRTL;
   const [practiceCollapsed, setPracticeCollapsed] = useState(false);
+  const [formVisible, setFormVisible] = useState(false);
 
   // Split schedule into new_hifz (prominent) and recent_review (compact)
   const { newHifzItems, recentReviewItems } = useMemo(() => {
@@ -85,128 +92,152 @@ export default function MemorizationScreen() {
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
 
   return (
-    <Screen scroll hasTabBar>
-      <View style={styles.content}>
-        {/* Header */}
-        <Text style={styles.title}>{t('memorization.title')}</Text>
+    <>
+      <Screen scroll hasTabBar>
+        <View style={styles.content}>
+          {/* Header */}
+          <Text style={styles.title}>{t('memorization.title')}</Text>
 
-        {/* Hero Ayah Counter */}
-        <MemorizationHealthCard stats={stats} />
+          {/* Hero Ayah Counter */}
+          <MemorizationHealthCard stats={stats} />
 
-        {/* New Memorization — PRIMARY */}
-        {newHifzItems.length > 0 && (
-          <>
-            <Text style={styles.sectionHeader}>
-              {t('memorization.sections.new_hifz')}
-            </Text>
-            {newHifzItems.map((item, index) => {
-              const surah = SURAHS[item.surah_number - 1];
-              const ayahCount = item.to_ayah - item.from_ayah + 1;
-              const primaryName = surah
-                ? (isRTL ? surah.nameArabic : surah.nameEnglish)
-                : `Surah ${item.surah_number}`;
-              const secondaryName = surah
-                ? (isRTL ? surah.nameEnglish : surah.nameArabic)
-                : undefined;
-              return (
-                <Card
-                  key={item.progress_id ?? `new-${item.surah_number}-${item.from_ayah}-${index}`}
-                  variant="default"
-                  style={styles.newHifzCard}
-                >
-                  <View style={styles.newHifzContent}>
-                    <View style={styles.newHifzNameRow}>
-                      <Text style={isRTL ? styles.newHifzSurahArabic : styles.newHifzSurah}>
-                        {primaryName}
-                      </Text>
-                      {secondaryName && (
-                        <Text style={styles.newHifzSecondary}>
-                          {secondaryName}
-                        </Text>
-                      )}
-                    </View>
-                    <Text style={styles.newHifzRange}>
-                      {t('memorization.ayahRange', { from: item.from_ayah, to: item.to_ayah })}
-                      {'  ·  '}
-                      {t('memorization.newAyahCount', { count: ayahCount })}
-                    </Text>
-                  </View>
-                  <View style={styles.newHifzIconCircle}>
-                    <Ionicons
-                      name="book-outline"
-                      size={18}
-                      color={colors.accent.indigo[600]}
-                    />
-                  </View>
-                </Card>
-              );
-            })}
-          </>
-        )}
-
-        {/* Continue Practicing — SECONDARY */}
-        {recentReviewItems.length > 0 && (
-          <>
-            <Pressable
-              onPress={() => setPracticeCollapsed((prev) => !prev)}
-              style={styles.sectionHeaderContainer}
-            >
+          {/* New Memorization — PRIMARY */}
+          {newHifzItems.length > 0 && (
+            <>
               <Text style={styles.sectionHeader}>
-                {t('memorization.sections.recent_practice')}
+                {t('memorization.sections.new_hifz')}
               </Text>
-              <Ionicons
-                name={practiceCollapsed ? 'chevron-down' : 'chevron-up'}
-                size={16}
-                color={colors.neutral[400]}
-              />
-            </Pressable>
-            {!practiceCollapsed &&
-              recentReviewItems.map((item, index) => (
-                <MemorizationRow
-                  key={item.progress_id ?? `review-${item.surah_number}-${item.from_ayah}-${index}`}
-                  item={item}
+              {newHifzItems.map((item, index) => {
+                const surah = SURAHS[item.surah_number - 1];
+                const ayahCount = item.to_ayah - item.from_ayah + 1;
+                const primaryName = surah
+                  ? (isRTL ? surah.nameArabic : surah.nameEnglish)
+                  : `Surah ${item.surah_number}`;
+                const secondaryName = surah
+                  ? (isRTL ? surah.nameEnglish : surah.nameArabic)
+                  : undefined;
+                return (
+                  <Card
+                    key={item.progress_id ?? `new-${item.surah_number}-${item.from_ayah}-${index}`}
+                    variant="default"
+                    style={styles.newHifzCard}
+                  >
+                    <View style={styles.newHifzContent}>
+                      <View style={styles.newHifzNameRow}>
+                        <Text style={isRTL ? styles.newHifzSurahArabic : styles.newHifzSurah}>
+                          {primaryName}
+                        </Text>
+                        {secondaryName && (
+                          <Text style={styles.newHifzSecondary}>
+                            {secondaryName}
+                          </Text>
+                        )}
+                      </View>
+                      <Text style={styles.newHifzRange}>
+                        {t('memorization.ayahRange', { from: item.from_ayah, to: item.to_ayah })}
+                        {'  ·  '}
+                        {t('memorization.newAyahCount', { count: ayahCount })}
+                      </Text>
+                    </View>
+                    <View style={styles.newHifzIconCircle}>
+                      <Ionicons
+                        name="book-outline"
+                        size={18}
+                        color={colors.accent.indigo[600]}
+                      />
+                    </View>
+                  </Card>
+                );
+              })}
+            </>
+          )}
+
+          {/* Continue Practicing — SECONDARY */}
+          {recentReviewItems.length > 0 && (
+            <>
+              <Pressable
+                onPress={() => setPracticeCollapsed((prev) => !prev)}
+                style={styles.sectionHeaderContainer}
+              >
+                <Text style={styles.sectionHeader}>
+                  {t('memorization.sections.recent_practice')}
+                </Text>
+                <Ionicons
+                  name={practiceCollapsed ? 'chevron-down' : 'chevron-up'}
+                  size={16}
+                  color={colors.neutral[400]}
                 />
-              ))}
-          </>
-        )}
+              </Pressable>
+              {!practiceCollapsed &&
+                recentReviewItems.map((item, index) => (
+                  <MemorizationRow
+                    key={item.progress_id ?? `review-${item.surah_number}-${item.from_ayah}-${index}`}
+                    item={item}
+                  />
+                ))}
+            </>
+          )}
 
-        {/* Empty State */}
-        {hasNoTasks && (
-          <EmptyState
-            icon="book-outline"
-            title={t('memorization.noRevisionToday')}
-            description={t('memorization.noRevisionDescription')}
-          />
-        )}
+          {/* Empty State */}
+          {hasNoTasks && (
+            <EmptyState
+              icon="book-outline"
+              title={t('memorization.noRevisionToday')}
+              description={t('memorization.noRevisionDescription')}
+            />
+          )}
 
-        {/* Your Journey — TERTIARY (compact surah list) */}
-        {surahsWithProgress.length > 0 && (
-          <>
-            <Text style={styles.journeyHeader}>
-              {t('memorization.yourJourney')}
-            </Text>
-            <View style={styles.journeyList}>
-              {surahsWithProgress.map((surah) => (
-                <View key={surah.number} style={styles.journeyRow}>
-                  <Text style={styles.journeyNum}>{surah.number}</Text>
-                  <Text style={isRTL ? styles.journeyNameArabic : styles.journeyName} numberOfLines={1}>
-                    {isRTL ? surah.nameArabic : surah.nameEnglish}
-                  </Text>
-                  <View style={styles.journeyBarContainer}>
-                    <ProgressBar
-                      progress={surah.progress}
-                      variant="primary"
-                      height={4}
-                    />
+          {/* Your Journey — TERTIARY (compact surah list) */}
+          {surahsWithProgress.length > 0 && (
+            <>
+              <Text style={styles.journeyHeader}>
+                {t('memorization.yourJourney')}
+              </Text>
+              <View style={styles.journeyList}>
+                {surahsWithProgress.map((surah) => (
+                  <View key={surah.number} style={styles.journeyRow}>
+                    <Text style={styles.journeyNum}>{surah.number}</Text>
+                    <Text style={isRTL ? styles.journeyNameArabic : styles.journeyName} numberOfLines={1}>
+                      {isRTL ? surah.nameArabic : surah.nameEnglish}
+                    </Text>
+                    <View style={styles.journeyBarContainer}>
+                      <ProgressBar
+                        progress={surah.progress}
+                        variant="primary"
+                        height={4}
+                      />
+                    </View>
+                    <Text style={styles.journeyPct}>{surah.percentage}%</Text>
                   </View>
-                  <Text style={styles.journeyPct}>{surah.percentage}%</Text>
-                </View>
-              ))}
-            </View>
-          </>
-        )}
-      </View>
-    </Screen>
+                ))}
+              </View>
+            </>
+          )}
+        </View>
+      </Screen>
+
+      {/* FAB — Add Homework */}
+      {canSelfAssign && profile?.id && (
+        <Pressable
+          style={styles.fab}
+          onPress={() => setFormVisible(true)}
+          accessibilityRole="button"
+          accessibilityLabel={t('memorization.selfAssign.title')}
+        >
+          <Ionicons name="add" size={normalize(28)} color={colors.white} />
+        </Pressable>
+      )}
+
+      {/* Self-Assignment Form Modal */}
+      {profile?.id && schoolId ? (
+        <SelfAssignmentForm
+          visible={formVisible}
+          onClose={() => setFormVisible(false)}
+          studentId={profile.id}
+          schoolId={schoolId}
+        />
+      ) : null}
+    </>
   );
 }
 
@@ -332,5 +363,19 @@ const styles = StyleSheet.create({
     color: colors.neutral[500],
     width: normalize(32),
     textAlign: 'right',
+  },
+
+  // FAB
+  fab: {
+    position: 'absolute',
+    bottom: normalize(120),
+    right: spacing.lg,
+    width: normalize(56),
+    height: normalize(56),
+    borderRadius: normalize(28),
+    backgroundColor: colors.accent.indigo[500],
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0px 4px 12px rgba(99, 102, 241, 0.4)',
   },
 });

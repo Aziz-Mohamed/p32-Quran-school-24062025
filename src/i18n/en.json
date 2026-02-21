@@ -1084,6 +1084,12 @@
       "createButton": "Create Assignment",
       "createdSuccess": "Assignment created successfully"
     },
+    "selfAssign": {
+      "title": "Add Homework",
+      "subtitle": "Assign memorization to yourself",
+      "saveButton": "Add to My Plan",
+      "savedSuccess": "Homework added successfully"
+    },
     "validation": {
       "selectStudent": "Please select a student",
       "selectSurah": "Please select a surah",

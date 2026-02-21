@@ -1084,6 +1084,12 @@
       "createButton": "إنشاء التعيين",
       "createdSuccess": "تم إنشاء التعيين بنجاح"
     },
+    "selfAssign": {
+      "title": "إضافة واجب",
+      "subtitle": "أضف حفظًا لنفسك",
+      "saveButton": "أضف إلى خطتي",
+      "savedSuccess": "تم إضافة الواجب بنجاح"
+    },
     "validation": {
       "selectStudent": "يرجى اختيار طالب",
       "selectSurah": "يرجى اختيار سورة",
