@@ -1036,7 +1036,6 @@ export type Database = {
           is_active: boolean
           name_ar: string
           name_en: string
-          points_value: number
           tier: string
         }
         Insert: {
@@ -1046,7 +1045,6 @@ export type Database = {
           is_active?: boolean
           name_ar: string
           name_en: string
-          points_value?: number
           tier?: string
         }
         Update: {
@@ -1056,7 +1054,6 @@ export type Database = {
           is_active?: boolean
           name_ar?: string
           name_en?: string
-          points_value?: number
           tier?: string
         }
         Relationships: []
@@ -1187,7 +1184,6 @@ export type Database = {
           longest_streak: number
           parent_id: string | null
           school_id: string
-          total_points: number
           updated_at: string
         }
         Insert: {
@@ -1202,7 +1198,6 @@ export type Database = {
           longest_streak?: number
           parent_id?: string | null
           school_id: string
-          total_points?: number
           updated_at?: string
         }
         Update: {
@@ -1217,7 +1212,6 @@ export type Database = {
           longest_streak?: number
           parent_id?: string | null
           school_id?: string
-          total_points?: number
           updated_at?: string
         }
         Relationships: [
