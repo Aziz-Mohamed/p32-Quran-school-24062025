@@ -93,14 +93,6 @@ export function getQueryKeysForEvent(
           ];
     }
 
-    case 'homework':
-      return studentId
-        ? [
-            ['homework', studentId],
-            ['student-dashboard', studentId],
-          ]
-        : [['homework'], ['student-dashboard']];
-
     case 'student_trophies':
       return studentId
         ? [

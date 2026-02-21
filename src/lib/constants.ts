@@ -54,8 +54,6 @@ export const SCORE_RANGE = {
 export const POINTS = {
   session_completed: 10,
   good_score_bonus: 5,
-  homework_on_time: 10,
-  homework_late: 5,
   streak_bonus: 3,
   perfect_weekly_attendance: 20,
   sticker_default: 10,

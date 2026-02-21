@@ -24,7 +24,6 @@ export interface StudentDashboardData {
   currentStreak: number;
   longestStreak: number;
   recentSessions: Session[];
-  upcomingHomework: Tables<'homework'>[];
   attendanceSummary: {
     totalDays: number;
     presentDays: number;
@@ -41,7 +40,6 @@ export interface TeacherDashboardData {
   todaySessions: Session[];
   totalStudents: number;
   recentAttendance: Attendance[];
-  pendingHomework: Tables<'homework'>[];
 }
 
 /** Aggregated stats across all children */

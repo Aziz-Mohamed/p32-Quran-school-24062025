@@ -180,8 +180,6 @@
       "subtitle": "Your learning journey",
       "sessionsCompleted": "Sessions",
       "stickersEarned": "Stickers",
-      "currentHomework": "Current Homework",
-      "noHomework": "No pending homework",
       "viewSessions": "View Sessions",
       "viewTrophies": "View Trophies",
       "viewLeaderboard": "Leaderboard",
@@ -230,29 +228,8 @@
       "accuracy": "Accuracy",
       "fluency": "Fluency",
       "notes": "Teacher Notes",
-      "homework": "Homework",
       "due": "Due",
       "pending": "Pending"
-    },
-    "homework": {
-      "title": "Homework",
-      "pending": "Pending",
-      "completed": "Completed",
-      "emptyPending": "No pending homework",
-      "emptyCompleted": "No completed homework",
-      "viewAll": "View All"
-    },
-    "homeworkDetail": {
-      "title": "Homework Details",
-      "description": "Description",
-      "dueDate": "Due Date",
-      "session": "Related Session",
-      "teacher": "Teacher",
-      "markComplete": "Mark as Complete",
-      "completed": "Completed",
-      "overdue": "Overdue",
-      "pending": "Pending",
-      "noDueDate": "No due date"
     },
     "stickers": {
       "title": "My Stickers",
@@ -355,10 +332,6 @@
       "recitation": "Recitation",
       "notes": "Notes",
       "notesPlaceholder": "Add session notes...",
-      "homework": "Homework (Optional)",
-      "homeworkDescription": "Homework Description",
-      "homeworkPlaceholder": "Describe the homework assignment...",
-      "homeworkDueDate": "Due Date",
       "due": "Due",
       "pending": "Pending",
       "emptyTitle": "No Sessions Yet",
@@ -436,7 +409,6 @@
       "recitation": "Recitation",
       "recitations": "Recitations",
       "notes": "Teacher Notes",
-      "homework": "Homework",
       "due": "Due",
       "pending": "Pending"
     },
@@ -707,9 +679,9 @@
     "softAsk": {
       "title": "Stay in the Loop",
       "body": {
-        "student": "Get notified when you earn stickers, trophies, and new homework assignments.",
+        "student": "Get notified when you earn stickers, trophies, and achievements.",
         "teacher": "Get morning summaries and alerts when students need attention.",
-        "parent": "Get updates on your child's attendance, homework, and achievements.",
+        "parent": "Get updates on your child's attendance and achievements.",
         "admin": "Get notified about important school activity."
       },
       "enable": "Enable Notifications",
@@ -729,10 +701,8 @@
       "stickerAwarded": "Sticker Awarded",
       "trophyEarned": "Trophy Earned",
       "achievementUnlocked": "Achievement Unlocked",
-      "homeworkAssigned": "Homework Assigned",
       "attendanceMarked": "Attendance Marked",
       "sessionCompleted": "Session Completed",
-      "homeworkReminder": "Homework Reminder",
       "dailySummary": "Daily Summary",
       "studentAlert": "Student Alert"
     }

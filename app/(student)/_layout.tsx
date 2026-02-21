@@ -12,8 +12,6 @@ export default function StudentLayout() {
         <Stack.Screen name="lessons/[id]" />
         <Stack.Screen name="sessions/index" />
         <Stack.Screen name="sessions/[id]" />
-        <Stack.Screen name="homework/index" />
-        <Stack.Screen name="homework/[id]" />
         <Stack.Screen name="rub-progress" />
         <Stack.Screen name="leaderboard" />
         <Stack.Screen name="schedule" />

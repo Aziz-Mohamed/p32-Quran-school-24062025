@@ -3,7 +3,7 @@ import type { RoleSubscriptionProfile, SubscriptionConfig } from '../types/realt
 /**
  * Builds subscription profile for a student user.
  * Subscribes to: student_stickers, attendance, sessions, students,
- *   homework, student_trophies, student_achievements
+ *   student_trophies, student_achievements
  * If classId is null (unassigned), class-scoped subscriptions are omitted.
  * Debounce: 300ms (real-time-sensitive)
  */
@@ -50,15 +50,6 @@ export function buildStudentProfile(
         ['students'],
         ['student-dashboard', studentId],
         ['leaderboard'],
-      ],
-    },
-    {
-      table: 'homework',
-      event: '*',
-      filter: `student_id=eq.${studentId}`,
-      queryKeys: [
-        ['homework', studentId],
-        ['student-dashboard', studentId],
       ],
     },
     {
@@ -259,15 +250,6 @@ export function buildParentProfile(
         ['students'],
         ['children'],
         ['child-detail'],
-        ['parent-dashboard'],
-      ],
-    },
-    {
-      table: 'homework',
-      event: '*',
-      filter: childFilter,
-      queryKeys: [
-        ['homework'],
         ['parent-dashboard'],
       ],
     },

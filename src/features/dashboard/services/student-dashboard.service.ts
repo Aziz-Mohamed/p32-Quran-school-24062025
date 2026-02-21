@@ -10,7 +10,6 @@ class StudentDashboardService {
 
     const [
       studentResult,
-      homeworkResult,
       attendanceResult,
       sessionsCountResult,
       stickersCountResult,
@@ -22,14 +21,6 @@ class StudentDashboardService {
         .select('*')
         .eq('id', studentId)
         .single(),
-
-      // Current (incomplete) homework with session recitations for surah/ayat display
-      supabase
-        .from('homework')
-        .select('*, sessions(recitations(surah_number, from_ayah, to_ayah))')
-        .eq('student_id', studentId)
-        .eq('is_completed', false)
-        .order('due_date', { ascending: true }),
 
       // Today's attendance record (if any)
       supabase
@@ -62,8 +53,6 @@ class StudentDashboardService {
     return {
       student: studentResult.data,
       studentError: studentResult.error,
-      homework: homeworkResult.data,
-      homeworkError: homeworkResult.error,
       todayAttendance: attendanceResult.data,
       attendanceError: attendanceResult.error,
       totalSessions: sessionsCountResult.count ?? 0,

@@ -151,7 +151,6 @@ Deno.serve(async (_req: Request) => {
 
     let schoolsProcessed = 0;
     let summariesSent = 0;
-    let alertsSent = 0;
     const messages: ExpoPushMessage[] = [];
     const tokensList: string[] = [];
 
@@ -193,35 +192,6 @@ Deno.serve(async (_req: Request) => {
         const totalStudents = studentCount ?? 0;
         if (totalStudents === 0) continue;
 
-        // Find students needing attention:
-        // 1. Missing homework (>=3 incomplete)
-        const { data: homeworkCounts } = await supabase
-          .from("homework")
-          .select("student_id")
-          .in("school_id", [school.id])
-          .eq("is_completed", false);
-
-        const missedByStudent = new Map<string, number>();
-        if (homeworkCounts) {
-          for (const hw of homeworkCounts) {
-            missedByStudent.set(hw.student_id, (missedByStudent.get(hw.student_id) ?? 0) + 1);
-          }
-        }
-
-        // Get students in teacher's classes
-        const { data: classStudents } = await supabase
-          .from("students")
-          .select("id")
-          .in("class_id", classIds)
-          .eq("is_active", true);
-
-        let alertCount = 0;
-        if (classStudents) {
-          for (const student of classStudents) {
-            const missedCount = missedByStudent.get(student.id) ?? 0;
-            if (missedCount >= 3) alertCount++;
-          }
-        }
 
         // Send daily summary if enabled
         if (await shouldSendSummary(supabase, teacher.id, "daily_summary", timezone)) {
@@ -233,14 +203,9 @@ Deno.serve(async (_req: Request) => {
 
           if (tokens && tokens.length > 0) {
             const title = lang === "ar" ? "ملخّص الصباح" : "Morning Summary";
-            const alertPart = alertCount > 0
-              ? lang === "ar"
-                ? ` ${alertCount} يحتاجون اهتمامًا.`
-                : ` ${alertCount} need${alertCount > 1 ? "" : "s"} attention.`
-              : "";
             const body = lang === "ar"
-              ? `${totalStudents} طالب اليوم.${alertPart}`
-              : `${totalStudents} student${totalStudents > 1 ? "s" : ""} today.${alertPart}`;
+              ? `${totalStudents} طالب اليوم.`
+              : `${totalStudents} student${totalStudents > 1 ? "s" : ""} today.`;
 
             for (const { token } of tokens) {
               messages.push({
@@ -258,11 +223,6 @@ Deno.serve(async (_req: Request) => {
           }
         }
 
-        // Send alert if there are students needing attention
-        if (alertCount > 0 && await shouldSendSummary(supabase, teacher.id, "student_alert", timezone)) {
-          // Alert is included in the summary body above, not sent separately
-          alertsSent += alertCount;
-        }
       }
     }
 
@@ -274,7 +234,6 @@ Deno.serve(async (_req: Request) => {
         success: true,
         schools_processed: schoolsProcessed,
         summaries_sent: summariesSent,
-        alerts_sent: alertsSent,
       }),
       { headers: { "Content-Type": "application/json" } },
     );

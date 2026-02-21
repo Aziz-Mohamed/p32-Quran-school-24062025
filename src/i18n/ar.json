@@ -180,8 +180,6 @@
       "subtitle": "رحلتك التعليمية",
       "sessionsCompleted": "الحصص",
       "stickersEarned": "الملصقات",
-      "currentHomework": "الواجبات الحالية",
-      "noHomework": "لا توجد واجبات معلّقة",
       "viewSessions": "عرض الحصص",
       "viewTrophies": "عرض الجوائز",
       "viewLeaderboard": "المتصدّرون",
@@ -230,29 +228,8 @@
       "accuracy": "الدقة",
       "fluency": "الطلاقة",
       "notes": "ملاحظات المعلّم",
-      "homework": "الواجب",
       "due": "التسليم",
       "pending": "قيد الانتظار"
-    },
-    "homework": {
-      "title": "الواجبات",
-      "pending": "قيد الانتظار",
-      "completed": "مكتمل",
-      "emptyPending": "لا توجد واجبات معلّقة",
-      "emptyCompleted": "لا توجد واجبات مكتملة",
-      "viewAll": "عرض الكل"
-    },
-    "homeworkDetail": {
-      "title": "تفاصيل الواجب",
-      "description": "الوصف",
-      "dueDate": "تاريخ التسليم",
-      "session": "الحصّة المرتبطة",
-      "teacher": "المعلّم",
-      "markComplete": "تحديد كمكتمل",
-      "completed": "مكتمل",
-      "overdue": "متأخّر",
-      "pending": "قيد الانتظار",
-      "noDueDate": "بدون تاريخ تسليم"
     },
     "stickers": {
       "title": "ملصقاتي",
@@ -355,10 +332,6 @@
       "recitation": "التلاوة",
       "notes": "ملاحظات",
       "notesPlaceholder": "أضف ملاحظات الحصّة...",
-      "homework": "الواجب (اختياري)",
-      "homeworkDescription": "وصف الواجب",
-      "homeworkPlaceholder": "صف الواجب المطلوب...",
-      "homeworkDueDate": "تاريخ التسليم",
       "due": "التسليم",
       "pending": "قيد الانتظار",
       "emptyTitle": "لا توجد حصص بعد",
@@ -436,7 +409,6 @@
       "recitation": "القراءة",
       "recitations": "التسميعات",
       "notes": "ملاحظات المعلّم",
-      "homework": "الواجب",
       "due": "التسليم",
       "pending": "قيد الانتظار"
     },
@@ -707,9 +679,9 @@
     "softAsk": {
       "title": "ابقَ على اطّلاع",
       "body": {
-        "student": "احصل على إشعارات عند كسب ملصقات وجوائز وواجبات جديدة.",
+        "student": "احصل على إشعارات عند كسب ملصقات وجوائز وإنجازات.",
         "teacher": "احصل على ملخّصات صباحية وتنبيهات عندما يحتاج الطلاب اهتمامًا.",
-        "parent": "احصل على تحديثات حول حضور طفلك وواجباته وإنجازاته.",
+        "parent": "احصل على تحديثات حول حضور طفلك وإنجازاته.",
         "admin": "احصل على إشعارات حول نشاط المدرسة المهم."
       },
       "enable": "تفعيل الإشعارات",
@@ -729,10 +701,8 @@
       "stickerAwarded": "ملصق ممنوح",
       "trophyEarned": "جائزة مُكتسبة",
       "achievementUnlocked": "إنجاز مُحقّق",
-      "homeworkAssigned": "واجب مُعيَّن",
       "attendanceMarked": "حضور مُسجَّل",
       "sessionCompleted": "حصّة مكتملة",
-      "homeworkReminder": "تذكير بالواجب",
       "dailySummary": "ملخّص يومي",
       "studentAlert": "تنبيه طالب"
     }
