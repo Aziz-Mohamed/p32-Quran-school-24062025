@@ -7,7 +7,7 @@
 -- ============================================================================
 
 -- 1. Remove homework from realtime publication
-ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS homework;
+ALTER PUBLICATION supabase_realtime DROP TABLE homework;
 
 -- 2. Remove homework notification webhook trigger
 DROP TRIGGER IF EXISTS homework_notify_trigger ON homework;
@@ -31,3 +31,8 @@ ALTER TABLE notification_preferences
 
 -- 5. Drop homework table (CASCADE removes RLS policies, indexes, triggers)
 DROP TABLE IF EXISTS homework CASCADE;
+
+-- 6. Remove leftover homework columns from sessions table
+ALTER TABLE sessions
+  DROP COLUMN IF EXISTS homework_assigned,
+  DROP COLUMN IF EXISTS homework_due_date;
