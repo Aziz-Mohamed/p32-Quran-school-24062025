@@ -1086,7 +1086,7 @@
     },
     "selfAssign": {
       "title": "Add Homework",
-      "subtitle": "Assign memorization to yourself",
+      "subtitle": "Choose what you want to memorize next",
       "saveButton": "Add to My Plan",
       "savedSuccess": "Homework added successfully"
     },

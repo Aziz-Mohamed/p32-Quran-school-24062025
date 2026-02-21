@@ -13,17 +13,13 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
-import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
-import { DatePicker } from '@/components/forms/DatePicker';
 import { SurahAyahPicker } from './SurahAyahPicker';
-import { RecitationTypeChips } from './RecitationTypeChip';
 import { useCreateAssignment } from '../hooks/useAssignments';
 import { getSurah } from '@/lib/quran-metadata';
-import type { RecitationType } from '@/types/common.types';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -49,8 +45,6 @@ export function SelfAssignmentForm({
   const [surahNumber, setSurahNumber] = useState<number>(0);
   const [fromAyah, setFromAyah] = useState<number>(0);
   const [toAyah, setToAyah] = useState<number>(0);
-  const [assignmentType, setAssignmentType] = useState<RecitationType>('new_hifz');
-  const [dueDate, setDueDate] = useState<Date | null>(null);
   const [notes, setNotes] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -58,8 +52,6 @@ export function SelfAssignmentForm({
     setSurahNumber(0);
     setFromAyah(0);
     setToAyah(0);
-    setAssignmentType('new_hifz');
-    setDueDate(null);
     setNotes('');
     setErrors({});
   }, []);
@@ -84,8 +76,6 @@ export function SelfAssignmentForm({
     else if (surah && toAyah > maxAyah) errs.toAyah = t('memorization.validation.maxAyah', { max: maxAyah });
     else if (toAyah < fromAyah) errs.toAyah = t('memorization.validation.mustBeAfterFrom');
 
-    if (!dueDate) errs.dueDate = t('memorization.validation.selectDueDate');
-
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -101,8 +91,8 @@ export function SelfAssignmentForm({
         surah_number: surahNumber,
         from_ayah: fromAyah,
         to_ayah: toAyah,
-        assignment_type: assignmentType,
-        due_date: dueDate!.toISOString().split('T')[0],
+        assignment_type: 'new_hifz',
+        due_date: new Date().toISOString().split('T')[0],
         notes: notes.trim() || null,
       },
       {
@@ -161,25 +151,6 @@ export function SelfAssignmentForm({
             surahError={errors.surah}
             fromAyahError={errors.fromAyah}
             toAyahError={errors.toAyah}
-          />
-
-          {/* Assignment Type */}
-          <RecitationTypeChips
-            value={assignmentType}
-            onChange={setAssignmentType}
-          />
-
-          {/* Due Date */}
-          <DatePicker
-            label={t('memorization.assignment.dueDate')}
-            placeholder={t('memorization.assignment.selectDueDate')}
-            value={dueDate}
-            onChange={(d) => {
-              setDueDate(d);
-              setErrors((prev) => ({ ...prev, dueDate: '' }));
-            }}
-            minimumDate={new Date()}
-            error={errors.dueDate}
           />
 
           {/* Notes */}
