@@ -253,3 +253,23 @@ export function formatVerseRange(
   }
   return `${name}: ${fromAyah}-${toAyah}`;
 }
+
+export function formatRubVerseRange(
+  startSurah: number,
+  startAyah: number,
+  endSurah: number,
+  endAyah: number,
+  language: 'ar' | 'en' = 'ar',
+): string {
+  if (startSurah === endSurah) {
+    return formatVerseRange(startSurah, startAyah, endAyah, language);
+  }
+  // Cross-surah rubʿ: show "Al-Baqarah: 142 – Ali Imran: 92"
+  const s1 = surahMap.get(startSurah);
+  const s2 = surahMap.get(endSurah);
+  if (!s1 || !s2) return '';
+
+  const name1 = language === 'ar' ? s1.nameArabic : s1.nameEnglish;
+  const name2 = language === 'ar' ? s2.nameArabic : s2.nameEnglish;
+  return `${name1}: ${startAyah} – ${name2}: ${endAyah}`;
+}

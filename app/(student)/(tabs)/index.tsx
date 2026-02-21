@@ -194,22 +194,25 @@ export default function StudentDashboard() {
           <View style={styles.progressStripDivider} />
           <View style={styles.progressStripStats}>
             <View style={styles.progressStripStat}>
+              <Ionicons name="flame-outline" size={16} color={colors.accent.rose[500]} />
               <Text style={styles.progressStripStatValue}>
-                {'\uD83D\uDD25'} {student?.current_streak ?? 0}
+                {student?.current_streak ?? 0}
               </Text>
               <Text style={styles.progressStripStatLabel}>{t('student.streak')}</Text>
             </View>
             <View style={styles.progressStripStatSeparator} />
             <View style={styles.progressStripStat}>
+              <Ionicons name="star-outline" size={16} color={colors.secondary[500]} />
               <Text style={styles.progressStripStatValue}>
-                {'\u2B50'} {data?.totalStickers ?? 0}
+                {data?.totalStickers ?? 0}
               </Text>
               <Text style={styles.progressStripStatLabel}>{t('student.dashboard.stickers')}</Text>
             </View>
             <View style={styles.progressStripStatSeparator} />
             <View style={styles.progressStripStat}>
+              <Ionicons name="calendar-outline" size={16} color={colors.accent.indigo[500]} />
               <Text style={styles.progressStripStatValue}>
-                {'\uD83D\uDCC5'} {data?.totalSessions ?? 0}
+                {data?.totalSessions ?? 0}
               </Text>
               <Text style={styles.progressStripStatLabel}>{t('student.dashboard.sessions')}</Text>
             </View>
