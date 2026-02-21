@@ -170,10 +170,24 @@
   "student": {
     "tabs": {
       "dashboard": "لوحة التحكّم",
-      "lessons": "الدروس",
+      "revision": "المراجعة",
       "memorization": "الحفظ",
       "stickers": "الملصقات",
       "profile": "الملف الشخصي"
+    },
+    "revision": {
+      "title": "صحة المراجعة",
+      "healthSummary": "{{active}} / {{total}} ربع مُجاز",
+      "needsAttention": "يحتاج انتباه",
+      "allCertified": "جميع المُجازات",
+      "daysLeft": "{{count}} يوم متبقي",
+      "freshness": "{{percentage}}%",
+      "allFresh": "كل الحفظ طازج!",
+      "allFreshDesc": "لا يوجد ربع يحتاج مراجعة حالياً",
+      "noCertifications": "لا يوجد ربع مُجاز بعد",
+      "noCertificationsDesc": "ستظهر الأرباع هنا بعد أن يُجيز معلّمك حفظك",
+      "fullMap": "الخريطة الكاملة",
+      "todaysPlan": "خطة اليوم"
     },
     "dashboard": {
       "title": "لوحة الطالب",
@@ -1040,7 +1054,20 @@
       "goodDesc": "الطالب تلا بشكل صحيح — تُعاد النضارة إلى 100%",
       "poorDesc": "الطالب يحتاج مزيداً من التمرين — تُعاد النضارة إلى 50%",
       "recertify": "إعادة إجازة",
-      "recertifyDesc": "خامل لأكثر من 90 يوماً — يتطلب إعادة إجازة كاملة"
+      "recertifyDesc": "خامل لأكثر من 90 يوماً — يتطلب إعادة إجازة كاملة",
+      "certifiedOn": "تاريخ الإجازة",
+      "certifiedBy": "المعلّم",
+      "timesReviewed": "المراجعات",
+      "lastReviewed": "آخر مراجعة",
+      "daysAgo": "منذ {{count}} يوم",
+      "neverReviewed": "لم تتم المراجعة",
+      "addToPlan": "أضف إلى خطة المراجعة",
+      "addToPlanDesc": "يُضاف إلى جدول الحفظ الخاص بك",
+      "alreadyInPlan": "موجود في خطة المراجعة",
+      "addedToPlan": "تمت الإضافة إلى خطة المراجعة!",
+      "askTeacher": "اطلب من معلّمك",
+      "askTeacherDesc": "اطلب من معلّمك إضافة هذا إلى مراجعتك",
+      "needsRecertNote": "هذا الربع يحتاج إعادة إجازة من معلّمك"
     }
   }
 }
