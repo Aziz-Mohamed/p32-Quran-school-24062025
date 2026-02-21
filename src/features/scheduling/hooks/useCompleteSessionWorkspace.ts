@@ -165,6 +165,7 @@ export function useCompleteSessionWorkspace() {
       queryClient.invalidateQueries({ queryKey: ['memorization-progress'] });
       queryClient.invalidateQueries({ queryKey: ['memorization-stats'] });
       queryClient.invalidateQueries({ queryKey: ['revision-schedule'] });
+      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
     },
   });
 }

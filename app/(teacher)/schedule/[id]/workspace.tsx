@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, Pressable, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -18,6 +18,9 @@ import { useAuth } from '@/hooks/useAuth';
 import { useStudents } from '@/features/students/hooks/useStudents';
 import { useCompleteSessionWorkspace } from '@/features/scheduling/hooks/useCompleteSessionWorkspace';
 import { scheduledSessionService } from '@/features/scheduling/services/scheduled-session.service';
+import { useSessionRecitationPlans } from '@/features/scheduling/hooks/useRecitationPlans';
+import { getSurah } from '@/lib/quran-metadata';
+import type { RecitationType } from '@/types/common.types';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -106,11 +109,48 @@ export default function SessionWorkspaceScreen() {
     return [];
   }, [session, isClassSession, classStudents]);
 
+  // Fetch recitation plans for pre-fill
+  const { data: plans = [] } = useSessionRecitationPlans(id);
+  const prefillApplied = useRef(false);
+
   // Local state
   const [attendanceStatuses, setAttendanceStatuses] = useState<Record<string, AttendanceStatus>>({});
   const [evaluations, setEvaluations] = useState<Record<string, EvalData>>({});
   const [recitations, setRecitations] = useState<Record<string, RecitationFormData[]>>({});
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
+
+  // Pre-fill recitations from plans (once)
+  useEffect(() => {
+    if (prefillApplied.current || plans.length === 0 || studentList.length === 0) return;
+    prefillApplied.current = true;
+
+    const sessionDefault = plans.find((p: any) => p.student_id == null);
+    const prefilled: Record<string, RecitationFormData[]> = {};
+
+    for (const student of studentList) {
+      const studentPlan = plans.find((p: any) => p.student_id === student.id);
+      const effectivePlan = studentPlan ?? sessionDefault;
+      if (!effectivePlan) continue;
+
+      const isSameSurah = effectivePlan.start_surah === effectivePlan.end_surah;
+      const surah = getSurah(effectivePlan.start_surah);
+      const toAyah = isSameSurah ? effectivePlan.end_ayah : (surah?.ayahCount ?? effectivePlan.end_ayah);
+
+      prefilled[student.id] = [
+        {
+          ...EMPTY_RECITATION,
+          surah_number: effectivePlan.start_surah,
+          from_ayah: effectivePlan.start_ayah,
+          to_ayah: toAyah,
+          recitation_type: effectivePlan.recitation_type as RecitationType,
+        },
+      ];
+    }
+
+    if (Object.keys(prefilled).length > 0) {
+      setRecitations(prefilled);
+    }
+  }, [plans, studentList]);
 
   // Auto-expand for individual sessions
   const effectiveExpandedId = useMemo(() => {
