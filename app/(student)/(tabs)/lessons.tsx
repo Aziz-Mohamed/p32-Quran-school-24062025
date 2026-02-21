@@ -99,7 +99,6 @@ export default function RevisionHealthScreen() {
   const {
     enriched,
     activeCount,
-    criticalCount,
     dormantCount,
     isLoading,
     error,
@@ -128,6 +127,19 @@ export default function RevisionHealthScreen() {
 
   // Revision homework data (shared hook)
   const { homeworkItems, pendingKeys } = useRevisionHomework(profile?.id);
+
+  // Smart warning: exclude rubʿ already covered by homework
+  const homeworkRubSet = useMemo(
+    () => new Set(homeworkItems.map((h) => h.rubNumber)),
+    [homeworkItems],
+  );
+  const effectiveCriticalCount = useMemo(
+    () => enriched.filter(
+      (c) => (c.freshness.state === 'critical' || c.freshness.state === 'warning')
+        && !homeworkRubSet.has(c.rub_number),
+    ).length,
+    [enriched, homeworkRubSet],
+  );
 
   const [viewMode, setViewMode] = useState<ViewMode>('rub');
   const [selectedCert, setSelectedCert] = useState<EnrichedCertification | null>(null);
@@ -400,7 +412,7 @@ export default function RevisionHealthScreen() {
               </Card>
 
               {/* Revision Warning */}
-              <RevisionWarning count={criticalCount} />
+              <RevisionWarning count={effectiveCriticalCount} />
 
               {/* Revision Plan — pending old_review assignments due today, shown as rubʿ */}
               {homeworkItems.length > 0 && (
