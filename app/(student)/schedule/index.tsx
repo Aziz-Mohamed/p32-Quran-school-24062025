@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -85,31 +85,39 @@ export default function StudentScheduleScreen() {
                 })}
               </Text>
               {daySessions.map((session: any) => (
-                <Card key={session.id} variant="default" style={styles.sessionCard}>
-                  <View style={styles.sessionRow}>
-                    <View style={[styles.iconContainer, { backgroundColor: colors.accent.indigo[50] }]}>
-                      <Ionicons name="book-outline" size={20} color={colors.accent.indigo[500]} />
-                    </View>
-                    <View style={styles.sessionInfo}>
-                      <Text style={styles.sessionTitle}>
-                        {session.class?.name ?? t('scheduling.individualSession')}
-                      </Text>
-                      <Text style={styles.sessionTime}>
-                        {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}
-                      </Text>
-                      {session.teacher?.full_name && (
-                        <Text style={styles.teacherName}>
-                          {session.teacher.full_name}
+                <Pressable
+                  key={session.id}
+                  onPress={() => router.push(`/(student)/schedule/${session.id}`)}
+                >
+                  <Card variant="default" style={styles.sessionCard}>
+                    <View style={styles.sessionRow}>
+                      <View style={[styles.iconContainer, { backgroundColor: colors.accent.indigo[50] }]}>
+                        <Ionicons name="book-outline" size={20} color={colors.accent.indigo[500]} />
+                      </View>
+                      <View style={styles.sessionInfo}>
+                        <Text style={styles.sessionTitle}>
+                          {session.class?.name ?? t('scheduling.individualSession')}
                         </Text>
-                      )}
+                        <Text style={styles.sessionTime}>
+                          {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}
+                        </Text>
+                        {session.teacher?.full_name && (
+                          <Text style={styles.teacherName}>
+                            {session.teacher.full_name}
+                          </Text>
+                        )}
+                      </View>
+                      <View style={styles.sessionRight}>
+                        <Badge
+                          label={t(`scheduling.status.${session.status}`)}
+                          variant={session.status === 'scheduled' ? 'sky' : session.status === 'in_progress' ? 'warning' : 'success'}
+                          size="sm"
+                        />
+                        <Ionicons name="chevron-forward" size={16} color={colors.neutral[400]} />
+                      </View>
                     </View>
-                    <Badge
-                      label={t(`scheduling.status.${session.status}`)}
-                      variant={session.status === 'scheduled' ? 'sky' : session.status === 'in_progress' ? 'warning' : 'success'}
-                      size="sm"
-                    />
-                  </View>
-                </Card>
+                  </Card>
+                </Pressable>
               ))}
             </View>
           ))
@@ -173,6 +181,11 @@ const styles = StyleSheet.create({
     ...typography.textStyles.label,
     color: colors.accent.indigo[500],
     marginTop: normalize(2),
+  },
+  sessionRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   emptyCard: {
     padding: spacing.xl,

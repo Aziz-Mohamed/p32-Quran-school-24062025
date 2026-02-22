@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import { StyleSheet, View, Text, Alert } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
@@ -11,18 +11,16 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
-import { useUpdateSessionStatus } from '@/features/scheduling/hooks/useScheduledSessions';
 import { scheduledSessionService } from '@/features/scheduling/services/scheduled-session.service';
 import { SessionRecitationPlanList } from '@/features/scheduling/components/SessionRecitationPlanList';
-import { useStudents } from '@/features/students/hooks/useStudents';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 
-// ─── Session Detail ──────────────────────────────────────────────────────────
+// ─── Student Session Detail ──────────────────────────────────────────────────
 
-export default function SessionDetailScreen() {
+export default function StudentSessionDetailScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,65 +37,6 @@ export default function SessionDetailScreen() {
     },
     enabled: !!id && !!schoolId,
   });
-
-  // Fetch students for class sessions
-  const isClassSession = session?.session_type === 'class';
-  const classStudentFilters = isClassSession && session?.class_id
-    ? { classId: session.class_id }
-    : undefined;
-  const { data: classStudents = [] } = useStudents(classStudentFilters);
-
-  const studentList = useMemo(() => {
-    if (!session) return [];
-    if (isClassSession) {
-      return classStudents.map((s: any) => ({
-        id: s.id,
-        name: s.profiles?.full_name ?? '—',
-      }));
-    }
-    if (session.student_id) {
-      return [{
-        id: session.student_id,
-        name: (session as any).student?.profiles?.full_name ?? '—',
-      }];
-    }
-    return [];
-  }, [session, isClassSession, classStudents]);
-
-  const updateStatus = useUpdateSessionStatus();
-
-  const handleStart = () => {
-    if (!id) return;
-    updateStatus.mutate(
-      { sessionId: id, status: 'in_progress' },
-      {
-        onSuccess: () => {
-          router.push(`/(teacher)/schedule/${id}/workspace`);
-        },
-      },
-    );
-  };
-
-  const handleOpenWorkspace = () => {
-    if (!id) return;
-    router.push(`/(teacher)/schedule/${id}/workspace`);
-  };
-
-  const handleCancel = () => {
-    if (!id) return;
-    Alert.alert(
-      t('scheduling.cancelTitle'),
-      t('scheduling.cancelMessage'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.confirm'),
-          style: 'destructive',
-          onPress: () => updateStatus.mutate({ sessionId: id, status: 'cancelled' }),
-        },
-      ],
-    );
-  };
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
@@ -146,58 +85,26 @@ export default function SessionDetailScreen() {
             label={t('scheduling.type')}
             value={t(`scheduling.sessionType.${session.session_type}`)}
           />
-          {session.student?.profiles?.full_name && (
+          {session.teacher?.full_name && (
             <DetailRow
               icon="person-outline"
-              label={t('scheduling.student')}
-              value={session.student.profiles.full_name}
+              label={t('common.teacher')}
+              value={session.teacher.full_name}
             />
           )}
         </Card>
 
         {/* Recitation Plans */}
-        {profile?.id && schoolId && session.status !== 'cancelled' && (
+        {profile?.id && schoolId && (
           <SessionRecitationPlanList
             sessionId={id!}
             schoolId={schoolId}
             userId={profile.id}
             sessionDate={session.session_date}
-            role="teacher"
-            isClassSession={!!isClassSession}
-            students={studentList.length > 0 ? studentList : undefined}
+            role="student"
+            isClassSession={session.session_type === 'class'}
           />
         )}
-
-        {/* Actions */}
-        <View style={styles.actions}>
-          {session.status === 'scheduled' && (
-            <>
-              <Button
-                title={t('scheduling.startSession')}
-                onPress={handleStart}
-                variant="primary"
-                size="lg"
-                icon={<Ionicons name="play" size={20} color={colors.white} />}
-                loading={updateStatus.isPending}
-              />
-              <Button
-                title={t('scheduling.cancelSession')}
-                onPress={handleCancel}
-                variant="ghost"
-                size="md"
-              />
-            </>
-          )}
-          {session.status === 'in_progress' && (
-            <Button
-              title={t('scheduling.workspace.openWorkspace')}
-              onPress={handleOpenWorkspace}
-              variant="primary"
-              size="lg"
-              icon={<Ionicons name="easel-outline" size={20} color={colors.white} />}
-            />
-          )}
-        </View>
       </View>
     </Screen>
   );
@@ -253,9 +160,5 @@ const styles = StyleSheet.create({
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[900],
     marginTop: normalize(2),
-  },
-  actions: {
-    gap: spacing.md,
-    marginTop: spacing.lg,
   },
 });

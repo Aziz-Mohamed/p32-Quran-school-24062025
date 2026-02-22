@@ -205,7 +205,14 @@
       "certifiedRub": "Certified rubʿ",
       "needRevision": "Need revision",
       "plannedItems": "Revision Homework",
-      "plannedItemsCount": "{{count}} items"
+      "plannedItemsCount": "{{count}} items",
+      "todaysRevision": "Today's Revision",
+      "nearRevision": "Near Revision",
+      "farRevision": "Far Revision",
+      "segmentNear": "Near",
+      "segmentFar": "Far",
+      "nearEmpty": "All caught up!",
+      "nearEmptyDesc": "No near revisions due"
     },
     "dashboard": {
       "title": "Student Dashboard",
@@ -938,6 +945,36 @@
       "completeSession": "Complete Session",
       "openWorkspace": "Open Workspace",
       "noStudents": "No students found for this session."
+    },
+    "recitationPlan": {
+      "title": "Recitation Plans",
+      "setForAll": "Set for All",
+      "setPlan": "Set Plan",
+      "editPlan": "Edit Plan",
+      "removePlan": "Remove Plan",
+      "myPlan": "My Plan",
+      "sessionDefault": "Session Default",
+      "noPlanSet": "No plan set",
+      "setBy": "Set by {{name}}",
+      "fromAssignment": "From Assignment",
+      "manual": "Manual",
+      "suggestFromAssignments": "Suggest from Assignments",
+      "noSuggestions": "No pending assignments before this session",
+      "selectionMode": "Selection Mode",
+      "modes": {
+        "ayah_range": "Ayah Range",
+        "rub": "Rubʿ",
+        "hizb": "Hizb",
+        "juz": "Juz"
+      },
+      "rubNumber": "Rubʿ Number",
+      "hizbNumber": "Hizb Number",
+      "juzNumber": "Juz Number",
+      "resolvedRange": "{{startSurah}} {{startAyah}} – {{endSurah}} {{endAyah}}",
+      "planSaved": "Plan saved successfully",
+      "planDeleted": "Plan removed",
+      "setForAllWarning": "This will replace all individual student plans with a single session plan.",
+      "prefilledFromPlan": "Pre-filled from recitation plan"
     }
   },
   "workAttendance": {
@@ -1053,6 +1090,12 @@
       "notesPlaceholder": "Instructions for the student...",
       "createButton": "Create Assignment",
       "createdSuccess": "Assignment created successfully"
+    },
+    "selfAssign": {
+      "title": "Add Homework",
+      "subtitle": "Choose what you want to memorize next",
+      "saveButton": "Add to My Plan",
+      "savedSuccess": "Homework added successfully"
     },
     "validation": {
       "selectStudent": "Please select a student",
