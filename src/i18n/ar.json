@@ -208,7 +208,11 @@
       "plannedItemsCount": "{{count}} واجبات",
       "todaysRevision": "مراجعات اليوم",
       "nearRevision": "المراجعة القريبة",
-      "farRevision": "المراجعة البعيدة"
+      "farRevision": "المراجعة البعيدة",
+      "segmentNear": "القريبة",
+      "segmentFar": "البعيدة",
+      "nearEmpty": "لا توجد مراجعات!",
+      "nearEmptyDesc": "لا توجد مراجعات قريبة مطلوبة"
     },
     "dashboard": {
       "title": "لوحة الطالب",

@@ -208,7 +208,11 @@
       "plannedItemsCount": "{{count}} items",
       "todaysRevision": "Today's Revision",
       "nearRevision": "Near Revision",
-      "farRevision": "Far Revision"
+      "farRevision": "Far Revision",
+      "segmentNear": "Near",
+      "segmentFar": "Far",
+      "nearEmpty": "All caught up!",
+      "nearEmptyDesc": "No near revisions due"
     },
     "dashboard": {
       "title": "Student Dashboard",

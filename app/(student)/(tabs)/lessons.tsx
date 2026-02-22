@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, I18nManager, Modal, Pressable, SectionList, StyleSheet, View, Text } from 'react-native';
+import { ActivityIndicator, Alert, I18nManager, Modal, Pressable, ScrollView, SectionList, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,7 +21,7 @@ import {
 import type { EnrichedCertification, RubReference, FreshnessState } from '@/features/gamification';
 import { useCancelAssignment, MemorizationRow } from '@/features/memorization';
 import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
-import type { RevisionScheduleItem } from '@/features/memorization';
+
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { getMushafPageRange } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
@@ -137,18 +137,12 @@ export default function RevisionHealthScreen() {
   const todayStr = new Date().toISOString().split('T')[0];
   const { data: revisionSchedule = [] } = useRevisionSchedule(profile?.id, todayStr);
 
-  const { nearRevisionItems, farRevisionItems } = useMemo(() => {
-    const near: RevisionScheduleItem[] = [];
-    const far: RevisionScheduleItem[] = [];
-    for (const item of revisionSchedule) {
-      if (item.review_type === 'recent_review') near.push(item);
-      else if (item.review_type === 'old_review') far.push(item);
-    }
-    return { nearRevisionItems: near, farRevisionItems: far };
-  }, [revisionSchedule]);
+  const nearRevisionItems = useMemo(
+    () => revisionSchedule.filter((item) => item.review_type === 'recent_review'),
+    [revisionSchedule],
+  );
 
-  const hasRevisionItems = nearRevisionItems.length > 0 || farRevisionItems.length > 0;
-  const [revisionCollapsed, setRevisionCollapsed] = useState(false);
+  const [activeSegment, setActiveSegment] = useState<'near' | 'far'>('near');
 
   // Smart warning: exclude rubʿ already covered by homework
   const homeworkRubSet = useMemo(
@@ -383,269 +377,260 @@ export default function RevisionHealthScreen() {
   return (
     <Screen scroll={false}>
       <View style={styles.container}>
+        {/* Title + View Mode (Far only) */}
         <View style={styles.headerRow}>
           <Text style={styles.title}>{t('student.revision.title')}</Text>
-          <View>
-            <Pressable
-              style={styles.viewModeButton}
-              onPress={() => setViewModeOpen((v) => !v)}
-            >
-              <Text style={styles.viewModeLabel}>
-                {t(`student.revision.viewMode.${viewMode}`)}
-              </Text>
-              <Ionicons
-                name={viewModeOpen ? 'chevron-up' : 'chevron-down'}
-                size={16}
-                color={colors.primary[500]}
-              />
-            </Pressable>
-            {viewModeOpen && (
-              <View style={styles.viewModeDropdown}>
-                {VIEW_MODES.map((mode) => (
-                  <Pressable
-                    key={mode}
-                    style={[
-                      styles.viewModeOption,
-                      viewMode === mode && styles.viewModeOptionActive,
-                    ]}
-                    onPress={() => { setViewMode(mode); setViewModeOpen(false); }}
-                  >
-                    <Text
+          {activeSegment === 'far' && (
+            <View>
+              <Pressable
+                style={styles.viewModeButton}
+                onPress={() => setViewModeOpen((v) => !v)}
+              >
+                <Text style={styles.viewModeLabel}>
+                  {t(`student.revision.viewMode.${viewMode}`)}
+                </Text>
+                <Ionicons
+                  name={viewModeOpen ? 'chevron-up' : 'chevron-down'}
+                  size={16}
+                  color={colors.primary[500]}
+                />
+              </Pressable>
+              {viewModeOpen && (
+                <View style={styles.viewModeDropdown}>
+                  {VIEW_MODES.map((mode) => (
+                    <Pressable
+                      key={mode}
                       style={[
-                        styles.viewModeOptionText,
-                        viewMode === mode && styles.viewModeOptionTextActive,
+                        styles.viewModeOption,
+                        viewMode === mode && styles.viewModeOptionActive,
                       ]}
+                      onPress={() => { setViewMode(mode); setViewModeOpen(false); }}
                     >
-                      {t(`student.revision.viewMode.${mode}`)}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
-            )}
-          </View>
+                      <Text
+                        style={[
+                          styles.viewModeOptionText,
+                          viewMode === mode && styles.viewModeOptionTextActive,
+                        ]}
+                      >
+                        {t(`student.revision.viewMode.${mode}`)}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
+            </View>
+          )}
         </View>
 
-        <SectionList
-          sections={sections}
-          keyExtractor={(item) => isGroup(item) ? item.id : item.id}
-          contentContainerStyle={styles.listContent}
-          stickySectionHeadersEnabled={false}
-          ListHeaderComponent={
-            <>
-              {/* Today's Revision — SM2-scheduled items */}
-              {hasRevisionItems && (
-                <Card variant="default" style={styles.revisionCard}>
-                  <Pressable
-                    style={styles.revisionHeader}
-                    onPress={() => setRevisionCollapsed((prev) => !prev)}
-                  >
-                    <Ionicons name="repeat-outline" size={18} color={colors.secondary[500]} />
-                    <Text style={styles.revisionTitle}>{t('student.revision.todaysRevision')}</Text>
-                    <View style={styles.planBadge}>
-                      <Text style={styles.planBadgeText}>
-                        {nearRevisionItems.length + farRevisionItems.length}
-                      </Text>
-                    </View>
-                    <Ionicons
-                      name={revisionCollapsed ? 'chevron-down' : 'chevron-up'}
-                      size={16}
-                      color={colors.neutral[400]}
-                    />
-                  </Pressable>
-                  {!revisionCollapsed && (
-                    <View style={styles.revisionContent}>
-                      {nearRevisionItems.length > 0 && (
-                        <>
-                          <Text style={styles.revisionSubheader}>
-                            {t('student.revision.nearRevision')}
-                          </Text>
-                          {nearRevisionItems.map((item, index) => (
-                            <MemorizationRow
-                              key={item.progress_id ?? `near-${item.surah_number}-${item.from_ayah}-${index}`}
-                              item={item}
-                            />
-                          ))}
-                        </>
-                      )}
-                      {farRevisionItems.length > 0 && (
-                        <>
-                          <Text style={styles.revisionSubheader}>
-                            {t('student.revision.farRevision')}
-                          </Text>
-                          {farRevisionItems.map((item, index) => (
-                            <MemorizationRow
-                              key={item.progress_id ?? `far-${item.surah_number}-${item.from_ayah}-${index}`}
-                              item={item}
-                            />
-                          ))}
-                        </>
-                      )}
-                    </View>
-                  )}
-                </Card>
-              )}
+        {/* Segmented Control */}
+        <View style={styles.segmentedControl}>
+          <Pressable
+            style={[styles.segmentButton, activeSegment === 'near' && styles.segmentButtonActive]}
+            onPress={() => setActiveSegment('near')}
+          >
+            <Text style={[styles.segmentText, activeSegment === 'near' && styles.segmentTextActive]}>
+              {t('student.revision.segmentNear')}
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.segmentButton, activeSegment === 'far' && styles.segmentButtonActive]}
+            onPress={() => setActiveSegment('far')}
+          >
+            <Text style={[styles.segmentText, activeSegment === 'far' && styles.segmentTextActive]}>
+              {t('student.revision.segmentFar')}
+            </Text>
+          </Pressable>
+        </View>
 
-              {/* Health Summary Card */}
-              <Card variant="default" style={styles.healthCard}>
-                <View style={styles.healthRow}>
-                  <View style={styles.healthLevel}>
-                    <Text style={styles.healthLevelNumber}>{activeCount}</Text>
-                    <Text style={styles.healthLevelTotal}>/240</Text>
-                  </View>
-                  <View style={styles.healthBreakdown}>
-                    {freshCount > 0 && (
-                      <HealthLine color={FRESHNESS_DOT_COLORS.fresh} count={freshCount} label={t('gamification.freshness.fresh')} />
-                    )}
-                    {fadingCount > 0 && (
-                      <HealthLine color={FRESHNESS_DOT_COLORS.fading} count={fadingCount} label={t('gamification.freshness.fading')} />
-                    )}
-                    {warningCount > 0 && (
-                      <HealthLine color={FRESHNESS_DOT_COLORS.warning} count={warningCount} label={t('gamification.freshness.warning')} />
-                    )}
-                    {criticalCountLocal > 0 && (
-                      <HealthLine color={FRESHNESS_DOT_COLORS.critical} count={criticalCountLocal} label={t('gamification.freshness.critical')} />
-                    )}
-                    {dormantCountLocal > 0 && (
-                      <HealthLine color={FRESHNESS_DOT_COLORS.dormant} count={dormantCountLocal} label={t('gamification.freshness.dormant')} />
-                    )}
-                  </View>
-                </View>
-                <ProgressBar
-                  progress={activeCount / 240}
-                  variant={theme.tag}
-                  height={6}
+        {/* ── Near Segment ── */}
+        {activeSegment === 'near' ? (
+          <ScrollView contentContainerStyle={styles.nearContent}>
+            {nearRevisionItems.length > 0 ? (
+              nearRevisionItems.map((item, index) => (
+                <MemorizationRow
+                  key={item.progress_id ?? `near-${item.surah_number}-${item.from_ayah}-${index}`}
+                  item={item}
                 />
-              </Card>
-
-              {/* Revision Warning */}
-              <RevisionWarning count={effectiveCriticalCount} />
-
-              {/* Revision Plan — pending old_review assignments due today, shown as rubʿ */}
-              {homeworkItems.length > 0 && (
-                <Card variant="default" style={styles.planCard}>
-                  <View style={styles.planHeader}>
-                    <Ionicons name="book-outline" size={18} color={colors.primary[500]} />
-                    <Text style={styles.planTitle}>{t('student.revision.plannedItems')}</Text>
-                    <View style={styles.planBadge}>
-                      <Text style={styles.planBadgeText}>{homeworkItems.length}</Text>
+              ))
+            ) : (
+              <View style={styles.nearEmpty}>
+                <Ionicons name="checkmark-circle" size={48} color={colors.primary[400]} />
+                <Text style={styles.nearEmptyTitle}>{t('student.revision.nearEmpty')}</Text>
+                <Text style={styles.nearEmptyDesc}>{t('student.revision.nearEmptyDesc')}</Text>
+              </View>
+            )}
+          </ScrollView>
+        ) : (
+          /* ── Far Segment ── */
+          <SectionList
+            sections={sections}
+            keyExtractor={(item) => isGroup(item) ? item.id : item.id}
+            contentContainerStyle={styles.listContent}
+            stickySectionHeadersEnabled={false}
+            ListHeaderComponent={
+              <>
+                {/* Health Summary Card */}
+                <Card variant="default" style={styles.healthCard}>
+                  <View style={styles.healthRow}>
+                    <View style={styles.healthLevel}>
+                      <Text style={styles.healthLevelNumber}>{activeCount}</Text>
+                      <Text style={styles.healthLevelTotal}>/240</Text>
+                    </View>
+                    <View style={styles.healthBreakdown}>
+                      {freshCount > 0 && (
+                        <HealthLine color={FRESHNESS_DOT_COLORS.fresh} count={freshCount} label={t('gamification.freshness.fresh')} />
+                      )}
+                      {fadingCount > 0 && (
+                        <HealthLine color={FRESHNESS_DOT_COLORS.fading} count={fadingCount} label={t('gamification.freshness.fading')} />
+                      )}
+                      {warningCount > 0 && (
+                        <HealthLine color={FRESHNESS_DOT_COLORS.warning} count={warningCount} label={t('gamification.freshness.warning')} />
+                      )}
+                      {criticalCountLocal > 0 && (
+                        <HealthLine color={FRESHNESS_DOT_COLORS.critical} count={criticalCountLocal} label={t('gamification.freshness.critical')} />
+                      )}
+                      {dormantCountLocal > 0 && (
+                        <HealthLine color={FRESHNESS_DOT_COLORS.dormant} count={dormantCountLocal} label={t('gamification.freshness.dormant')} />
+                      )}
                     </View>
                   </View>
-                  {homeworkItems.map((item) => {
-                    const cert = enriched.find((c) => c.rub_number === item.rubNumber);
-                    const dotColor = cert
-                      ? (FRESHNESS_DOT_COLORS[cert.freshness.state] ?? colors.primary[400])
-                      : colors.primary[400];
+                  <ProgressBar
+                    progress={activeCount / 240}
+                    variant={theme.tag}
+                    height={6}
+                  />
+                </Card>
 
-                    return (
-                      <View key={item.assignmentId} style={styles.planRow}>
-                        <Pressable
-                          style={({ pressed }) => [styles.planRowContent, pressed && styles.rubRowPressed]}
-                          onPress={() => {
-                            if (cert) handleCertPress(cert);
-                          }}
-                        >
-                          <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
-                          <Text style={[styles.rubTitle, { flex: 1 }]} numberOfLines={1}>
-                            {t('gamification.rub')} {item.rubNumber} {'\u00B7'} {t('gamification.juz')} {item.juz}
-                          </Text>
-                        </Pressable>
-                        <Pressable
-                          style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}
-                          onPress={() => handleRemoveHomework(item.assignmentId)}
-                          hitSlop={8}
-                        >
-                          <Ionicons name="close-circle" size={20} color={colors.neutral[300]} />
-                        </Pressable>
+                {/* Revision Warning */}
+                <RevisionWarning count={effectiveCriticalCount} />
+
+                {/* Revision Homework */}
+                {homeworkItems.length > 0 && (
+                  <Card variant="default" style={styles.planCard}>
+                    <View style={styles.planHeader}>
+                      <Ionicons name="book-outline" size={18} color={colors.primary[500]} />
+                      <Text style={styles.planTitle}>{t('student.revision.plannedItems')}</Text>
+                      <View style={styles.planBadge}>
+                        <Text style={styles.planBadgeText}>{homeworkItems.length}</Text>
                       </View>
-                    );
-                  })}
-                </Card>
-              )}
+                    </View>
+                    {homeworkItems.map((item) => {
+                      const cert = enriched.find((c) => c.rub_number === item.rubNumber);
+                      const dotColor = cert
+                        ? (FRESHNESS_DOT_COLORS[cert.freshness.state] ?? colors.primary[400])
+                        : colors.primary[400];
 
-              {/* All-fresh success state */}
-              {needsAttentionCount === 0 && enriched.length > 0 && (
-                <Card variant="outlined" style={styles.allFreshCard}>
-                  <Ionicons name="checkmark-circle" size={24} color={colors.primary[500]} />
-                  <View style={styles.allFreshText}>
-                    <Text style={styles.allFreshTitle}>{t('student.revision.allFresh')}</Text>
-                    <Text style={styles.allFreshDesc}>{t('student.revision.allFreshDesc')}</Text>
-                  </View>
-                </Card>
-              )}
-            </>
-          }
-          renderSectionHeader={({ section }) => {
-            const isCollapsed = collapsedSections[section.key] ?? false;
-            return (
-              <Pressable
-                style={styles.sectionHeaderContainer}
-                onPress={() => toggleSection(section.key)}
-              >
-                <Text style={styles.sectionHeader}>{section.title}</Text>
-                <Ionicons
-                  name={isCollapsed ? 'chevron-down' : 'chevron-up'}
-                  size={16}
-                  color={colors.neutral[400]}
-                />
-              </Pressable>
-            );
-          }}
-          renderItem={({ item, section }) => {
-            if (isGroup(item)) {
-              const dotColor = FRESHNESS_DOT_COLORS[item.worstState] ?? colors.neutral[400];
-              const bgColor = FRESHNESS_BG_COLORS[item.worstState] ?? colors.neutral[50];
-              const label = viewMode === 'juz'
-                ? `${t('gamification.juz')} ${item.groupNumber}`
-                : `${t('gamification.hizb')} ${item.groupNumber} ${'\u00B7'} ${t('gamification.juz')} ${item.juzNumber}`;
-              const divisor = viewMode === 'hizb' ? 2 : 8;
+                      return (
+                        <View key={item.assignmentId} style={styles.planRow}>
+                          <Pressable
+                            style={({ pressed }) => [styles.planRowContent, pressed && styles.rubRowPressed]}
+                            onPress={() => {
+                              if (cert) handleCertPress(cert);
+                            }}
+                          >
+                            <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
+                            <Text style={[styles.rubTitle, { flex: 1 }]} numberOfLines={1}>
+                              {t('gamification.rub')} {item.rubNumber} {'\u00B7'} {t('gamification.juz')} {item.juz}
+                            </Text>
+                          </Pressable>
+                          <Pressable
+                            style={({ pressed }) => [styles.removeButton, pressed && styles.removeButtonPressed]}
+                            onPress={() => handleRemoveHomework(item.assignmentId)}
+                            hitSlop={8}
+                          >
+                            <Ionicons name="close-circle" size={20} color={colors.neutral[300]} />
+                          </Pressable>
+                        </View>
+                      );
+                    })}
+                  </Card>
+                )}
 
+                {/* All-fresh success state */}
+                {needsAttentionCount === 0 && enriched.length > 0 && (
+                  <Card variant="outlined" style={styles.allFreshCard}>
+                    <Ionicons name="checkmark-circle" size={24} color={colors.primary[500]} />
+                    <View style={styles.allFreshText}>
+                      <Text style={styles.allFreshTitle}>{t('student.revision.allFresh')}</Text>
+                      <Text style={styles.allFreshDesc}>{t('student.revision.allFreshDesc')}</Text>
+                    </View>
+                  </Card>
+                )}
+              </>
+            }
+            renderSectionHeader={({ section }) => {
+              const isCollapsed = collapsedSections[section.key] ?? false;
               return (
                 <Pressable
-                  style={({ pressed }) => [styles.rubRow, pressed && styles.rubRowPressed]}
-                  onPress={() => handleGroupPress(item)}
+                  style={styles.sectionHeaderContainer}
+                  onPress={() => toggleSection(section.key)}
                 >
-                  <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
-                  <View style={styles.rubInfo}>
-                    <Text style={styles.rubTitle}>{label}</Text>
-                    <View style={[styles.rubChip, { backgroundColor: bgColor }]}>
-                      <Text style={[styles.rubChipText, { color: dotColor }]}>
-                        {item.needsRevisionCount > 0
-                          ? t('student.revision.itemsNeedRevision', { count: item.needsRevisionCount })
-                          : t(`gamification.freshness.${item.worstState}`)}
-                      </Text>
-                    </View>
-                  </View>
-                  <View style={styles.groupCountBadge}>
-                    <Text style={styles.groupCountText}>{item.children.length}/{divisor}</Text>
-                  </View>
-                  <Ionicons name={chevron as any} size={16} color={colors.neutral[300]} />
+                  <Text style={styles.sectionHeader}>{section.title}</Text>
+                  <Ionicons
+                    name={isCollapsed ? 'chevron-down' : 'chevron-up'}
+                    size={16}
+                    color={colors.neutral[400]}
+                  />
                 </Pressable>
               );
+            }}
+            renderItem={({ item, section }) => {
+              if (isGroup(item)) {
+                const dotColor = FRESHNESS_DOT_COLORS[item.worstState] ?? colors.neutral[400];
+                const bgColor = FRESHNESS_BG_COLORS[item.worstState] ?? colors.neutral[50];
+                const label = viewMode === 'juz'
+                  ? `${t('gamification.juz')} ${item.groupNumber}`
+                  : `${t('gamification.hizb')} ${item.groupNumber} ${'\u00B7'} ${t('gamification.juz')} ${item.juzNumber}`;
+                const divisor = viewMode === 'hizb' ? 2 : 8;
+
+                return (
+                  <Pressable
+                    style={({ pressed }) => [styles.rubRow, pressed && styles.rubRowPressed]}
+                    onPress={() => handleGroupPress(item)}
+                  >
+                    <View style={[styles.rubDot, { backgroundColor: dotColor }]} />
+                    <View style={styles.rubInfo}>
+                      <Text style={styles.rubTitle}>{label}</Text>
+                      <View style={[styles.rubChip, { backgroundColor: bgColor }]}>
+                        <Text style={[styles.rubChipText, { color: dotColor }]}>
+                          {item.needsRevisionCount > 0
+                            ? t('student.revision.itemsNeedRevision', { count: item.needsRevisionCount })
+                            : t(`gamification.freshness.${item.worstState}`)}
+                        </Text>
+                      </View>
+                    </View>
+                    <View style={styles.groupCountBadge}>
+                      <Text style={styles.groupCountText}>{item.children.length}/{divisor}</Text>
+                    </View>
+                    <Ionicons name={chevron as any} size={16} color={colors.neutral[300]} />
+                  </Pressable>
+                );
+              }
+              return (
+                <RubRow
+                  cert={item}
+                  showDaysLeft={section.key === 'attention'}
+                  chevron={chevron}
+                  onPress={() => handleCertPress(item)}
+                  t={t}
+                />
+              );
+            }}
+            ListFooterComponent={
+              <View style={styles.quickLinks}>
+                <Pressable
+                  style={[styles.pill, { backgroundColor: colors.accent.violet[50] }]}
+                  onPress={() => router.push('/(student)/rub-progress')}
+                >
+                  <Ionicons name="map" size={16} color={colors.accent.violet[500]} />
+                  <Text style={[styles.pillText, { color: colors.accent.violet[600] }]}>
+                    {t('student.revision.fullMap')}
+                  </Text>
+                </Pressable>
+              </View>
             }
-            return (
-              <RubRow
-                cert={item}
-                showDaysLeft={section.key === 'attention'}
-                chevron={chevron}
-                onPress={() => handleCertPress(item)}
-                t={t}
-              />
-            );
-          }}
-          ListFooterComponent={
-            <View style={styles.quickLinks}>
-              <Pressable
-                style={[styles.pill, { backgroundColor: colors.accent.violet[50] }]}
-                onPress={() => router.push('/(student)/rub-progress')}
-              >
-                <Ionicons name="map" size={16} color={colors.accent.violet[500]} />
-                <Text style={[styles.pillText, { color: colors.accent.violet[600] }]}>
-                  {t('student.revision.fullMap')}
-                </Text>
-              </Pressable>
-            </View>
-          }
-        />
+          />
+        )}
 
         {/* Revision Sheet (single rubʿ) */}
         <RevisionSheet
@@ -1031,35 +1016,58 @@ const styles = StyleSheet.create({
     marginTop: normalize(2),
   },
 
-  // Today's Revision
-  revisionCard: {
-    padding: spacing.md,
-    marginTop: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  revisionHeader: {
+  // Segmented Control
+  segmentedControl: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    backgroundColor: colors.neutral[100],
+    borderRadius: radius.full,
+    padding: normalize(3),
   },
-  revisionTitle: {
+  segmentButton: {
     flex: 1,
+    alignItems: 'center',
+    paddingVertical: spacing.sm,
+    borderRadius: radius.full,
+  },
+  segmentButtonActive: {
+    backgroundColor: colors.primary[500],
+  },
+  segmentText: {
     fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(14),
-    color: colors.neutral[800],
-  },
-  revisionContent: {
-    marginTop: spacing.md,
-  },
-  revisionSubheader: {
-    fontFamily: typography.fontFamily.medium,
-    fontSize: normalize(12),
+    fontSize: normalize(13),
     color: colors.neutral[500],
-    marginBottom: spacing.xs,
-    marginTop: spacing.sm,
+  },
+  segmentTextActive: {
+    color: colors.white,
   },
 
-  // Today's Plan
+  // Near Segment
+  nearContent: {
+    padding: spacing.lg,
+    paddingTop: 0,
+    paddingBottom: 110,
+  },
+  nearEmpty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing['3xl'],
+    gap: spacing.sm,
+  },
+  nearEmptyTitle: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(16),
+    color: colors.neutral[800],
+    marginTop: spacing.sm,
+  },
+  nearEmptyDesc: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: normalize(13),
+    color: colors.neutral[500],
+  },
+
+  // Revision Homework
   planCard: {
     padding: spacing.md,
     marginBottom: spacing.md,
