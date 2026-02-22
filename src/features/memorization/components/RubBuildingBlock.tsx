@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Animated, {
@@ -13,7 +13,7 @@ import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 
-// ─── Layout Constants ────────────────────────────────────────────────────────
+// ─── Layout ──────────────────────────────────────────────────────────────────
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const COLUMNS = 3;
@@ -23,65 +23,34 @@ export const BLOCK_SIZE = Math.floor(
   (SCREEN_WIDTH - HORIZONTAL_PADDING - (COLUMNS - 1) * GAP) / COLUMNS,
 );
 
-const COURSES = 5;
-const MORTAR = normalize(2);
-const EDGE = normalize(3);
-const BRICK_BORDER = normalize(1);
-const COURSE_HEIGHT = Math.floor(
-  (BLOCK_SIZE - (COURSES + 1) * MORTAR) / COURSES,
-);
+// 3D depth — thickness of the visible top and side faces
+const DEPTH = normalize(6);
 
-// ─── Running Bond Pattern ────────────────────────────────────────────────────
-// Flex values for bricks — flush rows have 3 equal bricks,
-// staggered rows have half-full-full-half for the classic offset.
-
-const FLUSH = [1, 1, 1];
-const STAGGERED = [0.5, 1, 1, 0.5];
-
-const COURSE_PATTERNS: number[][] = [
-  FLUSH,     // course 0 (bottom)
-  STAGGERED, // course 1
-  FLUSH,     // course 2
-  STAGGERED, // course 3
-  FLUSH,     // course 4 (top)
-];
-
-// Deterministic shade index per brick (0 = base, 1 = darker, 2 = lighter).
-// Adjacent bricks never share the same shade for subtle realism.
-const SHADE_MAP: number[][] = [
-  [0, 2, 1],
-  [1, 0, 2, 0],
-  [2, 0, 1],
-  [0, 1, 0, 2],
-  [1, 2, 0],
-];
+// Front face height (where the fill animation happens)
+const FRONT_HEIGHT = BLOCK_SIZE - DEPTH;
 
 // ─── Palettes ────────────────────────────────────────────────────────────────
 
-// In-progress: warm terracotta / clay tones
+// In-progress: warm terracotta clay being cast
 const CLAY = {
-  shades: ['#C2725B', '#B5654E', '#CF8068'] as const, // base, dark, light
-  brickLight: '#D4907D',  // top-left edge highlight
-  brickDark: '#A0573F',   // bottom-right edge shadow
-  mortar: '#D6CBBD',      // cream mortar
-  bg: '#F5F0EB',          // warm neutral background
-  ghost: '#DED5CB',       // unfilled brick placeholder
-  edgeLight: '#EDE5DC',
-  edgeDark: '#B09A88',
-  edgeSide: '#BFA992',
+  topFace: '#D9A08F',       // lit top surface (lighter terracotta)
+  sideFace: '#A0573F',      // shadow side (darker terracotta)
+  corner: '#C2725B',        // top-right corner where faces meet
+  fill: '#C2725B',          // main terracotta fill
+  fillHighlight: '#D4907D', // wet surface highlight at fill line
+  bg: '#F5F0EB',            // empty/unfilled interior
+  frame: '#E8DDD4',         // subtle border on front face
 };
 
-// Complete: polished emerald stone
+// Complete: solid emerald stone block
 const STONE = {
-  shades: ['#34D399', '#2BBD89', '#4DE8AA'] as const,
-  brickLight: '#6EE7B7',
-  brickDark: '#059669',
-  mortar: '#A7E8CE',
+  topFace: '#6EE7B7',
+  sideFace: '#059669',
+  corner: '#34D399',
+  fill: '#34D399',
+  fillHighlight: '#86EFAC',
   bg: '#ECFDF5',
-  ghost: '#C3F5DA',
-  edgeLight: '#A7F3D0',
-  edgeDark: '#047857',
-  edgeSide: '#059669',
+  frame: '#D1FAE5',
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -95,85 +64,27 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
   const { t } = useTranslation();
   const pal = isComplete ? STONE : CLAY;
 
-  // Pre-compute per-brick background colors from shade map
-  const brickColors = useMemo(() => {
-    const palette = isComplete ? STONE : CLAY;
-    return COURSE_PATTERNS.map((pattern, ci) =>
-      pattern.map((_, bi) => palette.shades[SHADE_MAP[ci]![bi]!]!),
-    );
-  }, [isComplete]);
-
-  // Animate fill 0→1
   const fillPct = useDerivedValue(() =>
     withSpring(coverage.percentage / 100, { damping: 18, stiffness: 80 }),
   );
 
-  const filledStyle = useAnimatedStyle(() => {
-    const filled = fillPct.value * COURSES;
-    const wholeCourses = Math.floor(filled);
-    const partialFraction = filled - wholeCourses;
-    const h =
-      wholeCourses * (COURSE_HEIGHT + MORTAR) +
-      partialFraction * COURSE_HEIGHT;
-    return { height: Math.max(0, h) };
-  });
+  const filledStyle = useAnimatedStyle(() => ({
+    height: Math.max(0, fillPct.value * FRONT_HEIGHT),
+  }));
 
   return (
-    <View style={[styles.outer, { backgroundColor: pal.mortar }]}>
-      {/* 3D beveled edges */}
-      <View style={[styles.edgeTop, { backgroundColor: pal.edgeLight }]} />
-      <View style={[styles.edgeBottom, { backgroundColor: pal.edgeDark }]} />
-      <View style={[styles.edgeRight, { backgroundColor: pal.edgeSide }]} />
+    <View style={[styles.wrapper, { backgroundColor: pal.topFace }]}>
+      {/* Corner shade — transition where top face meets side face */}
+      <View style={[styles.topCorner, { backgroundColor: pal.corner }]} />
 
-      <View style={[styles.inner, { backgroundColor: pal.bg }]}>
-        {/* Ghost brick guides — faint outlines showing where bricks will go */}
-        {COURSE_PATTERNS.map((pattern, ci) => (
-          <View
-            key={`g${ci}`}
-            style={[
-              styles.courseGuide,
-              {
-                bottom: ci * (COURSE_HEIGHT + MORTAR) + MORTAR,
-                height: COURSE_HEIGHT,
-              },
-            ]}
-          >
-            {pattern.map((flex, bi) => (
-              <View
-                key={bi}
-                style={[styles.ghostBrick, { flex, backgroundColor: pal.ghost }]}
-              />
-            ))}
-          </View>
-        ))}
+      {/* Side face — 3D shadow side */}
+      <View style={[styles.sideFace, { backgroundColor: pal.sideFace }]} />
 
-        {/* Filled courses — animated rise from bottom */}
-        <Animated.View style={[styles.fillContainer, filledStyle]}>
-          {COURSE_PATTERNS.map((pattern, ci) => (
-            <View key={`f${ci}`} style={styles.courseWrapper}>
-              {ci > 0 && (
-                <View style={[styles.mortarLine, { backgroundColor: pal.mortar }]} />
-              )}
-              <View style={styles.courseRow}>
-                {pattern.map((flex, bi) => (
-                  <View
-                    key={bi}
-                    style={[
-                      styles.brick,
-                      {
-                        flex,
-                        backgroundColor: brickColors[ci]![bi]!,
-                        borderTopColor: pal.brickLight,
-                        borderLeftColor: pal.brickLight,
-                        borderBottomColor: pal.brickDark,
-                        borderRightColor: pal.brickDark,
-                      },
-                    ]}
-                  />
-                ))}
-              </View>
-            </View>
-          ))}
+      {/* Front face — main visible face with fill animation */}
+      <View style={[styles.frontFace, { backgroundColor: pal.bg, borderColor: pal.frame }]}>
+        {/* Fill — material rising from bottom */}
+        <Animated.View style={[styles.fill, { backgroundColor: pal.fill }, filledStyle]}>
+          <View style={[styles.fillEdge, { backgroundColor: pal.fillHighlight }]} />
         </Animated.View>
 
         {/* Content overlay */}
@@ -216,87 +127,62 @@ export const RubBuildingBlock = React.memo(
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  outer: {
+  wrapper: {
     width: BLOCK_SIZE,
     height: BLOCK_SIZE,
-    borderRadius: normalize(4),
-    padding: MORTAR,
-    boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.12), 0px 1px 2px rgba(0, 0, 0, 0.06)',
+    borderRadius: normalize(3),
+    boxShadow: '2px 3px 6px rgba(0, 0, 0, 0.15)',
   },
-  edgeTop: {
+
+  // Corner where top face meets side face
+  topCorner: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: DEPTH,
+    height: DEPTH,
+    borderTopEndRadius: normalize(3),
+    opacity: 0.6,
+  },
+
+  // Right side face — darker, in shadow
+  sideFace: {
+    position: 'absolute',
+    top: DEPTH,
+    right: 0,
+    bottom: 0,
+    width: DEPTH,
+    borderBottomEndRadius: normalize(3),
+  },
+
+  // Front face — below top face, left of side face
+  frontFace: {
+    position: 'absolute',
+    top: DEPTH,
+    left: 0,
+    right: DEPTH,
+    bottom: 0,
+    borderBottomStartRadius: normalize(3),
+    borderWidth: normalize(1),
+    borderTopWidth: 0,
+    borderEndWidth: 0,
+    overflow: 'hidden',
+  },
+
+  // Animated fill — solid material rising from bottom
+  fill: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+  },
+  fillEdge: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    height: EDGE,
-    borderTopStartRadius: normalize(4),
-    borderTopEndRadius: normalize(4),
+    height: normalize(2),
     opacity: 0.7,
-  },
-  edgeBottom: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: EDGE,
-    borderBottomStartRadius: normalize(4),
-    borderBottomEndRadius: normalize(4),
-    opacity: 0.4,
-  },
-  edgeRight: {
-    position: 'absolute',
-    top: EDGE,
-    right: 0,
-    bottom: EDGE,
-    width: EDGE,
-    opacity: 0.3,
-  },
-  inner: {
-    flex: 1,
-    borderRadius: normalize(2),
-    overflow: 'hidden',
-  },
-
-  // Ghost brick guides
-  courseGuide: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    gap: MORTAR,
-    opacity: 0.45,
-  },
-  ghostBrick: {
-    height: '100%',
-    borderRadius: normalize(1),
-  },
-
-  // Filled area
-  fillContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    overflow: 'hidden',
-    flexDirection: 'column-reverse',
-  },
-  courseWrapper: {
-    width: '100%',
-  },
-  mortarLine: {
-    height: MORTAR,
-    width: '100%',
-  },
-  courseRow: {
-    height: COURSE_HEIGHT,
-    flexDirection: 'row',
-    gap: MORTAR,
-  },
-  brick: {
-    height: '100%',
-    borderRadius: normalize(1),
-    borderWidth: BRICK_BORDER,
-    boxShadow: '0.5px 0.5px 1px rgba(0, 0, 0, 0.1)',
   },
 
   // Content overlay
