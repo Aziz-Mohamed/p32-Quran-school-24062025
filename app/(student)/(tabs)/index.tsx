@@ -199,52 +199,47 @@ export default function StudentDashboard() {
             style={styles.tasksCard}
           >
             <View style={styles.tasksHeader}>
-              <View style={[styles.tasksIcon, { backgroundColor: colors.primary[50] }]}>
-                <Ionicons name="pulse" size={20} color={colors.primary[500]} />
+              <View style={[styles.tasksIcon, { backgroundColor: hasWarning ? '#FEF3C7' : colors.primary[50] }]}>
+                <Ionicons
+                  name={hasWarning ? 'alert-circle' : 'pulse'}
+                  size={20}
+                  color={hasWarning ? '#92400E' : colors.primary[500]}
+                />
               </View>
-              <Text style={styles.tasksTitle}>{t('student.dashboard.revisionHealth')}</Text>
+              <View style={styles.healthTitleCol}>
+                <Text style={styles.tasksTitle}>{t('student.dashboard.revisionHealth')}</Text>
+                <Text style={styles.healthSubtitle}>
+                  {hasWarning
+                    ? t('gamification.revisionWarning', { count: effectiveCriticalCount })
+                    : t('student.dashboard.revisionHealthGood')}
+                </Text>
+              </View>
               <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
             </View>
 
-            <View style={styles.healthDotsRow}>
-              {healthCounts.critical > 0 && (
-                <View style={styles.healthDotItem}>
-                  <View style={[styles.healthDot, { backgroundColor: FRESHNESS_DOT_COLORS.critical }]} />
-                  <Text style={styles.healthDotCount}>{healthCounts.critical}</Text>
-                  <Text style={styles.healthDotLabel}>{t('gamification.freshness.critical')}</Text>
-                </View>
-              )}
-              {healthCounts.warning > 0 && (
-                <View style={styles.healthDotItem}>
-                  <View style={[styles.healthDot, { backgroundColor: FRESHNESS_DOT_COLORS.warning }]} />
-                  <Text style={styles.healthDotCount}>{healthCounts.warning}</Text>
-                  <Text style={styles.healthDotLabel}>{t('gamification.freshness.warning')}</Text>
-                </View>
-              )}
-              {healthCounts.fading > 0 && (
-                <View style={styles.healthDotItem}>
-                  <View style={[styles.healthDot, { backgroundColor: FRESHNESS_DOT_COLORS.fading }]} />
-                  <Text style={styles.healthDotCount}>{healthCounts.fading}</Text>
-                  <Text style={styles.healthDotLabel}>{t('gamification.freshness.fading')}</Text>
-                </View>
-              )}
-              {healthCounts.fresh > 0 && (
-                <View style={styles.healthDotItem}>
-                  <View style={[styles.healthDot, { backgroundColor: FRESHNESS_DOT_COLORS.fresh }]} />
-                  <Text style={styles.healthDotCount}>{healthCounts.fresh}</Text>
-                  <Text style={styles.healthDotLabel}>{t('gamification.freshness.fresh')}</Text>
-                </View>
-              )}
-            </View>
-
-            {hasWarning && (
-              <View style={styles.warningRow}>
-                <Ionicons name="alert-circle" size={16} color="#92400E" />
-                <Text style={styles.warningText}>
-                  {t('gamification.revisionWarning', { count: effectiveCriticalCount })}
-                </Text>
+            {/* Stacked health bar */}
+            <View style={styles.healthBarContainer}>
+              <View style={styles.healthBarTrack}>
+                {(['critical', 'warning', 'fading', 'fresh', 'dormant'] as const).map((state) => {
+                  const count = healthCounts[state] ?? 0;
+                  if (count === 0) return null;
+                  const pct = (count / enriched.length) * 100;
+                  return (
+                    <View
+                      key={state}
+                      style={{
+                        width: `${pct}%`,
+                        height: '100%',
+                        backgroundColor: FRESHNESS_DOT_COLORS[state],
+                      }}
+                    />
+                  );
+                })}
               </View>
-            )}
+              <Text style={styles.healthBarLabel}>
+                {enriched.length}/240
+              </Text>
+            </View>
           </Card>
         )}
 
@@ -397,52 +392,34 @@ const styles = StyleSheet.create({
     borderTopColor: colors.neutral[100],
   },
 
-  // Health dots row
-  healthDotsRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.md,
-    marginTop: spacing.md,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.xs,
+  // Revision Health
+  healthTitleCol: {
+    flex: 1,
+    gap: normalize(2),
   },
-  healthDotItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: normalize(4),
-  },
-  healthDot: {
-    width: normalize(8),
-    height: normalize(8),
-    borderRadius: normalize(4),
-  },
-  healthDotCount: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: normalize(13),
-    color: colors.neutral[800],
-  },
-  healthDotLabel: {
+  healthSubtitle: {
     fontFamily: typography.fontFamily.regular,
-    fontSize: normalize(12),
+    fontSize: normalize(11),
     color: colors.neutral[500],
   },
-
-  // Warning
-  warningRow: {
+  healthBarContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    marginTop: spacing.sm,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.sm,
-    backgroundColor: '#FEF3C7',
-    borderRadius: radius.sm,
+    marginTop: spacing.md,
   },
-  warningText: {
-    fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(12),
-    color: '#92400E',
+  healthBarTrack: {
     flex: 1,
+    height: normalize(8),
+    borderRadius: normalize(4),
+    backgroundColor: colors.neutral[100],
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  healthBarLabel: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(11),
+    color: colors.neutral[500],
   },
 
   // Hero Card (Streak + Stats)
