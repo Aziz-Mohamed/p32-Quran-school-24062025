@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { Dimensions, I18nManager, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { I18nManager, type LayoutChangeEvent, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { HeatMapCell } from './HeatMapCell';
@@ -17,14 +17,10 @@ import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const PADDING = spacing.md;
 const JUZ_LABEL_WIDTH = normalize(28);
 const GAP = 2;
 const COLS = 8;
-const CELL_SIZE = Math.floor(
-  (SCREEN_WIDTH - 2 * PADDING - JUZ_LABEL_WIDTH - (COLS - 1) * GAP) / COLS,
-);
+const GRID_PADDING = spacing.sm;
 
 interface QuranHeatMapProps {
   studentId: string;
@@ -48,6 +44,14 @@ export function QuranHeatMap({ studentId }: QuranHeatMapProps) {
 
   const [selectedCert, setSelectedCert] = useState<EnrichedCertification | null>(null);
   const [selectedRef, setSelectedRef] = useState<RubRef | null>(null);
+  const [cellSize, setCellSize] = useState(0);
+
+  // Measure actual available width on layout
+  const handleGridLayout = useCallback((e: LayoutChangeEvent) => {
+    const containerWidth = e.nativeEvent.layout.width;
+    const availableForCells = containerWidth - 2 * GRID_PADDING - JUZ_LABEL_WIDTH - GAP - (COLS - 1) * GAP;
+    setCellSize(Math.floor(availableForCells / COLS));
+  }, []);
 
   // Group into 30 juz rows
   const juzRows = useMemo(() => {
@@ -109,7 +113,7 @@ export function QuranHeatMap({ studentId }: QuranHeatMapProps) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} onLayout={handleGridLayout}>
       {/* Header stats */}
       <View style={styles.header}>
         <Text style={styles.statsText}>
@@ -132,45 +136,47 @@ export function QuranHeatMap({ studentId }: QuranHeatMapProps) {
         ))}
       </View>
 
-      {/* Grid */}
-      <ScrollView
-        style={styles.grid}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.gridContent}
-      >
-        {juzRows.map((row, juzIdx) => {
-          const juzNumber = juzIdx + 1;
-          const isRTL = I18nManager.isRTL;
+      {/* Grid — only render once we've measured */}
+      {cellSize > 0 && (
+        <ScrollView
+          style={styles.grid}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.gridContent}
+        >
+          {juzRows.map((row, juzIdx) => {
+            const juzNumber = juzIdx + 1;
+            const isRTL = I18nManager.isRTL;
 
-          return (
-            <View
-              key={juzNumber}
-              style={[
-                styles.juzRow,
-                isRTL && styles.juzRowRTL,
-              ]}
-            >
-              <View style={styles.juzLabel}>
-                <Text style={styles.juzText}>{juzNumber}</Text>
+            return (
+              <View
+                key={juzNumber}
+                style={[
+                  styles.juzRow,
+                  isRTL && styles.juzRowRTL,
+                ]}
+              >
+                <View style={styles.juzLabel}>
+                  <Text style={styles.juzText}>{juzNumber}</Text>
+                </View>
+                <View style={[styles.cellsRow, isRTL && styles.cellsRowRTL]}>
+                  {row.map((rub) => {
+                    const cert = certMap.get(rub.rub_number);
+                    return (
+                      <HeatMapCell
+                        key={rub.rub_number}
+                        rubNumber={rub.rub_number}
+                        freshnessState={cert ? cert.freshness.state : null}
+                        size={cellSize}
+                        onPress={() => handleCellPress(rub.rub_number)}
+                      />
+                    );
+                  })}
+                </View>
               </View>
-              <View style={[styles.cellsRow, isRTL && styles.cellsRowRTL]}>
-                {row.map((rub) => {
-                  const cert = certMap.get(rub.rub_number);
-                  return (
-                    <HeatMapCell
-                      key={rub.rub_number}
-                      rubNumber={rub.rub_number}
-                      freshnessState={cert ? cert.freshness.state : null}
-                      size={CELL_SIZE}
-                      onPress={() => handleCellPress(rub.rub_number)}
-                    />
-                  );
-                })}
-              </View>
-            </View>
-          );
-        })}
-      </ScrollView>
+            );
+          })}
+        </ScrollView>
+      )}
 
       {/* Detail sheet */}
       <RevisionSheet
@@ -195,7 +201,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: PADDING,
+    paddingHorizontal: GRID_PADDING,
     paddingTop: spacing.sm,
     gap: normalize(2),
   },
@@ -214,7 +220,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: normalize(10),
-    paddingHorizontal: PADDING,
+    paddingHorizontal: GRID_PADDING,
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
     flexWrap: 'wrap',
@@ -238,7 +244,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   gridContent: {
-    paddingHorizontal: PADDING,
+    paddingHorizontal: GRID_PADDING,
     paddingBottom: spacing.xl,
     gap: GAP,
   },
