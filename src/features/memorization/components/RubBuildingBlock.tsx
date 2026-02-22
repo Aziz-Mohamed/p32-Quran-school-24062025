@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Animated, {
@@ -13,10 +13,7 @@ import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 
-interface RubBuildingBlockProps {
-  coverage: RubCoverage;
-  isComplete: boolean;
-}
+// ─── Layout Constants ────────────────────────────────────────────────────────
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const COLUMNS = 3;
@@ -26,53 +23,94 @@ export const BLOCK_SIZE = Math.floor(
   (SCREEN_WIDTH - HORIZONTAL_PADDING - (COLUMNS - 1) * GAP) / COLUMNS,
 );
 
-// How many brick-course rows fit in the block
 const COURSES = 5;
 const MORTAR = normalize(2);
+const EDGE = normalize(3);
+const BRICK_BORDER = normalize(1);
 const COURSE_HEIGHT = Math.floor(
   (BLOCK_SIZE - (COURSES + 1) * MORTAR) / COURSES,
 );
 
-// ─── Palette ─────────────────────────────────────────────────────────────────
+// ─── Running Bond Pattern ────────────────────────────────────────────────────
+// Flex values for bricks — flush rows have 3 equal bricks,
+// staggered rows have half-full-full-half for the classic offset.
+
+const FLUSH = [1, 1, 1];
+const STAGGERED = [0.5, 1, 1, 0.5];
+
+const COURSE_PATTERNS: number[][] = [
+  FLUSH,     // course 0 (bottom)
+  STAGGERED, // course 1
+  FLUSH,     // course 2
+  STAGGERED, // course 3
+  FLUSH,     // course 4 (top)
+];
+
+// Deterministic shade index per brick (0 = base, 1 = darker, 2 = lighter).
+// Adjacent bricks never share the same shade for subtle realism.
+const SHADE_MAP: number[][] = [
+  [0, 2, 1],
+  [1, 0, 2, 0],
+  [2, 0, 1],
+  [0, 1, 0, 2],
+  [1, 2, 0],
+];
+
+// ─── Palettes ────────────────────────────────────────────────────────────────
 
 // In-progress: warm terracotta / clay tones
 const CLAY = {
-  brick: '#C2725B',      // warm terracotta
-  brickLight: '#D4907D', // lighter face highlight
-  brickDark: '#A0573F',  // shadow / side face
-  mortar: '#E8DDD4',     // cream mortar between bricks
-  bg: '#F5F0EB',         // warm neutral background (empty area)
-  empty: '#E5DDD5',      // unfilled course placeholder
-  text: '#7C4A36',       // warm brown text
-  textLight: '#A0806F',  // secondary text
+  shades: ['#C2725B', '#B5654E', '#CF8068'] as const, // base, dark, light
+  brickLight: '#D4907D',  // top-left edge highlight
+  brickDark: '#A0573F',   // bottom-right edge shadow
+  mortar: '#D6CBBD',      // cream mortar
+  bg: '#F5F0EB',          // warm neutral background
+  ghost: '#DED5CB',       // unfilled brick placeholder
+  edgeLight: '#EDE5DC',
+  edgeDark: '#B09A88',
+  edgeSide: '#BFA992',
 };
 
 // Complete: polished emerald stone
 const STONE = {
-  brick: '#34D399',      // emerald-400
-  brickLight: '#6EE7B7', // emerald-300 highlight
-  brickDark: '#059669',  // emerald-600 shadow
-  mortar: '#D1FAE5',     // green-100 mortar
-  bg: '#ECFDF5',         // green-50
-  empty: '#D1FAE5',      // not used — all filled
-  text: '#065F46',       // emerald-900
-  textLight: '#047857',  // emerald-700
+  shades: ['#34D399', '#2BBD89', '#4DE8AA'] as const,
+  brickLight: '#6EE7B7',
+  brickDark: '#059669',
+  mortar: '#A7E8CE',
+  bg: '#ECFDF5',
+  ghost: '#C3F5DA',
+  edgeLight: '#A7F3D0',
+  edgeDark: '#047857',
+  edgeSide: '#059669',
 };
 
-export function RubBuildingBlock({ coverage, isComplete }: RubBuildingBlockProps) {
+// ─── Component ───────────────────────────────────────────────────────────────
+
+interface RubBuildingBlockProps {
+  coverage: RubCoverage;
+  isComplete: boolean;
+}
+
+function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) {
   const { t } = useTranslation();
   const pal = isComplete ? STONE : CLAY;
 
-  // Animate 0→1
+  // Pre-compute per-brick background colors from shade map
+  const brickColors = useMemo(() => {
+    const palette = isComplete ? STONE : CLAY;
+    return COURSE_PATTERNS.map((pattern, ci) =>
+      pattern.map((_, bi) => palette.shades[SHADE_MAP[ci]![bi]!]!),
+    );
+  }, [isComplete]);
+
+  // Animate fill 0→1
   const fillPct = useDerivedValue(() =>
     withSpring(coverage.percentage / 100, { damping: 18, stiffness: 80 }),
   );
 
-  // How many courses are fully "laid" (integer)
   const filledStyle = useAnimatedStyle(() => {
     const filled = fillPct.value * COURSES;
     const wholeCourses = Math.floor(filled);
-    // Height = whole courses * (courseHeight + mortar) + partial course
     const partialFraction = filled - wholeCourses;
     const h =
       wholeCourses * (COURSE_HEIGHT + MORTAR) +
@@ -82,43 +120,57 @@ export function RubBuildingBlock({ coverage, isComplete }: RubBuildingBlockProps
 
   return (
     <View style={[styles.outer, { backgroundColor: pal.mortar }]}>
-      {/* 3D top-left highlight edge */}
-      <View style={[styles.edgeTop, { backgroundColor: isComplete ? '#A7F3D0' : '#EDE5DC' }]} />
-      {/* 3D bottom-right shadow edge */}
-      <View style={[styles.edgeBottom, { backgroundColor: isComplete ? '#047857' : '#B09A88' }]} />
-      <View style={[styles.edgeRight, { backgroundColor: isComplete ? '#059669' : '#BFA992' }]} />
+      {/* 3D beveled edges */}
+      <View style={[styles.edgeTop, { backgroundColor: pal.edgeLight }]} />
+      <View style={[styles.edgeBottom, { backgroundColor: pal.edgeDark }]} />
+      <View style={[styles.edgeRight, { backgroundColor: pal.edgeSide }]} />
 
-      {/* Inner brick area */}
       <View style={[styles.inner, { backgroundColor: pal.bg }]}>
-        {/* Empty course guides — faint horizontal lines showing where bricks will go */}
-        {Array.from({ length: COURSES }).map((_, i) => (
+        {/* Ghost brick guides — faint outlines showing where bricks will go */}
+        {COURSE_PATTERNS.map((pattern, ci) => (
           <View
-            key={i}
+            key={`g${ci}`}
             style={[
               styles.courseGuide,
               {
-                bottom: i * (COURSE_HEIGHT + MORTAR) + MORTAR,
+                bottom: ci * (COURSE_HEIGHT + MORTAR) + MORTAR,
                 height: COURSE_HEIGHT,
-                backgroundColor: pal.empty,
               },
             ]}
-          />
+          >
+            {pattern.map((flex, bi) => (
+              <View
+                key={bi}
+                style={[styles.ghostBrick, { flex, backgroundColor: pal.ghost }]}
+              />
+            ))}
+          </View>
         ))}
 
-        {/* Filled courses — rise from bottom, clipped */}
+        {/* Filled courses — animated rise from bottom */}
         <Animated.View style={[styles.fillContainer, filledStyle]}>
-          {Array.from({ length: COURSES }).map((_, i) => (
-            <View key={i} style={styles.courseWrapper}>
-              {/* Mortar gap between courses */}
-              {i > 0 && (
+          {COURSE_PATTERNS.map((pattern, ci) => (
+            <View key={`f${ci}`} style={styles.courseWrapper}>
+              {ci > 0 && (
                 <View style={[styles.mortarLine, { backgroundColor: pal.mortar }]} />
               )}
-              {/* The brick course itself */}
-              <View style={[styles.course, { backgroundColor: pal.brick }]}>
-                {/* Top highlight — makes it look 3D lit from above */}
-                <View style={[styles.courseHighlight, { backgroundColor: pal.brickLight }]} />
-                {/* Bottom shadow — depth */}
-                <View style={[styles.courseShadow, { backgroundColor: pal.brickDark }]} />
+              <View style={styles.courseRow}>
+                {pattern.map((flex, bi) => (
+                  <View
+                    key={bi}
+                    style={[
+                      styles.brick,
+                      {
+                        flex,
+                        backgroundColor: brickColors[ci]![bi]!,
+                        borderTopColor: pal.brickLight,
+                        borderLeftColor: pal.brickLight,
+                        borderBottomColor: pal.brickDark,
+                        borderRightColor: pal.brickDark,
+                      },
+                    ]}
+                  />
+                ))}
               </View>
             </View>
           ))}
@@ -126,34 +178,42 @@ export function RubBuildingBlock({ coverage, isComplete }: RubBuildingBlockProps
 
         {/* Content overlay */}
         <View style={styles.content}>
-          <Text style={[styles.rubNumber, { color: pal.text }]}>
-            {coverage.rubNumber}
-          </Text>
+          <View style={styles.rubNumberBadge}>
+            <Text style={styles.rubNumber}>{coverage.rubNumber}</Text>
+          </View>
 
-          {isComplete ? (
-            <View style={styles.completeRow}>
-              <Ionicons name="checkmark-circle" size={normalize(14)} color={pal.textLight} />
-              <Text style={[styles.completeText, { color: pal.textLight }]}>
-                {t('student.blockBuilder.ready')}
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.bottomInfo}>
-              <Text style={[styles.ayahCount, { color: pal.textLight }]}>
-                {coverage.memorizedAyahs}/{coverage.totalAyahs}
-              </Text>
-              <Text style={[styles.percentLabel, { color: pal.text }]}>
-                {coverage.percentage}%
-              </Text>
-            </View>
-          )}
+          <View style={styles.infoStrip}>
+            {isComplete ? (
+              <View style={styles.completeRow}>
+                <Ionicons name="checkmark-circle" size={normalize(14)} color="#FFFFFF" />
+                <Text style={styles.completeText}>
+                  {t('student.blockBuilder.ready')}
+                </Text>
+              </View>
+            ) : (
+              <>
+                <Text style={styles.ayahCount}>
+                  {coverage.memorizedAyahs}/{coverage.totalAyahs}
+                </Text>
+                <Text style={styles.percentLabel}>{coverage.percentage}%</Text>
+              </>
+            )}
+          </View>
         </View>
       </View>
     </View>
   );
 }
 
-const EDGE = normalize(3);
+export const RubBuildingBlock = React.memo(
+  RubBuildingBlockInner,
+  (prev, next) =>
+    prev.coverage.rubNumber === next.coverage.rubNumber &&
+    prev.coverage.percentage === next.coverage.percentage &&
+    prev.isComplete === next.isComplete,
+);
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   outer: {
@@ -161,10 +221,8 @@ const styles = StyleSheet.create({
     height: BLOCK_SIZE,
     borderRadius: normalize(4),
     padding: MORTAR,
-    // 3D lifted shadow
     boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.12), 0px 1px 2px rgba(0, 0, 0, 0.06)',
   },
-  // 3D edges — top-left light, bottom-right dark (classic brick bevel)
   edgeTop: {
     position: 'absolute',
     top: 0,
@@ -198,22 +256,29 @@ const styles = StyleSheet.create({
     borderRadius: normalize(2),
     overflow: 'hidden',
   },
-  // Faint empty course placeholders
+
+  // Ghost brick guides
   courseGuide: {
     position: 'absolute',
     left: 0,
     right: 0,
-    borderRadius: normalize(1),
-    opacity: 0.6,
+    flexDirection: 'row',
+    gap: MORTAR,
+    opacity: 0.45,
   },
-  // Fill container — grows from bottom
+  ghostBrick: {
+    height: '100%',
+    borderRadius: normalize(1),
+  },
+
+  // Filled area
   fillContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     overflow: 'hidden',
-    flexDirection: 'column-reverse', // stack courses from bottom
+    flexDirection: 'column-reverse',
   },
   courseWrapper: {
     width: '100%',
@@ -222,59 +287,68 @@ const styles = StyleSheet.create({
     height: MORTAR,
     width: '100%',
   },
-  course: {
+  courseRow: {
     height: COURSE_HEIGHT,
-    width: '100%',
+    flexDirection: 'row',
+    gap: MORTAR,
+  },
+  brick: {
+    height: '100%',
     borderRadius: normalize(1),
+    borderWidth: BRICK_BORDER,
+    boxShadow: '0.5px 0.5px 1px rgba(0, 0, 0, 0.1)',
   },
-  // Top 2px lighter — lit from above
-  courseHighlight: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: normalize(2),
-    opacity: 0.5,
-  },
-  // Bottom 2px darker — shadow underneath
-  courseShadow: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: normalize(2),
-    opacity: 0.3,
-  },
+
+  // Content overlay
   content: {
-    flex: 1,
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'space-between',
     padding: spacing.sm,
-    zIndex: 1,
+    zIndex: 2,
+  },
+  rubNumberBadge: {
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    borderRadius: normalize(4),
+    paddingHorizontal: spacing.xs,
+    paddingVertical: normalize(1),
+    alignSelf: 'flex-start',
   },
   rubNumber: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: normalize(20),
+    fontSize: normalize(22),
+    color: '#FFFFFF',
   },
-  bottomInfo: {
+  infoStrip: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    borderRadius: normalize(3),
+    paddingHorizontal: spacing.xs,
+    paddingVertical: normalize(2),
+    marginHorizontal: -spacing.sm,
+    marginBottom: -spacing.sm,
   },
   ayahCount: {
     fontFamily: typography.fontFamily.medium,
-    fontSize: normalize(11),
+    fontSize: normalize(12),
+    color: 'rgba(255, 255, 255, 0.85)',
   },
   percentLabel: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: normalize(13),
+    fontSize: normalize(14),
+    color: '#FFFFFF',
   },
   completeRow: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: normalize(3),
   },
   completeText: {
     fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(11),
+    fontSize: normalize(12),
+    color: '#FFFFFF',
   },
 });
