@@ -205,7 +205,10 @@
       "certifiedRub": "Certified rubʿ",
       "needRevision": "Need revision",
       "plannedItems": "Revision Homework",
-      "plannedItemsCount": "{{count}} items"
+      "plannedItemsCount": "{{count}} items",
+      "todaysRevision": "Today's Revision",
+      "nearRevision": "Near Revision",
+      "farRevision": "Far Revision"
     },
     "dashboard": {
       "title": "Student Dashboard",

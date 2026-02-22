@@ -205,7 +205,10 @@
       "certifiedRub": "أرباع محفوظة",
       "needRevision": "تحتاج مراجعة",
       "plannedItems": "واجبات المراجعة",
-      "plannedItemsCount": "{{count}} واجبات"
+      "plannedItemsCount": "{{count}} واجبات",
+      "todaysRevision": "مراجعات اليوم",
+      "nearRevision": "المراجعة القريبة",
+      "farRevision": "المراجعة البعيدة"
     },
     "dashboard": {
       "title": "لوحة الطالب",

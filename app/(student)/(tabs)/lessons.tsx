@@ -19,7 +19,9 @@ import {
   RevisionSheet,
 } from '@/features/gamification';
 import type { EnrichedCertification, RubReference, FreshnessState } from '@/features/gamification';
-import { useCancelAssignment } from '@/features/memorization';
+import { useCancelAssignment, MemorizationRow } from '@/features/memorization';
+import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
+import type { RevisionScheduleItem } from '@/features/memorization';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { getMushafPageRange } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
@@ -130,6 +132,23 @@ export default function RevisionHealthScreen() {
 
   // Revision homework data (shared hook)
   const { homeworkItems, pendingKeys } = useRevisionHomework(profile?.id);
+
+  // SM2-scheduled revision items (near + far)
+  const todayStr = new Date().toISOString().split('T')[0];
+  const { data: revisionSchedule = [] } = useRevisionSchedule(profile?.id, todayStr);
+
+  const { nearRevisionItems, farRevisionItems } = useMemo(() => {
+    const near: RevisionScheduleItem[] = [];
+    const far: RevisionScheduleItem[] = [];
+    for (const item of revisionSchedule) {
+      if (item.review_type === 'recent_review') near.push(item);
+      else if (item.review_type === 'old_review') far.push(item);
+    }
+    return { nearRevisionItems: near, farRevisionItems: far };
+  }, [revisionSchedule]);
+
+  const hasRevisionItems = nearRevisionItems.length > 0 || farRevisionItems.length > 0;
+  const [revisionCollapsed, setRevisionCollapsed] = useState(false);
 
   // Smart warning: exclude rubʿ already covered by homework
   const homeworkRubSet = useMemo(
@@ -413,6 +432,59 @@ export default function RevisionHealthScreen() {
           stickySectionHeadersEnabled={false}
           ListHeaderComponent={
             <>
+              {/* Today's Revision — SM2-scheduled items */}
+              {hasRevisionItems && (
+                <Card variant="default" style={styles.revisionCard}>
+                  <Pressable
+                    style={styles.revisionHeader}
+                    onPress={() => setRevisionCollapsed((prev) => !prev)}
+                  >
+                    <Ionicons name="repeat-outline" size={18} color={colors.secondary[500]} />
+                    <Text style={styles.revisionTitle}>{t('student.revision.todaysRevision')}</Text>
+                    <View style={styles.planBadge}>
+                      <Text style={styles.planBadgeText}>
+                        {nearRevisionItems.length + farRevisionItems.length}
+                      </Text>
+                    </View>
+                    <Ionicons
+                      name={revisionCollapsed ? 'chevron-down' : 'chevron-up'}
+                      size={16}
+                      color={colors.neutral[400]}
+                    />
+                  </Pressable>
+                  {!revisionCollapsed && (
+                    <View style={styles.revisionContent}>
+                      {nearRevisionItems.length > 0 && (
+                        <>
+                          <Text style={styles.revisionSubheader}>
+                            {t('student.revision.nearRevision')}
+                          </Text>
+                          {nearRevisionItems.map((item, index) => (
+                            <MemorizationRow
+                              key={item.progress_id ?? `near-${item.surah_number}-${item.from_ayah}-${index}`}
+                              item={item}
+                            />
+                          ))}
+                        </>
+                      )}
+                      {farRevisionItems.length > 0 && (
+                        <>
+                          <Text style={styles.revisionSubheader}>
+                            {t('student.revision.farRevision')}
+                          </Text>
+                          {farRevisionItems.map((item, index) => (
+                            <MemorizationRow
+                              key={item.progress_id ?? `far-${item.surah_number}-${item.from_ayah}-${index}`}
+                              item={item}
+                            />
+                          ))}
+                        </>
+                      )}
+                    </View>
+                  )}
+                </Card>
+              )}
+
               {/* Health Summary Card */}
               <Card variant="default" style={styles.healthCard}>
                 <View style={styles.healthRow}>
@@ -957,6 +1029,34 @@ const styles = StyleSheet.create({
     fontSize: normalize(12),
     color: colors.neutral[500],
     marginTop: normalize(2),
+  },
+
+  // Today's Revision
+  revisionCard: {
+    padding: spacing.md,
+    marginTop: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  revisionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  revisionTitle: {
+    flex: 1,
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(14),
+    color: colors.neutral[800],
+  },
+  revisionContent: {
+    marginTop: spacing.md,
+  },
+  revisionSubheader: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(12),
+    color: colors.neutral[500],
+    marginBottom: spacing.xs,
+    marginTop: spacing.sm,
   },
 
   // Today's Plan

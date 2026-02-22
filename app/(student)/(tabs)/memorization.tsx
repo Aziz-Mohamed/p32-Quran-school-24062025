@@ -7,19 +7,17 @@ import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
-import { MemorizationHealthCard, MemorizationRow } from '@/features/memorization';
+import { MemorizationHealthCard } from '@/features/memorization';
 import { SelfAssignmentForm } from '@/features/memorization/components/SelfAssignmentForm';
 import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { useMemorizationProgress } from '@/features/memorization/hooks/useMemorizationProgress';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
-import type { RevisionScheduleItem } from '@/features/memorization';
 import { useAuth } from '@/hooks/useAuth';
 import { SURAHS } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
-import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
 
 // ─── Memorization Screen ─────────────────────────────────────────────────────
@@ -40,24 +38,13 @@ export default function MemorizationScreen() {
   const schoolId = dashboardData?.student?.school_id ?? '';
 
   const isRTL = I18nManager.isRTL;
-  const [practiceCollapsed, setPracticeCollapsed] = useState(false);
   const [formVisible, setFormVisible] = useState(false);
 
-  // Split schedule into new_hifz (prominent) and recent_review (compact)
-  const { newHifzItems, recentReviewItems } = useMemo(() => {
-    const newHifz: RevisionScheduleItem[] = [];
-    const recentReview: RevisionScheduleItem[] = [];
-
-    for (const item of schedule) {
-      if (item.review_type === 'new_hifz') {
-        newHifz.push(item);
-      } else if (item.review_type === 'recent_review') {
-        recentReview.push(item);
-      }
-    }
-
-    return { newHifzItems: newHifz, recentReviewItems: recentReview };
-  }, [schedule]);
+  // Filter schedule to only new_hifz items (revision items live on the Revision tab)
+  const newHifzItems = useMemo(
+    () => schedule.filter((item) => item.review_type === 'new_hifz'),
+    [schedule],
+  );
 
   // Group progress by surah for compact journey list
   const surahsWithProgress = useMemo(() => {
@@ -86,7 +73,7 @@ export default function MemorizationScreen() {
   }, [progress]);
 
   const isLoading = scheduleLoading || progressLoading;
-  const hasNoTasks = newHifzItems.length === 0 && recentReviewItems.length === 0;
+  const hasNoTasks = newHifzItems.length === 0;
 
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
@@ -149,32 +136,6 @@ export default function MemorizationScreen() {
                   </Card>
                 );
               })}
-            </>
-          )}
-
-          {/* Continue Practicing — SECONDARY */}
-          {recentReviewItems.length > 0 && (
-            <>
-              <Pressable
-                onPress={() => setPracticeCollapsed((prev) => !prev)}
-                style={styles.sectionHeaderContainer}
-              >
-                <Text style={styles.sectionHeader}>
-                  {t('memorization.sections.recent_practice')}
-                </Text>
-                <Ionicons
-                  name={practiceCollapsed ? 'chevron-down' : 'chevron-up'}
-                  size={16}
-                  color={colors.neutral[400]}
-                />
-              </Pressable>
-              {!practiceCollapsed &&
-                recentReviewItems.map((item, index) => (
-                  <MemorizationRow
-                    key={item.progress_id ?? `review-${item.surah_number}-${item.from_ayah}-${index}`}
-                    item={item}
-                  />
-                ))}
             </>
           )}
 
@@ -255,14 +216,6 @@ const styles = StyleSheet.create({
   },
 
   // Section Headers
-  sectionHeaderContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: spacing.md,
-    marginBottom: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
   sectionHeader: {
     ...typography.textStyles.subheading,
     color: lightTheme.text,

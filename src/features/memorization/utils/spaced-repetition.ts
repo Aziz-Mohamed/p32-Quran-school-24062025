@@ -19,7 +19,7 @@ export interface SM2Result {
   status: 'new' | 'learning' | 'memorized' | 'needs_review';
 }
 
-const RECENT_REVIEW_DAYS = 7;
+const RECENT_REVIEW_DAYS = 20;
 
 export function calculateQualityGrade(
   accuracy: number | null,
