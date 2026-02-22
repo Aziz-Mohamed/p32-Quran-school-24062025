@@ -303,7 +303,7 @@ export default function StudentDashboard() {
         <View style={styles.exploreRow}>
           <Pressable
             style={[styles.explorePill, { backgroundColor: colors.accent.violet[50] }]}
-            onPress={() => router.push('/(student)/rub-progress')}
+            onPress={() => router.push('/(student)/(tabs)/journey')}
           >
             <Ionicons name="map" size={16} color={colors.accent.violet[500]} />
             <Text style={[styles.explorePillText, { color: colors.accent.violet[600] }]}>

@@ -170,10 +170,30 @@
   "student": {
     "tabs": {
       "dashboard": "Dashboard",
-      "revision": "Revision",
       "memorization": "Memorization",
+      "revision": "Revision",
+      "journey": "Journey",
       "stickers": "Stickers",
       "profile": "Profile"
+    },
+    "journey": {
+      "title": "Journey",
+      "quranMap": "Quran Map",
+      "stickers": "Stickers",
+      "mapStats": "{{certified}}/240 certified",
+      "totalReviews": "{{count}} total reviews",
+      "legendLess": "Less",
+      "legendMore": "More"
+    },
+    "blockBuilder": {
+      "heroRub": "{{count}}/240 rubʿ",
+      "heroAyahs": "{{memorized}}/{{total}} ayahs",
+      "inProgress": "In Progress",
+      "readyForCertification": "Ready for Certification",
+      "ready": "Ready",
+      "ayahProgress": "{{memorized}}/{{total}} ayahs",
+      "emptyTitle": "Start Building",
+      "emptyDescription": "Tap + to add your first memorization block"
     },
     "revision": {
       "title": "Revision Health",

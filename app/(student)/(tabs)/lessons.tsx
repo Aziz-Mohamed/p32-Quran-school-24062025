@@ -620,7 +620,7 @@ export default function RevisionHealthScreen() {
               <View style={styles.quickLinks}>
                 <Pressable
                   style={[styles.pill, { backgroundColor: colors.accent.violet[50] }]}
-                  onPress={() => router.push('/(student)/rub-progress')}
+                  onPress={() => router.push('/(student)/(tabs)/journey')}
                 >
                   <Ionicons name="map" size={16} color={colors.accent.violet[500]} />
                   <Text style={[styles.pillText, { color: colors.accent.violet[600] }]}>

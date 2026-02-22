@@ -170,10 +170,30 @@
   "student": {
     "tabs": {
       "dashboard": "لوحة التحكّم",
-      "revision": "المراجعة",
       "memorization": "الحفظ",
+      "revision": "المراجعة",
+      "journey": "رحلتي",
       "stickers": "الملصقات",
       "profile": "الملف الشخصي"
+    },
+    "journey": {
+      "title": "رحلتي",
+      "quranMap": "خريطة القرآن",
+      "stickers": "الملصقات",
+      "mapStats": "{{certified}}/240 مُجاز",
+      "totalReviews": "{{count}} مراجعة",
+      "legendLess": "أقل",
+      "legendMore": "أكثر"
+    },
+    "blockBuilder": {
+      "heroRub": "{{count}}/240 ربع",
+      "heroAyahs": "{{memorized}}/{{total}} آية",
+      "inProgress": "قيد الحفظ",
+      "readyForCertification": "جاهز للإجازة",
+      "ready": "جاهز",
+      "ayahProgress": "{{memorized}}/{{total}} آية",
+      "emptyTitle": "ابدأ البناء",
+      "emptyDescription": "اضغط + لإضافة أول كتلة حفظ"
     },
     "revision": {
       "title": "صحة المراجعة",
