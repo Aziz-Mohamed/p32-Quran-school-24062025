@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { RubCoverage } from '../utils/rub-coverage';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
+import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
 
 // ─── Layout ──────────────────────────────────────────────────────────────────
@@ -23,34 +24,26 @@ export const BLOCK_SIZE = Math.floor(
   (SCREEN_WIDTH - HORIZONTAL_PADDING - (COLUMNS - 1) * GAP) / COLUMNS,
 );
 
-// 3D depth — thickness of the visible top and side faces
-const DEPTH = normalize(6);
-
-// Front face height (where the fill animation happens)
-const FRONT_HEIGHT = BLOCK_SIZE - DEPTH;
+// Usable fill height (block minus top + bottom border)
+const BORDER_W = 1.5;
+const FILL_HEIGHT = BLOCK_SIZE - BORDER_W * 2;
 
 // ─── Palettes ────────────────────────────────────────────────────────────────
 
-// In-progress: warm terracotta clay being cast
+// In-progress: warm terracotta — block being cast
 const CLAY = {
-  topFace: '#D9A08F',       // lit top surface (lighter terracotta)
-  sideFace: '#A0573F',      // shadow side (darker terracotta)
-  corner: '#C2725B',        // top-right corner where faces meet
-  fill: '#C2725B',          // main terracotta fill
-  fillHighlight: '#D4907D', // wet surface highlight at fill line
-  bg: '#F5F0EB',            // empty/unfilled interior
-  frame: '#E8DDD4',         // subtle border on front face
+  border: '#C2725B',
+  bg: '#FDF6F3',
+  fill: '#C2725B',
+  fillHighlight: '#D4907D',
 };
 
-// Complete: solid emerald stone block
+// Complete: emerald — block ready for the wall
 const STONE = {
-  topFace: '#6EE7B7',
-  sideFace: '#059669',
-  corner: '#34D399',
-  fill: '#34D399',
-  fillHighlight: '#86EFAC',
-  bg: '#ECFDF5',
-  frame: '#D1FAE5',
+  border: '#22C55E',
+  bg: '#F0FDF4',
+  fill: '#22C55E',
+  fillHighlight: '#4ADE80',
 };
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -69,47 +62,38 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
   );
 
   const filledStyle = useAnimatedStyle(() => ({
-    height: Math.max(0, fillPct.value * FRONT_HEIGHT),
+    height: Math.max(0, fillPct.value * FILL_HEIGHT),
   }));
 
   return (
-    <View style={[styles.wrapper, { backgroundColor: pal.topFace }]}>
-      {/* Corner shade — transition where top face meets side face */}
-      <View style={[styles.topCorner, { backgroundColor: pal.corner }]} />
+    <View style={[styles.block, { borderColor: pal.border, backgroundColor: pal.bg }]}>
+      {/* Fill — material rising from bottom */}
+      <Animated.View style={[styles.fill, { backgroundColor: pal.fill }, filledStyle]}>
+        <View style={[styles.fillEdge, { backgroundColor: pal.fillHighlight }]} />
+      </Animated.View>
 
-      {/* Side face — 3D shadow side */}
-      <View style={[styles.sideFace, { backgroundColor: pal.sideFace }]} />
+      {/* Content overlay */}
+      <View style={styles.content}>
+        <View style={[styles.rubNumberBadge, { backgroundColor: pal.border }]}>
+          <Text style={styles.rubNumber}>{coverage.rubNumber}</Text>
+        </View>
 
-      {/* Front face — main visible face with fill animation */}
-      <View style={[styles.frontFace, { backgroundColor: pal.bg, borderColor: pal.frame }]}>
-        {/* Fill — material rising from bottom */}
-        <Animated.View style={[styles.fill, { backgroundColor: pal.fill }, filledStyle]}>
-          <View style={[styles.fillEdge, { backgroundColor: pal.fillHighlight }]} />
-        </Animated.View>
-
-        {/* Content overlay */}
-        <View style={styles.content}>
-          <View style={styles.rubNumberBadge}>
-            <Text style={styles.rubNumber}>{coverage.rubNumber}</Text>
-          </View>
-
-          <View style={styles.infoStrip}>
-            {isComplete ? (
-              <View style={styles.completeRow}>
-                <Ionicons name="checkmark-circle" size={normalize(14)} color="#FFFFFF" />
-                <Text style={styles.completeText}>
-                  {t('student.blockBuilder.ready')}
-                </Text>
-              </View>
-            ) : (
-              <>
-                <Text style={styles.ayahCount}>
-                  {coverage.memorizedAyahs}/{coverage.totalAyahs}
-                </Text>
-                <Text style={styles.percentLabel}>{coverage.percentage}%</Text>
-              </>
-            )}
-          </View>
+        <View style={styles.infoStrip}>
+          {isComplete ? (
+            <View style={styles.completeRow}>
+              <Ionicons name="checkmark-circle" size={normalize(14)} color="#FFFFFF" />
+              <Text style={styles.completeText}>
+                {t('student.blockBuilder.ready')}
+              </Text>
+            </View>
+          ) : (
+            <>
+              <Text style={styles.ayahCount}>
+                {coverage.memorizedAyahs}/{coverage.totalAyahs}
+              </Text>
+              <Text style={styles.percentLabel}>{coverage.percentage}%</Text>
+            </>
+          )}
         </View>
       </View>
     </View>
@@ -127,49 +111,16 @@ export const RubBuildingBlock = React.memo(
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  wrapper: {
+  block: {
     width: BLOCK_SIZE,
     height: BLOCK_SIZE,
-    borderRadius: normalize(3),
-    boxShadow: '2px 3px 6px rgba(0, 0, 0, 0.15)',
-  },
-
-  // Corner where top face meets side face
-  topCorner: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: DEPTH,
-    height: DEPTH,
-    borderTopEndRadius: normalize(3),
-    opacity: 0.6,
-  },
-
-  // Right side face — darker, in shadow
-  sideFace: {
-    position: 'absolute',
-    top: DEPTH,
-    right: 0,
-    bottom: 0,
-    width: DEPTH,
-    borderBottomEndRadius: normalize(3),
-  },
-
-  // Front face — below top face, left of side face
-  frontFace: {
-    position: 'absolute',
-    top: DEPTH,
-    left: 0,
-    right: DEPTH,
-    bottom: 0,
-    borderBottomStartRadius: normalize(3),
-    borderWidth: normalize(1),
-    borderTopWidth: 0,
-    borderEndWidth: 0,
+    borderRadius: radius.xs,
+    borderWidth: BORDER_W,
     overflow: 'hidden',
+    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.06)',
   },
 
-  // Animated fill — solid material rising from bottom
+  // Animated fill — rises from bottom
   fill: {
     position: 'absolute',
     bottom: 0,
@@ -182,7 +133,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: normalize(2),
-    opacity: 0.7,
+    opacity: 0.6,
   },
 
   // Content overlay
@@ -193,32 +144,31 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   rubNumberBadge: {
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
-    borderRadius: normalize(4),
-    paddingHorizontal: spacing.xs,
-    paddingVertical: normalize(1),
+    borderRadius: normalize(6),
+    paddingHorizontal: spacing.xs + 2,
+    paddingVertical: normalize(2),
     alignSelf: 'flex-start',
   },
   rubNumber: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: normalize(22),
+    fontSize: normalize(18),
     color: '#FFFFFF',
   },
   infoStrip: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
-    borderRadius: normalize(3),
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: normalize(4),
     paddingHorizontal: spacing.xs,
-    paddingVertical: normalize(2),
+    paddingVertical: normalize(3),
     marginHorizontal: -spacing.sm,
     marginBottom: -spacing.sm,
   },
   ayahCount: {
     fontFamily: typography.fontFamily.medium,
     fontSize: normalize(12),
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: 'rgba(255, 255, 255, 0.9)',
   },
   percentLabel: {
     fontFamily: typography.fontFamily.bold,
