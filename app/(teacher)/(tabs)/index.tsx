@@ -1,5 +1,5 @@
 import React from 'react';
-import { I18nManager, StyleSheet, View, Text } from 'react-native';
+import { StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,7 +14,6 @@ import { useTeacherDashboard } from '@/features/dashboard/hooks/useTeacherDashbo
 import { useTeacherUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
 import { GpsCheckinCard } from '@/features/work-attendance/components/GpsCheckinCard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
-import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -23,7 +22,7 @@ import { normalize } from '@/theme/normalize';
 // ─── Teacher Dashboard ────────────────────────────────────────────────────────
 
 export default function TeacherDashboard() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { profile, schoolId } = useAuth();
   const router = useRouter();
   const theme = useRoleTheme();
@@ -79,7 +78,7 @@ export default function TeacherDashboard() {
           <Button
             title={t('scheduling.nextSession')}
             onPress={handleNextSession}
-            variant={theme.tag as 'violet'}
+            variant={theme.tag}
             size="md"
             icon={<Ionicons name="arrow-forward-circle" size={20} color={colors.white} />}
             style={styles.actionButton}
@@ -90,7 +89,7 @@ export default function TeacherDashboard() {
             variant="ghost"
             size="md"
             icon={<Ionicons name="star" size={20} color={colors.secondary[500]} />}
-            style={{ ...styles.actionButton, backgroundColor: colors.secondary[50] }}
+            style={[styles.actionButton, { backgroundColor: colors.secondary[50] }]}
           />
         </View>
 
@@ -108,7 +107,7 @@ export default function TeacherDashboard() {
               <Text style={styles.scheduleLabel}>{t('scheduling.mySchedule')}</Text>
               <Text style={styles.scheduleHint}>{t('scheduling.viewUpcoming')}</Text>
             </View>
-            <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.neutral[300]} />
+            <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
           </View>
         </Card>
 
@@ -164,10 +163,7 @@ export default function TeacherDashboard() {
                   <Text style={styles.sessionStudentName} numberOfLines={1}>
                     {session.student?.profiles?.full_name ?? t('common.noResults')}
                   </Text>
-                  <Text style={styles.sessionDate}>
-                    {formatSessionDate(session.session_date, i18n.language).date}{' '}
-                    <Text style={styles.sessionWeekday}>({formatSessionDate(session.session_date, i18n.language).weekday})</Text>
-                  </Text>
+                  <Text style={styles.sessionDate}>{session.session_date}</Text>
                 </View>
                 <View style={styles.sessionScores}>
                   {session.memorization_score != null && (
@@ -177,7 +173,7 @@ export default function TeacherDashboard() {
                       size="sm" 
                     />
                   )}
-                  <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.neutral[300]} />
+                  <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
                 </View>
               </View>
             </Card>
@@ -319,10 +315,6 @@ const styles = StyleSheet.create({
     ...typography.textStyles.label,
     color: colors.neutral[500],
     marginTop: normalize(2),
-  },
-  sessionWeekday: {
-    ...typography.textStyles.caption,
-    color: colors.neutral[400],
   },
   sessionScores: {
     flexDirection: 'row',

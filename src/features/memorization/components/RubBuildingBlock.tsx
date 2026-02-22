@@ -2,18 +2,15 @@ import React from 'react';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Animated, {
-  useAnimatedProps,
+  useAnimatedStyle,
   useDerivedValue,
   withSpring,
 } from 'react-native-reanimated';
-import Svg, { Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 
 import type { RubCoverage } from '../utils/rub-coverage';
-import { colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
-import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
 
 interface RubBuildingBlockProps {
@@ -29,122 +26,255 @@ export const BLOCK_SIZE = Math.floor(
   (SCREEN_WIDTH - HORIZONTAL_PADDING - (COLUMNS - 1) * GAP) / COLUMNS,
 );
 
-const CIRCLE_SIZE = normalize(44);
-const STROKE_WIDTH = normalize(4);
-const CIRCLE_RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
-const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
+// How many brick-course rows fit in the block
+const COURSES = 5;
+const MORTAR = normalize(2);
+const COURSE_HEIGHT = Math.floor(
+  (BLOCK_SIZE - (COURSES + 1) * MORTAR) / COURSES,
+);
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+// ─── Palette ─────────────────────────────────────────────────────────────────
+
+// In-progress: warm terracotta / clay tones
+const CLAY = {
+  brick: '#C2725B',      // warm terracotta
+  brickLight: '#D4907D', // lighter face highlight
+  brickDark: '#A0573F',  // shadow / side face
+  mortar: '#E8DDD4',     // cream mortar between bricks
+  bg: '#F5F0EB',         // warm neutral background (empty area)
+  empty: '#E5DDD5',      // unfilled course placeholder
+  text: '#7C4A36',       // warm brown text
+  textLight: '#A0806F',  // secondary text
+};
+
+// Complete: polished emerald stone
+const STONE = {
+  brick: '#34D399',      // emerald-400
+  brickLight: '#6EE7B7', // emerald-300 highlight
+  brickDark: '#059669',  // emerald-600 shadow
+  mortar: '#D1FAE5',     // green-100 mortar
+  bg: '#ECFDF5',         // green-50
+  empty: '#D1FAE5',      // not used — all filled
+  text: '#065F46',       // emerald-900
+  textLight: '#047857',  // emerald-700
+};
 
 export function RubBuildingBlock({ coverage, isComplete }: RubBuildingBlockProps) {
   const { t } = useTranslation();
+  const pal = isComplete ? STONE : CLAY;
 
-  const accentColor = isComplete ? colors.primary[500] : colors.accent.indigo[500];
-  const bgColor = isComplete ? '#DCFCE7' : colors.neutral[50];
-  const borderColor = isComplete ? colors.primary[500] : colors.accent.indigo[100];
-
-  const progress = useDerivedValue(() =>
-    withSpring(coverage.percentage / 100, { damping: 20, stiffness: 90 }),
+  // Animate 0→1
+  const fillPct = useDerivedValue(() =>
+    withSpring(coverage.percentage / 100, { damping: 18, stiffness: 80 }),
   );
 
-  const animatedProps = useAnimatedProps(() => ({
-    strokeDashoffset: CIRCUMFERENCE * (1 - progress.value),
-  }));
+  // How many courses are fully "laid" (integer)
+  const filledStyle = useAnimatedStyle(() => {
+    const filled = fillPct.value * COURSES;
+    const wholeCourses = Math.floor(filled);
+    // Height = whole courses * (courseHeight + mortar) + partial course
+    const partialFraction = filled - wholeCourses;
+    const h =
+      wholeCourses * (COURSE_HEIGHT + MORTAR) +
+      partialFraction * COURSE_HEIGHT;
+    return { height: Math.max(0, h) };
+  });
 
   return (
-    <View style={[styles.block, { backgroundColor: bgColor, borderColor }]}>
-      {/* Circular progress */}
-      <View style={styles.circleContainer}>
-        {isComplete ? (
-          <View style={[styles.completeBadge, { backgroundColor: colors.primary[500] }]}>
-            <Ionicons name="checkmark" size={normalize(22)} color="#FFFFFF" />
-          </View>
-        ) : (
-          <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE}>
-            {/* Background track */}
-            <Circle
-              cx={CIRCLE_SIZE / 2}
-              cy={CIRCLE_SIZE / 2}
-              r={CIRCLE_RADIUS}
-              stroke={colors.neutral[200]}
-              strokeWidth={STROKE_WIDTH}
-              fill="none"
-            />
-            {/* Animated progress arc */}
-            <AnimatedCircle
-              cx={CIRCLE_SIZE / 2}
-              cy={CIRCLE_SIZE / 2}
-              r={CIRCLE_RADIUS}
-              stroke={accentColor}
-              strokeWidth={STROKE_WIDTH}
-              fill="none"
-              strokeDasharray={CIRCUMFERENCE}
-              animatedProps={animatedProps}
-              strokeLinecap="round"
-              rotation={-90}
-              origin={`${CIRCLE_SIZE / 2}, ${CIRCLE_SIZE / 2}`}
-            />
-          </Svg>
-        )}
-        {!isComplete && (
-          <Text style={[styles.percentText, { color: accentColor }]}>
-            {coverage.percentage}%
-          </Text>
-        )}
-      </View>
+    <View style={[styles.outer, { backgroundColor: pal.mortar }]}>
+      {/* 3D top-left highlight edge */}
+      <View style={[styles.edgeTop, { backgroundColor: isComplete ? '#A7F3D0' : '#EDE5DC' }]} />
+      {/* 3D bottom-right shadow edge */}
+      <View style={[styles.edgeBottom, { backgroundColor: isComplete ? '#047857' : '#B09A88' }]} />
+      <View style={[styles.edgeRight, { backgroundColor: isComplete ? '#059669' : '#BFA992' }]} />
 
-      {/* Labels */}
-      <Text style={styles.rubLabel} numberOfLines={1}>
-        {t('gamification.rub')} {coverage.rubNumber}
-      </Text>
-      <Text style={styles.juzLabel} numberOfLines={1}>
-        {isComplete
-          ? t('student.blockBuilder.ready')
-          : `${coverage.memorizedAyahs}/${coverage.totalAyahs}`}
-      </Text>
+      {/* Inner brick area */}
+      <View style={[styles.inner, { backgroundColor: pal.bg }]}>
+        {/* Empty course guides — faint horizontal lines showing where bricks will go */}
+        {Array.from({ length: COURSES }).map((_, i) => (
+          <View
+            key={i}
+            style={[
+              styles.courseGuide,
+              {
+                bottom: i * (COURSE_HEIGHT + MORTAR) + MORTAR,
+                height: COURSE_HEIGHT,
+                backgroundColor: pal.empty,
+              },
+            ]}
+          />
+        ))}
+
+        {/* Filled courses — rise from bottom, clipped */}
+        <Animated.View style={[styles.fillContainer, filledStyle]}>
+          {Array.from({ length: COURSES }).map((_, i) => (
+            <View key={i} style={styles.courseWrapper}>
+              {/* Mortar gap between courses */}
+              {i > 0 && (
+                <View style={[styles.mortarLine, { backgroundColor: pal.mortar }]} />
+              )}
+              {/* The brick course itself */}
+              <View style={[styles.course, { backgroundColor: pal.brick }]}>
+                {/* Top highlight — makes it look 3D lit from above */}
+                <View style={[styles.courseHighlight, { backgroundColor: pal.brickLight }]} />
+                {/* Bottom shadow — depth */}
+                <View style={[styles.courseShadow, { backgroundColor: pal.brickDark }]} />
+              </View>
+            </View>
+          ))}
+        </Animated.View>
+
+        {/* Content overlay */}
+        <View style={styles.content}>
+          <Text style={[styles.rubNumber, { color: pal.text }]}>
+            {coverage.rubNumber}
+          </Text>
+
+          {isComplete ? (
+            <View style={styles.completeRow}>
+              <Ionicons name="checkmark-circle" size={normalize(14)} color={pal.textLight} />
+              <Text style={[styles.completeText, { color: pal.textLight }]}>
+                {t('student.blockBuilder.ready')}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.bottomInfo}>
+              <Text style={[styles.ayahCount, { color: pal.textLight }]}>
+                {coverage.memorizedAyahs}/{coverage.totalAyahs}
+              </Text>
+              <Text style={[styles.percentLabel, { color: pal.text }]}>
+                {coverage.percentage}%
+              </Text>
+            </View>
+          )}
+        </View>
+      </View>
     </View>
   );
 }
 
+const EDGE = normalize(3);
+
 const styles = StyleSheet.create({
-  block: {
+  outer: {
     width: BLOCK_SIZE,
     height: BLOCK_SIZE,
-    borderRadius: radius.md,
-    borderWidth: 1.5,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: normalize(4),
-    padding: spacing.xs,
+    borderRadius: normalize(4),
+    padding: MORTAR,
+    // 3D lifted shadow
+    boxShadow: '0px 3px 6px rgba(0, 0, 0, 0.12), 0px 1px 2px rgba(0, 0, 0, 0.06)',
   },
-  circleContainer: {
-    width: CIRCLE_SIZE,
-    height: CIRCLE_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  completeBadge: {
-    width: CIRCLE_SIZE,
-    height: CIRCLE_SIZE,
-    borderRadius: CIRCLE_SIZE / 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  percentText: {
+  // 3D edges — top-left light, bottom-right dark (classic brick bevel)
+  edgeTop: {
     position: 'absolute',
-    fontFamily: typography.fontFamily.bold,
-    fontSize: normalize(12),
+    top: 0,
+    left: 0,
+    right: 0,
+    height: EDGE,
+    borderTopStartRadius: normalize(4),
+    borderTopEndRadius: normalize(4),
+    opacity: 0.7,
   },
-  rubLabel: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: normalize(12),
-    color: colors.neutral[900],
-    textAlign: 'center',
+  edgeBottom: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: EDGE,
+    borderBottomStartRadius: normalize(4),
+    borderBottomEndRadius: normalize(4),
+    opacity: 0.4,
   },
-  juzLabel: {
+  edgeRight: {
+    position: 'absolute',
+    top: EDGE,
+    right: 0,
+    bottom: EDGE,
+    width: EDGE,
+    opacity: 0.3,
+  },
+  inner: {
+    flex: 1,
+    borderRadius: normalize(2),
+    overflow: 'hidden',
+  },
+  // Faint empty course placeholders
+  courseGuide: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    borderRadius: normalize(1),
+    opacity: 0.6,
+  },
+  // Fill container — grows from bottom
+  fillContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    overflow: 'hidden',
+    flexDirection: 'column-reverse', // stack courses from bottom
+  },
+  courseWrapper: {
+    width: '100%',
+  },
+  mortarLine: {
+    height: MORTAR,
+    width: '100%',
+  },
+  course: {
+    height: COURSE_HEIGHT,
+    width: '100%',
+    borderRadius: normalize(1),
+  },
+  // Top 2px lighter — lit from above
+  courseHighlight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: normalize(2),
+    opacity: 0.5,
+  },
+  // Bottom 2px darker — shadow underneath
+  courseShadow: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: normalize(2),
+    opacity: 0.3,
+  },
+  content: {
+    flex: 1,
+    justifyContent: 'space-between',
+    padding: spacing.sm,
+    zIndex: 1,
+  },
+  rubNumber: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(20),
+  },
+  bottomInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+  },
+  ayahCount: {
     fontFamily: typography.fontFamily.medium,
-    fontSize: normalize(10),
-    color: colors.neutral[500],
-    textAlign: 'center',
+    fontSize: normalize(11),
+  },
+  percentLabel: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(13),
+  },
+  completeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(3),
+  },
+  completeText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(11),
   },
 });
