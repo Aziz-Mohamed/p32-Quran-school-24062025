@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import type { FreshnessState } from '../types/gamification.types';
 import { getHeatMapColor } from '../utils/heatmap-colors';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
@@ -9,19 +10,22 @@ import { radius } from '@/theme/radius';
 interface HeatMapCellProps {
   rubNumber: number;
   /** Pass null for uncertified rub' */
-  reviewCount: number | null;
+  freshnessState: FreshnessState | null;
   size: number;
   onPress?: () => void;
 }
 
+// States where white text is readable against the background
+const DARK_BG_STATES = new Set<FreshnessState>(['fresh', 'warning', 'critical']);
+
 export const HeatMapCell = memo(function HeatMapCell({
   rubNumber,
-  reviewCount,
+  freshnessState,
   size,
   onPress,
 }: HeatMapCellProps) {
-  const bgColor = getHeatMapColor(reviewCount);
-  const isCertified = reviewCount !== null;
+  const bgColor = getHeatMapColor(freshnessState);
+  const isCertified = freshnessState !== null && freshnessState !== 'uncertified';
 
   const handlePress = () => {
     if (onPress) {
@@ -41,15 +45,17 @@ export const HeatMapCell = memo(function HeatMapCell({
     },
   ];
 
-  const textColor = isCertified && reviewCount! >= 3 ? '#FFFFFF' : '#6B7280';
+  const textColor = isCertified && DARK_BG_STATES.has(freshnessState!) ? '#FFFFFF' : '#6B7280';
   const fontSize = size > 30 ? normalize(10) : normalize(8);
+
+  const stateLabel = freshnessState ?? 'uncertified';
 
   if (onPress) {
     return (
       <Pressable
         onPress={handlePress}
         accessibilityRole="button"
-        accessibilityLabel={`Rub' ${rubNumber}${isCertified ? `, ${reviewCount} reviews` : ', uncertified'}`}
+        accessibilityLabel={`Rub' ${rubNumber}, ${stateLabel}`}
       >
         <View style={cellStyle}>
           <Text style={[styles.number, { color: textColor, fontSize }]}>

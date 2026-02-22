@@ -18,9 +18,9 @@ import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const PADDING = spacing.lg;
-const JUZ_LABEL_WIDTH = normalize(38);
-const GAP = 3;
+const PADDING = spacing.md;
+const JUZ_LABEL_WIDTH = normalize(28);
+const GAP = 2;
 const COLS = 8;
 const CELL_SIZE = Math.floor(
   (SCREEN_WIDTH - 2 * PADDING - JUZ_LABEL_WIDTH - (COLS - 1) * GAP) / COLS,
@@ -120,16 +120,16 @@ export function QuranHeatMap({ studentId }: QuranHeatMapProps) {
         </Text>
       </View>
 
-      {/* Legend */}
+      {/* Legend — freshness states */}
       <View style={styles.legendRow}>
-        <Text style={styles.legendLabel}>{t('student.journey.legendLess')}</Text>
         {HEATMAP_LEGEND.map((entry, i) => (
-          <View
-            key={i}
-            style={[styles.legendBox, { backgroundColor: entry.color }]}
-          />
+          <View key={i} style={styles.legendItem}>
+            <View style={[styles.legendBox, { backgroundColor: entry.color }]} />
+            <Text style={styles.legendLabel}>
+              {t(`student.journey.legend.${entry.label}`)}
+            </Text>
+          </View>
         ))}
-        <Text style={styles.legendLabel}>{t('student.journey.legendMore')}</Text>
       </View>
 
       {/* Grid */}
@@ -160,7 +160,7 @@ export function QuranHeatMap({ studentId }: QuranHeatMapProps) {
                     <HeatMapCell
                       key={rub.rub_number}
                       rubNumber={rub.rub_number}
-                      reviewCount={cert ? cert.review_count : null}
+                      freshnessState={cert ? cert.freshness.state : null}
                       size={CELL_SIZE}
                       onPress={() => handleCellPress(rub.rub_number)}
                     />
@@ -212,19 +212,26 @@ const styles = StyleSheet.create({
   legendRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: normalize(4),
+    justifyContent: 'center',
+    gap: normalize(10),
     paddingHorizontal: PADDING,
     paddingTop: spacing.md,
     paddingBottom: spacing.sm,
+    flexWrap: 'wrap',
+  },
+  legendItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(3),
   },
   legendLabel: {
     fontFamily: typography.fontFamily.medium,
-    fontSize: normalize(11),
+    fontSize: normalize(10),
     color: colors.neutral[500],
   },
   legendBox: {
-    width: normalize(14),
-    height: normalize(14),
+    width: normalize(12),
+    height: normalize(12),
     borderRadius: normalize(2),
   },
   grid: {

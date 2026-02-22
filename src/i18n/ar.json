@@ -183,7 +183,14 @@
       "mapStats": "{{certified}}/240 مُجاز",
       "totalReviews": "{{count}} مراجعة",
       "legendLess": "أقل",
-      "legendMore": "أكثر"
+      "legendMore": "أكثر",
+      "legend": {
+        "critical": "عاجل",
+        "warning": "معرّض",
+        "fading": "يتلاشى",
+        "fresh": "طازج",
+        "dormant": "متوقف"
+      }
     },
     "blockBuilder": {
       "heroRub": "{{count}}/240 ربع",
@@ -250,6 +257,7 @@
       "stickers": "الملصقات",
       "rubCertified": "ربع مُجاز",
       "todaysTasks": "واجبات الحفظ",
+      "revisionHealth": "صحة المراجعة",
       "seeAll": "عرض الكل {{count}}",
       "allCaughtUp": "أحسنت! لا مهام متبقية",
       "nothingDueToday": "لا توجد مهام اليوم",

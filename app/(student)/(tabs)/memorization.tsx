@@ -6,9 +6,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui';
-import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
+import { LoadingState, EmptyState } from '@/components/feedback';
 import { SelfAssignmentForm } from '@/features/memorization/components/SelfAssignmentForm';
-import { RubBuildingBlock } from '@/features/memorization/components/RubBuildingBlock';
+import { RubBuildingBlock, BLOCK_SIZE } from '@/features/memorization/components/RubBuildingBlock';
 import { useRubCoverage } from '@/features/memorization/hooks/useRubCoverage';
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { useMemorizationProgress } from '@/features/memorization/hooks/useMemorizationProgress';
@@ -48,7 +48,6 @@ export default function MemorizationScreen() {
   // Stats
   const certifiedCount = certifications.length;
   const totalMemorized = stats?.total_ayahs_memorized ?? 0;
-  const rubProgress = certifiedCount / 240;
 
   // Compact surah journey (kept as secondary view)
   const surahsWithProgress = useMemo(() => {
@@ -89,7 +88,7 @@ export default function MemorizationScreen() {
           {/* Header */}
           <Text style={styles.title}>{t('memorization.title')}</Text>
 
-          {/* Hero Card */}
+          {/* Hero Card — simplified, no progress bar */}
           <Card variant="default" style={styles.heroCard}>
             <View style={styles.heroStats}>
               <View style={styles.heroStat}>
@@ -109,38 +108,41 @@ export default function MemorizationScreen() {
                 </Text>
               </View>
             </View>
-            <ProgressBar progress={rubProgress} variant="primary" height={6} />
           </Card>
 
-          {/* In Progress Blocks */}
+          {/* In Progress Blocks — grid layout */}
           {inProgress.length > 0 && (
             <>
               <Text style={styles.sectionHeader}>
                 {t('student.blockBuilder.inProgress')}
               </Text>
-              {inProgress.map((coverage) => (
-                <RubBuildingBlock
-                  key={coverage.rubNumber}
-                  coverage={coverage}
-                  isComplete={false}
-                />
-              ))}
+              <View style={styles.blockGrid}>
+                {inProgress.map((coverage) => (
+                  <RubBuildingBlock
+                    key={coverage.rubNumber}
+                    coverage={coverage}
+                    isComplete={false}
+                  />
+                ))}
+              </View>
             </>
           )}
 
-          {/* Completed (Ready for Certification) */}
+          {/* Completed (Ready for Certification) — grid layout */}
           {completed.length > 0 && (
             <>
               <Text style={styles.sectionHeader}>
                 {t('student.blockBuilder.readyForCertification')}
               </Text>
-              {completed.map((coverage) => (
-                <RubBuildingBlock
-                  key={coverage.rubNumber}
-                  coverage={coverage}
-                  isComplete={true}
-                />
-              ))}
+              <View style={styles.blockGrid}>
+                {completed.map((coverage) => (
+                  <RubBuildingBlock
+                    key={coverage.rubNumber}
+                    coverage={coverage}
+                    isComplete={true}
+                  />
+                ))}
+              </View>
             </>
           )}
 
@@ -220,12 +222,11 @@ const styles = StyleSheet.create({
     fontSize: normalize(24),
   },
 
-  // Hero Card
+  // Hero Card — no progress bar
   heroCard: {
     padding: spacing.md,
     marginTop: spacing.md,
     marginBottom: spacing.md,
-    gap: spacing.sm,
   },
   heroStats: {
     flexDirection: 'row',
@@ -259,6 +260,13 @@ const styles = StyleSheet.create({
     fontSize: normalize(15),
     marginTop: spacing.md,
     marginBottom: spacing.sm,
+  },
+
+  // Block grid — flex-wrap for square blocks
+  blockGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
 
   // Journey Section — COMPACT

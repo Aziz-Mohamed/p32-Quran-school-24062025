@@ -8,13 +8,11 @@ import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
-import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { useRubCertifications, useRevisionHomework } from '@/features/gamification';
 import type { EnrichedCertification } from '@/features/gamification';
 import { useMemorizationStats } from '@/features/memorization';
-import { getSurah } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -25,10 +23,13 @@ import { normalize } from '@/theme/normalize';
 
 const MAX_PREVIEW_ITEMS = 4;
 
-const TYPE_CONFIG = {
-  new_hifz: { labelKey: 'student.dashboard.newHifz', color: colors.accent.indigo[500], bg: colors.accent.indigo[50] },
-  recent_review: { labelKey: 'student.dashboard.review', color: colors.secondary[500], bg: colors.secondary[50] },
-} as const;
+const FRESHNESS_DOT_COLORS: Record<string, string> = {
+  fresh: '#22C55E',
+  fading: '#EAB308',
+  warning: '#F97316',
+  critical: '#EF4444',
+  dormant: '#9CA3AF',
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -46,38 +47,6 @@ function getAttendanceBadge(status: string | null | undefined, t: (key: string) 
       return { label: t('parent.dashboard.notMarked'), variant: 'default' as const };
   }
 }
-
-function TaskRow({ item, isRTL, t }: { item: any; isRTL: boolean; t: (key: string) => string }) {
-  const surah = getSurah(item.surah_number);
-  const surahName = surah
-    ? (isRTL ? surah.nameArabic : surah.nameEnglish)
-    : `${item.surah_number}`;
-  const ayahRange = item.from_ayah === item.to_ayah
-    ? `${item.from_ayah}`
-    : `${item.from_ayah}-${item.to_ayah}`;
-  const config = TYPE_CONFIG[item.review_type as keyof typeof TYPE_CONFIG] ?? TYPE_CONFIG.recent_review;
-
-  return (
-    <View style={styles.taskRow}>
-      <View style={[styles.taskDot, { backgroundColor: config.color }]} />
-      <View style={styles.taskInfo}>
-        <Text style={styles.taskSurah} numberOfLines={1}>{surahName}</Text>
-        <Text style={styles.taskAyah}>{ayahRange}</Text>
-      </View>
-      <View style={[styles.taskBadge, { backgroundColor: config.bg }]}>
-        <Text style={[styles.taskBadgeText, { color: config.color }]}>{t(config.labelKey)}</Text>
-      </View>
-    </View>
-  );
-}
-
-const FRESHNESS_DOT_COLORS: Record<string, string> = {
-  fresh: '#22C55E',
-  fading: '#EAB308',
-  warning: '#F97316',
-  critical: '#EF4444',
-  dormant: '#9CA3AF',
-};
 
 function HomeworkRow({ item, enriched, t }: {
   item: { assignmentId: string; rubNumber: number; juz: number };
@@ -116,8 +85,6 @@ export default function StudentDashboard() {
   const { enriched } = useRubCertifications(profile?.id);
   const { homeworkItems } = useRevisionHomework(profile?.id);
   const { data: memStats } = useMemorizationStats(profile?.id);
-  const todayStr = new Date().toISOString().split('T')[0];
-  const { data: revisionSchedule = [] } = useRevisionSchedule(profile?.id, todayStr);
 
   const homeworkRubSet = useMemo(
     () => new Set(homeworkItems.map((h) => h.rubNumber)),
@@ -132,6 +99,17 @@ export default function StudentDashboard() {
     [enriched, homeworkRubSet],
   );
 
+  // Freshness health counts
+  const healthCounts = useMemo(() => {
+    const counts: Record<string, number> = {
+      fresh: 0, fading: 0, warning: 0, critical: 0, dormant: 0,
+    };
+    for (const cert of enriched) {
+      counts[cert.freshness.state] = (counts[cert.freshness.state] ?? 0) + 1;
+    }
+    return counts;
+  }, [enriched]);
+
   if (isLoading) return <LoadingState />;
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
 
@@ -139,14 +117,8 @@ export default function StudentDashboard() {
   const attendance = getAttendanceBadge(data?.todayAttendance?.status, t);
   const chevron = isRTL ? 'chevron-back' : 'chevron-forward';
 
-  // Only show new_hifz + recent_review (old_review lives on Revision Health tab)
-  const filteredSchedule = revisionSchedule.filter(
-    (item: any) => item.review_type !== 'old_review',
-  );
-  const totalItems = filteredSchedule.length;
-  const previewItems = filteredSchedule.slice(0, MAX_PREVIEW_ITEMS);
-  const hasMore = totalItems > MAX_PREVIEW_ITEMS;
   const hasWarning = effectiveCriticalCount > 0;
+  const hasCertifications = enriched.length > 0;
 
   return (
     <Screen scroll hasTabBar>
@@ -219,44 +191,65 @@ export default function StudentDashboard() {
           </View>
         </Card>
 
-        {/* 3. Today's Tasks */}
-        <Card
-          variant="default"
-          onPress={() => router.push('/(student)/(tabs)/memorization')}
-          style={styles.tasksCard}
-        >
-          <View style={styles.tasksHeader}>
-            <View style={[styles.tasksIcon, { backgroundColor: colors.accent.indigo[50] }]}>
-              <Ionicons name="book" size={20} color={colors.accent.indigo[500]} />
-            </View>
-            <Text style={styles.tasksTitle}>{t('student.dashboard.todaysTasks')}</Text>
-            <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
-          </View>
-
-          {totalItems > 0 ? (
-            <>
-              <View style={styles.tasksList}>
-                {previewItems.map((item: any, idx: number) => (
-                  <TaskRow key={item.progress_id ?? `${item.surah_number}-${item.from_ayah}-${idx}`} item={item} isRTL={isRTL} t={t} />
-                ))}
+        {/* 3. Revision Health Summary */}
+        {hasCertifications && (
+          <Card
+            variant="default"
+            onPress={() => router.push('/(student)/(tabs)/lessons')}
+            style={styles.tasksCard}
+          >
+            <View style={styles.tasksHeader}>
+              <View style={[styles.tasksIcon, { backgroundColor: colors.primary[50] }]}>
+                <Ionicons name="pulse" size={20} color={colors.primary[500]} />
               </View>
-              {hasMore && (
-                <Text style={styles.seeAll}>
-                  {t('student.dashboard.seeAll', { count: totalItems })} {isRTL ? '←' : '→'}
-                </Text>
-              )}
-            </>
-          ) : (
-            <View style={styles.emptyState}>
-              <Ionicons name="checkmark-circle" size={20} color={colors.secondary[500]} />
-              <Text style={styles.emptyStateText}>{t('student.dashboard.allCaughtUp')}</Text>
+              <Text style={styles.tasksTitle}>{t('student.dashboard.revisionHealth')}</Text>
+              <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
             </View>
-          )}
 
-        </Card>
+            <View style={styles.healthDotsRow}>
+              {healthCounts.critical > 0 && (
+                <View style={styles.healthDotItem}>
+                  <View style={[styles.healthDot, { backgroundColor: FRESHNESS_DOT_COLORS.critical }]} />
+                  <Text style={styles.healthDotCount}>{healthCounts.critical}</Text>
+                  <Text style={styles.healthDotLabel}>{t('gamification.freshness.critical')}</Text>
+                </View>
+              )}
+              {healthCounts.warning > 0 && (
+                <View style={styles.healthDotItem}>
+                  <View style={[styles.healthDot, { backgroundColor: FRESHNESS_DOT_COLORS.warning }]} />
+                  <Text style={styles.healthDotCount}>{healthCounts.warning}</Text>
+                  <Text style={styles.healthDotLabel}>{t('gamification.freshness.warning')}</Text>
+                </View>
+              )}
+              {healthCounts.fading > 0 && (
+                <View style={styles.healthDotItem}>
+                  <View style={[styles.healthDot, { backgroundColor: FRESHNESS_DOT_COLORS.fading }]} />
+                  <Text style={styles.healthDotCount}>{healthCounts.fading}</Text>
+                  <Text style={styles.healthDotLabel}>{t('gamification.freshness.fading')}</Text>
+                </View>
+              )}
+              {healthCounts.fresh > 0 && (
+                <View style={styles.healthDotItem}>
+                  <View style={[styles.healthDot, { backgroundColor: FRESHNESS_DOT_COLORS.fresh }]} />
+                  <Text style={styles.healthDotCount}>{healthCounts.fresh}</Text>
+                  <Text style={styles.healthDotLabel}>{t('gamification.freshness.fresh')}</Text>
+                </View>
+              )}
+            </View>
+
+            {hasWarning && (
+              <View style={styles.warningRow}>
+                <Ionicons name="alert-circle" size={16} color="#92400E" />
+                <Text style={styles.warningText}>
+                  {t('gamification.revisionWarning', { count: effectiveCriticalCount })}
+                </Text>
+              </View>
+            )}
+          </Card>
+        )}
 
         {/* 3b. Revision Homework */}
-        {(homeworkItems.length > 0 || hasWarning) && (
+        {homeworkItems.length > 0 && (
           <Card
             variant="default"
             onPress={() => router.push('/(student)/(tabs)/lessons')}
@@ -267,34 +260,21 @@ export default function StudentDashboard() {
                 <Ionicons name="book-outline" size={20} color={colors.secondary[500]} />
               </View>
               <Text style={styles.tasksTitle}>{t('student.revision.revisionHomework')}</Text>
-              {homeworkItems.length > 0 && (
-                <View style={styles.homeworkBadge}>
-                  <Text style={styles.homeworkBadgeText}>{homeworkItems.length}</Text>
-                </View>
-              )}
+              <View style={styles.homeworkBadge}>
+                <Text style={styles.homeworkBadgeText}>{homeworkItems.length}</Text>
+              </View>
               <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
             </View>
 
-            {homeworkItems.length > 0 && (
-              <View style={styles.tasksList}>
-                {homeworkItems.slice(0, MAX_PREVIEW_ITEMS).map((item) => (
-                  <HomeworkRow key={item.assignmentId} item={item} enriched={enriched} t={t} />
-                ))}
-              </View>
-            )}
+            <View style={styles.tasksList}>
+              {homeworkItems.slice(0, MAX_PREVIEW_ITEMS).map((item) => (
+                <HomeworkRow key={item.assignmentId} item={item} enriched={enriched} t={t} />
+              ))}
+            </View>
             {homeworkItems.length > MAX_PREVIEW_ITEMS && (
               <Text style={styles.seeAll}>
                 {t('student.dashboard.seeAll', { count: homeworkItems.length })} {isRTL ? '←' : '→'}
               </Text>
-            )}
-
-            {hasWarning && (
-              <View style={[styles.warningRow, homeworkItems.length > 0 && styles.warningRowBorder]}>
-                <Ionicons name="alert-circle" size={16} color="#92400E" />
-                <Text style={styles.warningText}>
-                  {t('gamification.revisionWarning', { count: effectiveCriticalCount })}
-                </Text>
-              </View>
             )}
           </Card>
         )}
@@ -354,7 +334,7 @@ const styles = StyleSheet.create({
     marginTop: normalize(2),
   },
 
-  // Today's Tasks Card
+  // Cards
   tasksCard: {
     padding: spacing.md,
   },
@@ -406,15 +386,6 @@ const styles = StyleSheet.create({
     fontSize: normalize(12),
     color: colors.neutral[500],
   },
-  taskBadge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: normalize(2),
-    borderRadius: radius.full,
-  },
-  taskBadgeText: {
-    fontFamily: typography.fontFamily.medium,
-    fontSize: normalize(11),
-  },
   seeAll: {
     fontFamily: typography.fontFamily.semiBold,
     fontSize: normalize(12),
@@ -425,21 +396,38 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: colors.neutral[100],
   },
-  emptyState: {
+
+  // Health dots row
+  healthDotsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+    flexWrap: 'wrap',
+    gap: spacing.md,
     marginTop: spacing.md,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.secondary[50],
-    borderRadius: radius.md,
+    paddingHorizontal: spacing.xs,
   },
-  emptyStateText: {
-    fontFamily: typography.fontFamily.semiBold,
+  healthDotItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(4),
+  },
+  healthDot: {
+    width: normalize(8),
+    height: normalize(8),
+    borderRadius: normalize(4),
+  },
+  healthDotCount: {
+    fontFamily: typography.fontFamily.bold,
     fontSize: normalize(13),
-    color: colors.secondary[700],
+    color: colors.neutral[800],
   },
+  healthDotLabel: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: normalize(12),
+    color: colors.neutral[500],
+  },
+
+  // Warning
   warningRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -449,9 +437,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.sm,
     backgroundColor: '#FEF3C7',
     borderRadius: radius.sm,
-  },
-  warningRowBorder: {
-    marginTop: spacing.md,
   },
   warningText: {
     fontFamily: typography.fontFamily.semiBold,

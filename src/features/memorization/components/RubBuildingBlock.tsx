@@ -1,161 +1,150 @@
 import React from 'react';
-import { I18nManager, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Animated, {
-  useAnimatedStyle,
+  useAnimatedProps,
   useDerivedValue,
   withSpring,
 } from 'react-native-reanimated';
+import Svg, { Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 
 import type { RubCoverage } from '../utils/rub-coverage';
-import { formatRubVerseRange } from '@/lib/quran-metadata';
 import { colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
-import i18next from 'i18next';
 
 interface RubBuildingBlockProps {
   coverage: RubCoverage;
   isComplete: boolean;
 }
 
-const BLOCK_HEIGHT = normalize(80);
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const COLUMNS = 3;
+const HORIZONTAL_PADDING = spacing.lg * 2;
+const GAP = spacing.sm;
+export const BLOCK_SIZE = Math.floor(
+  (SCREEN_WIDTH - HORIZONTAL_PADDING - (COLUMNS - 1) * GAP) / COLUMNS,
+);
+
+const CIRCLE_SIZE = normalize(44);
+const STROKE_WIDTH = normalize(4);
+const CIRCLE_RADIUS = (CIRCLE_SIZE - STROKE_WIDTH) / 2;
+const CIRCUMFERENCE = 2 * Math.PI * CIRCLE_RADIUS;
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 export function RubBuildingBlock({ coverage, isComplete }: RubBuildingBlockProps) {
   const { t } = useTranslation();
-  const lang = (i18next.language === 'ar' ? 'ar' : 'en') as 'ar' | 'en';
 
-  const fillPercent = useDerivedValue(() => coverage.percentage / 100);
-  const fillHeight = useDerivedValue(() =>
-    withSpring(fillPercent.value * BLOCK_HEIGHT, {
-      damping: 20,
-      stiffness: 90,
-    }),
-  );
-
-  const fillStyle = useAnimatedStyle(() => ({
-    height: fillHeight.value,
-  }));
-
-  const fillColor = isComplete ? colors.primary[400] : colors.accent.indigo[500];
+  const accentColor = isComplete ? colors.primary[500] : colors.accent.indigo[500];
+  const bgColor = isComplete ? '#DCFCE7' : colors.neutral[50];
   const borderColor = isComplete ? colors.primary[500] : colors.accent.indigo[100];
 
-  const verseRange = formatRubVerseRange(
-    coverage.startSurah,
-    coverage.startAyah,
-    coverage.endSurah,
-    coverage.endAyah,
-    lang,
+  const progress = useDerivedValue(() =>
+    withSpring(coverage.percentage / 100, { damping: 20, stiffness: 90 }),
   );
 
+  const animatedProps = useAnimatedProps(() => ({
+    strokeDashoffset: CIRCUMFERENCE * (1 - progress.value),
+  }));
+
   return (
-    <View style={[styles.container, { borderColor }]}>
-      {/* Fill bar — animated from bottom */}
-      <Animated.View
-        style={[
-          styles.fill,
-          fillStyle,
-          { backgroundColor: fillColor },
-        ]}
-      />
-
-      {/* Content overlay */}
-      <View style={styles.overlay}>
-        <View style={styles.topRow}>
-          <Text style={styles.rubLabel}>
-            {t('gamification.rub')} {coverage.rubNumber}
-          </Text>
-          <Text style={styles.juzLabel}>
-            {t('gamification.juz')} {coverage.juzNumber}
-          </Text>
-        </View>
-
-        <Text style={styles.ayahProgress}>
-          {t('student.blockBuilder.ayahProgress', {
-            memorized: coverage.memorizedAyahs,
-            total: coverage.totalAyahs,
-          })}
-        </Text>
-
-        <Text style={styles.verseRange} numberOfLines={1}>
-          {verseRange}
-        </Text>
-
-        {isComplete && (
-          <View style={styles.readyBadge}>
-            <Ionicons name="checkmark-circle" size={normalize(14)} color={colors.primary[700]} />
-            <Text style={styles.readyText}>
-              {t('student.blockBuilder.ready')}
-            </Text>
+    <View style={[styles.block, { backgroundColor: bgColor, borderColor }]}>
+      {/* Circular progress */}
+      <View style={styles.circleContainer}>
+        {isComplete ? (
+          <View style={[styles.completeBadge, { backgroundColor: colors.primary[500] }]}>
+            <Ionicons name="checkmark" size={normalize(22)} color="#FFFFFF" />
           </View>
+        ) : (
+          <Svg width={CIRCLE_SIZE} height={CIRCLE_SIZE}>
+            {/* Background track */}
+            <Circle
+              cx={CIRCLE_SIZE / 2}
+              cy={CIRCLE_SIZE / 2}
+              r={CIRCLE_RADIUS}
+              stroke={colors.neutral[200]}
+              strokeWidth={STROKE_WIDTH}
+              fill="none"
+            />
+            {/* Animated progress arc */}
+            <AnimatedCircle
+              cx={CIRCLE_SIZE / 2}
+              cy={CIRCLE_SIZE / 2}
+              r={CIRCLE_RADIUS}
+              stroke={accentColor}
+              strokeWidth={STROKE_WIDTH}
+              fill="none"
+              strokeDasharray={CIRCUMFERENCE}
+              animatedProps={animatedProps}
+              strokeLinecap="round"
+              rotation={-90}
+              origin={`${CIRCLE_SIZE / 2}, ${CIRCLE_SIZE / 2}`}
+            />
+          </Svg>
+        )}
+        {!isComplete && (
+          <Text style={[styles.percentText, { color: accentColor }]}>
+            {coverage.percentage}%
+          </Text>
         )}
       </View>
+
+      {/* Labels */}
+      <Text style={styles.rubLabel} numberOfLines={1}>
+        {t('gamification.rub')} {coverage.rubNumber}
+      </Text>
+      <Text style={styles.juzLabel} numberOfLines={1}>
+        {isComplete
+          ? t('student.blockBuilder.ready')
+          : `${coverage.memorizedAyahs}/${coverage.totalAyahs}`}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    height: BLOCK_HEIGHT,
+  block: {
+    width: BLOCK_SIZE,
+    height: BLOCK_SIZE,
     borderRadius: radius.md,
     borderWidth: 1.5,
-    overflow: 'hidden',
-    backgroundColor: colors.neutral[50],
-    marginBottom: spacing.sm,
-  },
-  fill: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    borderRadius: radius.md - 1,
-    opacity: 0.25,
-  },
-  overlay: {
-    flex: 1,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    justifyContent: 'center',
-    gap: normalize(2),
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: normalize(4),
+    padding: spacing.xs,
+  },
+  circleContainer: {
+    width: CIRCLE_SIZE,
+    height: CIRCLE_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  completeBadge: {
+    width: CIRCLE_SIZE,
+    height: CIRCLE_SIZE,
+    borderRadius: CIRCLE_SIZE / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  percentText: {
+    position: 'absolute',
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(12),
   },
   rubLabel: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: normalize(15),
+    fontSize: normalize(12),
     color: colors.neutral[900],
+    textAlign: 'center',
   },
   juzLabel: {
     fontFamily: typography.fontFamily.medium,
-    fontSize: normalize(11),
+    fontSize: normalize(10),
     color: colors.neutral[500],
-  },
-  ayahProgress: {
-    fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(13),
-    color: colors.accent.indigo[600],
-  },
-  verseRange: {
-    fontFamily: typography.fontFamily.regular,
-    fontSize: normalize(11),
-    color: colors.neutral[500],
-  },
-  readyBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: normalize(4),
-    marginTop: normalize(2),
-  },
-  readyText: {
-    fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(11),
-    color: colors.primary[700],
+    textAlign: 'center',
   },
 });

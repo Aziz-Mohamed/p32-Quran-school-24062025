@@ -183,7 +183,14 @@
       "mapStats": "{{certified}}/240 certified",
       "totalReviews": "{{count}} total reviews",
       "legendLess": "Less",
-      "legendMore": "More"
+      "legendMore": "More",
+      "legend": {
+        "critical": "Urgent",
+        "warning": "At Risk",
+        "fading": "Fading",
+        "fresh": "Fresh",
+        "dormant": "Paused"
+      }
     },
     "blockBuilder": {
       "heroRub": "{{count}}/240 rubʿ",
@@ -250,6 +257,7 @@
       "stickers": "Stickers",
       "rubCertified": "rubʿ certified",
       "todaysTasks": "Memorization Homework",
+      "revisionHealth": "Revision Health",
       "seeAll": "See all {{count}}",
       "allCaughtUp": "All caught up!",
       "nothingDueToday": "No tasks due today",
