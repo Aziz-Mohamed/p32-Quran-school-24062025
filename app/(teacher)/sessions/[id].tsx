@@ -11,6 +11,7 @@ import { LoadingState, ErrorState } from '@/components/feedback';
 import { RevisionCard, useSessionRecitations } from '@/features/memorization';
 import { useSessionById } from '@/features/sessions/hooks/useSessions';
 import { formatSessionDate } from '@/lib/helpers';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -22,6 +23,7 @@ export default function SessionDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  const { resolveName } = useLocalizedName();
   const { data: session, isLoading, error, refetch } = useSessionById(id);
   const { data: recitations = [] } = useSessionRecitations(id);
 
@@ -29,7 +31,7 @@ export default function SessionDetailScreen() {
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
   if (!session) return <ErrorState description={t('common.noResults')} onRetry={refetch} />;
 
-  const studentName = (session as any).student?.profiles?.full_name ?? '—';
+  const studentName = resolveName((session as any).student?.profiles?.name_localized, (session as any).student?.profiles?.full_name) ?? '—';
 
   return (
     <Screen scroll>

@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { SearchBar } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useTeachers } from '@/features/teachers/hooks/useTeachers';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -23,6 +24,7 @@ export default function AdminTeachersScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
 
+  const { resolveName } = useLocalizedName();
   const { data: teachers = [], isLoading, error, refetch } = useTeachers({
     searchQuery: searchQuery || undefined,
   });
@@ -77,7 +79,7 @@ export default function AdminTeachersScreen() {
               >
                 <View style={styles.teacherRow}>
                   <View style={styles.teacherInfo}>
-                    <Text style={styles.teacherName}>{item.full_name}</Text>
+                    <Text style={styles.teacherName}>{resolveName(item.name_localized, item.full_name)}</Text>
                     <Text style={styles.teacherMeta}>
                       @{item.username ?? '—'}
                       {(item.classes?.length ?? 0) > 0

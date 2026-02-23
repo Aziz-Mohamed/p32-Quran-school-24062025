@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { SearchBar } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useClasses } from '@/features/classes/hooks/useClasses';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -24,6 +25,7 @@ export default function AdminClassesScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
 
+  const { resolveName } = useLocalizedName();
   const { data: classes = [], isLoading, error, refetch } = useClasses({
     searchQuery: searchQuery || undefined,
   });
@@ -78,10 +80,10 @@ export default function AdminClassesScreen() {
               >
                 <View style={styles.classRow}>
                   <View style={styles.classInfo}>
-                    <Text style={styles.className}>{item.name}</Text>
+                    <Text style={styles.className}>{resolveName(item.name_localized, item.name)}</Text>
                     <Text style={styles.classMeta}>
                       {item.profiles?.full_name
-                        ? `${t('admin.classes.teacher')}: ${item.profiles.full_name}`
+                        ? `${t('admin.classes.teacher')}: ${resolveName(item.profiles?.name_localized, item.profiles?.full_name)}`
                         : t('admin.classes.noTeacher')}
                       {` · ${item.students?.length ?? 0} ${t('admin.classes.students')}`}
                     </Text>

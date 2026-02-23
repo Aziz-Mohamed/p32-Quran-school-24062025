@@ -14,6 +14,7 @@ import { useLogout } from '@/features/auth/hooks/useLogout';
 import { useAdminDashboard } from '@/features/dashboard/hooks/useAdminDashboard';
 import { useChangeLanguage } from '@/hooks/useChangeLanguage';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -28,6 +29,7 @@ export default function AdminDashboard() {
   const theme = useRoleTheme();
   const { logout, isPending: isLoggingOut } = useLogout();
   const { locale, toggleLanguage } = useChangeLanguage();
+  const { resolveFirstName } = useLocalizedName();
 
   const { data, isLoading, error, refetch } = useAdminDashboard(profile?.school_id);
 
@@ -44,7 +46,7 @@ export default function AdminDashboard() {
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>
-              {t('dashboard.welcome', { name: profile?.full_name?.split(' ')[0] ?? '' })} 👋
+              {t('dashboard.welcome', { name: resolveFirstName(profile?.name_localized, profile?.full_name) })} 👋
             </Text>
             <Text style={styles.subtitle}>{t('admin.dashboard.subtitle')}</Text>
           </View>

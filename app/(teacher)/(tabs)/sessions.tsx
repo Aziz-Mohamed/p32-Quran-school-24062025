@@ -12,6 +12,7 @@ import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useSessions } from '@/features/sessions/hooks/useSessions';
 import { formatSessionDate } from '@/lib/helpers';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -24,6 +25,7 @@ export default function SessionsScreen() {
   const router = useRouter();
   const { profile } = useAuth();
 
+  const { resolveName } = useLocalizedName();
   const { data: sessions = [], isLoading, error, refetch } = useSessions({
     teacherId: profile?.id,
   });
@@ -62,12 +64,12 @@ export default function SessionsScreen() {
                 <View style={styles.sessionRow}>
                   <View style={styles.studentAvatar}>
                     <Text style={styles.avatarText}>
-                      {item.student?.profiles?.full_name?.[0]?.toUpperCase()}
+                      {resolveName(item.student?.profiles?.name_localized, item.student?.profiles?.full_name)?.[0]?.toUpperCase()}
                     </Text>
                   </View>
                   <View style={styles.sessionInfo}>
                     <Text style={styles.studentName} numberOfLines={1}>
-                      {item.student?.profiles?.full_name ?? '—'}
+                      {resolveName(item.student?.profiles?.name_localized, item.student?.profiles?.full_name) ?? '—'}
                     </Text>
                     <View style={styles.dateRow}>
                       <Ionicons name="calendar-outline" size={12} color={colors.neutral[400]} />

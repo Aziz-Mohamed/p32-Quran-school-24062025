@@ -13,6 +13,7 @@ import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useSessions } from '@/features/sessions/hooks/useSessions';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
@@ -27,6 +28,7 @@ export default function StudentSessionsScreen() {
   const { profile } = useAuth();
   const theme = useRoleTheme();
 
+  const { resolveName } = useLocalizedName();
   const { data: sessions = [], isLoading, error, refetch } = useSessions({
     studentId: profile?.id,
   });
@@ -79,7 +81,7 @@ export default function StudentSessionsScreen() {
                       </Text>
                     </View>
                     <Text style={styles.teacherName}>
-                      {t('common.teacher')}: {item.teacher?.full_name ?? '—'}
+                      {t('common.teacher')}: {resolveName(item.teacher?.name_localized, item.teacher?.full_name) ?? '—'}
                     </Text>
                   </View>
                   <View style={styles.scores}>

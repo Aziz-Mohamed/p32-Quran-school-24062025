@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { SearchBar } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useParents } from '@/features/parents/hooks/useParents';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -23,6 +24,7 @@ export default function AdminParentsScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
 
+  const { resolveName } = useLocalizedName();
   const { data: parents = [], isLoading, error, refetch } = useParents({
     searchQuery: searchQuery || undefined,
   });
@@ -76,7 +78,7 @@ export default function AdminParentsScreen() {
               >
                 <View style={styles.parentRow}>
                   <View style={styles.parentInfo}>
-                    <Text style={styles.parentName}>{item.full_name}</Text>
+                    <Text style={styles.parentName}>{resolveName(item.name_localized, item.full_name)}</Text>
                     <Text style={styles.parentMeta}>
                       @{item.username ?? '—'}
                       {(item.students?.length ?? 0) > 0

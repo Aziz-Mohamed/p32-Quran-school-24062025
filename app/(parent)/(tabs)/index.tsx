@@ -11,6 +11,7 @@ import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useParentDashboard } from '@/features/dashboard/hooks/useParentDashboard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
@@ -39,6 +40,8 @@ export default function ParentDashboard() {
   const router = useRouter();
   const theme = useRoleTheme();
 
+  const { resolveFirstName } = useLocalizedName();
+
   const { data, isLoading, error, refetch } = useParentDashboard(profile?.id);
 
   if (isLoading) return <LoadingState />;
@@ -55,7 +58,7 @@ export default function ParentDashboard() {
           <View style={styles.header}>
             <View style={styles.headerContent}>
               <Text style={styles.greeting}>
-                {t('dashboard.welcome', { name: profile?.full_name?.split(' ')[0] ?? '' })} 👋
+                {t('dashboard.welcome', { name: resolveFirstName(profile?.name_localized, profile?.full_name) })} 👋
               </Text>
               <Text style={styles.subtitle}>{t('parent.dashboard.subtitle')}</Text>
             </View>
@@ -80,7 +83,7 @@ export default function ParentDashboard() {
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <Text style={styles.greeting}>
-              {t('dashboard.welcome', { name: profile?.full_name?.split(' ')[0] ?? '' })} 👋
+              {t('dashboard.welcome', { name: resolveFirstName(profile?.name_localized, profile?.full_name) })} 👋
             </Text>
             <Text style={styles.subtitle}>{t('parent.dashboard.subtitle')}</Text>
           </View>

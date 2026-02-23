@@ -13,6 +13,7 @@ import { useChildDetail } from '@/features/children/hooks/useChildren';
 import { useAttendanceRate } from '@/features/attendance/hooks/useAttendance';
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
@@ -26,6 +27,7 @@ export default function ChildDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useRoleTheme();
+  const { resolveName } = useLocalizedName();
 
   const { data, isLoading, error, refetch } = useChildDetail(id);
   const { data: attendanceRate } = useAttendanceRate(id);
@@ -54,16 +56,16 @@ export default function ChildDetailScreen() {
         {/* Profile Header */}
         <Card variant="primary-glow" style={styles.profileCard}>
           <Avatar 
-            name={(student as any).profiles?.full_name} 
+            name={resolveName((student as any).profiles?.name_localized, (student as any).profiles?.full_name)}
             size="xl" 
             ring 
             variant="indigo" // Child/Student is indigo
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>{(student as any).profiles?.full_name ?? '—'}</Text>
+            <Text style={styles.name}>{resolveName((student as any).profiles?.name_localized, (student as any).profiles?.full_name) ?? '—'}</Text>
             <View style={styles.metaRow}>
               <Badge
-                label={(student as any).classes?.name ?? t('admin.students.noClass')}
+                label={resolveName((student as any).classes?.name_localized, (student as any).classes?.name) ?? t('admin.students.noClass')}
                 variant="sky"
                 size="sm"
               />

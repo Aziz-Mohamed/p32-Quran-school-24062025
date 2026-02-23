@@ -17,6 +17,7 @@ import {
   useApproveOverride,
   useRejectOverride,
 } from '@/features/work-attendance/hooks/useTeacherAttendance';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -29,6 +30,7 @@ export default function TeacherAttendanceMonitor() {
   const router = useRouter();
   const { profile, schoolId } = useAuth();
 
+  const { resolveName } = useLocalizedName();
   const { data: checkins = [], isLoading: checkinsLoading, error: checkinsError, refetch } =
     useSchoolAttendanceToday(schoolId ?? undefined);
   const { data: teachers = [], isLoading: teachersLoading } =
@@ -122,12 +124,12 @@ export default function TeacherAttendanceMonitor() {
                 <View style={styles.overrideRow}>
                   <View style={[styles.avatar, { backgroundColor: colors.accent.rose[50] }]}>
                     <Text style={styles.avatarText}>
-                      {override.teacher?.full_name?.[0]?.toUpperCase() ?? '?'}
+                      {resolveName(override.teacher?.name_localized, override.teacher?.full_name)?.[0]?.toUpperCase() ?? '?'}
                     </Text>
                   </View>
                   <View style={styles.overrideInfo}>
                     <Text style={styles.teacherName}>
-                      {override.teacher?.full_name ?? t('common.noResults')}
+                      {resolveName(override.teacher?.name_localized, override.teacher?.full_name) ?? t('common.noResults')}
                     </Text>
                     <Text style={styles.overrideReason} numberOfLines={2}>
                       {override.override_reason}
@@ -175,12 +177,12 @@ export default function TeacherAttendanceMonitor() {
               <View style={styles.teacherRow}>
                 <View style={[styles.avatar, { backgroundColor: colors.primary[50] }]}>
                   <Text style={[styles.avatarText, { color: colors.primary[700] }]}>
-                    {checkin.teacher?.full_name?.[0]?.toUpperCase() ?? '?'}
+                    {resolveName(checkin.teacher?.name_localized, checkin.teacher?.full_name)?.[0]?.toUpperCase() ?? '?'}
                   </Text>
                 </View>
                 <View style={styles.teacherInfo}>
                   <Text style={styles.teacherName}>
-                    {checkin.teacher?.full_name ?? t('common.noResults')}
+                    {resolveName(checkin.teacher?.name_localized, checkin.teacher?.full_name) ?? t('common.noResults')}
                   </Text>
                   <Text style={styles.checkinTime}>
                     {new Date(checkin.checked_in_at).toLocaleTimeString([], {
@@ -224,11 +226,11 @@ export default function TeacherAttendanceMonitor() {
                 <View style={styles.teacherRow}>
                   <View style={[styles.avatar, { backgroundColor: colors.neutral[100] }]}>
                     <Text style={styles.avatarText}>
-                      {teacher.full_name?.[0]?.toUpperCase() ?? '?'}
+                      {resolveName(teacher.name_localized, teacher.full_name)?.[0]?.toUpperCase() ?? '?'}
                     </Text>
                   </View>
                   <View style={styles.teacherInfo}>
-                    <Text style={styles.teacherName}>{teacher.full_name}</Text>
+                    <Text style={styles.teacherName}>{resolveName(teacher.name_localized, teacher.full_name)}</Text>
                     <Text style={styles.missingLabel}>{t('admin.workAttendance.notCheckedInYet')}</Text>
                   </View>
                 </View>

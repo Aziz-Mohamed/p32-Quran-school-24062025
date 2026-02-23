@@ -38,7 +38,7 @@ export default function AdminReportsScreen() {
 
   const { timePeriod, setTimePeriod, dateRange } = useTimePeriod();
   const [selectedClassId, setSelectedClassId] = useState<string | undefined>();
-  const [classes, setClasses] = useState<Array<{ id: string; name: string }>>([]);
+  const [classes, setClasses] = useState<Array<{ id: string; name: string; name_localized?: Record<string, string> | null }>>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   // Load classes for filter
@@ -46,12 +46,12 @@ export default function AdminReportsScreen() {
     if (!schoolId) return;
     supabase
       .from('classes')
-      .select('id, name')
+      .select('id, name, name_localized')
       .eq('school_id', schoolId)
       .eq('is_active', true)
       .order('name')
       .then(({ data }) => {
-        if (data) setClasses(data);
+        if (data) setClasses(data as any);
       });
   }, [schoolId]);
 

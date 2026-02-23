@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useParentById } from '@/features/parents/hooks/useParents';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -22,6 +23,7 @@ export default function ParentDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  const { resolveName } = useLocalizedName();
   const { data: parent, isLoading, error, refetch } = useParentById(id);
 
   if (isLoading) return <LoadingState />;
@@ -45,7 +47,7 @@ export default function ParentDetailScreen() {
           <View style={styles.avatar}>
             <Ionicons name="people" size={40} color={colors.accent.rose[500]} />
           </View>
-          <Text style={styles.name}>{parent.full_name}</Text>
+          <Text style={styles.name}>{resolveName(parent.name_localized, parent.full_name)}</Text>
           <Text style={styles.username}>@{parent.username ?? '—'}</Text>
         </View>
 
@@ -76,7 +78,7 @@ export default function ParentDetailScreen() {
               >
                 <View style={styles.childRow}>
                   <Text style={styles.childName}>
-                    {child.profiles?.full_name ?? '—'}
+                    {resolveName(child.profiles?.name_localized, child.profiles?.full_name) ?? '—'}
                   </Text>
                   <Badge
                     label={child.is_active ? t('common.active') : t('common.inactive')}

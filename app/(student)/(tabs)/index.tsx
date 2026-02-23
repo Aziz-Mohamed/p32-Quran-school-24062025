@@ -18,6 +18,7 @@ import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -85,6 +86,7 @@ export default function StudentDashboard() {
   const { enriched } = useRubCertifications(profile?.id);
   const { homeworkItems } = useRevisionHomework(profile?.id);
   const { data: memStats } = useMemorizationStats(profile?.id);
+  const { resolveFirstName } = useLocalizedName();
 
   const homeworkRubSet = useMemo(
     () => new Set(homeworkItems.map((h) => h.rubNumber)),
@@ -127,7 +129,7 @@ export default function StudentDashboard() {
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <Text style={styles.greeting}>
-              {t('dashboard.welcome', { name: profile?.full_name?.split(' ')[0] ?? '' })}
+              {t('dashboard.welcome', { name: resolveFirstName(profile?.name_localized, profile?.full_name) })}
             </Text>
             <Text style={styles.subtitle}>{t('student.dashboard.readyToLearn')}</Text>
           </View>

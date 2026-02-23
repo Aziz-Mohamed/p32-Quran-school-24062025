@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useNeedsSupport } from '@/features/teachers/hooks/useTeacherInsights';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -23,6 +24,7 @@ export default function NeedsSupportScreen() {
   const router = useRouter();
   const { profile } = useAuth();
 
+  const { resolveName } = useLocalizedName();
   const { data: students = [], isLoading, error, refetch } = useNeedsSupport(profile?.id);
 
   if (isLoading) return <LoadingState />;
@@ -61,10 +63,10 @@ export default function NeedsSupportScreen() {
                 </View>
                 <View style={styles.studentInfo}>
                   <Text style={styles.studentName}>
-                    {student.profiles?.full_name ?? '—'}
+                    {resolveName(student.profiles?.name_localized, student.profiles?.full_name) ?? '—'}
                   </Text>
                   <Text style={styles.studentMeta}>
-                    {student.classes?.name ?? ''}
+                    {resolveName(student.classes?.name_localized, student.classes?.name) ?? ''}
                     {` · Lvl ${student.current_level ?? 0}`}
                   </Text>
                 </View>

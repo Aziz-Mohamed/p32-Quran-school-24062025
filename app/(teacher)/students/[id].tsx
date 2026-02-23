@@ -26,6 +26,7 @@ import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizat
 import { MemorizationProgressBar } from '@/features/memorization';
 import { useAssignments, useCompleteRevisionHomework } from '@/features/memorization';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
@@ -41,6 +42,7 @@ export default function TeacherStudentDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile } = useAuth();
   const theme = useRoleTheme();
+  const { resolveName } = useLocalizedName();
 
   const { data: student, isLoading: studentLoading, error: studentError, refetch } = useStudentById(id);
   const { data: sessions = [] } = useSessions({
@@ -220,17 +222,17 @@ export default function TeacherStudentDetailScreen() {
 
         {/* Student Profile Card */}
         <Card variant="primary-glow" style={styles.profileCard}>
-          <Avatar 
-            name={studentProfile?.full_name} 
-            size="xl" 
-            ring 
+          <Avatar
+            name={resolveName(studentProfile?.name_localized, studentProfile?.full_name)}
+            size="xl"
+            ring
             variant="indigo" // Student is always indigo themed
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.studentName}>{studentProfile?.full_name ?? '—'}</Text>
+            <Text style={styles.studentName}>{resolveName(studentProfile?.name_localized, studentProfile?.full_name) ?? '—'}</Text>
             <View style={styles.metaRow}>
               {studentClass?.name && (
-                <Badge label={studentClass.name} variant="sky" size="sm" />
+                <Badge label={resolveName(studentClass.name_localized, studentClass.name) ?? studentClass.name} variant="sky" size="sm" />
               )}
               <Badge label={`${t('common.level')} ${activeCount}/240`} variant="indigo" size="sm" />
             </View>

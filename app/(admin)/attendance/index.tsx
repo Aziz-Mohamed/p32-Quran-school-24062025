@@ -13,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useClasses } from '@/features/classes/hooks/useClasses';
 import { useStudents } from '@/features/students/hooks/useStudents';
 import { useMarkBulkAttendance, useClassAttendance } from '@/features/attendance/hooks/useAttendance';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -38,6 +39,7 @@ export default function BulkAttendanceScreen() {
   const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [statuses, setStatuses] = useState<Record<string, AttendanceStatus>>({});
 
+  const { resolveName } = useLocalizedName();
   const { data: classes = [] } = useClasses({ isActive: true });
   const { data: students = [], isLoading: studentsLoading } = useStudents(
     selectedClassId ? { classId: selectedClassId } : undefined,
@@ -71,7 +73,7 @@ export default function BulkAttendanceScreen() {
   }, [existingAttendance, selectedClassId, selectedDate]);
 
   const classOptions = classes.map((c: any) => ({
-    label: c.name,
+    label: resolveName(c.name_localized, c.name) ?? c.name,
     value: c.id,
   }));
 
@@ -190,7 +192,7 @@ export default function BulkAttendanceScreen() {
                     <View style={styles.studentRow}>
                       <View style={styles.studentInfo}>
                         <Text style={styles.studentName}>
-                          {student.profiles?.full_name ?? '—'}
+                          {resolveName(student.profiles?.name_localized, student.profiles?.full_name) ?? '—'}
                         </Text>
                       </View>
                       <Pressable

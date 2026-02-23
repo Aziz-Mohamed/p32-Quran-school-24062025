@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useClassById, useRemoveStudent } from '@/features/classes/hooks/useClasses';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,6 +22,7 @@ export default function ClassDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  const { resolveName } = useLocalizedName();
   const { data: classData, isLoading, error, refetch } = useClassById(id);
   const removeStudent = useRemoveStudent();
 
@@ -29,7 +31,7 @@ export default function ClassDetailScreen() {
   if (!classData) return <ErrorState description={t('admin.classes.notFound')} />;
 
   const students = (classData as any).students ?? [];
-  const teacherName = (classData as any).profiles?.full_name ?? null;
+  const teacherName = resolveName((classData as any).profiles?.name_localized, (classData as any).profiles?.full_name) ?? null;
 
   const handleRemoveStudent = (studentId: string, studentName: string) => {
     Alert.alert(
@@ -58,7 +60,7 @@ export default function ClassDetailScreen() {
 
         {/* Class Header */}
         <View style={styles.classHeader}>
-          <Text style={styles.name}>{classData.name}</Text>
+          <Text style={styles.name}>{resolveName((classData as any).name_localized, classData.name)}</Text>
           <Badge
             label={classData.is_active ? t('common.active') : t('common.inactive')}
             variant={classData.is_active ? 'success' : 'warning'}
@@ -99,11 +101,11 @@ export default function ClassDetailScreen() {
             <Card key={s.id} variant="outlined" style={styles.studentCard}>
               <View style={styles.studentRow}>
                 <Text style={styles.studentName}>
-                  {s.profiles?.full_name ?? '—'}
+                  {resolveName(s.profiles?.name_localized, s.profiles?.full_name) ?? '—'}
                 </Text>
                 <Button
                   title={t('common.remove')}
-                  onPress={() => handleRemoveStudent(s.id, s.profiles?.full_name ?? '—')}
+                  onPress={() => handleRemoveStudent(s.id, resolveName(s.profiles?.name_localized, s.profiles?.full_name) ?? '—')}
                   variant="ghost"
                   size="sm"
                 />

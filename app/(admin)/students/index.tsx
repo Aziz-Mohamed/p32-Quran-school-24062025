@@ -16,6 +16,7 @@ import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 
 // ─── Admin Students List ──────────────────────────────────────────────────────
 
@@ -23,6 +24,7 @@ export default function AdminStudentsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const { resolveName } = useLocalizedName();
 
   const { data: students = [], isLoading, error, refetch } = useStudents({
     searchQuery: searchQuery || undefined,
@@ -79,11 +81,11 @@ export default function AdminStudentsScreen() {
                 <View style={styles.studentRow}>
                   <View style={styles.studentInfo}>
                     <Text style={styles.studentName}>
-                      {item.profiles?.full_name ?? '—'}
+                      {resolveName(item.profiles?.name_localized, item.profiles?.full_name)}
                     </Text>
                     <Text style={styles.studentMeta}>
                       @{item.profiles?.username ?? '—'}
-                      {item.classes?.name ? ` · ${item.classes.name}` : ''}
+                      {item.classes?.name ? ` · ${resolveName(item.classes?.name_localized, item.classes.name)}` : ''}
                     </Text>
                   </View>
                   <View style={styles.studentBadges}>

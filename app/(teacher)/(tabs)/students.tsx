@@ -12,6 +12,7 @@ import { SearchBar } from '@/components/ui/SearchBar';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useStudents } from '@/features/students/hooks/useStudents';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -23,6 +24,7 @@ export default function TeacherStudentsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const theme = useRoleTheme();
+  const { resolveName } = useLocalizedName();
   const [searchQuery, setSearchQuery] = useState('');
 
   const {
@@ -76,18 +78,18 @@ export default function TeacherStudentsScreen() {
                 style={styles.studentCard}
               >
                 <View style={styles.studentRow}>
-                  <Avatar 
-                    name={item.profiles?.full_name} 
-                    size="md" 
-                    ring 
+                  <Avatar
+                    name={resolveName(item.profiles?.name_localized, item.profiles?.full_name)}
+                    size="md"
+                    ring
                     variant={theme.tag}
                   />
                   <View style={styles.studentInfo}>
                     <Text style={styles.studentName} numberOfLines={1}>
-                      {item.profiles?.full_name ?? '—'}
+                      {resolveName(item.profiles?.name_localized, item.profiles?.full_name) ?? '—'}
                     </Text>
                     <Text style={styles.studentMeta}>
-                      {item.classes?.name ?? t('teacher.students.noClass')}
+                      {resolveName(item.classes?.name_localized, item.classes?.name) ?? t('teacher.students.noClass')}
                       {` · Lvl ${item.current_level ?? 0}`}
                     </Text>
                   </View>

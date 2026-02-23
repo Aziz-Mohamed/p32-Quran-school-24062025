@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { useQuery } from '@tanstack/react-query';
 import { useStudentUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
 import { supabase } from '@/lib/supabase';
@@ -24,6 +25,7 @@ export default function StudentScheduleScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { profile, schoolId } = useAuth();
+  const { resolveName } = useLocalizedName();
 
   // Fetch student record to get class_id
   const { data: student } = useQuery({
@@ -96,7 +98,7 @@ export default function StudentScheduleScreen() {
                       </View>
                       <View style={styles.sessionInfo}>
                         <Text style={styles.sessionTitle}>
-                          {session.class?.name ?? t('scheduling.individualSession')}
+                          {resolveName(session.class?.name_localized, session.class?.name) ?? t('scheduling.individualSession')}
                         </Text>
                         <Text style={styles.sessionTime}>
                           {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}
