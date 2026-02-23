@@ -96,7 +96,7 @@ export function useUpdateParent() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: { fullName?: string; phone?: string } }) =>
+    mutationFn: ({ id, input }: { id: string; input: { fullName?: string; phone?: string; nameLocalized?: Record<string, string> } }) =>
       parentsService.updateParent(id, input),
     onSuccess: (_data, variables) => {
       mutationTracker.record('profiles', variables.id);

@@ -22,7 +22,7 @@ class GamificationService {
     return supabase
       .from('student_stickers')
       .select(
-        '*, stickers(id, name_ar, name_en, tier, image_path), profiles!student_stickers_awarded_by_fkey(full_name)',
+        '*, stickers(id, name_ar, name_en, tier, image_path), profiles!student_stickers_awarded_by_fkey(full_name, name_localized)',
       )
       .eq('student_id', studentId)
       .order('awarded_at', { ascending: false });
@@ -77,7 +77,7 @@ class GamificationService {
     return supabase
       .from('students')
       .select(
-        '*, profiles!students_id_fkey!inner(full_name, avatar_url)',
+        '*, profiles!students_id_fkey!inner(full_name, name_localized, avatar_url)',
       )
       .eq('class_id', classId)
       .eq('is_active', true)
@@ -99,7 +99,7 @@ class GamificationService {
   async getRubCertifications(studentId: string) {
     return supabase
       .from('student_rub_certifications')
-      .select('*, profiles!student_rub_certifications_certified_by_fkey(full_name)')
+      .select('*, profiles!student_rub_certifications_certified_by_fkey(full_name, name_localized)')
       .eq('student_id', studentId)
       .order('rub_number');
   }

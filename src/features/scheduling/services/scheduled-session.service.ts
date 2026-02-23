@@ -10,10 +10,10 @@ class ScheduledSessionService {
       .from('scheduled_sessions')
       .select(`
         *,
-        class:classes!scheduled_sessions_class_id_fkey(name),
-        teacher:profiles!scheduled_sessions_teacher_id_fkey(full_name, avatar_url),
+        class:classes!scheduled_sessions_class_id_fkey(name, name_localized),
+        teacher:profiles!scheduled_sessions_teacher_id_fkey(full_name, name_localized, avatar_url),
         student:students!scheduled_sessions_student_id_fkey(
-          profiles!students_id_fkey(full_name, avatar_url)
+          profiles!students_id_fkey(full_name, name_localized, avatar_url)
         )
       `)
       .eq('school_id', filters.schoolId);
@@ -49,9 +49,9 @@ class ScheduledSessionService {
       .from('scheduled_sessions')
       .select(`
         *,
-        class:classes!scheduled_sessions_class_id_fkey(name),
+        class:classes!scheduled_sessions_class_id_fkey(name, name_localized),
         student:students!scheduled_sessions_student_id_fkey(
-          profiles!students_id_fkey(full_name, avatar_url)
+          profiles!students_id_fkey(full_name, name_localized, avatar_url)
         )
       `)
       .eq('teacher_id', teacherId)
@@ -72,8 +72,8 @@ class ScheduledSessionService {
       .from('scheduled_sessions')
       .select(`
         *,
-        class:classes!scheduled_sessions_class_id_fkey(name),
-        teacher:profiles!scheduled_sessions_teacher_id_fkey(full_name, avatar_url)
+        class:classes!scheduled_sessions_class_id_fkey(name, name_localized),
+        teacher:profiles!scheduled_sessions_teacher_id_fkey(full_name, name_localized, avatar_url)
       `)
       .eq('school_id', schoolId)
       .gte('session_date', today)

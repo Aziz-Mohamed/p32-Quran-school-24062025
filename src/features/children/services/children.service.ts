@@ -7,7 +7,7 @@ class ChildrenService {
   async getChildren(parentId: string) {
     return supabase
       .from('students')
-      .select('*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name)')
+      .select('*, profiles!students_id_fkey!inner(full_name, name_localized, username, avatar_url), classes(name, name_localized)')
       .eq('parent_id', parentId)
       .eq('is_active', true)
       .order('full_name', { referencedTable: 'profiles', ascending: true });
@@ -21,7 +21,7 @@ class ChildrenService {
     const [studentResult, sessionsResult, stickerCountResult] = await Promise.all([
       supabase
         .from('students')
-        .select('*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name, id)')
+        .select('*, profiles!students_id_fkey!inner(full_name, name_localized, username, avatar_url), classes(name, name_localized, id)')
         .eq('id', studentId)
         .single(),
       supabase
