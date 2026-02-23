@@ -9,6 +9,8 @@ import { ProgressBar } from '@/components/ui';
 import { LoadingState, EmptyState } from '@/components/feedback';
 import { SelfAssignmentForm } from '@/features/memorization/components/SelfAssignmentForm';
 import { RubBuildingBlock, BLOCK_SIZE } from '@/features/memorization/components/RubBuildingBlock';
+import { RubDetailSheet } from '@/features/memorization/components/RubDetailSheet';
+import type { RubCoverage } from '@/features/memorization/utils/rub-coverage';
 import { useRubCoverage } from '@/features/memorization/hooks/useRubCoverage';
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { useMemorizationProgress } from '@/features/memorization/hooks/useMemorizationProgress';
@@ -44,6 +46,7 @@ export default function MemorizationScreen() {
   const canSelfAssign = dashboardData?.student?.can_self_assign ?? false;
   const schoolId = dashboardData?.student?.school_id ?? '';
   const [formVisible, setFormVisible] = useState(false);
+  const [selectedRub, setSelectedRub] = useState<{ coverage: RubCoverage; isComplete: boolean } | null>(null);
 
   // Stats
   const certifiedCount = certifications.length;
@@ -122,6 +125,7 @@ export default function MemorizationScreen() {
                     key={coverage.rubNumber}
                     coverage={coverage}
                     isComplete={false}
+                    onPress={() => setSelectedRub({ coverage, isComplete: false })}
                   />
                 ))}
               </View>
@@ -140,6 +144,7 @@ export default function MemorizationScreen() {
                     key={coverage.rubNumber}
                     coverage={coverage}
                     isComplete={true}
+                    onPress={() => setSelectedRub({ coverage, isComplete: true })}
                   />
                 ))}
               </View>
@@ -205,6 +210,14 @@ export default function MemorizationScreen() {
           schoolId={schoolId}
         />
       ) : null}
+
+      {/* Rub' Detail Sheet */}
+      <RubDetailSheet
+        visible={!!selectedRub}
+        coverage={selectedRub?.coverage ?? null}
+        isComplete={selectedRub?.isComplete ?? false}
+        onClose={() => setSelectedRub(null)}
+      />
     </>
   );
 }

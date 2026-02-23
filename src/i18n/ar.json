@@ -1126,6 +1126,15 @@
       "saveButton": "أضف إلى خطتي",
       "savedSuccess": "تم إضافة الواجب بنجاح"
     },
+    "detail": {
+      "verseRange": "نطاق الآيات",
+      "mushafPage": "صفحة المصحف",
+      "memorized": "محفوظ",
+      "status": "الحالة",
+      "inProgress": "قيد الحفظ",
+      "complete": "مكتمل",
+      "ayahsCount": "{{memorized}} / {{total}} آية"
+    },
     "validation": {
       "selectStudent": "يرجى اختيار طالب",
       "selectSurah": "يرجى اختيار سورة",

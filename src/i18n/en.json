@@ -1126,6 +1126,15 @@
       "saveButton": "Add to My Plan",
       "savedSuccess": "Homework added successfully"
     },
+    "detail": {
+      "verseRange": "Verse Range",
+      "mushafPage": "Mushaf Page",
+      "memorized": "Memorized",
+      "status": "Status",
+      "inProgress": "In Progress",
+      "complete": "Complete",
+      "ayahsCount": "{{memorized}} / {{total}} ayahs"
+    },
     "validation": {
       "selectStudent": "Please select a student",
       "selectSurah": "Please select a surah",

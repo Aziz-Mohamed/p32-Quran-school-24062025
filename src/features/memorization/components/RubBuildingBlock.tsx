@@ -1,5 +1,6 @@
 import React from 'react';
-import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTranslation } from 'react-i18next';
 import Animated, {
   useAnimatedProps,
@@ -55,9 +56,10 @@ const AnimatedLine = Animated.createAnimatedComponent(Line);
 interface RubBuildingBlockProps {
   coverage: RubCoverage;
   isComplete: boolean;
+  onPress?: () => void;
 }
 
-function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) {
+function RubBuildingBlockInner({ coverage, isComplete, onPress }: RubBuildingBlockProps) {
   const { t } = useTranslation();
   const uid = `rb${coverage.rubNumber}`;
 
@@ -80,7 +82,14 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
     return { y1: yPos, y2: yPos };
   });
 
-  return (
+  const handlePress = () => {
+    if (onPress) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      onPress();
+    }
+  };
+
+  const cardContent = (
     <View style={styles.card}>
       <Svg width={BS} height={BS}>
         <Defs>
@@ -166,6 +175,20 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
       </View>
     </View>
   );
+
+  if (onPress) {
+    return (
+      <Pressable
+        onPress={handlePress}
+        accessibilityRole="button"
+        accessibilityLabel={`Rub' ${coverage.rubNumber}`}
+      >
+        {cardContent}
+      </Pressable>
+    );
+  }
+
+  return cardContent;
 }
 
 export const RubBuildingBlock = React.memo(
@@ -173,7 +196,8 @@ export const RubBuildingBlock = React.memo(
   (prev, next) =>
     prev.coverage.rubNumber === next.coverage.rubNumber &&
     prev.coverage.percentage === next.coverage.percentage &&
-    prev.isComplete === next.isComplete,
+    prev.isComplete === next.isComplete &&
+    prev.onPress === next.onPress,
 );
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
