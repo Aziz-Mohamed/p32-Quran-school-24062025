@@ -9,10 +9,13 @@ import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { Select } from '@/components/forms/Select';
 import { DatePicker } from '@/components/forms/DatePicker';
+import { LocalizedNameInput } from '@/components/forms/LocalizedNameInput';
 import { useCreateStudent } from '@/features/students/hooks/useStudents';
 import { useClasses } from '@/features/classes/hooks/useClasses';
 import { useParents } from '@/features/parents/hooks/useParents';
 import { generateUsername } from '@/lib/username';
+import { buildNameLocalized, getCanonicalName } from '@/lib/localized-name';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -22,34 +25,38 @@ import { spacing } from '@/theme/spacing';
 export default function CreateStudentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const [fullName, setFullName] = useState('');
+  const [nameLocalized, setNameLocalized] = useState<Record<string, string>>({});
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [classId, setClassId] = useState<string | null>(null);
   const [parentId, setParentId] = useState<string | null>(null);
   const [dateOfBirth, setDateOfBirth] = useState<Date | null>(null);
 
+  const { resolveName } = useLocalizedName();
   const createStudent = useCreateStudent();
   const { data: classes = [] } = useClasses({ isActive: true });
   const { data: parents = [] } = useParents();
 
+  const canonicalName = getCanonicalName(nameLocalized);
+
   const handleGenerateUsername = () => {
-    if (fullName.trim()) {
-      setUsername(generateUsername(fullName));
+    if (canonicalName.trim()) {
+      setUsername(generateUsername(canonicalName));
     }
   };
 
   const handleCreate = async () => {
-    if (!fullName.trim() || !username.trim() || !password.trim()) {
+    if (!canonicalName.trim() || !username.trim() || !password.trim()) {
       Alert.alert(t('common.error'), t('admin.students.requiredFields'));
       return;
     }
 
     try {
       const result = await createStudent.mutateAsync({
-        fullName: fullName.trim(),
+        fullName: canonicalName.trim(),
         username: username.trim(),
         password,
+        nameLocalized: buildNameLocalized(nameLocalized),
         classId: classId ?? undefined,
         parentId: parentId ?? undefined,
         dateOfBirth: dateOfBirth ? dateOfBirth.toISOString().split('T')[0] : undefined,
@@ -70,12 +77,12 @@ export default function CreateStudentScreen() {
   };
 
   const classOptions = classes.map((c: any) => ({
-    label: c.name,
+    label: resolveName(c.name_localized, c.name) ?? c.name,
     value: c.id,
   }));
 
   const parentOptions = parents.map((p: any) => ({
-    label: p.full_name,
+    label: resolveName(p.name_localized, p.full_name),
     value: p.id,
   }));
 
@@ -91,11 +98,10 @@ export default function CreateStudentScreen() {
 
         <Text style={styles.title}>{t('admin.students.createTitle')}</Text>
 
-        <TextField
+        <LocalizedNameInput
           label={t('admin.students.fullName')}
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder={t('admin.students.fullNamePlaceholder')}
+          value={nameLocalized}
+          onChange={setNameLocalized}
         />
 
         <View style={styles.usernameRow}>

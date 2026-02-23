@@ -11,6 +11,7 @@ import { LoadingState, ErrorState } from '@/components/feedback';
 import { useStudentById, useUpdateStudent } from '@/features/students/hooks/useStudents';
 import { useClasses } from '@/features/classes/hooks/useClasses';
 import { useParents } from '@/features/parents/hooks/useParents';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -22,6 +23,7 @@ export default function EditStudentScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  const { resolveName } = useLocalizedName();
   const { data: student, isLoading, error, refetch } = useStudentById(id);
   const { data: classes = [] } = useClasses({ isActive: true });
   const { data: parents = [] } = useParents();
@@ -77,12 +79,12 @@ export default function EditStudentScreen() {
   };
 
   const classOptions = classes.map((c: any) => ({
-    label: c.name,
+    label: resolveName(c.name_localized, c.name) ?? c.name,
     value: c.id,
   }));
 
   const parentOptions = parents.map((p: any) => ({
-    label: p.full_name,
+    label: resolveName(p.name_localized, p.full_name),
     value: p.id,
   }));
 
@@ -98,7 +100,7 @@ export default function EditStudentScreen() {
 
         <Text style={styles.title}>{t('admin.students.editTitle')}</Text>
         <Text style={styles.subtitle}>
-          {(student as any).profiles?.full_name ?? '—'}
+          {resolveName((student as any).profiles?.name_localized, (student as any).profiles?.full_name)}
         </Text>
 
         <Select

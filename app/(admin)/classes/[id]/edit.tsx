@@ -7,9 +7,12 @@ import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { Select } from '@/components/forms/Select';
+import { LocalizedNameInput } from '@/components/forms/LocalizedNameInput';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useClassById, useUpdateClass } from '@/features/classes/hooks/useClasses';
 import { useTeachers } from '@/features/teachers/hooks/useTeachers';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
+import { buildNameLocalized, getCanonicalName } from '@/lib/localized-name';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,11 +24,12 @@ export default function EditClassScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  const { resolveName } = useLocalizedName();
   const { data: classData, isLoading, error, refetch } = useClassById(id);
   const { data: teachers = [] } = useTeachers();
   const updateClass = useUpdateClass();
 
-  const [name, setName] = useState('');
+  const [nameLocalized, setNameLocalized] = useState<Record<string, string>>({});
   const [description, setDescription] = useState('');
   const [teacherId, setTeacherId] = useState<string | null>(null);
   const [maxStudents, setMaxStudents] = useState('30');
@@ -33,7 +37,10 @@ export default function EditClassScreen() {
 
   useEffect(() => {
     if (classData) {
-      setName(classData.name);
+      const localized = (classData as any).name_localized;
+      setNameLocalized(
+        localized && typeof localized === 'object' ? localized : { en: classData.name ?? '' },
+      );
       setDescription(classData.description ?? '');
       setTeacherId(classData.teacher_id);
       setMaxStudents(String(classData.max_students ?? 30));
@@ -45,8 +52,10 @@ export default function EditClassScreen() {
   if (error) return <ErrorState description={(error as Error).message} onRetry={refetch} />;
   if (!classData) return <ErrorState description={t('admin.classes.notFound')} />;
 
+  const canonicalName = getCanonicalName(nameLocalized);
+
   const handleSave = async () => {
-    if (!name.trim()) {
+    if (!canonicalName.trim()) {
       Alert.alert(t('common.error'), t('admin.classes.nameRequired'));
       return;
     }
@@ -54,7 +63,8 @@ export default function EditClassScreen() {
     await updateClass.mutateAsync({
       id: classData.id,
       input: {
-        name: name.trim(),
+        name: canonicalName.trim(),
+        name_localized: buildNameLocalized(nameLocalized),
         description: description.trim() || null,
         teacher_id: teacherId,
         max_students: parseInt(maxStudents, 10) || 30,
@@ -65,9 +75,9 @@ export default function EditClassScreen() {
     router.back();
   };
 
-  const teacherOptions = teachers.map((t: any) => ({
-    label: t.full_name,
-    value: t.id,
+  const teacherOptions = teachers.map((tc: any) => ({
+    label: resolveName(tc.name_localized, tc.full_name),
+    value: tc.id,
   }));
 
   return (
@@ -82,11 +92,10 @@ export default function EditClassScreen() {
 
         <Text style={styles.title}>{t('admin.classes.editTitle')}</Text>
 
-        <TextField
+        <LocalizedNameInput
           label={t('admin.classes.name')}
-          value={name}
-          onChangeText={setName}
-          placeholder={t('admin.classes.namePlaceholder')}
+          value={nameLocalized}
+          onChange={setNameLocalized}
         />
 
         <TextField

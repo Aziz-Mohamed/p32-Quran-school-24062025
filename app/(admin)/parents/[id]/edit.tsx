@@ -7,9 +7,12 @@ import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { MultiSelect } from '@/components/forms/MultiSelect';
+import { LocalizedNameInput } from '@/components/forms/LocalizedNameInput';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useParentById, useUpdateParent, useUpdateParentChildren } from '@/features/parents/hooks/useParents';
 import { useAvailableStudentsForParent } from '@/features/students/hooks/useStudents';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
+import { buildNameLocalized, getCanonicalName } from '@/lib/localized-name';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,12 +24,13 @@ export default function EditParentScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  const { resolveName } = useLocalizedName();
   const { data: parent, isLoading, error, refetch } = useParentById(id);
   const updateParent = useUpdateParent();
   const updateChildren = useUpdateParentChildren();
   const { data: availableStudents = [] } = useAvailableStudentsForParent(id);
 
-  const [fullName, setFullName] = useState('');
+  const [nameLocalized, setNameLocalized] = useState<Record<string, string>>({});
   const [phone, setPhone] = useState('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [childrenError, setChildrenError] = useState('');
@@ -39,14 +43,17 @@ export default function EditParentScreen() {
 
   useEffect(() => {
     if (parent) {
-      setFullName(parent.full_name);
+      const localized = (parent as any).name_localized;
+      setNameLocalized(
+        localized && typeof localized === 'object' ? localized : { en: parent.full_name ?? '' },
+      );
       setPhone(parent.phone ?? '');
       setSelectedStudentIds(originalStudentIds);
     }
   }, [parent, originalStudentIds]);
 
   const studentOptions = availableStudents.map((s: any) => ({
-    label: s.profiles?.full_name ?? '—',
+    label: resolveName(s.profiles?.name_localized, s.profiles?.full_name) ?? '—',
     value: s.id,
   }));
 
@@ -67,10 +74,12 @@ export default function EditParentScreen() {
 
     try {
       // Update profile info
+      const builtLocalized = buildNameLocalized(nameLocalized);
       await updateParent.mutateAsync({
         id: parent.id,
         input: {
-          fullName: fullName.trim(),
+          fullName: getCanonicalName(builtLocalized),
+          nameLocalized: builtLocalized,
           phone: phone.trim() || undefined,
         },
       });
@@ -110,11 +119,10 @@ export default function EditParentScreen() {
 
         <Text style={styles.title}>{t('admin.parents.editTitle')}</Text>
 
-        <TextField
+        <LocalizedNameInput
           label={t('admin.parents.fullName')}
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder={t('admin.parents.fullNamePlaceholder')}
+          value={nameLocalized}
+          onChange={setNameLocalized}
         />
 
         <TextField

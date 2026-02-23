@@ -6,8 +6,10 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
+import { LocalizedNameInput } from '@/components/forms/LocalizedNameInput';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useTeacherById, useUpdateTeacher } from '@/features/teachers/hooks/useTeachers';
+import { buildNameLocalized, getCanonicalName } from '@/lib/localized-name';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -22,12 +24,15 @@ export default function EditTeacherScreen() {
   const { data: teacher, isLoading, error, refetch } = useTeacherById(id);
   const updateTeacher = useUpdateTeacher();
 
-  const [fullName, setFullName] = useState('');
+  const [nameLocalized, setNameLocalized] = useState<Record<string, string>>({});
   const [phone, setPhone] = useState('');
 
   useEffect(() => {
     if (teacher) {
-      setFullName(teacher.full_name);
+      const localized = (teacher as any).name_localized;
+      setNameLocalized(
+        localized && typeof localized === 'object' ? localized : { en: teacher.full_name ?? '' },
+      );
       setPhone(teacher.phone ?? '');
     }
   }, [teacher]);
@@ -37,10 +42,12 @@ export default function EditTeacherScreen() {
   if (!teacher) return <ErrorState description={t('admin.teachers.notFound')} />;
 
   const handleSave = async () => {
+    const builtLocalized = buildNameLocalized(nameLocalized);
     await updateTeacher.mutateAsync({
       id: teacher.id,
       input: {
-        fullName: fullName.trim(),
+        fullName: getCanonicalName(builtLocalized),
+        nameLocalized: builtLocalized,
         phone: phone.trim() || undefined,
       },
     });
@@ -59,11 +66,10 @@ export default function EditTeacherScreen() {
 
         <Text style={styles.title}>{t('admin.teachers.editTitle')}</Text>
 
-        <TextField
+        <LocalizedNameInput
           label={t('admin.teachers.fullName')}
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder={t('admin.teachers.fullNamePlaceholder')}
+          value={nameLocalized}
+          onChange={setNameLocalized}
         />
 
         <TextField
