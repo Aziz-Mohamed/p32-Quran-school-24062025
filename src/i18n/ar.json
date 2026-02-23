@@ -170,10 +170,37 @@
   "student": {
     "tabs": {
       "dashboard": "لوحة التحكّم",
-      "revision": "المراجعة",
       "memorization": "الحفظ",
+      "revision": "المراجعة",
+      "journey": "رحلتي",
       "stickers": "الملصقات",
       "profile": "الملف الشخصي"
+    },
+    "journey": {
+      "title": "رحلتي",
+      "quranMap": "خريطة القرآن",
+      "stickers": "الملصقات",
+      "mapStats": "{{certified}}/240 مُجاز",
+      "totalReviews": "{{count}} مراجعة",
+      "legendLess": "أقل",
+      "legendMore": "أكثر",
+      "legend": {
+        "critical": "عاجل",
+        "warning": "معرّض",
+        "fading": "يتلاشى",
+        "fresh": "طازج",
+        "dormant": "متوقف"
+      }
+    },
+    "blockBuilder": {
+      "heroRub": "{{count}}/240 ربع",
+      "heroAyahs": "{{memorized}}/{{total}} آية",
+      "inProgress": "قيد الحفظ",
+      "readyForCertification": "جاهز للإجازة",
+      "ready": "جاهز",
+      "ayahProgress": "{{memorized}}/{{total}} آية",
+      "emptyTitle": "ابدأ البناء",
+      "emptyDescription": "اضغط + لإضافة أول كتلة حفظ"
     },
     "revision": {
       "title": "صحة المراجعة",
@@ -230,6 +257,8 @@
       "stickers": "الملصقات",
       "rubCertified": "ربع مُجاز",
       "todaysTasks": "واجبات الحفظ",
+      "revisionHealth": "صحة المراجعة",
+      "revisionHealthGood": "جميع الأرباع المُجازة بحالة جيدة",
       "seeAll": "عرض الكل {{count}}",
       "allCaughtUp": "أحسنت! لا مهام متبقية",
       "nothingDueToday": "لا توجد مهام اليوم",
@@ -1096,6 +1125,15 @@
       "subtitle": "اختر ما تريد حفظه بعد ذلك",
       "saveButton": "أضف إلى خطتي",
       "savedSuccess": "تم إضافة الواجب بنجاح"
+    },
+    "detail": {
+      "verseRange": "نطاق الآيات",
+      "mushafPage": "صفحة المصحف",
+      "memorized": "محفوظ",
+      "status": "الحالة",
+      "inProgress": "قيد الحفظ",
+      "complete": "مكتمل",
+      "ayahsCount": "{{memorized}} / {{total}} آية"
     },
     "validation": {
       "selectStudent": "يرجى اختيار طالب",

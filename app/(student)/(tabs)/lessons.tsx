@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, I18nManager, Modal, Pressable, ScrollView, SectionList, StyleSheet, View, Text } from 'react-native';
+import { ActivityIndicator, Alert, I18nManager, Modal, Pressable, SectionList, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,8 +19,7 @@ import {
   RevisionSheet,
 } from '@/features/gamification';
 import type { EnrichedCertification, RubReference, FreshnessState } from '@/features/gamification';
-import { useCancelAssignment, MemorizationRow } from '@/features/memorization';
-import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
+import { useCancelAssignment } from '@/features/memorization';
 
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { getMushafPageRange } from '@/lib/quran-metadata';
@@ -132,17 +131,6 @@ export default function RevisionHealthScreen() {
 
   // Revision homework data (shared hook)
   const { homeworkItems, pendingKeys } = useRevisionHomework(profile?.id);
-
-  // SM2-scheduled revision items (near + far)
-  const todayStr = new Date().toISOString().split('T')[0];
-  const { data: revisionSchedule = [] } = useRevisionSchedule(profile?.id, todayStr);
-
-  const nearRevisionItems = useMemo(
-    () => revisionSchedule.filter((item) => item.review_type === 'recent_review'),
-    [revisionSchedule],
-  );
-
-  const [activeSegment, setActiveSegment] = useState<'near' | 'far'>('near');
 
   // Smart warning: exclude rubʿ already covered by homework
   const homeworkRubSet = useMemo(
@@ -377,92 +365,51 @@ export default function RevisionHealthScreen() {
   return (
     <Screen scroll={false}>
       <View style={styles.container}>
-        {/* Title + View Mode (Far only) */}
+        {/* Title + View Mode */}
         <View style={styles.headerRow}>
           <Text style={styles.title}>{t('student.revision.title')}</Text>
-          {activeSegment === 'far' && (
-            <View>
-              <Pressable
-                style={styles.viewModeButton}
-                onPress={() => setViewModeOpen((v) => !v)}
-              >
-                <Text style={styles.viewModeLabel}>
-                  {t(`student.revision.viewMode.${viewMode}`)}
-                </Text>
-                <Ionicons
-                  name={viewModeOpen ? 'chevron-up' : 'chevron-down'}
-                  size={16}
-                  color={colors.primary[500]}
-                />
-              </Pressable>
-              {viewModeOpen && (
-                <View style={styles.viewModeDropdown}>
-                  {VIEW_MODES.map((mode) => (
-                    <Pressable
-                      key={mode}
+          <View>
+            <Pressable
+              style={styles.viewModeButton}
+              onPress={() => setViewModeOpen((v) => !v)}
+            >
+              <Text style={styles.viewModeLabel}>
+                {t(`student.revision.viewMode.${viewMode}`)}
+              </Text>
+              <Ionicons
+                name={viewModeOpen ? 'chevron-up' : 'chevron-down'}
+                size={16}
+                color={colors.primary[500]}
+              />
+            </Pressable>
+            {viewModeOpen && (
+              <View style={styles.viewModeDropdown}>
+                {VIEW_MODES.map((mode) => (
+                  <Pressable
+                    key={mode}
+                    style={[
+                      styles.viewModeOption,
+                      viewMode === mode && styles.viewModeOptionActive,
+                    ]}
+                    onPress={() => { setViewMode(mode); setViewModeOpen(false); }}
+                  >
+                    <Text
                       style={[
-                        styles.viewModeOption,
-                        viewMode === mode && styles.viewModeOptionActive,
+                        styles.viewModeOptionText,
+                        viewMode === mode && styles.viewModeOptionTextActive,
                       ]}
-                      onPress={() => { setViewMode(mode); setViewModeOpen(false); }}
                     >
-                      <Text
-                        style={[
-                          styles.viewModeOptionText,
-                          viewMode === mode && styles.viewModeOptionTextActive,
-                        ]}
-                      >
-                        {t(`student.revision.viewMode.${mode}`)}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              )}
-            </View>
-          )}
-        </View>
-
-        {/* Segmented Control */}
-        <View style={styles.segmentedControl}>
-          <Pressable
-            style={[styles.segmentButton, activeSegment === 'near' && styles.segmentButtonActive]}
-            onPress={() => setActiveSegment('near')}
-          >
-            <Text style={[styles.segmentText, activeSegment === 'near' && styles.segmentTextActive]}>
-              {t('student.revision.segmentNear')}
-            </Text>
-          </Pressable>
-          <Pressable
-            style={[styles.segmentButton, activeSegment === 'far' && styles.segmentButtonActive]}
-            onPress={() => setActiveSegment('far')}
-          >
-            <Text style={[styles.segmentText, activeSegment === 'far' && styles.segmentTextActive]}>
-              {t('student.revision.segmentFar')}
-            </Text>
-          </Pressable>
-        </View>
-
-        {/* ── Near Segment ── */}
-        {activeSegment === 'near' ? (
-          <ScrollView contentContainerStyle={styles.nearContent}>
-            {nearRevisionItems.length > 0 ? (
-              nearRevisionItems.map((item, index) => (
-                <MemorizationRow
-                  key={item.progress_id ?? `near-${item.surah_number}-${item.from_ayah}-${index}`}
-                  item={item}
-                />
-              ))
-            ) : (
-              <View style={styles.nearEmpty}>
-                <Ionicons name="checkmark-circle" size={48} color={colors.primary[400]} />
-                <Text style={styles.nearEmptyTitle}>{t('student.revision.nearEmpty')}</Text>
-                <Text style={styles.nearEmptyDesc}>{t('student.revision.nearEmptyDesc')}</Text>
+                      {t(`student.revision.viewMode.${mode}`)}
+                    </Text>
+                  </Pressable>
+                ))}
               </View>
             )}
-          </ScrollView>
-        ) : (
-          /* ── Far Segment ── */
-          <SectionList
+          </View>
+        </View>
+
+        {/* Rubʿ Revision Content */}
+        <SectionList
             sections={sections}
             keyExtractor={(item) => isGroup(item) ? item.id : item.id}
             contentContainerStyle={styles.listContent}
@@ -620,7 +567,7 @@ export default function RevisionHealthScreen() {
               <View style={styles.quickLinks}>
                 <Pressable
                   style={[styles.pill, { backgroundColor: colors.accent.violet[50] }]}
-                  onPress={() => router.push('/(student)/rub-progress')}
+                  onPress={() => router.push('/(student)/(tabs)/journey')}
                 >
                   <Ionicons name="map" size={16} color={colors.accent.violet[500]} />
                   <Text style={[styles.pillText, { color: colors.accent.violet[600] }]}>
@@ -630,7 +577,6 @@ export default function RevisionHealthScreen() {
               </View>
             }
           />
-        )}
 
         {/* Revision Sheet (single rubʿ) */}
         <RevisionSheet
@@ -1014,57 +960,6 @@ const styles = StyleSheet.create({
     fontSize: normalize(12),
     color: colors.neutral[500],
     marginTop: normalize(2),
-  },
-
-  // Segmented Control
-  segmentedControl: {
-    flexDirection: 'row',
-    marginHorizontal: spacing.lg,
-    marginBottom: spacing.md,
-    backgroundColor: colors.neutral[100],
-    borderRadius: radius.full,
-    padding: normalize(3),
-  },
-  segmentButton: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderRadius: radius.full,
-  },
-  segmentButtonActive: {
-    backgroundColor: colors.primary[500],
-  },
-  segmentText: {
-    fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(13),
-    color: colors.neutral[500],
-  },
-  segmentTextActive: {
-    color: colors.white,
-  },
-
-  // Near Segment
-  nearContent: {
-    padding: spacing.lg,
-    paddingTop: 0,
-    paddingBottom: 110,
-  },
-  nearEmpty: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: spacing['3xl'],
-    gap: spacing.sm,
-  },
-  nearEmptyTitle: {
-    fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(16),
-    color: colors.neutral[800],
-    marginTop: spacing.sm,
-  },
-  nearEmptyDesc: {
-    fontFamily: typography.fontFamily.regular,
-    fontSize: normalize(13),
-    color: colors.neutral[500],
   },
 
   // Revision Homework

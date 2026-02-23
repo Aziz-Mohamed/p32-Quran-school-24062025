@@ -1,17 +1,20 @@
 import React, { useMemo, useState } from 'react';
-import { I18nManager, StyleSheet, View, Text, Pressable } from 'react-native';
+import { I18nManager, Pressable, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
 import { ProgressBar } from '@/components/ui';
-import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
-import { MemorizationHealthCard } from '@/features/memorization';
+import { LoadingState, EmptyState } from '@/components/feedback';
 import { SelfAssignmentForm } from '@/features/memorization/components/SelfAssignmentForm';
-import { useRevisionSchedule } from '@/features/memorization/hooks/useRevisionSchedule';
+import { RubBuildingBlock, BLOCK_SIZE } from '@/features/memorization/components/RubBuildingBlock';
+import { RubDetailSheet } from '@/features/memorization/components/RubDetailSheet';
+import type { RubCoverage } from '@/features/memorization/utils/rub-coverage';
+import { useRubCoverage } from '@/features/memorization/hooks/useRubCoverage';
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { useMemorizationProgress } from '@/features/memorization/hooks/useMemorizationProgress';
+import { useRubCertifications } from '@/features/gamification/hooks/useRubCertifications';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
 import { useAuth } from '@/hooks/useAuth';
 import { SURAHS } from '@/lib/quran-metadata';
@@ -20,33 +23,36 @@ import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 
-// ─── Memorization Screen ─────────────────────────────────────────────────────
+// ─── Memorization Screen (Block Builder) ────────────────────────────────────
 
 export default function MemorizationScreen() {
   const { t } = useTranslation();
   const { profile } = useAuth();
+  const isRTL = I18nManager.isRTL;
 
-  const todayStr = new Date().toISOString().split('T')[0];
-  const { data: schedule = [], isLoading: scheduleLoading, error, refetch } = useRevisionSchedule(profile?.id, todayStr);
   const { data: stats } = useMemorizationStats(profile?.id);
+  const { data: dashboardData } = useStudentDashboard(profile?.id);
+  const { enriched: certifications } = useRubCertifications(profile?.id);
   const { data: progress = [], isLoading: progressLoading } = useMemorizationProgress({
     studentId: profile?.id ?? '',
   });
-  const { data: dashboardData } = useStudentDashboard(profile?.id);
+
+  const {
+    inProgress,
+    completed,
+    isLoading: coverageLoading,
+  } = useRubCoverage(profile?.id);
 
   const canSelfAssign = dashboardData?.student?.can_self_assign ?? false;
   const schoolId = dashboardData?.student?.school_id ?? '';
-
-  const isRTL = I18nManager.isRTL;
   const [formVisible, setFormVisible] = useState(false);
+  const [selectedRub, setSelectedRub] = useState<{ coverage: RubCoverage; isComplete: boolean } | null>(null);
 
-  // Filter schedule to only new_hifz items (revision items live on the Revision tab)
-  const newHifzItems = useMemo(
-    () => schedule.filter((item) => item.review_type === 'new_hifz'),
-    [schedule],
-  );
+  // Stats
+  const certifiedCount = certifications.length;
+  const totalMemorized = stats?.total_ayahs_memorized ?? 0;
 
-  // Group progress by surah for compact journey list
+  // Compact surah journey (kept as secondary view)
   const surahsWithProgress = useMemo(() => {
     const map = new Map<number, { memorized: number; total: number }>();
 
@@ -72,11 +78,11 @@ export default function MemorizationScreen() {
     });
   }, [progress]);
 
-  const isLoading = scheduleLoading || progressLoading;
-  const hasNoTasks = newHifzItems.length === 0;
+  const isLoading = coverageLoading || progressLoading;
 
   if (isLoading) return <LoadingState />;
-  if (error) return <ErrorState description={error.message} onRetry={refetch} />;
+
+  const hasBlocks = inProgress.length > 0 || completed.length > 0;
 
   return (
     <>
@@ -85,70 +91,76 @@ export default function MemorizationScreen() {
           {/* Header */}
           <Text style={styles.title}>{t('memorization.title')}</Text>
 
-          {/* Hero Ayah Counter */}
-          <MemorizationHealthCard stats={stats} />
+          {/* Hero Card — simplified, no progress bar */}
+          <Card variant="default" style={styles.heroCard}>
+            <View style={styles.heroStats}>
+              <View style={styles.heroStat}>
+                <Text style={styles.heroNumber}>{certifiedCount}</Text>
+                <Text style={styles.heroLabel}>
+                  {t('student.blockBuilder.heroRub', { count: certifiedCount })}
+                </Text>
+              </View>
+              <View style={styles.heroDivider} />
+              <View style={styles.heroStat}>
+                <Text style={styles.heroNumber}>{totalMemorized.toLocaleString()}</Text>
+                <Text style={styles.heroLabel}>
+                  {t('student.blockBuilder.heroAyahs', {
+                    memorized: totalMemorized.toLocaleString(),
+                    total: '6,236',
+                  })}
+                </Text>
+              </View>
+            </View>
+          </Card>
 
-          {/* New Memorization — PRIMARY */}
-          {newHifzItems.length > 0 && (
+          {/* In Progress Blocks — grid layout */}
+          {inProgress.length > 0 && (
             <>
               <Text style={styles.sectionHeader}>
-                {t('memorization.sections.new_hifz')}
+                {t('student.blockBuilder.inProgress')}
               </Text>
-              {newHifzItems.map((item, index) => {
-                const surah = SURAHS[item.surah_number - 1];
-                const ayahCount = item.to_ayah - item.from_ayah + 1;
-                const primaryName = surah
-                  ? (isRTL ? surah.nameArabic : surah.nameEnglish)
-                  : `Surah ${item.surah_number}`;
-                const secondaryName = surah
-                  ? (isRTL ? surah.nameEnglish : surah.nameArabic)
-                  : undefined;
-                return (
-                  <Card
-                    key={item.progress_id ?? `new-${item.surah_number}-${item.from_ayah}-${index}`}
-                    variant="default"
-                    style={styles.newHifzCard}
-                  >
-                    <View style={styles.newHifzContent}>
-                      <View style={styles.newHifzNameRow}>
-                        <Text style={isRTL ? styles.newHifzSurahArabic : styles.newHifzSurah}>
-                          {primaryName}
-                        </Text>
-                        {secondaryName && (
-                          <Text style={styles.newHifzSecondary}>
-                            {secondaryName}
-                          </Text>
-                        )}
-                      </View>
-                      <Text style={styles.newHifzRange}>
-                        {t('memorization.ayahRange', { from: item.from_ayah, to: item.to_ayah })}
-                        {'  ·  '}
-                        {t('memorization.newAyahCount', { count: ayahCount })}
-                      </Text>
-                    </View>
-                    <View style={styles.newHifzIconCircle}>
-                      <Ionicons
-                        name="book-outline"
-                        size={18}
-                        color={colors.accent.indigo[600]}
-                      />
-                    </View>
-                  </Card>
-                );
-              })}
+              <View style={styles.blockGrid}>
+                {inProgress.map((coverage) => (
+                  <RubBuildingBlock
+                    key={coverage.rubNumber}
+                    coverage={coverage}
+                    isComplete={false}
+                    onPress={() => setSelectedRub({ coverage, isComplete: false })}
+                  />
+                ))}
+              </View>
+            </>
+          )}
+
+          {/* Completed (Ready for Certification) — grid layout */}
+          {completed.length > 0 && (
+            <>
+              <Text style={styles.sectionHeader}>
+                {t('student.blockBuilder.readyForCertification')}
+              </Text>
+              <View style={styles.blockGrid}>
+                {completed.map((coverage) => (
+                  <RubBuildingBlock
+                    key={coverage.rubNumber}
+                    coverage={coverage}
+                    isComplete={true}
+                    onPress={() => setSelectedRub({ coverage, isComplete: true })}
+                  />
+                ))}
+              </View>
             </>
           )}
 
           {/* Empty State */}
-          {hasNoTasks && (
+          {!hasBlocks && (
             <EmptyState
-              icon="book-outline"
-              title={t('memorization.noRevisionToday')}
-              description={t('memorization.noRevisionDescription')}
+              icon="cube-outline"
+              title={t('student.blockBuilder.emptyTitle')}
+              description={t('student.blockBuilder.emptyDescription')}
             />
           )}
 
-          {/* Your Journey — TERTIARY (compact surah list) */}
+          {/* Your Journey — COMPACT surah list (secondary view) */}
           {surahsWithProgress.length > 0 && (
             <>
               <Text style={styles.journeyHeader}>
@@ -198,6 +210,14 @@ export default function MemorizationScreen() {
           schoolId={schoolId}
         />
       ) : null}
+
+      {/* Rub' Detail Sheet */}
+      <RubDetailSheet
+        visible={!!selectedRub}
+        coverage={selectedRub?.coverage ?? null}
+        isComplete={selectedRub?.isComplete ?? false}
+        onClose={() => setSelectedRub(null)}
+      />
     </>
   );
 }
@@ -215,6 +235,37 @@ const styles = StyleSheet.create({
     fontSize: normalize(24),
   },
 
+  // Hero Card — no progress bar
+  heroCard: {
+    padding: spacing.md,
+    marginTop: spacing.md,
+    marginBottom: spacing.md,
+  },
+  heroStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  heroStat: {
+    flex: 1,
+    alignItems: 'center',
+    gap: normalize(2),
+  },
+  heroNumber: {
+    fontFamily: typography.fontFamily.bold,
+    fontSize: normalize(22),
+    color: colors.accent.indigo[600],
+  },
+  heroLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(11),
+    color: colors.neutral[500],
+  },
+  heroDivider: {
+    width: 1,
+    height: normalize(32),
+    backgroundColor: colors.neutral[200],
+  },
+
   // Section Headers
   sectionHeader: {
     ...typography.textStyles.subheading,
@@ -224,51 +275,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
 
-  // New Hifz Cards — PROMINENT
-  newHifzCard: {
+  // Block grid — flex-wrap for square blocks
+  blockGrid: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.accent.indigo[50],
-    padding: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  newHifzContent: {
-    flex: 1,
-    gap: normalize(2),
-  },
-  newHifzNameRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
+    flexWrap: 'wrap',
     gap: spacing.sm,
-  },
-  newHifzSurah: {
-    fontFamily: typography.fontFamily.bold,
-    fontSize: normalize(17),
-    color: lightTheme.text,
-  },
-  newHifzSurahArabic: {
-    fontFamily: typography.fontFamily.arabicBold,
-    fontSize: normalize(18),
-    color: lightTheme.text,
-  },
-  newHifzSecondary: {
-    fontFamily: typography.fontFamily.regular,
-    fontSize: normalize(12),
-    color: colors.neutral[500],
-  },
-  newHifzRange: {
-    fontFamily: typography.fontFamily.medium,
-    fontSize: normalize(13),
-    color: colors.accent.indigo[600],
-    marginTop: spacing.xs,
-  },
-  newHifzIconCircle: {
-    width: normalize(36),
-    height: normalize(36),
-    borderRadius: normalize(18),
-    backgroundColor: colors.accent.indigo[100],
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 
   // Journey Section — COMPACT

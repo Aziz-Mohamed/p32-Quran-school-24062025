@@ -3,10 +3,10 @@ import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 
-import { colors } from '@/theme/colors';
 import { CustomTabBar } from '@/components/layout/CustomTabBar';
 
 // ─── Student Tabs Layout ──────────────────────────────────────────────────────
+// Order: Dashboard | Memorization | Revision (center) | Journey | Profile
 
 export default function StudentTabsLayout() {
   const { t } = useTranslation();
@@ -28,15 +28,6 @@ export default function StudentTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="lessons"
-        options={{
-          title: t('student.tabs.revision'),
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "pulse" : "pulse-outline"} size={24} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="memorization"
         options={{
           title: t('student.tabs.memorization'),
@@ -46,11 +37,20 @@ export default function StudentTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="stickers"
+        name="lessons"
         options={{
-          title: t('student.tabs.stickers'),
+          title: t('student.tabs.revision'),
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? "star" : "star-outline"} size={24} color={color} />
+            <Ionicons name={focused ? "pulse" : "pulse-outline"} size={24} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="journey"
+        options={{
+          title: t('student.tabs.journey'),
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons name={focused ? "compass" : "compass-outline"} size={24} color={color} />
           ),
         }}
       />
