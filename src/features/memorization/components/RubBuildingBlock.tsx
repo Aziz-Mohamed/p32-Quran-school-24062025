@@ -11,11 +11,11 @@ import Svg, {
   LinearGradient,
   RadialGradient,
   Stop,
-  Polygon,
   Rect,
+  Circle,
   Ellipse,
+  Path,
   Line,
-  ClipPath,
   G,
 } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +24,7 @@ import type { RubCoverage } from '../utils/rub-coverage';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
+import { radius } from '@/theme/radius';
 
 // ─── Layout ──────────────────────────────────────────────────────────────────
 
@@ -35,77 +36,29 @@ export const BLOCK_SIZE = Math.floor(
   (SCREEN_WIDTH - HORIZONTAL_PADDING - (COLUMNS - 1) * GAP) / COLUMNS,
 );
 
-// ─── LEGO Brick Geometry ─────────────────────────────────────────────────────
+const BS = BLOCK_SIZE; // shorthand for SVG paths
 
-const STUD_PEEK = normalize(8);   // studs protrude above the top face
-const DEPTH = normalize(14);      // isometric offset (top/side face thickness)
-const FACE = BLOCK_SIZE - DEPTH - STUD_PEEK; // front face size
-const TOP_OF_FRONT = STUD_PEEK + DEPTH;      // y where front face begins
+// ─── Glossy Arc Path ─────────────────────────────────────────────────────────
+// Curved highlight blob covering the upper ~40% of the card
 
-// ─── Cube Vertices (shifted down to make room for studs) ─────────────────────
-//
-//     studs ● ●     ← y = 0..STUD_PEEK
-//        v0 ─────────── v1    ← y = STUD_PEEK
-//       ╱              ╱ │
-//     v5 ─────────── v6  │    ← y = TOP_OF_FRONT
-//     │               │  v2
-//     │               │ ╱
-//     v4 ─────────── v3       ← y = BLOCK_SIZE
-//
+const GLOSS_ARC = [
+  `M 0,0`,
+  `L ${BS},0`,
+  `L ${BS},${BS * 0.30}`,
+  `Q ${BS * 0.5},${BS * 0.16} 0,${BS * 0.42}`,
+  `Z`,
+].join(' ');
 
-const v0: [number, number] = [DEPTH, STUD_PEEK];
-const v1: [number, number] = [BLOCK_SIZE, STUD_PEEK];
-const v2: [number, number] = [BLOCK_SIZE, STUD_PEEK + FACE];
-const v3: [number, number] = [FACE, BLOCK_SIZE];
-const v4: [number, number] = [0, BLOCK_SIZE];
-const v5: [number, number] = [0, TOP_OF_FRONT];
-const v6: [number, number] = [FACE, TOP_OF_FRONT];
+// ─── Decorative Stud Positions ───────────────────────────────────────────────
 
-const pts = (...vs: [number, number][]) => vs.map((p) => p.join(',')).join(' ');
+const STUD_R = normalize(5);
+const STUD_1 = { x: spacing.sm + STUD_R + normalize(2), y: spacing.sm + STUD_R + normalize(1) };
+const STUD_2 = { x: STUD_1.x + STUD_R * 2 + normalize(4), y: STUD_1.y };
 
-const TOP_PTS = pts(v5, v0, v1, v6);
-const RIGHT_PTS = pts(v6, v1, v2, v3);
-const FRONT_PTS = pts(v5, v6, v3, v4);
-
-// ─── Stud Geometry ───────────────────────────────────────────────────────────
-
-const STUD_RX = normalize(14);    // horizontal radius
-const STUD_RY = normalize(7);     // vertical radius (isometric squash)
-const STUD_H = normalize(5);      // visible cylinder height
-
-// Top face centroid → stud centers
-const topCX = (v5[0] + v0[0] + v1[0] + v6[0]) / 4;
-const topCY = (v5[1] + v0[1] + v1[1] + v6[1]) / 4;
-const STUD_OFFSET = normalize(22);
-const STUD_1 = { x: topCX - STUD_OFFSET, y: topCY };
-const STUD_2 = { x: topCX + STUD_OFFSET, y: topCY };
-
-// ─── Animated SVG Components ─────────────────────────────────────────────────
+// ─── Animated SVG ────────────────────────────────────────────────────────────
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 const AnimatedLine = Animated.createAnimatedComponent(Line);
-
-// ─── Stud Renderer ───────────────────────────────────────────────────────────
-
-function renderStud(cx: number, cy: number, uid: string) {
-  const domeY = cy - STUD_H;
-  return (
-    <G key={`stud-${cx}`}>
-      {/* Cylinder body (rect between dome and base) */}
-      <Rect
-        x={cx - STUD_RX}
-        y={domeY}
-        width={STUD_RX * 2}
-        height={STUD_H}
-        fill="#22C55E"
-      />
-      {/* Base ellipse (dark seam where stud meets top face) */}
-      <Ellipse cx={cx} cy={cy} rx={STUD_RX} ry={STUD_RY} fill="#15803D" />
-      {/* Top dome (glossy radial gradient) */}
-      <Ellipse cx={cx} cy={domeY} rx={STUD_RX} ry={STUD_RY} fill={`url(#${uid}sd)`} />
-    </G>
-  );
-}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -123,157 +76,108 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
   );
 
   const fillProps = useAnimatedProps(() => {
-    const h = fillPct.value * FACE;
-    return { y: TOP_OF_FRONT + FACE - h, height: h };
+    const h = fillPct.value * BS;
+    return { y: BS - h, height: h };
   });
 
   const glossProps = useAnimatedProps(() => {
-    const h = fillPct.value * FACE;
-    return { y: TOP_OF_FRONT + FACE - h, height: h };
+    const h = fillPct.value * BS;
+    return { y: BS - h, height: h };
   });
 
   const edgeLineProps = useAnimatedProps(() => {
-    const yPos = TOP_OF_FRONT + FACE - fillPct.value * FACE;
+    const yPos = BS - fillPct.value * BS;
     return { y1: yPos, y2: yPos };
   });
 
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.shadow} />
-
-      <Svg width={BLOCK_SIZE} height={BLOCK_SIZE}>
+    <View style={styles.card}>
+      <Svg width={BS} height={BS}>
         <Defs>
-          {/* ── Top face: bright, lit from above ── */}
-          <LinearGradient id={`${uid}tg`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#A7F3D0" />
-            <Stop offset="1" stopColor="#34D399" />
-          </LinearGradient>
-          <LinearGradient id={`${uid}ts`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#FFF" stopOpacity="0.50" />
-            <Stop offset="0.55" stopColor="#FFF" stopOpacity="0.10" />
-            <Stop offset="1" stopColor="#FFF" stopOpacity="0" />
+          {/* Card background — light warm cream */}
+          <LinearGradient id={`${uid}bg`} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#F0FDF4" />
+            <Stop offset="0.5" stopColor="#ECFDF5" />
+            <Stop offset="1" stopColor="#D1FAE5" />
           </LinearGradient>
 
-          {/* ── Right face: deep shadow ── */}
-          <LinearGradient id={`${uid}rg`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#15803D" />
-            <Stop offset="1" stopColor="#064E3B" />
-          </LinearGradient>
-          <LinearGradient id={`${uid}rs`} x1="0" y1="0" x2="1" y2="0">
-            <Stop offset="0" stopColor="#FFF" stopOpacity="0.14" />
-            <Stop offset="1" stopColor="#FFF" stopOpacity="0" />
-          </LinearGradient>
-
-          {/* ── Front face fill: rich green ── */}
+          {/* Green fill — rich multi-stop */}
           <LinearGradient id={`${uid}fg`} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor="#4ADE80" />
-            <Stop offset="0.45" stopColor="#22C55E" />
+            <Stop offset="0.35" stopColor="#22C55E" />
+            <Stop offset="0.7" stopColor="#1DB954" />
             <Stop offset="1" stopColor="#16A34A" />
           </LinearGradient>
-          <LinearGradient id={`${uid}fs`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#FFF" stopOpacity="0.38" />
-            <Stop offset="0.25" stopColor="#FFF" stopOpacity="0.14" />
-            <Stop offset="0.50" stopColor="#FFF" stopOpacity="0" />
+
+          {/* Fill gloss — specular highlight on filled area */}
+          <LinearGradient id={`${uid}fs`} x1="0.1" y1="0" x2="0.3" y2="1">
+            <Stop offset="0" stopColor="#FFF" stopOpacity="0.35" />
+            <Stop offset="0.18" stopColor="#FFF" stopOpacity="0.15" />
+            <Stop offset="0.45" stopColor="#FFF" stopOpacity="0" />
             <Stop offset="1" stopColor="#000" stopOpacity="0.08" />
           </LinearGradient>
 
-          {/* ── Empty front face ── */}
-          <LinearGradient id={`${uid}eg`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#F0FDF4" />
-            <Stop offset="1" stopColor="#DCFCE7" />
+          {/* Glossy arc — permanent candy-like highlight */}
+          <LinearGradient id={`${uid}ga`} x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor="#FFF" stopOpacity="0.22" />
+            <Stop offset="0.5" stopColor="#FFF" stopOpacity="0.06" />
+            <Stop offset="1" stopColor="#FFF" stopOpacity="0" />
           </LinearGradient>
 
-          {/* ── Stud dome: radial gradient for glossy 3D dome ── */}
-          <RadialGradient
-            id={`${uid}sd`}
-            cx="0.35"
-            cy="0.30"
-            rx="0.55"
-            ry="0.55"
-            fx="0.30"
-            fy="0.25"
-          >
-            <Stop offset="0" stopColor="#BBF7D0" stopOpacity="0.95" />
-            <Stop offset="0.45" stopColor="#34D399" />
-            <Stop offset="0.85" stopColor="#15803D" />
-            <Stop offset="1" stopColor="#064E3B" />
+          {/* Stud dome — radial gradient */}
+          <RadialGradient id={`${uid}sd`} cx="0.4" cy="0.35" rx="0.5" ry="0.5">
+            <Stop offset="0" stopColor="#D1FAE5" />
+            <Stop offset="0.5" stopColor="#34D399" />
+            <Stop offset="1" stopColor="#15803D" />
           </RadialGradient>
-
-          {/* ── Clip to front face polygon ── */}
-          <ClipPath id={`${uid}fc`}>
-            <Polygon points={FRONT_PTS} />
-          </ClipPath>
         </Defs>
 
-        {/* ═══ Top Face ═══ */}
-        <Polygon points={TOP_PTS} fill={`url(#${uid}tg)`} />
-        <Polygon points={TOP_PTS} fill={`url(#${uid}ts)`} />
-        <Line
-          x1={v0[0] + DEPTH * 0.3}
-          y1={STUD_PEEK + DEPTH * 0.25}
-          x2={v6[0] * 0.55}
-          y2={STUD_PEEK + DEPTH * 0.25}
-          stroke="rgba(255,255,255,0.55)"
-          strokeWidth={normalize(1.5)}
-          strokeLinecap="round"
-        />
+        {/* ── Layer 1: Card background ── */}
+        <Rect x={0} y={0} width={BS} height={BS} fill={`url(#${uid}bg)`} />
 
-        {/* ═══ Studs (sit on top face) ═══ */}
-        {renderStud(STUD_1.x, STUD_1.y, uid)}
-        {renderStud(STUD_2.x, STUD_2.y, uid)}
+        {/* ── Layer 2: Animated green fill ── */}
+        <AnimatedRect x={0} width={BS} fill={`url(#${uid}fg)`} animatedProps={fillProps} />
 
-        {/* ═══ Right Face ═══ */}
-        <Polygon points={RIGHT_PTS} fill={`url(#${uid}rg)`} />
-        <Polygon points={RIGHT_PTS} fill={`url(#${uid}rs)`} />
+        {/* ── Layer 3: Fill gloss overlay ── */}
+        <AnimatedRect x={0} width={BS} fill={`url(#${uid}fs)`} animatedProps={glossProps} />
 
-        {/* ═══ Front Face (clipped) ═══ */}
-        <G clipPath={`url(#${uid}fc)`}>
-          <Rect
-            x={0}
-            y={TOP_OF_FRONT}
-            width={FACE}
-            height={FACE}
-            fill={`url(#${uid}eg)`}
-          />
-          <Rect
-            x={0}
-            y={TOP_OF_FRONT}
-            width={FACE}
-            height={FACE}
-            fill="none"
-            stroke="#BBF7D0"
-            strokeWidth={1}
-          />
-          <AnimatedRect x={0} width={FACE} fill={`url(#${uid}fg)`} animatedProps={fillProps} />
-          <AnimatedRect x={0} width={FACE} fill={`url(#${uid}fs)`} animatedProps={glossProps} />
-        </G>
-
-        {/* Bright edge at fill level */}
+        {/* ── Layer 4: Meniscus line at fill level ── */}
         <AnimatedLine
           x1={0}
-          x2={FACE}
+          x2={BS}
           stroke="#86EFAC"
-          strokeWidth={normalize(2.5)}
-          strokeOpacity={0.85}
+          strokeWidth={normalize(2)}
+          strokeOpacity={0.65}
           animatedProps={edgeLineProps}
         />
 
-        {/* ═══ Edge Lines ═══ */}
-        <Line
-          x1={v5[0]} y1={v5[1]} x2={v6[0]} y2={v6[1]}
-          stroke="rgba(134,239,172,0.7)" strokeWidth={1}
-        />
-        <Line
-          x1={v6[0]} y1={v6[1]} x2={v3[0]} y2={v3[1]}
-          stroke="rgba(21,128,61,0.5)" strokeWidth={1}
-        />
-        <Line
-          x1={v6[0]} y1={v6[1]} x2={v1[0]} y2={v1[1]}
-          stroke="rgba(52,211,153,0.4)" strokeWidth={0.5}
-        />
+        {/* ── Layer 5: Glossy highlight arc ── */}
+        <Path d={GLOSS_ARC} fill={`url(#${uid}ga)`} />
+
+        {/* ── Layer 6: Decorative studs ── */}
+        <G opacity={0.85}>
+          {/* Stud 1 */}
+          <Circle cx={STUD_1.x} cy={STUD_1.y} r={STUD_R} fill={`url(#${uid}sd)`} />
+          <Ellipse
+            cx={STUD_1.x - STUD_R * 0.2}
+            cy={STUD_1.y - STUD_R * 0.2}
+            rx={STUD_R * 0.3}
+            ry={STUD_R * 0.25}
+            fill="rgba(255,255,255,0.4)"
+          />
+          {/* Stud 2 */}
+          <Circle cx={STUD_2.x} cy={STUD_2.y} r={STUD_R} fill={`url(#${uid}sd)`} />
+          <Ellipse
+            cx={STUD_2.x - STUD_R * 0.2}
+            cy={STUD_2.y - STUD_R * 0.2}
+            rx={STUD_R * 0.3}
+            ry={STUD_R * 0.25}
+            fill="rgba(255,255,255,0.4)"
+          />
+        </G>
       </Svg>
 
-      {/* ── Text overlays over front face ── */}
+      {/* ── Text overlay ── */}
       <View style={styles.content} pointerEvents="box-none">
         <View style={styles.rubBadge}>
           <Text style={styles.rubNum}>{coverage.rubNumber}</Text>
@@ -312,65 +216,59 @@ export const RubBuildingBlock = React.memo(
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  wrapper: {
+  card: {
     width: BLOCK_SIZE,
     height: BLOCK_SIZE,
-  },
-  shadow: {
-    position: 'absolute',
-    left: normalize(2),
-    top: TOP_OF_FRONT + normalize(3),
-    width: FACE,
-    height: FACE,
-    borderRadius: normalize(4),
-    backgroundColor: 'transparent',
-    boxShadow: '2px 4px 12px rgba(0, 0, 0, 0.16), 0px 1px 4px rgba(0, 0, 0, 0.08)',
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(187, 247, 208, 0.5)',
+    boxShadow: '0px 4px 14px rgba(22, 163, 74, 0.15), 0px 2px 6px rgba(0, 0, 0, 0.08)',
   },
   content: {
-    position: 'absolute',
-    left: 0,
-    top: TOP_OF_FRONT,
-    width: FACE,
-    height: FACE,
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'space-between',
     padding: spacing.sm,
   },
   rubBadge: {
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
     borderRadius: normalize(8),
     paddingHorizontal: spacing.xs + 2,
     paddingVertical: normalize(2),
     alignSelf: 'flex-start',
+    marginTop: normalize(18),
+    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
   },
   rubNum: {
     fontFamily: typography.fontFamily.bold,
-    fontSize: normalize(20),
+    fontSize: normalize(22),
     color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.35)',
+    textShadowColor: 'rgba(0, 0, 0, 0.30)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 2,
+    textShadowRadius: 3,
   },
   infoBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.30)',
-    borderRadius: normalize(6),
+    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    borderRadius: normalize(8),
     paddingHorizontal: spacing.xs + 2,
     paddingVertical: normalize(4),
-    marginHorizontal: -spacing.sm,
-    marginBottom: -spacing.sm,
   },
   ayahCount: {
     fontFamily: typography.fontFamily.medium,
     fontSize: normalize(12),
-    color: 'rgba(255, 255, 255, 0.85)',
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.20)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 1,
   },
   pctLabel: {
     fontFamily: typography.fontFamily.bold,
     fontSize: normalize(14),
     color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowColor: 'rgba(0, 0, 0, 0.20)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
   },
@@ -385,7 +283,7 @@ const styles = StyleSheet.create({
     fontFamily: typography.fontFamily.semiBold,
     fontSize: normalize(12),
     color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowColor: 'rgba(0, 0, 0, 0.20)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 1,
   },
