@@ -9,9 +9,11 @@ import Animated, {
 import Svg, {
   Defs,
   LinearGradient,
+  RadialGradient,
   Stop,
   Polygon,
   Rect,
+  Ellipse,
   Line,
   ClipPath,
   G,
@@ -33,26 +35,31 @@ export const BLOCK_SIZE = Math.floor(
   (SCREEN_WIDTH - HORIZONTAL_PADDING - (COLUMNS - 1) * GAP) / COLUMNS,
 );
 
-const DEPTH = normalize(18);
-const FACE = BLOCK_SIZE - DEPTH;
+// ─── LEGO Brick Geometry ─────────────────────────────────────────────────────
 
-// ─── Cube Vertices (isometric 45° projection) ───────────────────────────────
+const STUD_PEEK = normalize(8);   // studs protrude above the top face
+const DEPTH = normalize(14);      // isometric offset (top/side face thickness)
+const FACE = BLOCK_SIZE - DEPTH - STUD_PEEK; // front face size
+const TOP_OF_FRONT = STUD_PEEK + DEPTH;      // y where front face begins
+
+// ─── Cube Vertices (shifted down to make room for studs) ─────────────────────
 //
-//        v0 ─────────── v1
+//     studs ● ●     ← y = 0..STUD_PEEK
+//        v0 ─────────── v1    ← y = STUD_PEEK
 //       ╱              ╱ │
-//     v5 ─────────── v6  │
+//     v5 ─────────── v6  │    ← y = TOP_OF_FRONT
 //     │               │  v2
 //     │               │ ╱
-//     v4 ─────────── v3
+//     v4 ─────────── v3       ← y = BLOCK_SIZE
 //
 
-const v0: [number, number] = [DEPTH, 0];
-const v1: [number, number] = [BLOCK_SIZE, 0];
-const v2: [number, number] = [BLOCK_SIZE, FACE];
+const v0: [number, number] = [DEPTH, STUD_PEEK];
+const v1: [number, number] = [BLOCK_SIZE, STUD_PEEK];
+const v2: [number, number] = [BLOCK_SIZE, STUD_PEEK + FACE];
 const v3: [number, number] = [FACE, BLOCK_SIZE];
 const v4: [number, number] = [0, BLOCK_SIZE];
-const v5: [number, number] = [0, DEPTH];
-const v6: [number, number] = [FACE, DEPTH];
+const v5: [number, number] = [0, TOP_OF_FRONT];
+const v6: [number, number] = [FACE, TOP_OF_FRONT];
 
 const pts = (...vs: [number, number][]) => vs.map((p) => p.join(',')).join(' ');
 
@@ -60,10 +67,45 @@ const TOP_PTS = pts(v5, v0, v1, v6);
 const RIGHT_PTS = pts(v6, v1, v2, v3);
 const FRONT_PTS = pts(v5, v6, v3, v4);
 
-// ─── Animated SVG Rect ───────────────────────────────────────────────────────
+// ─── Stud Geometry ───────────────────────────────────────────────────────────
+
+const STUD_RX = normalize(14);    // horizontal radius
+const STUD_RY = normalize(7);     // vertical radius (isometric squash)
+const STUD_H = normalize(5);      // visible cylinder height
+
+// Top face centroid → stud centers
+const topCX = (v5[0] + v0[0] + v1[0] + v6[0]) / 4;
+const topCY = (v5[1] + v0[1] + v1[1] + v6[1]) / 4;
+const STUD_OFFSET = normalize(22);
+const STUD_1 = { x: topCX - STUD_OFFSET, y: topCY };
+const STUD_2 = { x: topCX + STUD_OFFSET, y: topCY };
+
+// ─── Animated SVG Components ─────────────────────────────────────────────────
 
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 const AnimatedLine = Animated.createAnimatedComponent(Line);
+
+// ─── Stud Renderer ───────────────────────────────────────────────────────────
+
+function renderStud(cx: number, cy: number, uid: string) {
+  const domeY = cy - STUD_H;
+  return (
+    <G key={`stud-${cx}`}>
+      {/* Cylinder body (rect between dome and base) */}
+      <Rect
+        x={cx - STUD_RX}
+        y={domeY}
+        width={STUD_RX * 2}
+        height={STUD_H}
+        fill="#22C55E"
+      />
+      {/* Base ellipse (dark seam where stud meets top face) */}
+      <Ellipse cx={cx} cy={cy} rx={STUD_RX} ry={STUD_RY} fill="#15803D" />
+      {/* Top dome (glossy radial gradient) */}
+      <Ellipse cx={cx} cy={domeY} rx={STUD_RX} ry={STUD_RY} fill={`url(#${uid}sd)`} />
+    </G>
+  );
+}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -80,27 +122,23 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
     withSpring(coverage.percentage / 100, { damping: 18, stiffness: 80 }),
   );
 
-  // Animated fill rect (green rising from bottom of front face)
   const fillProps = useAnimatedProps(() => {
     const h = fillPct.value * FACE;
-    return { y: DEPTH + FACE - h, height: h };
+    return { y: TOP_OF_FRONT + FACE - h, height: h };
   });
 
-  // Animated gloss rect (rides on top of fill)
   const glossProps = useAnimatedProps(() => {
     const h = fillPct.value * FACE;
-    return { y: DEPTH + FACE - h, height: h };
+    return { y: TOP_OF_FRONT + FACE - h, height: h };
   });
 
-  // Animated bright edge at liquid-level
   const edgeLineProps = useAnimatedProps(() => {
-    const yPos = DEPTH + FACE - fillPct.value * FACE;
+    const yPos = TOP_OF_FRONT + FACE - fillPct.value * FACE;
     return { y1: yPos, y2: yPos };
   });
 
   return (
     <View style={styles.wrapper}>
-      {/* Soft drop shadow behind the cube */}
       <View style={styles.shadow} />
 
       <Svg width={BLOCK_SIZE} height={BLOCK_SIZE}>
@@ -132,7 +170,6 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
             <Stop offset="0.45" stopColor="#22C55E" />
             <Stop offset="1" stopColor="#16A34A" />
           </LinearGradient>
-          {/* Gloss overlay on fill — specular from top */}
           <LinearGradient id={`${uid}fs`} x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor="#FFF" stopOpacity="0.38" />
             <Stop offset="0.25" stopColor="#FFF" stopOpacity="0.14" />
@@ -146,7 +183,23 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
             <Stop offset="1" stopColor="#DCFCE7" />
           </LinearGradient>
 
-          {/* Clip to front face polygon */}
+          {/* ── Stud dome: radial gradient for glossy 3D dome ── */}
+          <RadialGradient
+            id={`${uid}sd`}
+            cx="0.35"
+            cy="0.30"
+            rx="0.55"
+            ry="0.55"
+            fx="0.30"
+            fy="0.25"
+          >
+            <Stop offset="0" stopColor="#BBF7D0" stopOpacity="0.95" />
+            <Stop offset="0.45" stopColor="#34D399" />
+            <Stop offset="0.85" stopColor="#15803D" />
+            <Stop offset="1" stopColor="#064E3B" />
+          </RadialGradient>
+
+          {/* ── Clip to front face polygon ── */}
           <ClipPath id={`${uid}fc`}>
             <Polygon points={FRONT_PTS} />
           </ClipPath>
@@ -155,43 +208,47 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
         {/* ═══ Top Face ═══ */}
         <Polygon points={TOP_PTS} fill={`url(#${uid}tg)`} />
         <Polygon points={TOP_PTS} fill={`url(#${uid}ts)`} />
-        {/* Specular shine line across top face */}
         <Line
-          x1={DEPTH * 0.75}
-          y1={DEPTH * 0.3}
-          x2={FACE * 0.6 + DEPTH * 0.3}
-          y2={DEPTH * 0.3}
-          stroke="rgba(255,255,255,0.65)"
+          x1={v0[0] + DEPTH * 0.3}
+          y1={STUD_PEEK + DEPTH * 0.25}
+          x2={v6[0] * 0.55}
+          y2={STUD_PEEK + DEPTH * 0.25}
+          stroke="rgba(255,255,255,0.55)"
           strokeWidth={normalize(1.5)}
           strokeLinecap="round"
         />
+
+        {/* ═══ Studs (sit on top face) ═══ */}
+        {renderStud(STUD_1.x, STUD_1.y, uid)}
+        {renderStud(STUD_2.x, STUD_2.y, uid)}
 
         {/* ═══ Right Face ═══ */}
         <Polygon points={RIGHT_PTS} fill={`url(#${uid}rg)`} />
         <Polygon points={RIGHT_PTS} fill={`url(#${uid}rs)`} />
 
-        {/* ═══ Front Face (clipped to polygon) ═══ */}
+        {/* ═══ Front Face (clipped) ═══ */}
         <G clipPath={`url(#${uid}fc)`}>
-          {/* Empty background */}
-          <Rect x={0} y={DEPTH} width={FACE} height={FACE} fill={`url(#${uid}eg)`} />
           <Rect
             x={0}
-            y={DEPTH}
+            y={TOP_OF_FRONT}
+            width={FACE}
+            height={FACE}
+            fill={`url(#${uid}eg)`}
+          />
+          <Rect
+            x={0}
+            y={TOP_OF_FRONT}
             width={FACE}
             height={FACE}
             fill="none"
             stroke="#BBF7D0"
             strokeWidth={1}
           />
-
-          {/* Animated green fill */}
           <AnimatedRect x={0} width={FACE} fill={`url(#${uid}fg)`} animatedProps={fillProps} />
-
-          {/* Gloss overlay on fill */}
           <AnimatedRect x={0} width={FACE} fill={`url(#${uid}fs)`} animatedProps={glossProps} />
         </G>
 
-        {/* Bright edge line at fill level (liquid meniscus) */}
+        {/* Bright edge at fill level */}
         <AnimatedLine
           x1={0}
           x2={FACE}
@@ -201,37 +258,22 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
           animatedProps={edgeLineProps}
         />
 
-        {/* ═══ Edge Lines (face boundaries for definition) ═══ */}
-        {/* Top → Front edge (bright, light hitting edge) */}
+        {/* ═══ Edge Lines ═══ */}
         <Line
-          x1={v5[0]}
-          y1={v5[1]}
-          x2={v6[0]}
-          y2={v6[1]}
-          stroke="rgba(134,239,172,0.7)"
-          strokeWidth={1}
+          x1={v5[0]} y1={v5[1]} x2={v6[0]} y2={v6[1]}
+          stroke="rgba(134,239,172,0.7)" strokeWidth={1}
         />
-        {/* Front → Right edge (dark, shadow edge) */}
         <Line
-          x1={v6[0]}
-          y1={v6[1]}
-          x2={v3[0]}
-          y2={v3[1]}
-          stroke="rgba(21,128,61,0.5)"
-          strokeWidth={1}
+          x1={v6[0]} y1={v6[1]} x2={v3[0]} y2={v3[1]}
+          stroke="rgba(21,128,61,0.5)" strokeWidth={1}
         />
-        {/* Top → Right shared edge */}
         <Line
-          x1={v6[0]}
-          y1={v6[1]}
-          x2={v1[0]}
-          y2={v1[1]}
-          stroke="rgba(52,211,153,0.4)"
-          strokeWidth={0.5}
+          x1={v6[0]} y1={v6[1]} x2={v1[0]} y2={v1[1]}
+          stroke="rgba(52,211,153,0.4)" strokeWidth={0.5}
         />
       </Svg>
 
-      {/* ── Text overlays — positioned over the front face ── */}
+      {/* ── Text overlays over front face ── */}
       <View style={styles.content} pointerEvents="box-none">
         <View style={styles.rubBadge}>
           <Text style={styles.rubNum}>{coverage.rubNumber}</Text>
@@ -277,7 +319,7 @@ const styles = StyleSheet.create({
   shadow: {
     position: 'absolute',
     left: normalize(2),
-    top: DEPTH + normalize(3),
+    top: TOP_OF_FRONT + normalize(3),
     width: FACE,
     height: FACE,
     borderRadius: normalize(4),
@@ -287,7 +329,7 @@ const styles = StyleSheet.create({
   content: {
     position: 'absolute',
     left: 0,
-    top: DEPTH,
+    top: TOP_OF_FRONT,
     width: FACE,
     height: FACE,
     justifyContent: 'space-between',
