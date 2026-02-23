@@ -13,6 +13,8 @@ export interface CreateSchoolInput {
   adminFullName: string;
   username: string;
   password: string;
+  schoolNameLocalized?: Record<string, string>;
+  adminNameLocalized?: Record<string, string>;
 }
 
 export interface CreateMemberInput {
@@ -23,6 +25,7 @@ export interface CreateMemberInput {
   classId?: string;
   parentId?: string;
   dateOfBirth?: string;
+  nameLocalized?: Record<string, string>;
 }
 
 export interface ResetMemberPasswordInput {

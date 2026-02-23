@@ -145,6 +145,7 @@ export type Database = {
           is_active: boolean
           max_students: number
           name: string
+          name_localized: Json
           schedule: Json | null
           school_id: string
           teacher_id: string | null
@@ -156,6 +157,7 @@ export type Database = {
           is_active?: boolean
           max_students?: number
           name: string
+          name_localized?: Json
           schedule?: Json | null
           school_id: string
           teacher_id?: string | null
@@ -167,6 +169,7 @@ export type Database = {
           is_active?: boolean
           max_students?: number
           name?: string
+          name_localized?: Json
           schedule?: Json | null
           school_id?: string
           teacher_id?: string | null
@@ -510,6 +513,7 @@ export type Database = {
           created_at: string
           full_name: string
           id: string
+          name_localized: Json
           phone: string | null
           preferred_language: string
           role: string
@@ -522,6 +526,7 @@ export type Database = {
           created_at?: string
           full_name: string
           id: string
+          name_localized?: Json
           phone?: string | null
           preferred_language?: string
           role: string
@@ -534,6 +539,7 @@ export type Database = {
           created_at?: string
           full_name?: string
           id?: string
+          name_localized?: Json
           phone?: string | null
           preferred_language?: string
           role?: string
@@ -825,6 +831,7 @@ export type Database = {
           logo_url: string | null
           longitude: number | null
           name: string
+          name_localized: Json
           owner_id: string | null
           phone: string | null
           settings: Json | null
@@ -845,6 +852,7 @@ export type Database = {
           logo_url?: string | null
           longitude?: number | null
           name: string
+          name_localized?: Json
           owner_id?: string | null
           phone?: string | null
           settings?: Json | null
@@ -865,6 +873,7 @@ export type Database = {
           logo_url?: string | null
           longitude?: number | null
           name?: string
+          name_localized?: Json
           owner_id?: string | null
           phone?: string | null
           settings?: Json | null
@@ -1573,6 +1582,10 @@ export type Database = {
       get_user_role: { Args: never; Returns: string }
       get_user_school_id: { Args: never; Returns: string }
       increment_review_count: { Args: { cert_id: string }; Returns: undefined }
+      resolve_localized_name: {
+        Args: { fallback: string; lang: string; localized: Json }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
