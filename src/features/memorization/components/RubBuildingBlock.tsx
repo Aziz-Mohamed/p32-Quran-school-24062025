@@ -9,14 +9,10 @@ import Animated, {
 import Svg, {
   Defs,
   LinearGradient,
-  RadialGradient,
   Stop,
   Rect,
-  Circle,
-  Ellipse,
   Path,
   Line,
-  G,
 } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -48,12 +44,6 @@ const GLOSS_ARC = [
   `Q ${BS * 0.5},${BS * 0.16} 0,${BS * 0.42}`,
   `Z`,
 ].join(' ');
-
-// ─── Decorative Stud Positions ───────────────────────────────────────────────
-
-const STUD_R = normalize(5);
-const STUD_1 = { x: spacing.sm + STUD_R + normalize(2), y: spacing.sm + STUD_R + normalize(1) };
-const STUD_2 = { x: STUD_1.x + STUD_R * 2 + normalize(4), y: STUD_1.y };
 
 // ─── Animated SVG ────────────────────────────────────────────────────────────
 
@@ -124,12 +114,6 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
             <Stop offset="1" stopColor="#FFF" stopOpacity="0" />
           </LinearGradient>
 
-          {/* Stud dome — radial gradient */}
-          <RadialGradient id={`${uid}sd`} cx="0.4" cy="0.35" rx="0.5" ry="0.5">
-            <Stop offset="0" stopColor="#D1FAE5" />
-            <Stop offset="0.5" stopColor="#34D399" />
-            <Stop offset="1" stopColor="#15803D" />
-          </RadialGradient>
         </Defs>
 
         {/* ── Layer 1: Card background ── */}
@@ -154,27 +138,6 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
         {/* ── Layer 5: Glossy highlight arc ── */}
         <Path d={GLOSS_ARC} fill={`url(#${uid}ga)`} />
 
-        {/* ── Layer 6: Decorative studs ── */}
-        <G opacity={0.85}>
-          {/* Stud 1 */}
-          <Circle cx={STUD_1.x} cy={STUD_1.y} r={STUD_R} fill={`url(#${uid}sd)`} />
-          <Ellipse
-            cx={STUD_1.x - STUD_R * 0.2}
-            cy={STUD_1.y - STUD_R * 0.2}
-            rx={STUD_R * 0.3}
-            ry={STUD_R * 0.25}
-            fill="rgba(255,255,255,0.4)"
-          />
-          {/* Stud 2 */}
-          <Circle cx={STUD_2.x} cy={STUD_2.y} r={STUD_R} fill={`url(#${uid}sd)`} />
-          <Ellipse
-            cx={STUD_2.x - STUD_R * 0.2}
-            cy={STUD_2.y - STUD_R * 0.2}
-            rx={STUD_R * 0.3}
-            ry={STUD_R * 0.25}
-            fill="rgba(255,255,255,0.4)"
-          />
-        </G>
       </Svg>
 
       {/* ── Text overlay ── */}
@@ -186,7 +149,7 @@ function RubBuildingBlockInner({ coverage, isComplete }: RubBuildingBlockProps) 
         <View style={styles.infoBar}>
           {isComplete ? (
             <View style={styles.completeRow}>
-              <Ionicons name="checkmark-circle" size={normalize(14)} color="#FFF" />
+              <Ionicons name="checkmark-circle" size={normalize(14)} color="#14532D" />
               <Text style={styles.completeText}>
                 {t('student.blockBuilder.ready')}
               </Text>
@@ -242,10 +205,10 @@ const styles = StyleSheet.create({
   rubNum: {
     fontFamily: typography.fontFamily.bold,
     fontSize: normalize(22),
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.30)',
+    color: '#14532D',
+    textShadowColor: 'rgba(255, 255, 255, 0.6)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+    textShadowRadius: 2,
   },
   infoBar: {
     flexDirection: 'row',
@@ -259,18 +222,18 @@ const styles = StyleSheet.create({
   ayahCount: {
     fontFamily: typography.fontFamily.medium,
     fontSize: normalize(12),
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.20)',
+    color: '#14532D',
+    textShadowColor: 'rgba(255, 255, 255, 0.5)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
+    textShadowRadius: 2,
   },
   pctLabel: {
     fontFamily: typography.fontFamily.bold,
     fontSize: normalize(14),
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.20)',
+    color: '#14532D',
+    textShadowColor: 'rgba(255, 255, 255, 0.5)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
+    textShadowRadius: 2,
   },
   completeRow: {
     flex: 1,
@@ -282,9 +245,9 @@ const styles = StyleSheet.create({
   completeText: {
     fontFamily: typography.fontFamily.semiBold,
     fontSize: normalize(12),
-    color: '#FFFFFF',
-    textShadowColor: 'rgba(0, 0, 0, 0.20)',
+    color: '#14532D',
+    textShadowColor: 'rgba(255, 255, 255, 0.5)',
     textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 1,
+    textShadowRadius: 2,
   },
 });
