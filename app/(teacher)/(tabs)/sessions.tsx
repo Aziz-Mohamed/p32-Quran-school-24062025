@@ -54,7 +54,6 @@ export default function SessionsScreen() {
             data={sessions}
             keyExtractor={(item: any) => item.id}
             contentContainerStyle={styles.listContent}
-            estimatedItemSize={100}
             renderItem={({ item }: { item: any }) => (
               <Card
                 variant="default"

@@ -60,7 +60,6 @@ export default function LeaderboardScreen() {
             data={entries}
             keyExtractor={(item: any) => item.id}
             contentContainerStyle={styles.listContent}
-            estimatedItemSize={80}
             renderItem={({ item, index }: { item: any; index: number }) => {
               const rank = index + 1;
               const isCurrentUser = item.user_id === profile?.id;

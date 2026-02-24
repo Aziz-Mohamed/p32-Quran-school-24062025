@@ -8,7 +8,7 @@ import { shadows } from '@/theme/shadows';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type ProgressBarVariant = 'primary' | 'secondary' | 'indigo' | 'rose' | 'violet' | 'sky';
+type ProgressBarVariant = 'default' | 'primary' | 'secondary' | 'indigo' | 'rose' | 'violet' | 'sky';
 
 interface ProgressBarProps {
   progress: number; // 0 to 1
@@ -23,6 +23,7 @@ interface ProgressBarProps {
 // ─── Variant Maps ────────────────────────────────────────────────────────────
 
 const variantColors: Record<ProgressBarVariant, string> = {
+  default: colors.primary[500],
   primary: colors.primary[500],
   secondary: colors.secondary[500],
   indigo: colors.accent.indigo[500],
@@ -32,6 +33,7 @@ const variantColors: Record<ProgressBarVariant, string> = {
 };
 
 const variantBackgrounds: Record<ProgressBarVariant, string> = {
+  default: colors.primary[100],
   primary: colors.primary[100],
   secondary: colors.secondary[100],
   indigo: colors.accent.indigo[50],

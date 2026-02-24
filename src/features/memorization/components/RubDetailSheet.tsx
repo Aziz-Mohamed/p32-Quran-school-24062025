@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import i18next from 'i18next';
 
 import type { RubCoverage } from '../utils/rub-coverage';
-import { ProgressBar } from '@/components/ui';
 import { formatRubVerseRange, getMushafPage } from '@/lib/quran-metadata';
 import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -17,13 +16,13 @@ import { normalize } from '@/theme/normalize';
 interface RubDetailSheetProps {
   visible: boolean;
   coverage: RubCoverage | null;
-  isComplete: boolean;
   onClose: () => void;
+  onCancelAssignments?: (ids: string[]) => void;
 }
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
-export function RubDetailSheet({ visible, coverage, isComplete, onClose }: RubDetailSheetProps) {
+export function RubDetailSheet({ visible, coverage, onClose, onCancelAssignments }: RubDetailSheetProps) {
   const { t } = useTranslation();
 
   if (!coverage) return null;
@@ -37,6 +36,20 @@ export function RubDetailSheet({ visible, coverage, isComplete, onClose }: RubDe
     coverage.endAyah,
     lang,
   );
+
+  const hasUncertified = coverage.uncertifiedAyahs > 0;
+  const hasCertified = coverage.memorizedAyahs > 0;
+  const certifiedPct = coverage.percentage;
+  const uncertifiedPct = coverage.uncertifiedPercentage;
+  const totalPct = coverage.totalPercentage;
+
+  const isFullyCovered = totalPct === 100;
+
+  // Chip styling — green family
+  const chipBg = isFullyCovered ? '#DCFCE7' : '#DBEAFE';
+  const chipColor = isFullyCovered ? '#166534' : '#1E40AF';
+
+  const hasPendingAssignments = (coverage.pendingAssignmentIds?.length ?? 0) > 0;
 
   return (
     <Modal
@@ -56,19 +69,9 @@ export function RubDetailSheet({ visible, coverage, isComplete, onClose }: RubDe
               </Text>
               <Text style={styles.verseRange}>{verseRange}</Text>
             </View>
-            <View
-              style={[
-                styles.pctChip,
-                { backgroundColor: isComplete ? '#DCFCE7' : '#DBEAFE' },
-              ]}
-            >
-              <Text
-                style={[
-                  styles.pctChipText,
-                  { color: isComplete ? '#166534' : '#1E40AF' },
-                ]}
-              >
-                {coverage.percentage}%
+            <View style={[styles.pctChip, { backgroundColor: chipBg }]}>
+              <Text style={[styles.pctChipText, { color: chipColor }]}>
+                {totalPct}%
               </Text>
             </View>
           </View>
@@ -85,34 +88,82 @@ export function RubDetailSheet({ visible, coverage, isComplete, onClose }: RubDe
                 value={`${mushafPage}`}
               />
             )}
-            <InfoRow
-              label={t('memorization.detail.memorized')}
-              value={t('memorization.detail.ayahsCount', {
-                memorized: coverage.memorizedAyahs,
-                total: coverage.totalAyahs,
-              })}
-            />
+
+            {/* Certified ayahs (green) */}
+            {hasCertified && (
+              <View style={styles.infoRow}>
+                <View style={styles.dotLabelRow}>
+                  <View style={[styles.dot, { backgroundColor: '#22C55E' }]} />
+                  <Text style={styles.infoLabel}>
+                    {t('memorization.detail.certified')}
+                  </Text>
+                </View>
+                <Text style={styles.infoValue}>
+                  {t('memorization.detail.certifiedAyahs', { count: coverage.memorizedAyahs })}
+                </Text>
+              </View>
+            )}
+
+            {/* Pending certification ayahs (striped green) */}
+            {hasUncertified && (
+              <View style={styles.infoRow}>
+                <View style={styles.dotLabelRow}>
+                  <View style={[styles.dot, { backgroundColor: '#86EFAC' }]} />
+                  <Text style={styles.infoLabel}>
+                    {t('memorization.detail.pendingCertification')}
+                  </Text>
+                </View>
+                <Text style={styles.infoValue}>
+                  {t('memorization.detail.pendingAyahs', { count: coverage.uncertifiedAyahs })}
+                </Text>
+              </View>
+            )}
+
             <InfoRow
               label={t('memorization.detail.status')}
               value={
-                isComplete
+                isFullyCovered
                   ? t('memorization.detail.complete')
                   : t('memorization.detail.inProgress')
               }
             />
 
-            {/* Progress bar */}
+            {/* Stacked progress bar */}
             <View style={styles.progressRow}>
-              <View style={styles.progressBarContainer}>
-                <ProgressBar
-                  progress={coverage.percentage / 100}
-                  variant="primary"
-                  height={6}
-                />
+              <View style={styles.progressTrack}>
+                {certifiedPct > 0 && (
+                  <View
+                    style={[
+                      styles.progressFill,
+                      { width: `${certifiedPct}%`, backgroundColor: '#22C55E' },
+                    ]}
+                  />
+                )}
+                {uncertifiedPct > 0 && (
+                  <View
+                    style={[
+                      styles.progressFill,
+                      { width: `${uncertifiedPct}%`, backgroundColor: '#86EFAC' },
+                    ]}
+                  />
+                )}
               </View>
-              <Text style={styles.progressPct}>{coverage.percentage}%</Text>
+              <Text style={styles.progressPct}>{totalPct}%</Text>
             </View>
           </View>
+
+          {/* Cancel pending assignments */}
+          {hasPendingAssignments && onCancelAssignments && (
+            <Pressable
+              style={({ pressed }) => [styles.cancelButton, pressed && styles.pressed]}
+              onPress={() => onCancelAssignments(coverage.pendingAssignmentIds)}
+              accessibilityRole="button"
+            >
+              <Text style={styles.cancelLabel}>
+                {t('memorization.detail.cancelPending')}
+              </Text>
+            </Pressable>
+          )}
 
           {/* Close */}
           <Pressable
@@ -199,6 +250,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  dotLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  dot: {
+    width: normalize(8),
+    height: normalize(8),
+    borderRadius: normalize(4),
+  },
   infoLabel: {
     fontFamily: typography.fontFamily.medium,
     fontSize: normalize(13),
@@ -210,15 +271,23 @@ const styles = StyleSheet.create({
     color: colors.neutral[800],
   },
 
-  // Progress bar
+  // Stacked progress bar
   progressRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     marginTop: spacing.xs,
   },
-  progressBarContainer: {
+  progressTrack: {
     flex: 1,
+    height: normalize(6),
+    backgroundColor: colors.neutral[200],
+    borderRadius: radius.full,
+    flexDirection: 'row',
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
   },
   progressPct: {
     fontFamily: typography.fontFamily.bold,
@@ -226,6 +295,19 @@ const styles = StyleSheet.create({
     color: colors.neutral[600],
     minWidth: normalize(32),
     textAlign: 'right',
+  },
+
+  // Cancel
+  cancelButton: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    backgroundColor: '#FEF2F2',
+    borderRadius: radius.md,
+    marginBottom: spacing.xs,
+  },
+  cancelLabel: {
+    ...typography.textStyles.bodyMedium,
+    color: '#DC2626',
   },
 
   // Close

@@ -61,7 +61,6 @@ export default function StudentSessionsScreen() {
             data={sessions}
             keyExtractor={(item: any) => item.id}
             contentContainerStyle={styles.listContent}
-            estimatedItemSize={100}
             renderItem={({ item }: { item: any }) => (
               <Card
                 variant="default"

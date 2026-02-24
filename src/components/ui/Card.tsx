@@ -4,6 +4,7 @@ import {
   Pressable,
   Animated,
   StyleSheet,
+  type StyleProp,
   type ViewStyle,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
@@ -20,7 +21,7 @@ interface CardProps {
   children: React.ReactNode;
   variant?: CardVariant;
   onPress?: () => void;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 // ─── Variant Maps ────────────────────────────────────────────────────────────
@@ -89,10 +90,10 @@ export function Card({
     }
   };
 
-  const cardStyle: ViewStyle[] = [
+  const cardStyle = [
     styles.base,
     variantStyles[variant],
-    style as ViewStyle,
+    style,
   ];
 
   if (onPress) {

@@ -1118,10 +1118,15 @@
       "verseRange": "Verse Range",
       "mushafPage": "Mushaf Page",
       "memorized": "Memorized",
+      "certified": "Certified",
+      "certifiedAyahs": "{{count}} ayahs",
+      "pendingCertification": "Pending certification",
+      "pendingAyahs": "{{count}} ayahs",
       "status": "Status",
       "inProgress": "In Progress",
       "complete": "Complete",
-      "ayahsCount": "{{memorized}} / {{total}} ayahs"
+      "ayahsCount": "{{memorized}} / {{total}} ayahs",
+      "cancelPending": "Cancel Pending Memorization"
     },
     "validation": {
       "selectStudent": "Please select a student",

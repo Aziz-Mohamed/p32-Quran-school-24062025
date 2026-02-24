@@ -39,6 +39,7 @@ export const accent = {
   indigo: {
     50: '#EEF2FF',
     100: '#E0E7FF',
+    400: '#818CF8',
     500: '#6366F1',
     600: '#4F46E5',
     700: '#4338CA',
@@ -46,6 +47,7 @@ export const accent = {
   rose: {
     50: '#FFF1F2',
     100: '#FFE4E6',
+    400: '#FB7185',
     500: '#F43F5E',
     600: '#E11D48',
     700: '#BE123C',
@@ -53,6 +55,7 @@ export const accent = {
   violet: {
     50: '#F5F3FF',
     100: '#EDE9FE',
+    400: '#A78BFA',
     500: '#8B5CF6',
     600: '#7C3AED',
     700: '#6D28D9',
@@ -60,10 +63,19 @@ export const accent = {
   sky: {
     50: '#F0F9FF',
     100: '#E0F2FE',
+    400: '#38BDF8',
     500: '#0EA5E9',
     600: '#0284C7',
     700: '#0369A1',
-  }
+  },
+  emerald: {
+    50: '#ECFDF5',
+    100: '#D1FAE5',
+    400: '#34D399',
+    500: '#10B981',
+    600: '#059669',
+    700: '#047857',
+  },
 } as const;
 
 export const neutral = {
@@ -118,10 +130,10 @@ export const glass = {
 export const gradients = {
   primary: [primary[400], primary[600]],
   secondary: [secondary[400], secondary[600]],
-  indigo: [accent.indigo[400] ?? accent.indigo[500], accent.indigo[600]],
-  rose: [accent.rose[400] ?? accent.rose[500], accent.rose[600]],
-  violet: [accent.violet[400] ?? accent.violet[500], accent.violet[600]],
-  sky: [accent.sky[400] ?? accent.sky[500], accent.sky[600]],
+  indigo: [accent.indigo[400], accent.indigo[600]],
+  rose: [accent.rose[400], accent.rose[600]],
+  violet: [accent.violet[400], accent.violet[600]],
+  sky: [accent.sky[400], accent.sky[600]],
 } as const;
 
 // ─── Palette Aggregate ───────────────────────────────────────────────────────

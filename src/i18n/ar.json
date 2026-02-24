@@ -1118,10 +1118,15 @@
       "verseRange": "نطاق الآيات",
       "mushafPage": "صفحة المصحف",
       "memorized": "محفوظ",
+      "certified": "مُجاز",
+      "certifiedAyahs": "{{count}} آية",
+      "pendingCertification": "بانتظار الإجازة",
+      "pendingAyahs": "{{count}} آية",
       "status": "الحالة",
       "inProgress": "قيد الحفظ",
       "complete": "مكتمل",
-      "ayahsCount": "{{memorized}} / {{total}} آية"
+      "ayahsCount": "{{memorized}} / {{total}} آية",
+      "cancelPending": "إلغاء الحفظ المعلق"
     },
     "validation": {
       "selectStudent": "يرجى اختيار طالب",

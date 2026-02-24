@@ -4,6 +4,7 @@ import {
   StatusBar,
   StyleSheet,
   View,
+  type RefreshControlProps,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Edge } from 'react-native-safe-area-context';
@@ -23,6 +24,8 @@ interface ScreenProps {
   edges?: Edge[];
   /** Whether the screen is within a tab layout with the floating tab bar. @default false */
   hasTabBar?: boolean;
+  /** RefreshControl element for pull-to-refresh in scroll mode. */
+  refreshControl?: React.ReactElement<RefreshControlProps>;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -35,6 +38,7 @@ export const Screen: React.FC<ScreenProps> = ({
   padding = true,
   edges = ['top', 'bottom'],
   hasTabBar = false,
+  refreshControl,
 }) => {
   const contentStyle = padding
     ? { paddingStart: spacing.base, paddingEnd: spacing.base }
@@ -53,13 +57,14 @@ export const Screen: React.FC<ScreenProps> = ({
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={[
-            styles.scrollContent, 
+            styles.scrollContent,
             contentStyle,
             { paddingBottom: bottomPadding }
           ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
+          refreshControl={refreshControl}
         >
           {children}
         </ScrollView>
