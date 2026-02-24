@@ -37,7 +37,7 @@ export default function StudentTabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="lessons"
+        name="revision"
         options={{
           title: t('student.tabs.revision'),
           tabBarIcon: ({ color, focused }) => (

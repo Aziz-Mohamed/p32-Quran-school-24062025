@@ -9,7 +9,7 @@ export default function StudentLayout() {
     <ErrorBoundary>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="lessons/[id]" />
+
         <Stack.Screen name="sessions/index" />
         <Stack.Screen name="sessions/[id]" />
         <Stack.Screen name="rub-progress" />
