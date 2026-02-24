@@ -1,6 +1,5 @@
 import type {
   AttendanceStatus,
-  LessonType,
   RecitationType,
   UserRole,
 } from '@/types/common.types';
@@ -25,13 +24,6 @@ export const ATTENDANCE_STATUSES: readonly AttendanceStatus[] = [
   'absent',
   'late',
   'excused',
-] as const;
-
-export const LESSON_TYPES: readonly LessonType[] = [
-  'memorization',
-  'revision',
-  'tajweed',
-  'recitation',
 ] as const;
 
 // ─── Recitation Types ────────────────────────────────────────────────────────

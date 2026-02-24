@@ -8,7 +8,6 @@ export interface CreateSessionInput {
   student_id: string;
   teacher_id: string;
   class_id?: string | null;
-  lesson_id?: string | null;
   session_date?: string;
   memorization_score?: number | null;
   tajweed_score?: number | null;
@@ -21,7 +20,6 @@ export interface SessionFilters {
   studentId?: string;
   teacherId?: string;
   classId?: string;
-  lessonId?: string;
   dateFrom?: string;
   dateTo?: string;
   page?: number;
@@ -33,7 +31,6 @@ export interface SessionWithDetails extends Session {
   student: Tables<'profiles'>;
   teacher: Tables<'profiles'>;
   class: Tables<'classes'> | null;
-  lesson: Tables<'lessons'> | null;
 }
 
 /** Input for creating a teacher check-in */

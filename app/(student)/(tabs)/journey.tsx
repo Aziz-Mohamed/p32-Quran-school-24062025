@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
 
-  // Segmented Control (matches lessons.tsx pattern)
+  // Segmented Control (matches revision.tsx pattern)
   segmentedControl: {
     flexDirection: 'row',
     marginHorizontal: spacing.lg,

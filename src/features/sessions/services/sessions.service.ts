@@ -27,7 +27,6 @@ class SessionsService {
         student_id: input.student_id,
         teacher_id: input.teacher_id,
         class_id: input.class_id ?? null,
-        lesson_id: input.lesson_id ?? null,
         session_date: input.session_date ?? new Date().toISOString().split('T')[0],
         memorization_score: input.memorization_score ?? null,
         tajweed_score: input.tajweed_score ?? null,
@@ -47,13 +46,13 @@ class SessionsService {
 
   /**
    * SS-002: Retrieve a paginated, filtered list of sessions.
-   * Joins teacher profile, student profile, and lesson details.
+   * Joins teacher profile and student profile.
    */
   async getSessions(filters: SessionFilters) {
     let query = supabase
       .from('sessions')
       .select(
-        '*, teacher:profiles!sessions_teacher_id_fkey(full_name, name_localized, avatar_url), student:students!sessions_student_id_fkey(profiles!students_id_fkey(full_name, name_localized, avatar_url)), lessons(title)',
+        '*, teacher:profiles!sessions_teacher_id_fkey(full_name, name_localized, avatar_url), student:students!sessions_student_id_fkey(profiles!students_id_fkey(full_name, name_localized, avatar_url))',
       );
 
     if (filters.studentId) {
@@ -64,9 +63,6 @@ class SessionsService {
     }
     if (filters.classId) {
       query = query.eq('class_id', filters.classId);
-    }
-    if (filters.lessonId) {
-      query = query.eq('lesson_id', filters.lessonId);
     }
     if (filters.dateFrom) {
       query = query.gte('session_date', filters.dateFrom);
@@ -92,7 +88,7 @@ class SessionsService {
     return supabase
       .from('sessions')
       .select(
-        '*, teacher:profiles!sessions_teacher_id_fkey(full_name, name_localized, avatar_url), student:students!sessions_student_id_fkey(profiles!students_id_fkey(full_name, name_localized, avatar_url)), lessons(title)',
+        '*, teacher:profiles!sessions_teacher_id_fkey(full_name, name_localized, avatar_url), student:students!sessions_student_id_fkey(profiles!students_id_fkey(full_name, name_localized, avatar_url))',
       )
       .eq('id', id)
       .single();

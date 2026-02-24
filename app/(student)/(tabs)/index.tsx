@@ -197,7 +197,7 @@ export default function StudentDashboard() {
         {hasCertifications && (
           <Card
             variant="default"
-            onPress={() => router.push('/(student)/(tabs)/lessons')}
+            onPress={() => router.push('/(student)/(tabs)/revision')}
             style={styles.tasksCard}
           >
             <View style={styles.tasksHeader}>
@@ -249,7 +249,7 @@ export default function StudentDashboard() {
         {homeworkItems.length > 0 && (
           <Card
             variant="default"
-            onPress={() => router.push('/(student)/(tabs)/lessons')}
+            onPress={() => router.push('/(student)/(tabs)/revision')}
             style={styles.tasksCard}
           >
             <View style={styles.tasksHeader}>
