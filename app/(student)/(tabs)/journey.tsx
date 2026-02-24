@@ -1,10 +1,15 @@
-import React, { useState, useCallback } from 'react';
-import { Pressable, StyleSheet, View, Text } from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { QuranHeatMap } from '@/features/gamification/components/QuranHeatMap';
+import { ShareableJourneyCard } from '@/features/gamification/components/sharing';
+import { useRubReference } from '@/features/gamification/hooks/useRubReference';
+import { useRubCertifications } from '@/features/gamification/hooks/useRubCertifications';
+import { useShareJourneyMap } from '@/features/gamification/hooks/useShareJourneyMap';
 import {
   useStickerCollection,
   useNewStickers,
@@ -28,11 +33,38 @@ export default function JourneyScreen() {
   const { profile } = useAuth();
   const [activeSegment, setActiveSegment] = useState<Segment>('map');
 
+  // Data for the shareable card (TanStack Query deduplicates with QuranHeatMap's hooks)
+  const { data: rubReference = [] } = useRubReference();
+  const { enriched, certMap } = useRubCertifications(profile?.id);
+  const { svgRef, isSharing, shareJourneyMap } = useShareJourneyMap();
+
+  const certifiedCount = enriched.length;
+  const totalReviews = useMemo(
+    () => enriched.reduce((sum, c) => sum + c.review_count, 0),
+    [enriched],
+  );
+
   return (
     <Screen hasTabBar>
       <View style={styles.content}>
-        {/* Title */}
-        <Text style={styles.title}>{t('student.journey.title')}</Text>
+        {/* Title row with share button */}
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>{t('student.journey.title')}</Text>
+          {activeSegment === 'map' && (
+            <Pressable
+              onPress={shareJourneyMap}
+              disabled={isSharing}
+              style={styles.shareButton}
+              hitSlop={12}
+            >
+              {isSharing ? (
+                <ActivityIndicator size="small" color={colors.primary[500]} />
+              ) : (
+                <Ionicons name="share-outline" size={22} color={colors.primary[500]} />
+              )}
+            </Pressable>
+          )}
+        </View>
 
         {/* Segmented Control */}
         <View style={styles.segmentedControl}>
@@ -60,6 +92,18 @@ export default function JourneyScreen() {
         ) : (
           <StickersSegment />
         )}
+      </View>
+
+      {/* Hidden shareable SVG card for capture (off-screen but mounted) */}
+      <View style={styles.offScreen} collapsable={false}>
+        <ShareableJourneyCard
+          svgRef={svgRef}
+          studentName={profile?.full_name ?? ''}
+          certifiedCount={certifiedCount}
+          totalReviews={totalReviews}
+          certMap={certMap}
+          rubReference={rubReference}
+        />
       </View>
     </Screen>
   );
@@ -151,11 +195,24 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: spacing.sm,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+  },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
     fontSize: normalize(24),
-    paddingHorizontal: spacing.lg,
+  },
+  shareButton: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.full,
+    backgroundColor: colors.neutral[100],
   },
 
   // Segmented Control (matches revision.tsx pattern)
@@ -206,5 +263,11 @@ const styles = StyleSheet.create({
   stickersUniqueCount: {
     ...typography.textStyles.caption,
     color: lightTheme.textTertiary,
+  },
+
+  // Off-screen container for shareable card capture
+  offScreen: {
+    position: 'absolute',
+    left: -9999,
   },
 });
