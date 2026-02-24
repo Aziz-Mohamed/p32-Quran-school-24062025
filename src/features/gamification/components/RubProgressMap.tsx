@@ -152,7 +152,6 @@ export function RubProgressMap({
             onJuzAction={mode === 'interactive' ? onJuzAction : undefined}
           />
         )}
-        estimatedItemSize={56}
         ItemSeparatorComponent={JuzSeparator}
       />
 

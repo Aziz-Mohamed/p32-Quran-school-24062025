@@ -70,7 +70,6 @@ export default function TeacherStudentsScreen() {
             data={students}
             keyExtractor={(item: any) => item.id}
             contentContainerStyle={styles.listContent}
-            estimatedItemSize={80}
             renderItem={({ item }: { item: any }) => (
               <Card
                 variant="default"

@@ -4,6 +4,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  type StyleProp,
   type ViewStyle,
   type TextStyle,
 } from 'react-native';
@@ -18,6 +19,7 @@ import { normalize } from '@/theme/normalize';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type ButtonVariant =
+  | 'default'
   | 'primary'
   | 'secondary'
   | 'ghost'
@@ -25,7 +27,8 @@ type ButtonVariant =
   | 'glow'
   | 'indigo'
   | 'rose'
-  | 'violet';
+  | 'violet'
+  | 'sky';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
@@ -37,7 +40,7 @@ interface ButtonProps {
   disabled?: boolean;
   icon?: React.ReactNode;
   fullWidth?: boolean;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
 }
 
 // ─── Size Maps ───────────────────────────────────────────────────────────────
@@ -171,6 +174,31 @@ const variantStyles: Record<
     },
     pressedContainer: {
       backgroundColor: colors.primary[50],
+    },
+  },
+  sky: {
+    container: {
+      backgroundColor: colors.accent.sky[500],
+      ...shadows.sm,
+    },
+    text: {
+      color: colors.white,
+    },
+    pressedContainer: {
+      backgroundColor: colors.accent.sky[600],
+    },
+  },
+  default: {
+    container: {
+      backgroundColor: colors.primary[500],
+      ...shadows.sm,
+    },
+    text: {
+      color: colors.white,
+    },
+    pressedContainer: {
+      backgroundColor: colors.primary[600],
+      transform: [{ scale: 0.98 }],
     },
   },
   danger: {

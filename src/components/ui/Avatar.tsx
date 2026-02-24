@@ -9,7 +9,7 @@ import { normalize } from '@/theme/normalize';
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
-type AvatarVariant = 'default' | 'primary' | 'secondary' | 'indigo' | 'rose' | 'violet';
+type AvatarVariant = 'default' | 'primary' | 'secondary' | 'indigo' | 'rose' | 'violet' | 'sky';
 
 interface AvatarProps {
   source?: string;
@@ -57,6 +57,7 @@ const variantColors: Record<AvatarVariant, string> = {
   indigo: colors.accent.indigo[500],
   rose: colors.accent.rose[500],
   violet: colors.accent.violet[500],
+  sky: colors.accent.sky[500],
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
