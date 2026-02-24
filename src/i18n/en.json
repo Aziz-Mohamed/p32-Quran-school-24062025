@@ -61,6 +61,12 @@
       "recitation": "Recitation"
     }
   },
+  "forms": {
+    "fullName": "Full Name",
+    "addNameIn": "Add name in {{language}}",
+    "nameInLanguage": "Name in {{language}}",
+    "hideOtherLanguages": "Hide other languages"
+  },
   "iconCategories": {
     "worship": "Worship",
     "celestial": "Celestial",

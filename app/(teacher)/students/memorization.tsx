@@ -14,6 +14,7 @@ import { useMemorizationProgress } from '@/features/memorization/hooks/useMemori
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { useStudentById } from '@/features/students/hooks/useStudents';
 import { SURAHS, getSurah } from '@/lib/quran-metadata';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -36,6 +37,7 @@ export default function TeacherStudentMemorizationScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  const { resolveName } = useLocalizedName();
   const { data: student } = useStudentById(id);
   const { data: stats, isLoading: statsLoading } = useMemorizationStats(id);
   const { data: progress = [], isLoading: progressLoading, error, refetch } = useMemorizationProgress({
@@ -43,7 +45,7 @@ export default function TeacherStudentMemorizationScreen() {
   });
   const [expandedSurah, setExpandedSurah] = useState<number | null>(null);
 
-  const studentName = (student as any)?.profiles?.full_name ?? 'Student';
+  const studentName = resolveName((student as any)?.profiles?.name_localized, (student as any)?.profiles?.full_name) ?? 'Student';
 
   // Group progress by surah
   const surahStats = useMemo(() => {

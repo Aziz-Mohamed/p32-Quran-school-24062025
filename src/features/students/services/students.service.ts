@@ -11,7 +11,7 @@ class StudentsService {
     let query = supabase
       .from('students')
       .select(
-        '*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name)',
+        '*, profiles!students_id_fkey!inner(full_name, name_localized, username, avatar_url), classes(name, name_localized)',
       );
 
     if (filters?.classId) {
@@ -27,7 +27,10 @@ class StudentsService {
       query = query.eq('current_level', filters.levelNumber);
     }
     if (filters?.searchQuery) {
-      query = query.ilike('profiles.full_name', `%${filters.searchQuery}%`);
+      query = query.or(
+        `full_name.ilike.%${filters.searchQuery}%,name_localized::text.ilike.%${filters.searchQuery}%`,
+        { referencedTable: 'profiles' },
+      );
     }
 
     query = query.order('full_name', { referencedTable: 'profiles', ascending: true });
@@ -49,7 +52,7 @@ class StudentsService {
     return supabase
       .from('students')
       .select(
-        '*, profiles!students_id_fkey!inner(full_name, username, avatar_url, phone), classes(name, id), parent:profiles!students_parent_id_fkey(full_name)',
+        '*, profiles!students_id_fkey!inner(full_name, name_localized, username, avatar_url, phone), classes(name, name_localized, id), parent:profiles!students_parent_id_fkey(full_name, name_localized)',
       )
       .eq('id', id)
       .single();
@@ -63,7 +66,7 @@ class StudentsService {
   async getAvailableStudentsForParent(parentId?: string) {
     let query = supabase
       .from('students')
-      .select('id, parent_id, profiles!students_id_fkey!inner(full_name)')
+      .select('id, parent_id, profiles!students_id_fkey!inner(full_name, name_localized)')
       .eq('is_active', true);
 
     if (parentId) {

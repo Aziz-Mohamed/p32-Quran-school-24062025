@@ -30,6 +30,7 @@ interface TextFieldProps {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   editable?: boolean;
+  writingDirection?: 'auto' | 'ltr' | 'rtl';
   style?: ViewStyle;
 }
 
@@ -48,6 +49,7 @@ export function TextField({
   leftIcon,
   rightIcon,
   editable = true,
+  writingDirection = 'auto',
   style,
 }: TextFieldProps) {
   const [isFocused, setIsFocused] = useState(false);
@@ -80,6 +82,7 @@ export function TextField({
             styles.input,
             multiline && styles.inputMultiline,
             !editable && styles.inputDisabled,
+            { writingDirection },
           ]}
           value={value}
           onChangeText={onChangeText}

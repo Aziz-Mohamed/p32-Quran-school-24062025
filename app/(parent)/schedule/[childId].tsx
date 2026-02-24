@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { useStudentUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
 import { supabase } from '@/lib/supabase';
 import { typography } from '@/theme/typography';
@@ -25,6 +26,7 @@ export default function ChildScheduleScreen() {
   const router = useRouter();
   const { childId } = useLocalSearchParams<{ childId: string }>();
   const { schoolId } = useAuth();
+  const { resolveName } = useLocalizedName();
 
   // Get child's class
   const { data: student } = useQuery({
@@ -32,7 +34,7 @@ export default function ChildScheduleScreen() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('students')
-        .select('id, class_id, profiles!students_id_fkey(full_name)')
+        .select('id, class_id, profiles!students_id_fkey(full_name, name_localized)')
         .eq('id', childId!)
         .single();
       if (error) throw error;
@@ -56,7 +58,7 @@ export default function ChildScheduleScreen() {
     grouped.get(date)!.push(session);
   }
 
-  const childName = (student?.profiles as any)?.full_name ?? '';
+  const childName = resolveName((student?.profiles as any)?.name_localized, (student?.profiles as any)?.full_name) ?? '';
 
   return (
     <Screen scroll>
@@ -96,14 +98,14 @@ export default function ChildScheduleScreen() {
                     </View>
                     <View style={styles.sessionInfo}>
                       <Text style={styles.sessionTitle}>
-                        {session.class?.name ?? t('scheduling.individualSession')}
+                        {resolveName(session.class?.name_localized, session.class?.name) ?? t('scheduling.individualSession')}
                       </Text>
                       <Text style={styles.sessionTime}>
                         {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}
                       </Text>
                       {session.teacher?.full_name && (
                         <Text style={styles.teacherName}>
-                          {session.teacher.full_name}
+                          {resolveName(session.teacher?.name_localized, session.teacher.full_name)}
                         </Text>
                       )}
                     </View>

@@ -16,7 +16,7 @@ class TeacherReportsService {
     const [classInfo, attendanceData, scoresData, levelData] = await Promise.all([
       supabase
         .from('classes')
-        .select('id, name')
+        .select('id, name, name_localized')
         .eq('id', classId)
         .single(),
       supabase
@@ -165,16 +165,16 @@ class TeacherReportsService {
 
   async getTeacherClasses(
     teacherId: string,
-  ): Promise<Array<{ id: string; name: string }>> {
+  ): Promise<Array<{ id: string; name: string; name_localized?: Record<string, string> | null }>> {
     const { data, error } = await supabase
       .from('classes')
-      .select('id, name')
+      .select('id, name, name_localized')
       .eq('teacher_id', teacherId)
       .eq('is_active', true)
       .order('name');
 
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []) as Array<{ id: string; name: string; name_localized?: Record<string, string> | null }>;
   }
 }
 

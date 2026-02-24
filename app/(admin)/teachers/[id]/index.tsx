@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useTeacherById } from '@/features/teachers/hooks/useTeachers';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,6 +22,7 @@ export default function TeacherDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  const { resolveName } = useLocalizedName();
   const { data: teacher, isLoading, error, refetch } = useTeacherById(id);
 
   if (isLoading) return <LoadingState />;
@@ -48,7 +50,7 @@ export default function TeacherDetailScreen() {
           <View style={styles.avatar}>
             <Ionicons name="school" size={40} color={colors.primary[500]} />
           </View>
-          <Text style={styles.name}>{teacher.full_name}</Text>
+          <Text style={styles.name}>{resolveName(teacher.name_localized, teacher.full_name)}</Text>
           <Text style={styles.username}>@{teacher.username ?? '—'}</Text>
         </View>
 
@@ -70,7 +72,7 @@ export default function TeacherDetailScreen() {
             <Text style={styles.sectionTitle}>{t('admin.teachers.classes')}</Text>
             {classes.map((c: any) => (
               <Card key={c.id} variant="outlined" style={styles.classCard}>
-                <Text style={styles.className}>{c.name}</Text>
+                <Text style={styles.className}>{resolveName(c.name_localized, c.name)}</Text>
               </Card>
             ))}
           </>

@@ -14,6 +14,7 @@ import { useRTL } from '@/hooks/useRTL';
 import { useStudents } from '@/features/students/hooks/useStudents';
 import { useStickers, useAwardSticker } from '@/features/gamification/hooks/useStickers';
 import { getStickerImageUrl } from '@/lib/storage';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -32,12 +33,13 @@ export default function AwardStickerScreen() {
   const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
   const [reason, setReason] = useState('');
 
+  const { resolveName } = useLocalizedName();
   const { data: students = [] } = useStudents({ isActive: true });
   const { data: stickers = [], isLoading: stickersLoading } = useStickers();
   const awardSticker = useAwardSticker();
 
   const studentOptions: SelectOption[] = students.map((s: any) => ({
-    label: s.profiles?.full_name ?? s.id,
+    label: resolveName(s.profiles?.name_localized, s.profiles?.full_name) ?? s.id,
     value: s.id,
   }));
 

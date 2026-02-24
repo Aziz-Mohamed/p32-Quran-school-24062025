@@ -16,6 +16,7 @@ import { lightTheme, colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
 import { radius } from '@/theme/radius';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { supabase } from '@/lib/supabase';
 import { TOTAL_QURAN_AYAHS } from '@/lib/quran-metadata';
 
@@ -24,7 +25,9 @@ import { TOTAL_QURAN_AYAHS } from '@/lib/quran-metadata';
 interface StudentMemSummary {
   student_id: string;
   full_name: string;
+  name_localized: Record<string, string> | null;
   class_name: string | null;
+  class_name_localized: Record<string, string> | null;
   total_memorized: number;
   total_in_progress: number;
   items_needing_review: number;
@@ -52,7 +55,7 @@ function useSchoolMemorizationReport(schoolId: string | undefined) {
       // Get all students with their memorization progress summary
       const { data: students, error: studErr } = await supabase
         .from('students')
-        .select('id, profiles!inner(full_name), classes(name)')
+        .select('id, profiles!inner(full_name, name_localized), classes(name, name_localized)')
         .eq('school_id', schoolId)
         .eq('is_active', true);
 
@@ -102,7 +105,9 @@ function useSchoolMemorizationReport(schoolId: string | undefined) {
         summaries.push({
           student_id: student.id,
           full_name: (profile as { full_name: string })?.full_name ?? 'Unknown',
+          name_localized: (profile as { name_localized: Record<string, string> | null })?.name_localized ?? null,
           class_name: (classInfo as { name: string })?.name ?? null,
+          class_name_localized: (classInfo as { name_localized: Record<string, string> | null })?.name_localized ?? null,
           total_memorized: memorized,
           total_in_progress: inProgress,
           items_needing_review: needsReview,
@@ -246,6 +251,7 @@ export default function MemorizationReportScreen() {
 
 function StudentMemCard({ student }: { student: StudentMemSummary }) {
   const { t } = useTranslation();
+  const { resolveName } = useLocalizedName();
   const progress = student.quran_percentage / 100;
 
   return (
@@ -255,9 +261,9 @@ function StudentMemCard({ student }: { student: StudentMemSummary }) {
           <Ionicons name="person" size={20} color={colors.neutral[400]} />
         </View>
         <View style={styles.studentInfo}>
-          <Text style={styles.studentName}>{student.full_name}</Text>
+          <Text style={styles.studentName}>{resolveName(student.name_localized, student.full_name)}</Text>
           {student.class_name && (
-            <Text style={styles.className}>{student.class_name}</Text>
+            <Text style={styles.className}>{resolveName(student.class_name_localized, student.class_name)}</Text>
           )}
         </View>
         <Text style={styles.percentage}>{student.quran_percentage.toFixed(1)}%</Text>

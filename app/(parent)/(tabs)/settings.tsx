@@ -12,6 +12,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLogout } from '@/features/auth/hooks/useLogout';
 import { useChangeLanguage } from '@/hooks/useChangeLanguage';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -24,6 +25,7 @@ export default function SettingsScreen() {
   const router = useRouter();
   const { profile } = useAuth();
   const theme = useRoleTheme();
+  const { resolveName } = useLocalizedName();
   const { logout, isPending: isLoggingOut } = useLogout();
   const { locale, toggleLanguage } = useChangeLanguage();
 
@@ -39,13 +41,13 @@ export default function SettingsScreen() {
         {/* Profile Info */}
         <Card variant="primary-glow" style={styles.profileCard}>
           <Avatar 
-            name={profile?.full_name} 
+            name={resolveName(profile?.name_localized, profile?.full_name)}
             size="xl" 
             ring 
             variant={theme.tag}
           />
           <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{profile?.full_name ?? '—'}</Text>
+            <Text style={styles.profileName}>{resolveName(profile?.name_localized, profile?.full_name) ?? '—'}</Text>
             <Text style={styles.profileUsername}>@{profile?.username ?? '—'}</Text>
           </View>
           <Badge label={t('roles.parent')} variant={theme.tag} size="md" />

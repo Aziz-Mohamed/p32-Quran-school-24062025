@@ -22,6 +22,7 @@ export interface ClassFilters {
 /** Input for creating a new class */
 export interface CreateClassInput {
   name: string;
+  name_localized?: Record<string, string>;
   description?: string | null;
   teacher_id?: string | null;
   max_students?: number;

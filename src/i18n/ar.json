@@ -61,6 +61,12 @@
       "recitation": "القراءة"
     }
   },
+  "forms": {
+    "fullName": "الاسم الكامل",
+    "addNameIn": "أضف الاسم بـ{{language}}",
+    "nameInLanguage": "الاسم بـ{{language}}",
+    "hideOtherLanguages": "إخفاء اللغات الأخرى"
+  },
   "iconCategories": {
     "worship": "العبادة",
     "celestial": "السماوية",

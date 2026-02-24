@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { scheduledSessionService } from '@/features/scheduling/services/scheduled-session.service';
 import { SessionRecitationPlanList } from '@/features/scheduling/components/SessionRecitationPlanList';
 import { typography } from '@/theme/typography';
@@ -25,6 +26,7 @@ export default function StudentSessionDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile, schoolId } = useAuth();
+  const { resolveName } = useLocalizedName();
 
   const { data: session, isLoading, error, refetch } = useQuery({
     queryKey: ['scheduled-session', id],
@@ -54,7 +56,7 @@ export default function StudentSessionDetailScreen() {
 
         <View style={styles.header}>
           <Text style={styles.title}>
-            {session.class?.name ?? t('scheduling.individualSession')}
+            {resolveName(session.class?.name_localized, session.class?.name) ?? t('scheduling.individualSession')}
           </Text>
           <Badge
             label={t(`scheduling.status.${session.status}`)}

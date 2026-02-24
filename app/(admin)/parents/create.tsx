@@ -8,9 +8,12 @@ import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { MultiSelect } from '@/components/forms/MultiSelect';
+import { LocalizedNameInput } from '@/components/forms/LocalizedNameInput';
 import { useCreateParent } from '@/features/parents/hooks/useParents';
 import { useAvailableStudentsForParent } from '@/features/students/hooks/useStudents';
 import { generateUsername } from '@/lib/username';
+import { buildNameLocalized, getCanonicalName } from '@/lib/localized-name';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,23 +24,26 @@ export default function CreateParentScreen() {
   const { t } = useTranslation();
   const router = useRouter();
 
-  const [fullName, setFullName] = useState('');
+  const [nameLocalized, setNameLocalized] = useState<Record<string, string>>({});
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [childrenError, setChildrenError] = useState('');
 
+  const { resolveName } = useLocalizedName();
   const createParent = useCreateParent();
   const { data: availableStudents = [] } = useAvailableStudentsForParent();
 
   const studentOptions = availableStudents.map((s: any) => ({
-    label: s.profiles?.full_name ?? '—',
+    label: resolveName(s.profiles?.name_localized, s.profiles?.full_name) ?? '—',
     value: s.id,
   }));
 
+  const canonicalName = getCanonicalName(nameLocalized);
+
   const handleGenerateUsername = () => {
-    if (fullName.trim()) {
-      setUsername(generateUsername(fullName));
+    if (canonicalName.trim()) {
+      setUsername(generateUsername(canonicalName));
     }
   };
 
@@ -47,7 +53,7 @@ export default function CreateParentScreen() {
   };
 
   const handleCreate = async () => {
-    if (!fullName.trim() || !username.trim() || !password.trim()) {
+    if (!canonicalName.trim() || !username.trim() || !password.trim()) {
       Alert.alert(t('common.error'), t('admin.parents.requiredFields'));
       return;
     }
@@ -59,9 +65,10 @@ export default function CreateParentScreen() {
 
     try {
       const result = await createParent.mutateAsync({
-        fullName: fullName.trim(),
+        fullName: canonicalName.trim(),
         username: username.trim(),
         password,
+        nameLocalized: buildNameLocalized(nameLocalized),
         studentIds: selectedStudentIds,
       });
 
@@ -91,11 +98,10 @@ export default function CreateParentScreen() {
 
         <Text style={styles.title}>{t('admin.parents.createTitle')}</Text>
 
-        <TextField
+        <LocalizedNameInput
           label={t('admin.parents.fullName')}
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder={t('admin.parents.fullNamePlaceholder')}
+          value={nameLocalized}
+          onChange={setNameLocalized}
         />
 
         <View style={styles.usernameRow}>

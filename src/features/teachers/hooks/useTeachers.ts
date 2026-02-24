@@ -61,7 +61,7 @@ export function useUpdateTeacher() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: { fullName?: string; phone?: string } }) =>
+    mutationFn: ({ id, input }: { id: string; input: { fullName?: string; phone?: string; nameLocalized?: Record<string, string> } }) =>
       teachersService.updateTeacher(id, input),
     onSuccess: (_data, variables) => {
       mutationTracker.record('profiles', variables.id);

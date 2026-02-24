@@ -21,6 +21,7 @@ import { scheduledSessionService } from '@/features/scheduling/services/schedule
 import { useSessionRecitationPlans } from '@/features/scheduling/hooks/useRecitationPlans';
 import { getSurah } from '@/lib/quran-metadata';
 import type { RecitationType } from '@/types/common.types';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -60,6 +61,7 @@ export default function SessionWorkspaceScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile, schoolId } = useAuth();
+  const { resolveName } = useLocalizedName();
 
   // Fetch session details
   const {
@@ -94,7 +96,7 @@ export default function SessionWorkspaceScreen() {
     if (isClassSession) {
       return classStudents.map((s: any) => ({
         id: s.id,
-        name: s.profiles?.full_name ?? '—',
+        name: resolveName(s.profiles?.name_localized, s.profiles?.full_name) ?? '—',
       }));
     }
     // Individual session — single student
@@ -102,7 +104,7 @@ export default function SessionWorkspaceScreen() {
       return [
         {
           id: session.student_id,
-          name: (session as any).student?.profiles?.full_name ?? '—',
+          name: resolveName((session as any).student?.profiles?.name_localized, (session as any).student?.profiles?.full_name) ?? '—',
         },
       ];
     }
@@ -293,7 +295,7 @@ export default function SessionWorkspaceScreen() {
         <View style={styles.header}>
           <View style={styles.headerInfo}>
             <Text style={styles.title}>
-              {session.class?.name ?? t('scheduling.individualSession')}
+              {resolveName(session.class?.name_localized, session.class?.name) ?? t('scheduling.individualSession')}
             </Text>
             <Text style={styles.subtitle}>
               {session.session_date} | {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}

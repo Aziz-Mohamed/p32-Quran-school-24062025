@@ -9,7 +9,7 @@ class ClassesService {
   async getClasses(filters?: ClassFilters) {
     let query = supabase
       .from('classes')
-      .select('*, profiles!classes_teacher_id_fkey(full_name), students(id)');
+      .select('*, profiles!classes_teacher_id_fkey(full_name, name_localized), students(id)');
 
     if (filters?.isActive !== undefined) {
       query = query.eq('is_active', filters.isActive);
@@ -18,7 +18,9 @@ class ClassesService {
       query = query.eq('teacher_id', filters.teacherId);
     }
     if (filters?.searchQuery) {
-      query = query.ilike('name', `%${filters.searchQuery}%`);
+      query = query.or(
+        `name.ilike.%${filters.searchQuery}%,name_localized::text.ilike.%${filters.searchQuery}%`,
+      );
     }
 
     return query.order('name');
@@ -82,7 +84,7 @@ class ClassesService {
     return supabase
       .from('classes')
       .select(
-        '*, profiles!classes_teacher_id_fkey(full_name, username), students(id, profiles!students_id_fkey!inner(full_name))',
+        '*, profiles!classes_teacher_id_fkey(full_name, name_localized, username), students(id, profiles!students_id_fkey!inner(full_name, name_localized))',
       )
       .eq('id', id)
       .single();

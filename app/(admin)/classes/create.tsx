@@ -7,9 +7,12 @@ import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { Select } from '@/components/forms/Select';
+import { LocalizedNameInput } from '@/components/forms/LocalizedNameInput';
 import { useAuth } from '@/hooks/useAuth';
 import { useCreateClass } from '@/features/classes/hooks/useClasses';
 import { useTeachers } from '@/features/teachers/hooks/useTeachers';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
+import { buildNameLocalized, getCanonicalName } from '@/lib/localized-name';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -21,23 +24,27 @@ export default function CreateClassScreen() {
   const router = useRouter();
   const { profile } = useAuth();
 
-  const [name, setName] = useState('');
+  const [nameLocalized, setNameLocalized] = useState<Record<string, string>>({});
   const [description, setDescription] = useState('');
   const [teacherId, setTeacherId] = useState<string | null>(null);
   const [maxStudents, setMaxStudents] = useState('30');
 
+  const { resolveName } = useLocalizedName();
   const createClass = useCreateClass();
   const { data: teachers = [] } = useTeachers();
 
+  const canonicalName = getCanonicalName(nameLocalized);
+
   const handleCreate = async () => {
-    if (!name.trim()) {
+    if (!canonicalName.trim()) {
       Alert.alert(t('common.error'), t('admin.classes.nameRequired'));
       return;
     }
 
     const { data, error } = await createClass.mutateAsync({
       input: {
-        name: name.trim(),
+        name: canonicalName.trim(),
+        name_localized: buildNameLocalized(nameLocalized),
         description: description.trim() || undefined,
         teacher_id: teacherId,
         max_students: parseInt(maxStudents, 10) || 30,
@@ -53,9 +60,9 @@ export default function CreateClassScreen() {
     router.back();
   };
 
-  const teacherOptions = teachers.map((t: any) => ({
-    label: t.full_name,
-    value: t.id,
+  const teacherOptions = teachers.map((tc: any) => ({
+    label: resolveName(tc.name_localized, tc.full_name),
+    value: tc.id,
   }));
 
   return (
@@ -70,11 +77,10 @@ export default function CreateClassScreen() {
 
         <Text style={styles.title}>{t('admin.classes.createTitle')}</Text>
 
-        <TextField
+        <LocalizedNameInput
           label={t('admin.classes.name')}
-          value={name}
-          onChangeText={setName}
-          placeholder={t('admin.classes.namePlaceholder')}
+          value={nameLocalized}
+          onChange={setNameLocalized}
         />
 
         <TextField

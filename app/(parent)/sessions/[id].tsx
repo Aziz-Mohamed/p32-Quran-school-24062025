@@ -13,6 +13,7 @@ import { useSessionRecitations } from '@/features/memorization';
 import { RecitationTypeChip } from '@/features/memorization/components/RecitationTypeChip';
 import { useSessionById } from '@/features/sessions/hooks/useSessions';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { formatSessionDate } from '@/lib/helpers';
 import { getSurah, formatVerseRange } from '@/lib/quran-metadata';
 import { typography } from '@/theme/typography';
@@ -27,6 +28,7 @@ export default function ParentSessionDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useRoleTheme();
+  const { resolveName } = useLocalizedName();
 
   const { data: session, isLoading, error, refetch } = useSessionById(id);
   const { data: recitations = [] } = useSessionRecitations(id);
@@ -35,7 +37,7 @@ export default function ParentSessionDetailScreen() {
   if (error) return <ErrorState description={error.message} onRetry={refetch} />;
   if (!session) return <ErrorState description={t('common.noResults')} onRetry={refetch} />;
 
-  const teacherName = (session as any).teacher?.full_name ?? '—';
+  const teacherName = resolveName((session as any).teacher?.name_localized, (session as any).teacher?.full_name) ?? '—';
 
   return (
     <Screen scroll>

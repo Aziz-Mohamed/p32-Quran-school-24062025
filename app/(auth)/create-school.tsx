@@ -10,10 +10,12 @@ import { Screen } from '@/components/layout';
 import { TextField } from '@/components/ui';
 import { Button } from '@/components/ui';
 import { LanguageToggleButton } from '@/components/ui/LanguageToggleButton';
+import { LocalizedNameInput } from '@/components/forms/LocalizedNameInput';
 import { authService } from '@/features/auth/services/auth.service';
 import { useAuthStore, type Profile } from '@/stores/authStore';
 import { supabase } from '@/lib/supabase';
 import { generateUsername } from '@/lib/username';
+import { buildNameLocalized, getCanonicalName } from '@/lib/localized-name';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -45,6 +47,8 @@ export default function CreateSchoolScreen() {
   const setSchoolSlug = useAuthStore((s) => s.setSchoolSlug);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [schoolNameLocalized, setSchoolNameLocalized] = useState<Record<string, string>>({});
+  const [adminNameLocalized, setAdminNameLocalized] = useState<Record<string, string>>({});
 
   const createSchoolSchema = createSchoolSchemaFactory(t);
   const {
@@ -66,7 +70,11 @@ export default function CreateSchoolScreen() {
     setIsLoading(true);
     setErrorMessage(null);
 
-    const result = await authService.createSchool(data);
+    const result = await authService.createSchool({
+      ...data,
+      schoolNameLocalized: buildNameLocalized(schoolNameLocalized),
+      adminNameLocalized: buildNameLocalized(adminNameLocalized),
+    });
 
     if (result.error) {
       setErrorMessage(result.error.message);
@@ -118,37 +126,28 @@ export default function CreateSchoolScreen() {
         )}
 
         <View style={styles.form}>
-          <Controller
-            control={control}
-            name="schoolName"
-            render={({ field: { onChange, value } }) => (
-              <TextField
-                label={t('auth.schoolName')}
-                placeholder={t('auth.schoolNamePlaceholder')}
-                value={value}
-                onChangeText={onChange}
-                error={errors.schoolName?.message}
-              />
-            )}
+          <LocalizedNameInput
+            label={t('auth.schoolName')}
+            value={schoolNameLocalized}
+            onChange={(localized) => {
+              setSchoolNameLocalized(localized);
+              setValue('schoolName', getCanonicalName(localized), { shouldValidate: true });
+            }}
+            error={errors.schoolName?.message}
           />
 
-          <Controller
-            control={control}
-            name="adminFullName"
-            render={({ field: { onChange, value } }) => (
-              <TextField
-                label={t('auth.fullName')}
-                placeholder={t('auth.fullNamePlaceholder')}
-                value={value}
-                onChangeText={(text) => {
-                  onChange(text);
-                  if (text.trim().length >= 2) {
-                    setValue('username', generateUsername(text), { shouldValidate: true });
-                  }
-                }}
-                error={errors.adminFullName?.message}
-              />
-            )}
+          <LocalizedNameInput
+            label={t('auth.fullName')}
+            value={adminNameLocalized}
+            onChange={(localized) => {
+              setAdminNameLocalized(localized);
+              const canonical = getCanonicalName(localized);
+              setValue('adminFullName', canonical, { shouldValidate: true });
+              if (canonical.trim().length >= 2) {
+                setValue('username', generateUsername(canonical), { shouldValidate: true });
+              }
+            }}
+            error={errors.adminFullName?.message}
           />
 
           <Controller

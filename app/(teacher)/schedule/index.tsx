@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useTeacherUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -31,6 +32,7 @@ export default function TeacherScheduleScreen() {
   const router = useRouter();
   const { profile, schoolId } = useAuth();
 
+  const { resolveName } = useLocalizedName();
   const { data: sessions = [], isLoading, error, refetch } =
     useTeacherUpcomingSessions(profile?.id, schoolId ?? undefined);
 
@@ -84,14 +86,14 @@ export default function TeacherScheduleScreen() {
                     <View style={[styles.statusDot, { backgroundColor: STATUS_COLORS[session.status] ?? colors.neutral[400] }]} />
                     <View style={styles.sessionInfo}>
                       <Text style={styles.sessionTitle}>
-                        {session.class?.name ?? t('scheduling.individualSession')}
+                        {resolveName(session.class?.name_localized, session.class?.name) ?? t('scheduling.individualSession')}
                       </Text>
                       <Text style={styles.sessionTime}>
                         {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}
                       </Text>
                       {session.student?.profiles?.full_name && (
                         <Text style={styles.studentName}>
-                          {session.student.profiles.full_name}
+                          {resolveName(session.student.profiles?.name_localized, session.student.profiles.full_name)}
                         </Text>
                       )}
                     </View>

@@ -29,7 +29,7 @@ class ParentDashboardService {
     const { data: children, error: childrenError } = await supabase
       .from('students')
       .select(
-        '*, profiles!students_id_fkey!inner(full_name, username, avatar_url), classes(name)',
+        '*, profiles!students_id_fkey!inner(full_name, name_localized, username, avatar_url), classes(name, name_localized)',
       )
       .eq('parent_id', parentId)
       .eq('is_active', true);

@@ -6,12 +6,14 @@ class ParentsService {
     let query = supabase
       .from('profiles')
       .select(
-        'id, full_name, username, avatar_url, phone, students!students_parent_id_fkey(id, profiles!students_id_fkey(full_name), is_active)',
+        'id, full_name, name_localized, username, avatar_url, phone, students!students_parent_id_fkey(id, profiles!students_id_fkey(full_name, name_localized), is_active)',
       )
       .eq('role', 'parent');
 
     if (filters?.searchQuery) {
-      query = query.ilike('full_name', `%${filters.searchQuery}%`);
+      query = query.or(
+        `full_name.ilike.%${filters.searchQuery}%,name_localized::text.ilike.%${filters.searchQuery}%`,
+      );
     }
 
     return query.order('full_name');
@@ -21,17 +23,18 @@ class ParentsService {
     return supabase
       .from('profiles')
       .select(
-        'id, full_name, username, avatar_url, phone, students!students_parent_id_fkey(id, profiles!students_id_fkey(full_name), is_active)',
+        'id, full_name, name_localized, username, avatar_url, phone, students!students_parent_id_fkey(id, profiles!students_id_fkey(full_name, name_localized), is_active)',
       )
       .eq('id', id)
       .eq('role', 'parent')
       .single();
   }
 
-  async updateParent(id: string, input: { fullName?: string; phone?: string }) {
+  async updateParent(id: string, input: { fullName?: string; phone?: string; nameLocalized?: Record<string, string> }) {
     const updates: Record<string, unknown> = {};
     if (input.fullName !== undefined) updates.full_name = input.fullName;
     if (input.phone !== undefined) updates.phone = input.phone;
+    if (input.nameLocalized !== undefined) updates.name_localized = input.nameLocalized;
 
     return supabase
       .from('profiles')

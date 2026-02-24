@@ -15,6 +15,7 @@ import { useUpdateSessionStatus } from '@/features/scheduling/hooks/useScheduled
 import { scheduledSessionService } from '@/features/scheduling/services/scheduled-session.service';
 import { SessionRecitationPlanList } from '@/features/scheduling/components/SessionRecitationPlanList';
 import { useStudents } from '@/features/students/hooks/useStudents';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -27,6 +28,7 @@ export default function SessionDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile, schoolId } = useAuth();
+  const { resolveName } = useLocalizedName();
 
   const { data: session, isLoading, error, refetch } = useQuery({
     queryKey: ['scheduled-session', id],
@@ -52,13 +54,13 @@ export default function SessionDetailScreen() {
     if (isClassSession) {
       return classStudents.map((s: any) => ({
         id: s.id,
-        name: s.profiles?.full_name ?? '—',
+        name: resolveName(s.profiles?.name_localized, s.profiles?.full_name) ?? '—',
       }));
     }
     if (session.student_id) {
       return [{
         id: session.student_id,
-        name: (session as any).student?.profiles?.full_name ?? '—',
+        name: resolveName((session as any).student?.profiles?.name_localized, (session as any).student?.profiles?.full_name) ?? '—',
       }];
     }
     return [];
@@ -115,7 +117,7 @@ export default function SessionDetailScreen() {
 
         <View style={styles.header}>
           <Text style={styles.title}>
-            {session.class?.name ?? t('scheduling.individualSession')}
+            {resolveName(session.class?.name_localized, session.class?.name) ?? t('scheduling.individualSession')}
           </Text>
           <Badge
             label={t(`scheduling.status.${session.status}`)}
@@ -150,7 +152,7 @@ export default function SessionDetailScreen() {
             <DetailRow
               icon="person-outline"
               label={t('scheduling.student')}
-              value={session.student.profiles.full_name}
+              value={resolveName(session.student.profiles?.name_localized, session.student.profiles.full_name) ?? '—'}
             />
           )}
         </Card>

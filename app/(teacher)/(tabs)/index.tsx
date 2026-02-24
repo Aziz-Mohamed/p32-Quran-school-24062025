@@ -14,6 +14,7 @@ import { useTeacherDashboard } from '@/features/dashboard/hooks/useTeacherDashbo
 import { useTeacherUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
 import { GpsCheckinCard } from '@/features/work-attendance/components/GpsCheckinCard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -26,6 +27,7 @@ export default function TeacherDashboard() {
   const { profile, schoolId } = useAuth();
   const router = useRouter();
   const theme = useRoleTheme();
+  const { resolveFirstName, resolveName } = useLocalizedName();
 
   const { data, isLoading, error, refetch } = useTeacherDashboard(profile?.id);
   const { data: upcomingSessions = [] } = useTeacherUpcomingSessions(profile?.id, schoolId ?? undefined);
@@ -50,7 +52,7 @@ export default function TeacherDashboard() {
         <View style={styles.header}>
           <View style={styles.headerContent}>
             <Text style={styles.greeting}>
-              {t('dashboard.welcome', { name: profile?.full_name?.split(' ')[0] ?? '' })} 👋
+              {t('dashboard.welcome', { name: resolveFirstName(profile?.name_localized, profile?.full_name) })} 👋
             </Text>
             <Text style={styles.subtitle}>{t('teacher.dashboard.readyToTeach')}</Text>
           </View>
@@ -156,12 +158,12 @@ export default function TeacherDashboard() {
               <View style={styles.sessionRow}>
                 <View style={[styles.sessionAvatar, { backgroundColor: colors.neutral[100] }]}>
                   <Text style={styles.avatarText}>
-                    {session.student?.profiles?.full_name?.[0]?.toUpperCase()}
+                    {resolveName(session.student?.profiles?.name_localized, session.student?.profiles?.full_name)?.[0]?.toUpperCase()}
                   </Text>
                 </View>
                 <View style={styles.sessionInfo}>
                   <Text style={styles.sessionStudentName} numberOfLines={1}>
-                    {session.student?.profiles?.full_name ?? t('common.noResults')}
+                    {resolveName(session.student?.profiles?.name_localized, session.student?.profiles?.full_name) ?? t('common.noResults')}
                   </Text>
                   <Text style={styles.sessionDate}>{session.session_date}</Text>
                 </View>

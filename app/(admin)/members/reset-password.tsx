@@ -11,6 +11,7 @@ import { LoadingState, ErrorState } from '@/components/feedback';
 import { authService } from '@/features/auth/services/auth.service';
 import { useStudents } from '@/features/students/hooks/useStudents';
 import { useTeachers } from '@/features/teachers/hooks/useTeachers';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -25,6 +26,7 @@ export default function ResetPasswordScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { resolveName } = useLocalizedName();
   const { data: students = [] } = useStudents();
   const { data: teachers = [] } = useTeachers();
 
@@ -32,11 +34,11 @@ export default function ResetPasswordScreen() {
   const studentLabel = t('roles.student');
   const userOptions = [
     ...teachers.map((tc: any) => ({
-      label: `${tc.full_name} (${teacherLabel})`,
+      label: `${resolveName(tc.name_localized, tc.full_name)} (${teacherLabel})`,
       value: tc.id,
     })),
     ...students.map((s: any) => ({
-      label: `${s.profiles?.full_name ?? '—'} (${studentLabel})`,
+      label: `${resolveName(s.profiles?.name_localized, s.profiles?.full_name) ?? '—'} (${studentLabel})`,
       value: s.profiles?.id ?? s.id,
     })),
   ];

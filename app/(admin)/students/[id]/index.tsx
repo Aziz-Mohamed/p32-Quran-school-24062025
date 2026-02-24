@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui';
 import { Button } from '@/components/ui/Button';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useStudentById, useUpdateStudent } from '@/features/students/hooks/useStudents';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -22,6 +23,7 @@ export default function StudentDetailScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
 
+  const { resolveName } = useLocalizedName();
   const { data: student, isLoading, error, refetch } = useStudentById(id);
   const updateStudent = useUpdateStudent();
 
@@ -64,7 +66,7 @@ export default function StudentDetailScreen() {
             <Ionicons name="person" size={40} color={colors.primary[500]} />
           </View>
           <Text style={styles.name}>
-            {(student as any).profiles?.full_name ?? '—'}
+            {resolveName((student as any).profiles?.name_localized, (student as any).profiles?.full_name)}
           </Text>
           <Text style={styles.username}>
             @{(student as any).profiles?.username ?? '—'}
@@ -81,7 +83,7 @@ export default function StudentDetailScreen() {
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>{t('admin.students.class')}</Text>
             <Text style={styles.infoValue}>
-              {(student as any).classes?.name ?? t('admin.students.noClass')}
+              {resolveName((student as any).classes?.name_localized, (student as any).classes?.name) ?? t('admin.students.noClass')}
             </Text>
           </View>
           <View style={styles.infoRow}>
@@ -97,7 +99,7 @@ export default function StudentDetailScreen() {
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>{t('admin.students.parent')}</Text>
             <Text style={styles.infoValue}>
-              {(student as any).parent?.full_name ?? t('admin.students.noParent')}
+              {resolveName((student as any).parent?.name_localized, (student as any).parent?.full_name) ?? t('admin.students.noParent')}
             </Text>
           </View>
           <View style={styles.infoRow}>

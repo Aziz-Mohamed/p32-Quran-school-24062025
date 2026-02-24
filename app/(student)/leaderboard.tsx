@@ -13,6 +13,7 @@ import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useLeaderboard } from '@/features/gamification/hooks/useLeaderboard';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -26,6 +27,7 @@ export default function LeaderboardScreen() {
   const { profile } = useAuth();
   const theme = useRoleTheme();
 
+  const { resolveName } = useLocalizedName();
   const { data: entries = [], isLoading, error, refetch } = useLeaderboard(
     undefined,
   );
@@ -81,16 +83,16 @@ export default function LeaderboardScreen() {
                       )}
                     </View>
                     
-                    <Avatar 
-                      name={item.profiles?.full_name} 
-                      size="md" 
+                    <Avatar
+                      name={resolveName(item.profiles?.name_localized, item.profiles?.full_name)}
+                      size="md"
                       ring={isCurrentUser}
                       variant={isCurrentUser ? theme.tag : 'default'}
                     />
 
                     <View style={styles.entryInfo}>
                       <Text style={styles.entryName} numberOfLines={1}>
-                        {item.profiles?.full_name ?? '—'}
+                        {resolveName(item.profiles?.name_localized, item.profiles?.full_name) ?? '—'}
                       </Text>
                       <Text style={styles.entryLevel}>
                         {t('common.level')} {item.current_level ?? 0}

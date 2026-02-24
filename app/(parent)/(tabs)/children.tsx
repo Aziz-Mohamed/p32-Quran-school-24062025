@@ -11,6 +11,7 @@ import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useChildren } from '@/features/children/hooks/useChildren';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
+import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -23,6 +24,7 @@ export default function ChildrenScreen() {
   const { profile } = useAuth();
   const router = useRouter();
   const theme = useRoleTheme();
+  const { resolveName } = useLocalizedName();
 
   const { data: children = [], isLoading, error, refetch } = useChildren(profile?.id);
 
@@ -54,17 +56,17 @@ export default function ChildrenScreen() {
               >
                 <View style={styles.childRow}>
                   <Avatar 
-                    name={child.profiles?.full_name} 
+                    name={resolveName(child.profiles?.name_localized, child.profiles?.full_name)}
                     size="lg" 
                     ring 
                     variant={theme.tag}
                   />
                   <View style={styles.childInfo}>
                     <Text style={styles.childName}>
-                      {child.profiles?.full_name ?? '—'}
+                      {resolveName(child.profiles?.name_localized, child.profiles?.full_name) ?? '—'}
                     </Text>
                     <Text style={styles.childMeta}>
-                      {child.classes?.name ?? t('admin.students.noClass')}
+                      {resolveName(child.classes?.name_localized, child.classes?.name) ?? t('admin.students.noClass')}
                       {` · Lvl ${child.current_level ?? 0}`}
                     </Text>
                     {child.current_streak > 0 && (
