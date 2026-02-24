@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { I18nManager, Pressable, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -12,6 +12,7 @@ import { RubBuildingBlock, BLOCK_SIZE } from '@/features/memorization/components
 import { RubDetailSheet } from '@/features/memorization/components/RubDetailSheet';
 import type { RubCoverage } from '@/features/memorization/utils/rub-coverage';
 import { useRubCoverage } from '@/features/memorization/hooks/useRubCoverage';
+import { useCancelAssignment } from '@/features/memorization/hooks/useAssignments';
 import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { useMemorizationProgress } from '@/features/memorization/hooks/useMemorizationProgress';
 import { useRubCertifications } from '@/features/gamification/hooks/useRubCertifications';
@@ -38,15 +39,24 @@ export default function MemorizationScreen() {
   });
 
   const {
-    inProgress,
-    completed,
+    uncertified,
     isLoading: coverageLoading,
   } = useRubCoverage(profile?.id);
+
+  const cancelAssignment = useCancelAssignment();
 
   const canSelfAssign = dashboardData?.student?.can_self_assign ?? false;
   const schoolId = dashboardData?.student?.school_id ?? '';
   const [formVisible, setFormVisible] = useState(false);
-  const [selectedRub, setSelectedRub] = useState<{ coverage: RubCoverage; isComplete: boolean } | null>(null);
+  const [selectedRub, setSelectedRub] = useState<RubCoverage | null>(null);
+
+  const handleCancelAssignments = useCallback(
+    async (ids: string[]) => {
+      await Promise.all(ids.map((id) => cancelAssignment.mutateAsync(id)));
+      setSelectedRub(null);
+    },
+    [cancelAssignment],
+  );
 
   // Stats
   const certifiedCount = certifications.length;
@@ -82,7 +92,7 @@ export default function MemorizationScreen() {
 
   if (isLoading) return <LoadingState />;
 
-  const hasBlocks = inProgress.length > 0 || completed.length > 0;
+  const hasBlocks = uncertified.length > 0;
 
   return (
     <>
@@ -113,42 +123,17 @@ export default function MemorizationScreen() {
             </View>
           </Card>
 
-          {/* In Progress Blocks — grid layout */}
-          {inProgress.length > 0 && (
-            <>
-              <Text style={styles.sectionHeader}>
-                {t('student.blockBuilder.inProgress')}
-              </Text>
-              <View style={styles.blockGrid}>
-                {inProgress.map((coverage) => (
-                  <RubBuildingBlock
-                    key={coverage.rubNumber}
-                    coverage={coverage}
-                    isComplete={false}
-                    onPress={() => setSelectedRub({ coverage, isComplete: false })}
-                  />
-                ))}
-              </View>
-            </>
-          )}
-
-          {/* Completed (Ready for Certification) — grid layout */}
-          {completed.length > 0 && (
-            <>
-              <Text style={styles.sectionHeader}>
-                {t('student.blockBuilder.readyForCertification')}
-              </Text>
-              <View style={styles.blockGrid}>
-                {completed.map((coverage) => (
-                  <RubBuildingBlock
-                    key={coverage.rubNumber}
-                    coverage={coverage}
-                    isComplete={true}
-                    onPress={() => setSelectedRub({ coverage, isComplete: true })}
-                  />
-                ))}
-              </View>
-            </>
+          {/* Uncertified Blocks — single flat grid */}
+          {hasBlocks && (
+            <View style={styles.blockGrid}>
+              {uncertified.map((coverage) => (
+                <RubBuildingBlock
+                  key={coverage.rubNumber}
+                  coverage={coverage}
+                  onPress={() => setSelectedRub(coverage)}
+                />
+              ))}
+            </View>
           )}
 
           {/* Empty State */}
@@ -214,9 +199,9 @@ export default function MemorizationScreen() {
       {/* Rub' Detail Sheet */}
       <RubDetailSheet
         visible={!!selectedRub}
-        coverage={selectedRub?.coverage ?? null}
-        isComplete={selectedRub?.isComplete ?? false}
+        coverage={selectedRub}
         onClose={() => setSelectedRub(null)}
+        onCancelAssignments={handleCancelAssignments}
       />
     </>
   );
