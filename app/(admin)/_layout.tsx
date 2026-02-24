@@ -37,6 +37,7 @@ export default function AdminLayout() {
         <Stack.Screen name="reports/teacher-attendance" />
         <Stack.Screen name="reports/session-completion" />
         <Stack.Screen name="settings/location" />
+        <Stack.Screen name="settings/permissions" />
         <Stack.Screen name="work-attendance/index" />
       </Stack>
     </ErrorBoundary>

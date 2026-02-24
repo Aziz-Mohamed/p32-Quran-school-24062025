@@ -46,34 +46,117 @@ class RecitationPlanService {
   }
 
   /**
-   * Upsert a recitation plan (uses unique constraint on scheduled_session_id + student_id).
+   * Upsert a teacher/admin plan. Uses select-then-insert/update
+   * to work with partial unique index (source != 'student_suggestion').
    */
   async upsertPlan(input: CreateRecitationPlanInput) {
+    const planData = {
+      school_id: input.school_id,
+      scheduled_session_id: input.scheduled_session_id,
+      student_id: input.student_id ?? null,
+      set_by: input.set_by,
+      selection_mode: input.selection_mode,
+      start_surah: input.start_surah,
+      start_ayah: input.start_ayah,
+      end_surah: input.end_surah,
+      end_ayah: input.end_ayah,
+      rub_number: input.rub_number ?? null,
+      juz_number: input.juz_number ?? null,
+      hizb_number: input.hizb_number ?? null,
+      recitation_type: input.recitation_type,
+      source: input.source ?? 'manual',
+      assignment_id: input.assignment_id ?? null,
+      notes: input.notes ?? null,
+    };
+
+    // Find existing teacher/admin plan for this session+student
+    let query = supabase
+      .from('session_recitation_plans')
+      .select('id')
+      .eq('scheduled_session_id', input.scheduled_session_id)
+      .neq('source', 'student_suggestion');
+
+    if (input.student_id) {
+      query = query.eq('student_id', input.student_id);
+    } else {
+      query = query.is('student_id', null);
+    }
+
+    const { data: existing } = await query.maybeSingle();
+
+    if (existing) {
+      return supabase
+        .from('session_recitation_plans')
+        .update(planData)
+        .eq('id', existing.id)
+        .select(PLAN_SELECT)
+        .single();
+    }
+
     return supabase
       .from('session_recitation_plans')
-      .upsert(
-        {
-          school_id: input.school_id,
-          scheduled_session_id: input.scheduled_session_id,
-          student_id: input.student_id ?? null,
-          set_by: input.set_by,
-          selection_mode: input.selection_mode,
-          start_surah: input.start_surah,
-          start_ayah: input.start_ayah,
-          end_surah: input.end_surah,
-          end_ayah: input.end_ayah,
-          rub_number: input.rub_number ?? null,
-          juz_number: input.juz_number ?? null,
-          hizb_number: input.hizb_number ?? null,
-          recitation_type: input.recitation_type,
-          source: input.source ?? 'manual',
-          assignment_id: input.assignment_id ?? null,
-          notes: input.notes ?? null,
-        },
-        { onConflict: 'scheduled_session_id,student_id' },
-      )
+      .insert(planData)
       .select(PLAN_SELECT)
       .single();
+  }
+
+  /**
+   * Upsert a student suggestion.
+   */
+  async upsertStudentSuggestion(input: CreateRecitationPlanInput) {
+    const { data: existing } = await supabase
+      .from('session_recitation_plans')
+      .select('id')
+      .eq('scheduled_session_id', input.scheduled_session_id)
+      .eq('student_id', input.student_id!)
+      .eq('source', 'student_suggestion')
+      .maybeSingle();
+
+    const planData = {
+      school_id: input.school_id,
+      scheduled_session_id: input.scheduled_session_id,
+      student_id: input.student_id!,
+      set_by: input.set_by,
+      selection_mode: input.selection_mode,
+      start_surah: input.start_surah,
+      start_ayah: input.start_ayah,
+      end_surah: input.end_surah,
+      end_ayah: input.end_ayah,
+      rub_number: input.rub_number ?? null,
+      juz_number: input.juz_number ?? null,
+      hizb_number: input.hizb_number ?? null,
+      recitation_type: input.recitation_type,
+      source: 'student_suggestion' as const,
+      assignment_id: input.assignment_id ?? null,
+      notes: input.notes ?? null,
+    };
+
+    if (existing) {
+      return supabase
+        .from('session_recitation_plans')
+        .update(planData)
+        .eq('id', existing.id)
+        .select(PLAN_SELECT)
+        .single();
+    }
+
+    return supabase
+      .from('session_recitation_plans')
+      .insert(planData)
+      .select(PLAN_SELECT)
+      .single();
+  }
+
+  /**
+   * Delete a student's own suggestion.
+   */
+  async deleteStudentSuggestion(sessionId: string, studentId: string) {
+    return supabase
+      .from('session_recitation_plans')
+      .delete()
+      .eq('scheduled_session_id', sessionId)
+      .eq('student_id', studentId)
+      .eq('source', 'student_suggestion');
   }
 
   /**
@@ -99,14 +182,16 @@ class RecitationPlanService {
   }
 
   /**
-   * Delete all individual student plans for a session (used before setting a unified plan).
+   * Delete all individual teacher/admin student plans for a session
+   * (used before setting a unified plan). Preserves student suggestions.
    */
   async deleteStudentPlans(sessionId: string) {
     return supabase
       .from('session_recitation_plans')
       .delete()
       .eq('scheduled_session_id', sessionId)
-      .not('student_id', 'is', null);
+      .not('student_id', 'is', null)
+      .neq('source', 'student_suggestion');
   }
 
   /**

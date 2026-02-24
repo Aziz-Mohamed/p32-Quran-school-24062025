@@ -24,6 +24,8 @@ import {
   useUpsertRecitationPlan,
   useDeleteRecitationPlan,
   useSetUnifiedPlan,
+  useUpsertStudentSuggestion,
+  useDeleteStudentSuggestion,
 } from '@/features/scheduling/hooks/useRecitationPlans';
 import type {
   CreateRecitationPlanInput,
@@ -60,12 +62,18 @@ export function SessionRecitationPlanList({
   const upsertMutation = useUpsertRecitationPlan();
   const deleteMutation = useDeleteRecitationPlan();
   const setUnifiedMutation = useSetUnifiedPlan();
+  const upsertSuggestionMutation = useUpsertStudentSuggestion();
+  const deleteSuggestionMutation = useDeleteStudentSuggestion();
 
-  // ── Form state ────────────────────────────────────────────────────────
+  // ── Form state (teacher) ────────────────────────────────────────────
   const [formVisible, setFormVisible] = useState(false);
   const [editingPlan, setEditingPlan] = useState<RecitationPlanWithDetails | null>(null);
   const [formStudentId, setFormStudentId] = useState<string | null>(null);
   const [isSetForAll, setIsSetForAll] = useState(false);
+
+  // ── Form state (student suggestion) ─────────────────────────────────
+  const [suggestionFormVisible, setSuggestionFormVisible] = useState(false);
+  const [editingSuggestion, setEditingSuggestion] = useState<RecitationPlanWithDetails | null>(null);
 
   // ── Derived data ──────────────────────────────────────────────────────
   const sessionDefaultPlan = useMemo(
@@ -81,7 +89,18 @@ export function SessionRecitationPlanList({
   const studentPlanMap = useMemo(() => {
     const map = new Map<string, RecitationPlanWithDetails>();
     for (const plan of studentPlans) {
-      if (plan.student_id) {
+      // Only teacher/admin plans (not suggestions) go into the main map
+      if (plan.student_id && plan.source !== 'student_suggestion') {
+        map.set(plan.student_id, plan);
+      }
+    }
+    return map;
+  }, [studentPlans]);
+
+  const studentSuggestionMap = useMemo(() => {
+    const map = new Map<string, RecitationPlanWithDetails>();
+    for (const plan of studentPlans) {
+      if (plan.student_id && plan.source === 'student_suggestion') {
         map.set(plan.student_id, plan);
       }
     }
@@ -90,7 +109,7 @@ export function SessionRecitationPlanList({
 
   const isTeacher = role === 'teacher';
 
-  // ── Handlers ──────────────────────────────────────────────────────────
+  // ── Teacher handlers ────────────────────────────────────────────────
   const openFormForStudent = useCallback(
     (studentId: string | null, existing?: RecitationPlanWithDetails) => {
       setFormStudentId(studentId);
@@ -108,7 +127,7 @@ export function SessionRecitationPlanList({
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
-          text: t('common.continue'),
+          text: t('common.confirm'),
           onPress: () => {
             setFormStudentId(null);
             setEditingPlan(sessionDefaultPlan);
@@ -166,6 +185,49 @@ export function SessionRecitationPlanList({
     setIsSetForAll(false);
   }, []);
 
+  // ── Student suggestion handlers ─────────────────────────────────────
+  const openSuggestionForm = useCallback((existing: RecitationPlanWithDetails | null) => {
+    setEditingSuggestion(existing);
+    setSuggestionFormVisible(true);
+  }, []);
+
+  const handleSaveSuggestion = useCallback(
+    (input: CreateRecitationPlanInput) => {
+      upsertSuggestionMutation.mutate(
+        { ...input, source: 'student_suggestion' as any },
+        {
+          onSuccess: () => {
+            setSuggestionFormVisible(false);
+            setEditingSuggestion(null);
+          },
+        },
+      );
+    },
+    [upsertSuggestionMutation],
+  );
+
+  const handleDeleteSuggestion = useCallback(() => {
+    Alert.alert(
+      t('scheduling.recitationPlan.removeSuggestion'),
+      '',
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => {
+            deleteSuggestionMutation.mutate({ sessionId, studentId: userId });
+          },
+        },
+      ],
+    );
+  }, [t, deleteSuggestionMutation, sessionId, userId]);
+
+  const handleCloseSuggestionForm = useCallback(() => {
+    setSuggestionFormVisible(false);
+    setEditingSuggestion(null);
+  }, []);
+
   // ── Form initial data ─────────────────────────────────────────────────
   const formInitialData = useMemo(() => {
     if (editingPlan == null) return undefined;
@@ -185,6 +247,24 @@ export function SessionRecitationPlanList({
     };
   }, [editingPlan]);
 
+  const suggestionInitialData = useMemo(() => {
+    if (editingSuggestion == null) return undefined;
+    return {
+      selection_mode: editingSuggestion.selection_mode as CreateRecitationPlanInput['selection_mode'],
+      start_surah: editingSuggestion.start_surah,
+      start_ayah: editingSuggestion.start_ayah,
+      end_surah: editingSuggestion.end_surah,
+      end_ayah: editingSuggestion.end_ayah,
+      rub_number: editingSuggestion.rub_number,
+      hizb_number: editingSuggestion.hizb_number,
+      juz_number: editingSuggestion.juz_number,
+      recitation_type: editingSuggestion.recitation_type as CreateRecitationPlanInput['recitation_type'],
+      notes: editingSuggestion.notes,
+      source: 'student_suggestion' as CreateRecitationPlanInput['source'],
+      assignment_id: editingSuggestion.assignment_id,
+    };
+  }, [editingSuggestion]);
+
   // ── Loading state ─────────────────────────────────────────────────────
   if (isLoading) {
     return (
@@ -196,48 +276,97 @@ export function SessionRecitationPlanList({
 
   // ── Student view ──────────────────────────────────────────────────────
   if (!isTeacher) {
-    // Find the student's own plan or fallback to session default
-    const myPlan = studentPlans.find((p) => p.set_by === userId) ?? sessionDefaultPlan;
+    // Teacher-set plan (not a student suggestion)
+    const teacherPlan = studentPlans.find(
+      (p) => p.student_id === userId && p.source !== 'student_suggestion',
+    ) ?? sessionDefaultPlan;
 
-    if (myPlan == null) {
-      return (
-        <View style={styles.section}>
+    // Student's own suggestion
+    const mySuggestion = studentPlans.find(
+      (p) => p.student_id === userId && p.source === 'student_suggestion',
+    ) ?? null;
+
+    return (
+      <View style={styles.section}>
+        {/* Teacher's plan (read-only) */}
+        {teacherPlan != null && (
+          <>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>
+                {t('scheduling.recitationPlan.myPlan')}
+              </Text>
+              {teacherPlan.student_id == null && (
+                <Badge
+                  label={t('scheduling.recitationPlan.sessionDefault')}
+                  variant="info"
+                  size="sm"
+                />
+              )}
+            </View>
+            <RecitationPlanCard
+              plan={teacherPlan}
+              canManage={false}
+              onEdit={() => {}}
+              onDelete={() => {}}
+            />
+          </>
+        )}
+
+        {/* Student suggestion section */}
+        <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitle}>
-            {t('scheduling.recitationPlan.myPlan')}
+            {t('scheduling.recitationPlan.mySuggestion')}
           </Text>
+        </View>
+
+        {mySuggestion != null ? (
+          <RecitationPlanCard
+            plan={mySuggestion}
+            canManage
+            onEdit={() => openSuggestionForm(mySuggestion)}
+            onDelete={handleDeleteSuggestion}
+          />
+        ) : (
           <View style={styles.emptyState}>
             <Ionicons
-              name="document-text-outline"
+              name="bulb-outline"
               size={normalize(24)}
               color={lightTheme.textTertiary}
             />
             <Text style={styles.emptyText}>
-              {t('scheduling.recitationPlan.noPlanSet')}
+              {t('scheduling.recitationPlan.noSuggestionYet')}
             </Text>
-          </View>
-        </View>
-      );
-    }
-
-    return (
-      <View style={styles.section}>
-        <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>
-            {t('scheduling.recitationPlan.myPlan')}
-          </Text>
-          {myPlan.student_id == null && (
-            <Badge
-              label={t('scheduling.recitationPlan.sessionDefault')}
-              variant="info"
+            <Text style={styles.hintText}>
+              {t('scheduling.recitationPlan.suggestionHint')}
+            </Text>
+            <Button
+              title={t('scheduling.recitationPlan.suggestPlan')}
+              onPress={() => openSuggestionForm(null)}
+              variant="primary"
               size="sm"
+              icon={
+                <Ionicons
+                  name="add-circle-outline"
+                  size={normalize(16)}
+                  color={colors.white}
+                />
+              }
+              style={styles.emptyButton}
             />
-          )}
-        </View>
-        <RecitationPlanCard
-          plan={myPlan}
-          canManage={false}
-          onEdit={() => {}}
-          onDelete={() => {}}
+          </View>
+        )}
+
+        {/* Suggestion form modal */}
+        <RecitationPlanForm
+          visible={suggestionFormVisible}
+          onClose={handleCloseSuggestionForm}
+          onSave={handleSaveSuggestion}
+          sessionId={sessionId}
+          studentId={userId}
+          schoolId={schoolId}
+          userId={userId}
+          sessionDate={sessionDate}
+          initialData={suggestionInitialData}
         />
       </View>
     );
@@ -289,6 +418,7 @@ export function SessionRecitationPlanList({
       {students != null &&
         students.map((student) => {
           const studentPlan = studentPlanMap.get(student.id);
+          const studentSuggestion = studentSuggestionMap.get(student.id);
 
           return (
             <View key={student.id} style={styles.studentRow}>
@@ -341,6 +471,23 @@ export function SessionRecitationPlanList({
                   <Text style={styles.noPlanText}>
                     {t('scheduling.recitationPlan.noPlanSet')}
                   </Text>
+                </View>
+              )}
+
+              {/* Student suggestion (read-only for teacher) */}
+              {studentSuggestion != null && (
+                <View style={styles.suggestionContainer}>
+                  <Badge
+                    label={t('scheduling.recitationPlan.studentSuggestion')}
+                    variant="warning"
+                    size="sm"
+                  />
+                  <RecitationPlanCard
+                    plan={studentSuggestion}
+                    canManage={false}
+                    onEdit={() => {}}
+                    onDelete={() => {}}
+                  />
                 </View>
               )}
             </View>
@@ -454,6 +601,10 @@ const styles = StyleSheet.create({
     color: lightTheme.textTertiary,
     fontStyle: 'italic',
   },
+  suggestionContainer: {
+    gap: spacing.sm,
+    paddingStart: spacing.xl,
+  },
   emptyState: {
     alignItems: 'center',
     gap: spacing.sm,
@@ -464,6 +615,14 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     lineHeight: typography.lineHeight.sm,
     color: lightTheme.textTertiary,
+  },
+  hintText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.xs,
+    lineHeight: typography.lineHeight.xs,
+    color: lightTheme.textTertiary,
+    textAlign: 'center',
+    paddingHorizontal: spacing.xl,
   },
   emptyButton: {
     marginTop: spacing.sm,

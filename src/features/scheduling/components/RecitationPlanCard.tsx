@@ -48,8 +48,10 @@ export function RecitationPlanCard({
   }, [plan.start_surah, plan.start_ayah, plan.end_surah, plan.end_ayah]);
 
   const modeBadgeLabel = t(`scheduling.recitationPlan.modes.${plan.selection_mode}`);
-  const sourceBadgeLabel =
-    plan.source === 'from_assignment'
+  const isStudentSuggestion = plan.source === 'student_suggestion';
+  const sourceBadgeLabel = isStudentSuggestion
+    ? t('scheduling.recitationPlan.suggestion')
+    : plan.source === 'from_assignment'
       ? t('scheduling.recitationPlan.fromAssignment')
       : t('scheduling.recitationPlan.manual');
 
@@ -76,7 +78,7 @@ export function RecitationPlanCard({
         <Badge label={modeBadgeLabel} variant="info" size="sm" />
         <Badge
           label={sourceBadgeLabel}
-          variant={plan.source === 'from_assignment' ? 'indigo' : 'default'}
+          variant={isStudentSuggestion ? 'warning' : plan.source === 'from_assignment' ? 'indigo' : 'default'}
           size="sm"
         />
         <RecitationTypeChip

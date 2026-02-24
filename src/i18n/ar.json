@@ -727,6 +727,13 @@
       "wifiRequired": "اسم شبكة الواي فاي مطلوب عند تفعيل التحقق بالواي فاي.",
       "saved": "تم تحديث إعدادات التحقق بنجاح."
     },
+    "permissions": {
+      "title": "الصلاحيات",
+      "description": "التحكم في صلاحيات المعلمين في التطبيق.",
+      "teacherCanCreateSessions": "السماح للمعلمين بإنشاء الحصص",
+      "teacherCanCreateSessionsHint": "عند التفعيل، يمكن للمعلمين جدولة حصص فصلية وفردية بأنفسهم.",
+      "saved": "تم تحديث الصلاحيات بنجاح."
+    },
     "attendance": {
       "title": "الحضور",
       "subtitle": "إدارة سجلات الحضور",
@@ -939,6 +946,17 @@
     "noUpcomingSessions": "لا توجد حصص مجدولة قادمة.",
     "childScheduleTitle": "جدول {{name}}",
     "individualSession": "حصة فردية",
+    "createSession": "إنشاء حصة",
+    "createSessionTitle": "حصة جديدة",
+    "selectSessionType": "نوع الحصة",
+    "selectClass": "اختر الفصل",
+    "selectStudent": "اختر الطالب",
+    "selectDate": "اختر التاريخ",
+    "startTime": "وقت البدء",
+    "endTime": "وقت الانتهاء",
+    "sessionCreated": "تم إنشاء الحصة بنجاح.",
+    "classSession": "فصل",
+    "individualSessionType": "فردي",
     "nextSession": "الحصة التالية",
     "date": "التاريخ",
     "time": "الوقت",
@@ -997,7 +1015,14 @@
       "planSaved": "تم حفظ الخطة بنجاح",
       "planDeleted": "تم إزالة الخطة",
       "setForAllWarning": "سيتم استبدال جميع خطط الطلاب الفردية بخطة واحدة للحصة.",
-      "prefilledFromPlan": "تم التعبئة من خطة التسميع"
+      "prefilledFromPlan": "تم التعبئة من خطة التسميع",
+      "mySuggestion": "اقتراحي",
+      "suggestion": "اقتراح",
+      "studentSuggestion": "اقتراح الطالب",
+      "suggestPlan": "اقتراح خطة",
+      "noSuggestionYet": "لم تقترح خطة تسميع بعد.",
+      "removeSuggestion": "إزالة الاقتراح؟",
+      "suggestionHint": "سيرى معلمك هذا الاقتراح عند تخطيط الحصة."
     }
   },
   "workAttendance": {

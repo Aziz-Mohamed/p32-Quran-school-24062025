@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useTeacherUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
+import { useCanTeacherCreateSessions } from '@/features/schools';
 import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
@@ -33,6 +34,7 @@ export default function TeacherScheduleScreen() {
   const { profile, schoolId } = useAuth();
 
   const { resolveName } = useLocalizedName();
+  const { canCreate } = useCanTeacherCreateSessions(schoolId ?? undefined);
   const { data: sessions = [], isLoading, error, refetch } =
     useTeacherUpcomingSessions(profile?.id, schoolId ?? undefined);
 
@@ -57,7 +59,18 @@ export default function TeacherScheduleScreen() {
           size="sm"
         />
 
-        <Text style={styles.title}>{t('scheduling.mySchedule')}</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>{t('scheduling.mySchedule')}</Text>
+          {canCreate && (
+            <Button
+              title={t('scheduling.createSession')}
+              onPress={() => router.push('/(teacher)/schedule/create')}
+              variant="primary"
+              size="sm"
+              icon={<Ionicons name="add-circle-outline" size={normalize(16)} color={colors.white} />}
+            />
+          )}
+        </View>
         <Text style={styles.subtitle}>{t('scheduling.upcomingSessions')}</Text>
 
         {sessions.length === 0 ? (
@@ -121,6 +134,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: spacing.lg,
     gap: spacing.md,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   title: {
     ...typography.textStyles.heading,

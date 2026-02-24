@@ -142,6 +142,12 @@ export default function AdminDashboard() {
             color={colors.primary[500]}
           />
           <NavCard
+            title={t('admin.permissions.title')}
+            icon="toggle"
+            onPress={() => router.push('/(admin)/settings/permissions')}
+            color={colors.accent.sky[500]}
+          />
+          <NavCard
             title={t('admin.dashboard.resetPassword')}
             icon="key"
             onPress={() => router.push('/(admin)/members/reset-password')}

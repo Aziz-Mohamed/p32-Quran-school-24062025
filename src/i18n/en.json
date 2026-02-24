@@ -727,6 +727,13 @@
       "wifiRequired": "WiFi SSID is required when WiFi verification is enabled.",
       "saved": "Verification settings updated successfully."
     },
+    "permissions": {
+      "title": "Permissions",
+      "description": "Control what teachers can do in the app.",
+      "teacherCanCreateSessions": "Teachers Can Create Sessions",
+      "teacherCanCreateSessionsHint": "When enabled, teachers can schedule their own class and individual sessions.",
+      "saved": "Permissions updated successfully."
+    },
     "attendance": {
       "title": "Attendance",
       "subtitle": "Manage attendance records",
@@ -939,6 +946,17 @@
     "noUpcomingSessions": "No upcoming sessions scheduled.",
     "childScheduleTitle": "{{name}}'s Schedule",
     "individualSession": "Individual Session",
+    "createSession": "Create Session",
+    "createSessionTitle": "New Session",
+    "selectSessionType": "Session Type",
+    "selectClass": "Select Class",
+    "selectStudent": "Select Student",
+    "selectDate": "Select Date",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "sessionCreated": "Session created successfully.",
+    "classSession": "Class",
+    "individualSessionType": "Individual",
     "nextSession": "Next Session",
     "date": "Date",
     "time": "Time",
@@ -997,7 +1015,14 @@
       "planSaved": "Plan saved successfully",
       "planDeleted": "Plan removed",
       "setForAllWarning": "This will replace all individual student plans with a single session plan.",
-      "prefilledFromPlan": "Pre-filled from recitation plan"
+      "prefilledFromPlan": "Pre-filled from recitation plan",
+      "mySuggestion": "My Suggestion",
+      "suggestion": "Suggestion",
+      "studentSuggestion": "Student Suggestion",
+      "suggestPlan": "Suggest a Plan",
+      "noSuggestionYet": "You haven't suggested a recitation plan yet.",
+      "removeSuggestion": "Remove Suggestion?",
+      "suggestionHint": "Your teacher will see this suggestion when planning the session."
     }
   },
   "workAttendance": {

@@ -15,6 +15,7 @@ export default function TeacherLayout() {
         <Stack.Screen name="students/top-performers" />
         <Stack.Screen name="students/needs-support" />
         <Stack.Screen name="schedule/index" />
+        <Stack.Screen name="schedule/create" />
         <Stack.Screen name="schedule/[id]/index" />
         <Stack.Screen name="schedule/[id]/workspace" />
       </Stack>
