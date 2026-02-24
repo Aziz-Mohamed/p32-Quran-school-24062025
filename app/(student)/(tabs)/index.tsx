@@ -360,21 +360,21 @@ export default function StudentDashboard() {
         )}
 
         {/* 4. Explore */}
-        <View style={styles.exploreGrid}>
+        <View style={styles.exploreRow}>
           <Pressable
             style={[styles.explorePill, { backgroundColor: colors.accent.violet[50] }]}
             onPress={() => router.push('/(student)/(tabs)/journey')}
           >
-            <Ionicons name="map" size={16} color={colors.accent.violet[500]} />
+            <Ionicons name="map" size={14} color={colors.accent.violet[500]} />
             <Text style={[styles.explorePillText, { color: colors.accent.violet[600] }]}>
-              {t('gamification.progressMap')}
+              {t('student.dashboard.journey')}
             </Text>
           </Pressable>
           <Pressable
             style={[styles.explorePill, { backgroundColor: colors.accent.sky[50] }]}
             onPress={() => router.push('/(student)/schedule')}
           >
-            <Ionicons name="calendar-outline" size={16} color={colors.accent.sky[500]} />
+            <Ionicons name="calendar-outline" size={14} color={colors.accent.sky[500]} />
             <Text style={[styles.explorePillText, { color: colors.accent.sky[600] }]}>
               {t('student.dashboard.mySchedule')}
             </Text>
@@ -383,7 +383,7 @@ export default function StudentDashboard() {
             style={[styles.explorePill, { backgroundColor: colors.secondary[50] }]}
             onPress={() => router.push('/(student)/leaderboard')}
           >
-            <Ionicons name="podium" size={16} color={colors.secondary[500]} />
+            <Ionicons name="podium" size={14} color={colors.secondary[500]} />
             <Text style={[styles.explorePillText, { color: colors.secondary[600] }]}>
               {t('student.dashboard.viewLeaderboard')}
             </Text>
@@ -628,22 +628,21 @@ const styles = StyleSheet.create({
   },
 
   // Explore Pills
-  exploreGrid: {
+  exploreRow: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: spacing.sm,
   },
   explorePill: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
+    gap: normalize(4),
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
     borderRadius: radius.full,
   },
   explorePillText: {
     fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(12),
+    fontSize: normalize(11),
   },
 });
