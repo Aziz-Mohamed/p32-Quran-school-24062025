@@ -23,13 +23,22 @@ import { TextField } from '@/components/ui/TextField';
 import { Badge } from '@/components/ui/Badge';
 import { QuranRangePicker } from '@/features/memorization/components/QuranRangePicker';
 import { RecitationTypeChips } from '@/features/memorization/components/RecitationTypeChip';
-import { usePendingAssignments } from '@/features/scheduling/hooks/useRecitationPlans';
+import { useMemorizationProgress } from '@/features/memorization/hooks/useMemorizationProgress';
+import { useRevisionHomework, type HomeworkItem } from '@/features/gamification/hooks/useRevisionHomework';
 import { getSurah } from '@/lib/quran-metadata';
 import type {
   CreateRecitationPlanInput,
   SelectionMode,
   RecitationPlanType,
 } from '@/features/scheduling/types/recitation-plan.types';
+
+const STATUS_BADGE_VARIANT: Record<string, 'success' | 'warning' | 'rose' | 'info'> = {
+  memorized: 'success',
+  in_progress: 'warning',
+  learning: 'warning',
+  needs_review: 'rose',
+  new: 'info',
+};
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -103,10 +112,15 @@ export function RecitationPlanForm({
     ayah: number;
   } | null>(null);
 
-  // ── Suggestions ─────────────────────────────────────────────────────────
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const { data: pendingAssignments = [], isLoading: loadingSuggestions } =
-    usePendingAssignments(studentId ?? undefined, sessionDate);
+  // ── Custom range foldable ─────────────────────────────────────────────
+  const [showCustomRange, setShowCustomRange] = useState(false);
+
+  // ── Data sources ──────────────────────────────────────────────────────
+  const { data: progressEntries = [], isLoading: loadingProgress } =
+    useMemorizationProgress({ studentId: studentId ?? '' });
+
+  const { homeworkItems, pendingAssignments: hwAssignments, isLoading: loadingHomework } =
+    useRevisionHomework(studentId ?? undefined);
 
   // ── Reset form when modal opens ─────────────────────────────────────────
   useEffect(() => {
@@ -124,7 +138,7 @@ export function RecitationPlanForm({
       setAssignmentId(initialData?.assignment_id ?? null);
       setResolvedStart(null);
       setResolvedEnd(null);
-      setShowSuggestions(false);
+      setShowCustomRange(false);
     }
   }, [visible, initialData]);
 
@@ -144,29 +158,44 @@ export function RecitationPlanForm({
 
   const handleSurahChange = useCallback((surah: number) => {
     setSurahNumber(surah);
-    // Reset ayah values when surah changes
     setFromAyah(null);
     setToAyah(null);
   }, []);
 
-  const handleApplySuggestion = useCallback(
-    (assignment: {
-      id: string;
-      surah_number: number;
-      from_ayah: number;
-      to_ayah: number;
-      assignment_type: string;
-    }) => {
+  const handleApplyProgressItem = useCallback(
+    (item: { surah_number: number; from_ayah: number; to_ayah: number; status: string }) => {
+      setSelectionMode('ayah_range');
+      setSurahNumber(item.surah_number);
+      setFromAyah(item.from_ayah);
+      setToAyah(item.to_ayah);
+      setRecitationType(
+        item.status === 'in_progress' || item.status === 'learning' || item.status === 'new'
+          ? 'new_hifz'
+          : item.status === 'needs_review'
+            ? 'old_review'
+            : 'recent_review',
+      );
+      setSource('manual');
+      setAssignmentId(null);
+      setShowCustomRange(false);
+    },
+    [],
+  );
+
+  const handleApplyHomeworkItem = useCallback(
+    (hw: HomeworkItem) => {
+      const assignment = (hwAssignments ?? []).find((a) => a.id === hw.assignmentId);
+      if (!assignment) return;
       setSelectionMode('ayah_range');
       setSurahNumber(assignment.surah_number);
       setFromAyah(assignment.from_ayah);
       setToAyah(assignment.to_ayah);
-      setRecitationType(assignment.assignment_type as RecitationPlanType);
+      setRecitationType('old_review' as RecitationPlanType);
       setSource('from_assignment');
       setAssignmentId(assignment.id);
-      setShowSuggestions(false);
+      setShowCustomRange(false);
     },
-    [],
+    [hwAssignments],
   );
 
   const isValid = useMemo(() => {
@@ -198,7 +227,7 @@ export function RecitationPlanForm({
       endSurah = resolvedEnd.surah;
       endAyah = resolvedEnd.ayah;
     } else {
-      return; // Cannot save without resolved range
+      return;
     }
 
     const input: CreateRecitationPlanInput = {
@@ -243,6 +272,17 @@ export function RecitationPlanForm({
     onSave,
   ]);
 
+  // ── Selected range display ────────────────────────────────────────────
+  const selectedLabel = useMemo(() => {
+    if (surahNumber == null) return null;
+    const surah = getSurah(surahNumber);
+    const name = surah?.nameEnglish ?? `Surah ${surahNumber}`;
+    if (fromAyah != null && toAyah != null) {
+      return `${name} ${fromAyah}–${toAyah}`;
+    }
+    return name;
+  }, [surahNumber, fromAyah, toAyah]);
+
   return (
     <Modal
       visible={visible}
@@ -274,24 +314,171 @@ export function RecitationPlanForm({
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >
-            {/* Quran Range Picker */}
-            <QuranRangePicker
-              selectionMode={selectionMode}
-              onChangeSelectionMode={setSelectionMode}
-              surahNumber={surahNumber}
-              fromAyah={fromAyah}
-              toAyah={toAyah}
-              onChangeSurah={handleSurahChange}
-              onChangeFromAyah={setFromAyah}
-              onChangeToAyah={setToAyah}
-              rubNumber={rubNumber}
-              hizbNumber={hizbNumber}
-              juzNumber={juzNumber}
-              onChangeRub={setRubNumber}
-              onChangeHizb={setHizbNumber}
-              onChangeJuz={setJuzNumber}
-              onResolvedRange={handleResolvedRange}
-            />
+            {/* Selected range indicator */}
+            {selectedLabel && (
+              <View style={styles.selectedBanner}>
+                <Ionicons name="checkmark-circle" size={normalize(18)} color={colors.primary[500]} />
+                <Text style={styles.selectedText} numberOfLines={1}>{selectedLabel}</Text>
+              </View>
+            )}
+
+            {/* ── Memorization Section ── */}
+            {studentId != null && (
+              <View style={styles.dataSection}>
+                <View style={styles.sectionHeader}>
+                  <Ionicons name="book-outline" size={normalize(16)} color={colors.primary[600]} />
+                  <Text style={styles.sectionTitle}>
+                    {t('scheduling.recitationPlan.memorizationSection')}
+                  </Text>
+                </View>
+
+                {loadingProgress ? (
+                  <ActivityIndicator size="small" color={colors.primary[500]} style={styles.loader} />
+                ) : progressEntries.length === 0 ? (
+                  <Text style={styles.emptyText}>
+                    {t('scheduling.recitationPlan.noProgress')}
+                  </Text>
+                ) : (
+                  <FlatList
+                    data={progressEntries}
+                    keyExtractor={(item) => item.id}
+                    scrollEnabled={false}
+                    renderItem={({ item }) => {
+                      const surah = getSurah(item.surah_number);
+                      const label = `${surah?.nameEnglish ?? item.surah_number} ${item.from_ayah}–${item.to_ayah}`;
+                      return (
+                        <Pressable
+                          onPress={() => handleApplyProgressItem(item)}
+                          style={({ pressed }) => [
+                            styles.suggestionItem,
+                            pressed && styles.suggestionItemPressed,
+                          ]}
+                          accessibilityRole="button"
+                        >
+                          <View style={styles.suggestionContent}>
+                            <Text style={styles.suggestionLabel} numberOfLines={1}>
+                              {label}
+                            </Text>
+                            <Badge
+                              label={t(`memorization.status.${item.status}`)}
+                              variant={STATUS_BADGE_VARIANT[item.status] ?? 'default'}
+                              size="sm"
+                            />
+                          </View>
+                          <Ionicons
+                            name="arrow-forward"
+                            size={normalize(16)}
+                            color={colors.primary[500]}
+                          />
+                        </Pressable>
+                      );
+                    }}
+                  />
+                )}
+              </View>
+            )}
+
+            {/* ── Revision Section ── */}
+            {studentId != null && (
+              <View style={styles.dataSection}>
+                <View style={styles.sectionHeader}>
+                  <Ionicons name="refresh-outline" size={normalize(16)} color={colors.accent.sky[600]} />
+                  <Text style={styles.sectionTitle}>
+                    {t('scheduling.recitationPlan.revisionSection')}
+                  </Text>
+                </View>
+
+                {loadingHomework ? (
+                  <ActivityIndicator size="small" color={colors.primary[500]} style={styles.loader} />
+                ) : homeworkItems.length === 0 ? (
+                  <Text style={styles.emptyText}>
+                    {t('scheduling.recitationPlan.noHomework')}
+                  </Text>
+                ) : (
+                  <FlatList
+                    data={homeworkItems}
+                    keyExtractor={(item) => item.assignmentId}
+                    scrollEnabled={false}
+                    renderItem={({ item: hw }) => {
+                      const assignment = (hwAssignments ?? []).find(
+                        (a) => a.id === hw.assignmentId,
+                      );
+                      const surah = assignment ? getSurah(assignment.surah_number) : null;
+                      const label = surah
+                        ? `${surah.nameEnglish} ${assignment!.from_ayah}–${assignment!.to_ayah}`
+                        : `Rub' ${hw.rubNumber}`;
+                      return (
+                        <Pressable
+                          onPress={() => handleApplyHomeworkItem(hw)}
+                          style={({ pressed }) => [
+                            styles.suggestionItem,
+                            pressed && styles.suggestionItemPressed,
+                          ]}
+                          accessibilityRole="button"
+                        >
+                          <View style={styles.suggestionContent}>
+                            <Text style={styles.suggestionLabel} numberOfLines={1}>
+                              {label}
+                            </Text>
+                            <Badge
+                              label={`Juz ${hw.juz}`}
+                              variant="sky"
+                              size="sm"
+                            />
+                          </View>
+                          <Ionicons
+                            name="arrow-forward"
+                            size={normalize(16)}
+                            color={colors.primary[500]}
+                          />
+                        </Pressable>
+                      );
+                    }}
+                  />
+                )}
+              </View>
+            )}
+
+            {/* ── Custom Range (foldable) ── */}
+            <Pressable
+              onPress={() => setShowCustomRange((prev) => !prev)}
+              style={styles.customRangeToggle}
+              accessibilityRole="button"
+            >
+              <Ionicons
+                name="create-outline"
+                size={normalize(18)}
+                color={colors.neutral[600]}
+              />
+              <Text style={styles.customRangeText}>
+                {t('scheduling.recitationPlan.customRange')}
+              </Text>
+              <Ionicons
+                name={showCustomRange ? 'chevron-up' : 'chevron-down'}
+                size={normalize(18)}
+                color={lightTheme.textTertiary}
+              />
+            </Pressable>
+
+            {showCustomRange && (
+              <QuranRangePicker
+                selectionMode={selectionMode}
+                onChangeSelectionMode={setSelectionMode}
+                surahNumber={surahNumber}
+                fromAyah={fromAyah}
+                toAyah={toAyah}
+                onChangeSurah={handleSurahChange}
+                onChangeFromAyah={setFromAyah}
+                onChangeToAyah={setToAyah}
+                rubNumber={rubNumber}
+                hizbNumber={hizbNumber}
+                juzNumber={juzNumber}
+                onChangeRub={setRubNumber}
+                onChangeHizb={setHizbNumber}
+                onChangeJuz={setJuzNumber}
+                onResolvedRange={handleResolvedRange}
+              />
+            )}
 
             {/* Recitation Type */}
             <RecitationTypeChips
@@ -299,86 +486,6 @@ export function RecitationPlanForm({
               onChange={setRecitationType}
               style={styles.section}
             />
-
-            {/* Suggest from Assignments */}
-            {studentId != null && (
-              <View style={styles.section}>
-                <Pressable
-                  onPress={() => setShowSuggestions((prev) => !prev)}
-                  style={styles.suggestButton}
-                  accessibilityRole="button"
-                >
-                  <Ionicons
-                    name="bulb-outline"
-                    size={normalize(18)}
-                    color={colors.secondary[600]}
-                  />
-                  <Text style={styles.suggestText}>
-                    {t('scheduling.recitationPlan.suggestFromAssignments')}
-                  </Text>
-                  <Ionicons
-                    name={showSuggestions ? 'chevron-up' : 'chevron-down'}
-                    size={normalize(18)}
-                    color={lightTheme.textTertiary}
-                  />
-                </Pressable>
-
-                {showSuggestions && (
-                  <View style={styles.suggestionsContainer}>
-                    {loadingSuggestions ? (
-                      <ActivityIndicator
-                        size="small"
-                        color={colors.primary[500]}
-                        style={styles.loader}
-                      />
-                    ) : pendingAssignments.length === 0 ? (
-                      <Text style={styles.noSuggestionsText}>
-                        {t('scheduling.recitationPlan.noSuggestions')}
-                      </Text>
-                    ) : (
-                      <FlatList
-                        data={pendingAssignments}
-                        keyExtractor={(item) => item.id}
-                        scrollEnabled={false}
-                        renderItem={({ item }) => {
-                          const surah = getSurah(item.surah_number);
-                          const label = `${surah?.nameEnglish ?? item.surah_number} ${item.from_ayah}–${item.to_ayah}`;
-
-                          return (
-                            <Pressable
-                              onPress={() => handleApplySuggestion(item)}
-                              style={({ pressed }) => [
-                                styles.suggestionItem,
-                                pressed && styles.suggestionItemPressed,
-                              ]}
-                              accessibilityRole="button"
-                            >
-                              <View style={styles.suggestionContent}>
-                                <Text style={styles.suggestionLabel} numberOfLines={1}>
-                                  {label}
-                                </Text>
-                                <Badge
-                                  label={t(
-                                    `memorization.recitationType.${item.assignment_type}`,
-                                  )}
-                                  variant="indigo"
-                                  size="sm"
-                                />
-                              </View>
-                              <Ionicons
-                                name="arrow-forward"
-                                size={normalize(16)}
-                                color={colors.primary[500]}
-                              />
-                            </Pressable>
-                          );
-                        }}
-                      />
-                    )}
-                  </View>
-                )}
-              </View>
-            )}
 
             {/* Notes */}
             <TextField
@@ -456,34 +563,46 @@ const styles = StyleSheet.create({
   section: {
     marginTop: spacing.xs,
   },
-  suggestButton: {
+  selectedBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.secondary[50],
+    backgroundColor: colors.primary[50],
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.secondary[200],
+    borderColor: colors.primary[200],
   },
-  suggestText: {
+  selectedText: {
     flex: 1,
     fontFamily: typography.fontFamily.medium,
     fontSize: typography.fontSize.sm,
     lineHeight: typography.lineHeight.sm,
-    color: colors.secondary[700],
+    color: colors.primary[700],
   },
-  suggestionsContainer: {
-    marginTop: spacing.sm,
+  dataSection: {
     backgroundColor: colors.neutral[50],
     borderRadius: radius.md,
     padding: spacing.sm,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.sm,
+    paddingBottom: spacing.xs,
+  },
+  sectionTitle: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: typography.fontSize.sm,
+    lineHeight: typography.lineHeight.sm,
+    color: lightTheme.text,
+  },
   loader: {
     paddingVertical: spacing.md,
   },
-  noSuggestionsText: {
+  emptyText: {
     fontFamily: typography.fontFamily.regular,
     fontSize: typography.fontSize.sm,
     lineHeight: typography.lineHeight.sm,
@@ -515,6 +634,24 @@ const styles = StyleSheet.create({
     lineHeight: typography.lineHeight.sm,
     color: lightTheme.text,
     flexShrink: 1,
+  },
+  customRangeToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.neutral[100],
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.neutral[200],
+  },
+  customRangeText: {
+    flex: 1,
+    fontFamily: typography.fontFamily.medium,
+    fontSize: typography.fontSize.sm,
+    lineHeight: typography.lineHeight.sm,
+    color: colors.neutral[700],
   },
   footer: {
     flexDirection: 'row',

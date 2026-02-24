@@ -145,6 +145,7 @@ export default function SessionWorkspaceScreen() {
           from_ayah: effectivePlan.start_ayah,
           to_ayah: toAyah,
           recitation_type: effectivePlan.recitation_type as RecitationType,
+          assignment_id: effectivePlan.assignment_id ?? null,
         },
       ];
     }

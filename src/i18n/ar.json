@@ -1028,7 +1028,12 @@
       "suggestPlan": "اقتراح خطة",
       "noSuggestionYet": "لم تقترح خطة تسميع بعد.",
       "removeSuggestion": "إزالة الاقتراح؟",
-      "suggestionHint": "سيرى معلمك هذا الاقتراح عند تخطيط الحصة."
+      "suggestionHint": "سيرى معلمك هذا الاقتراح عند تخطيط الحصة.",
+      "memorizationSection": "الحفظ",
+      "revisionSection": "المراجعة",
+      "customRange": "نطاق مخصص",
+      "noProgress": "لا يوجد تقدم في الحفظ بعد",
+      "noHomework": "لا توجد واجبات مراجعة معلقة"
     }
   },
   "workAttendance": {
