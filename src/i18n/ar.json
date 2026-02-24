@@ -195,7 +195,13 @@
         "fading": "يتلاشى",
         "fresh": "طازج",
         "dormant": "متوقف"
-      }
+      },
+      "share": "مشاركة",
+      "shareTitle": "رحلتي مع القرآن",
+      "shareBranding": "مدرسة القرآن",
+      "shareCertified": "مُجاز",
+      "shareComplete": "مكتمل",
+      "shareReviews": "مراجعات"
     },
     "blockBuilder": {
       "heroRub": "{{count}}/240 ربع",

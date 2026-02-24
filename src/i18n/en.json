@@ -195,7 +195,13 @@
         "fading": "Fading",
         "fresh": "Fresh",
         "dormant": "Paused"
-      }
+      },
+      "share": "Share",
+      "shareTitle": "My Quran Journey",
+      "shareBranding": "Quran School",
+      "shareCertified": "certified",
+      "shareComplete": "complete",
+      "shareReviews": "reviews"
     },
     "blockBuilder": {
       "heroRub": "{{count}}/240 rubʿ",
