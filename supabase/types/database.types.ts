@@ -191,105 +191,6 @@ export type Database = {
           },
         ]
       }
-      lesson_progress: {
-        Row: {
-          completed_at: string | null
-          completion_percentage: number
-          id: string
-          lesson_id: string
-          status: string
-          student_id: string
-        }
-        Insert: {
-          completed_at?: string | null
-          completion_percentage?: number
-          id?: string
-          lesson_id: string
-          status?: string
-          student_id: string
-        }
-        Update: {
-          completed_at?: string | null
-          completion_percentage?: number
-          id?: string
-          lesson_id?: string
-          status?: string
-          student_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lesson_progress_lesson_id_fkey"
-            columns: ["lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lesson_progress_student_id_fkey"
-            columns: ["student_id"]
-            isOneToOne: false
-            referencedRelation: "students"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      lessons: {
-        Row: {
-          ayah_from: number | null
-          ayah_to: number | null
-          class_id: string | null
-          created_at: string
-          description: string | null
-          id: string
-          lesson_type: string | null
-          order_index: number | null
-          school_id: string
-          surah_name: string | null
-          title: string
-        }
-        Insert: {
-          ayah_from?: number | null
-          ayah_to?: number | null
-          class_id?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          lesson_type?: string | null
-          order_index?: number | null
-          school_id: string
-          surah_name?: string | null
-          title: string
-        }
-        Update: {
-          ayah_from?: number | null
-          ayah_to?: number | null
-          class_id?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          lesson_type?: string | null
-          order_index?: number | null
-          school_id?: string
-          surah_name?: string | null
-          title?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "lessons_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "lessons_school_id_fkey"
-            columns: ["school_id"]
-            isOneToOne: false
-            referencedRelation: "schools"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       memorization_assignments: {
         Row: {
           assigned_by: string
@@ -1000,7 +901,6 @@ export type Database = {
           class_id: string | null
           created_at: string
           id: string
-          lesson_id: string | null
           memorization_score: number | null
           notes: string | null
           recitation_quality: number | null
@@ -1014,7 +914,6 @@ export type Database = {
           class_id?: string | null
           created_at?: string
           id?: string
-          lesson_id?: string | null
           memorization_score?: number | null
           notes?: string | null
           recitation_quality?: number | null
@@ -1028,7 +927,6 @@ export type Database = {
           class_id?: string | null
           created_at?: string
           id?: string
-          lesson_id?: string | null
           memorization_score?: number | null
           notes?: string | null
           recitation_quality?: number | null
@@ -1044,13 +942,6 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sessions_lesson_id_fkey"
-            columns: ["lesson_id"]
-            isOneToOne: false
-            referencedRelation: "lessons"
             referencedColumns: ["id"]
           },
           {
