@@ -16,10 +16,6 @@ export interface ClassParams {
   id: string;
 }
 
-export interface LessonParams {
-  id: string;
-}
-
 export interface SessionParams {
   id: string;
 }
@@ -42,7 +38,6 @@ export interface RouteParamsMap {
   '/student/[id]': StudentParams;
   '/teacher/[id]': TeacherParams;
   '/class/[id]': ClassParams;
-  '/lesson/[id]': LessonParams;
   '/session/[id]': SessionParams;
   '/child/[id]': ChildParams;
   '/attendance/[childId]': AttendanceParams;

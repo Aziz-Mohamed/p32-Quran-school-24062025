@@ -6,12 +6,6 @@ export type UserRole = 'student' | 'teacher' | 'parent' | 'admin';
 
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
 
-// ─── Lessons ────────────────────────────────────────────────────────────────
-
-export type LessonType = 'memorization' | 'revision' | 'tajweed' | 'recitation';
-
-export type LessonStatus = 'not_started' | 'in_progress' | 'completed';
-
 // ─── Memorization ──────────────────────────────────────────────────────────
 
 export type RecitationType = 'new_hifz' | 'recent_review' | 'old_review';
