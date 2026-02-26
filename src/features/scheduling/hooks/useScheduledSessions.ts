@@ -34,6 +34,21 @@ export function useTeacherUpcomingSessions(teacherId: string | undefined, school
 }
 
 /**
+ * Get completed/cancelled/missed sessions for a teacher (history).
+ */
+export function useTeacherSessionHistory(teacherId: string | undefined, schoolId: string | undefined) {
+  return useQuery({
+    queryKey: ['teacher-session-history', teacherId, schoolId],
+    queryFn: async () => {
+      const { data, error } = await scheduledSessionService.getTeacherHistory(teacherId!, schoolId!);
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: !!teacherId && !!schoolId,
+  });
+}
+
+/**
  * Get upcoming sessions for a student.
  */
 export function useStudentUpcomingSessions(
@@ -74,6 +89,7 @@ export function useCreateScheduledSession() {
       }
       queryClient.invalidateQueries({ queryKey: ['scheduled-sessions'] });
       queryClient.invalidateQueries({ queryKey: ['teacher-upcoming-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-session-history'] });
       queryClient.invalidateQueries({ queryKey: ['student-upcoming-sessions'] });
     },
   });
@@ -97,6 +113,7 @@ export function useUpdateSessionStatus() {
       }
       queryClient.invalidateQueries({ queryKey: ['scheduled-sessions'] });
       queryClient.invalidateQueries({ queryKey: ['teacher-upcoming-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-session-history'] });
       queryClient.invalidateQueries({ queryKey: ['student-upcoming-sessions'] });
     },
   });

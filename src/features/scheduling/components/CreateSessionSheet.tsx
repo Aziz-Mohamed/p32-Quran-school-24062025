@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, forwardRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -6,12 +6,17 @@ import {
   Alert,
   Pressable,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import {
+  BottomSheetModal,
+  BottomSheetScrollView,
+  BottomSheetBackdrop,
+  type BottomSheetBackdropProps,
+} from '@gorhom/bottom-sheet';
 
-import { Screen } from '@/components/layout';
 import { Button } from '@/components/ui/Button';
 import { DatePicker } from '@/components/forms/DatePicker';
 import { LoadingState } from '@/components/feedback';
@@ -48,9 +53,8 @@ const TIME_OPTIONS = Array.from({ length: 28 }, (_, i) => {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function CreateSessionScreen() {
+export const CreateSessionSheet = forwardRef<BottomSheetModal>((_props, ref) => {
   const { t } = useTranslation();
-  const router = useRouter();
   const { profile, schoolId } = useAuth();
   const { resolveName } = useLocalizedName();
 
@@ -71,6 +75,7 @@ export default function CreateSessionScreen() {
   );
 
   const classes = useMemo(() => teacherClasses.data ?? [], [teacherClasses.data]);
+  const snapPoints = useMemo(() => ['90%'], []);
 
   // Reset downstream when session type changes
   const handleTypeChange = useCallback((type: SessionType) => {
@@ -82,6 +87,15 @@ export default function CreateSessionScreen() {
   const handleClassChange = useCallback((classId: string) => {
     setSelectedClassId(classId);
     setSelectedStudentId(null);
+  }, []);
+
+  const resetForm = useCallback(() => {
+    setSessionType('class');
+    setSelectedClassId(null);
+    setSelectedStudentId(null);
+    setSessionDate(null);
+    setStartTimeIdx(null);
+    setEndTimeIdx(null);
   }, []);
 
   // ── Validation ──────────────────────────────────────────────────────────
@@ -114,168 +128,188 @@ export default function CreateSessionScreen() {
       },
       {
         onSuccess: () => {
-          Alert.alert(t('common.success'), t('scheduling.sessionCreated'), [
-            { text: t('common.done'), onPress: () => router.back() },
-          ]);
+          (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss();
+          resetForm();
         },
         onError: (err: Error) => {
           Alert.alert(t('common.error'), err.message);
         },
       },
     );
-  }, [canSubmit, profile, schoolId, sessionDate, startTimeIdx, endTimeIdx, sessionType, selectedClassId, selectedStudentId, createMutation, t, router]);
+  }, [canSubmit, profile, schoolId, sessionDate, startTimeIdx, endTimeIdx, sessionType, selectedClassId, selectedStudentId, createMutation, t, ref, resetForm]);
 
-  if (teacherClasses.isLoading) return <LoadingState />;
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
+    ),
+    [],
+  );
 
   return (
-    <Screen scroll>
-      <View style={styles.container}>
-        <Button
-          title={t('common.back')}
-          onPress={() => router.back()}
-          variant="ghost"
-          size="sm"
-        />
-
+    <BottomSheetModal
+      ref={ref}
+      snapPoints={snapPoints}
+      backdropComponent={renderBackdrop}
+      onDismiss={resetForm}
+      enablePanDownToClose
+      handleIndicatorStyle={styles.handleIndicator}
+    >
+      {/* Header */}
+      <View style={styles.sheetHeader}>
         <Text style={styles.title}>{t('scheduling.createSessionTitle')}</Text>
+        <Pressable
+          onPress={() => (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss()}
+          hitSlop={8}
+        >
+          <Ionicons name="close" size={24} color={colors.neutral[500]} />
+        </Pressable>
+      </View>
 
-        {/* ── Session Type ── */}
-        <Text style={styles.sectionTitle}>{t('scheduling.selectSessionType')}</Text>
-        <View style={styles.pillRow}>
-          {(['class', 'individual'] as const).map((type) => (
-            <Pressable
-              key={type}
-              style={[styles.pill, sessionType === type && styles.pillActive]}
-              onPress={() => handleTypeChange(type)}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: sessionType === type }}
-            >
-              <Ionicons
-                name={type === 'class' ? 'people' : 'person'}
-                size={16}
-                color={sessionType === type ? colors.white : colors.neutral[600]}
-              />
-              <Text style={[styles.pillText, sessionType === type && styles.pillTextActive]}>
-                {t(`scheduling.${type === 'class' ? 'classSession' : 'individualSessionType'}`)}
-              </Text>
-            </Pressable>
-          ))}
+      {teacherClasses.isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary[500]} />
         </View>
+      ) : (
+        <BottomSheetScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* ── Session Type ── */}
+          <Text style={styles.sectionTitle}>{t('scheduling.selectSessionType')}</Text>
+          <View style={styles.pillRow}>
+            {(['class', 'individual'] as const).map((type) => (
+              <Pressable
+                key={type}
+                style={[styles.pill, sessionType === type && styles.pillActive]}
+                onPress={() => handleTypeChange(type)}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: sessionType === type }}
+              >
+                <Ionicons
+                  name={type === 'class' ? 'people' : 'person'}
+                  size={16}
+                  color={sessionType === type ? colors.white : colors.neutral[600]}
+                />
+                <Text style={[styles.pillText, sessionType === type && styles.pillTextActive]}>
+                  {t(`scheduling.${type === 'class' ? 'classSession' : 'individualSessionType'}`)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
 
-        {/* ── Class Selector ── */}
-        {(sessionType === 'class' || sessionType === 'individual') && (
-          <>
-            <Text style={styles.sectionTitle}>{t('scheduling.selectClass')}</Text>
-            {classes.length === 0 ? (
-              <Text style={styles.emptyText}>{t('common.noResults')}</Text>
-            ) : (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-                <View style={styles.chipRow}>
-                  {classes.map((cls) => {
-                    const isSelected = selectedClassId === cls.id;
-                    return (
-                      <Pressable
-                        key={cls.id}
-                        style={[styles.chip, isSelected && styles.chipActive]}
-                        onPress={() => handleClassChange(cls.id)}
-                      >
-                        <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
-                          {resolveName(cls.name_localized, cls.name)}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </ScrollView>
-            )}
-          </>
-        )}
-
-        {/* ── Student Selector (individual only) ── */}
-        {sessionType === 'individual' && selectedClassId && (
-          <>
-            <Text style={styles.sectionTitle}>{t('scheduling.selectStudent')}</Text>
-            {studentsLoading ? (
-              <LoadingState />
-            ) : students.length === 0 ? (
-              <Text style={styles.emptyText}>{t('common.noResults')}</Text>
-            ) : (
-              <View style={styles.studentGrid}>
-                {students.map((student: any) => {
-                  const isSelected = selectedStudentId === student.id;
-                  const name = resolveName(student.profiles?.name_localized, student.profiles?.full_name);
+          {/* ── Class Selector ── */}
+          <Text style={styles.sectionTitle}>{t('scheduling.selectClass')}</Text>
+          {classes.length === 0 ? (
+            <Text style={styles.emptyText}>{t('common.noResults')}</Text>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+              <View style={styles.chipRow}>
+                {classes.map((cls) => {
+                  const isSelected = selectedClassId === cls.id;
                   return (
                     <Pressable
-                      key={student.id}
+                      key={cls.id}
                       style={[styles.chip, isSelected && styles.chipActive]}
-                      onPress={() => setSelectedStudentId(student.id)}
+                      onPress={() => handleClassChange(cls.id)}
                     >
                       <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
-                        {name}
+                        {resolveName(cls.name_localized, cls.name)}
                       </Text>
                     </Pressable>
                   );
                 })}
               </View>
-            )}
-          </>
-        )}
+            </ScrollView>
+          )}
 
-        {/* ── Date ── */}
-        <DatePicker
-          label={t('scheduling.selectDate')}
-          value={sessionDate}
-          onChange={setSessionDate}
-          minimumDate={new Date()}
-        />
+          {/* ── Student Selector (individual only) ── */}
+          {sessionType === 'individual' && selectedClassId && (
+            <>
+              <Text style={styles.sectionTitle}>{t('scheduling.selectStudent')}</Text>
+              {studentsLoading ? (
+                <LoadingState />
+              ) : students.length === 0 ? (
+                <Text style={styles.emptyText}>{t('common.noResults')}</Text>
+              ) : (
+                <View style={styles.studentGrid}>
+                  {students.map((student: any) => {
+                    const isSelected = selectedStudentId === student.id;
+                    const name = resolveName(student.profiles?.name_localized, student.profiles?.full_name);
+                    return (
+                      <Pressable
+                        key={student.id}
+                        style={[styles.chip, isSelected && styles.chipActive]}
+                        onPress={() => setSelectedStudentId(student.id)}
+                      >
+                        <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
+                          {name}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
+            </>
+          )}
 
-        {/* ── Start Time ── */}
-        <Text style={styles.sectionTitle}>{t('scheduling.startTime')}</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-          <View style={styles.chipRow}>
-            {TIME_OPTIONS.map((opt, idx) => {
-              const isSelected = startTimeIdx === idx;
-              return (
-                <Pressable
-                  key={opt.value}
-                  style={[styles.timeChip, isSelected && styles.chipActive]}
-                  onPress={() => {
-                    setStartTimeIdx(idx);
-                    if (endTimeIdx != null && endTimeIdx <= idx) setEndTimeIdx(null);
-                  }}
-                >
-                  <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
-                    {opt.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </ScrollView>
+          {/* ── Date ── */}
+          <DatePicker
+            label={t('scheduling.selectDate')}
+            value={sessionDate}
+            onChange={setSessionDate}
+            minimumDate={new Date()}
+          />
 
-        {/* ── End Time ── */}
-        <Text style={styles.sectionTitle}>{t('scheduling.endTime')}</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-          <View style={styles.chipRow}>
-            {TIME_OPTIONS.filter((_, idx) => startTimeIdx != null ? idx > startTimeIdx : true).map((opt, idx) => {
-              const realIdx = startTimeIdx != null ? idx + startTimeIdx + 1 : idx;
-              const isSelected = endTimeIdx === realIdx;
-              return (
-                <Pressable
-                  key={opt.value}
-                  style={[styles.timeChip, isSelected && styles.chipActive]}
-                  onPress={() => setEndTimeIdx(realIdx)}
-                >
-                  <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
-                    {opt.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-        </ScrollView>
+          {/* ── Start Time ── */}
+          <Text style={styles.sectionTitle}>{t('scheduling.startTime')}</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+            <View style={styles.chipRow}>
+              {TIME_OPTIONS.map((opt, idx) => {
+                const isSelected = startTimeIdx === idx;
+                return (
+                  <Pressable
+                    key={opt.value}
+                    style={[styles.timeChip, isSelected && styles.chipActive]}
+                    onPress={() => {
+                      setStartTimeIdx(idx);
+                      if (endTimeIdx != null && endTimeIdx <= idx) setEndTimeIdx(null);
+                    }}
+                  >
+                    <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
+                      {opt.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </ScrollView>
 
-        {/* ── Submit ── */}
+          {/* ── End Time ── */}
+          <Text style={styles.sectionTitle}>{t('scheduling.endTime')}</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+            <View style={styles.chipRow}>
+              {TIME_OPTIONS.filter((_, idx) => startTimeIdx != null ? idx > startTimeIdx : true).map((opt, idx) => {
+                const realIdx = startTimeIdx != null ? idx + startTimeIdx + 1 : idx;
+                const isSelected = endTimeIdx === realIdx;
+                return (
+                  <Pressable
+                    key={opt.value}
+                    style={[styles.timeChip, isSelected && styles.chipActive]}
+                    onPress={() => setEndTimeIdx(realIdx)}
+                  >
+                    <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
+                      {opt.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </ScrollView>
+        </BottomSheetScrollView>
+      )}
+
+      {/* Fixed footer */}
+      <View style={styles.footer}>
         <Button
           title={t('scheduling.createSession')}
           onPress={handleSubmit}
@@ -283,29 +317,50 @@ export default function CreateSessionScreen() {
           size="lg"
           loading={createMutation.isPending}
           disabled={!canSubmit}
-          style={styles.submitButton}
         />
       </View>
-    </Screen>
+    </BottomSheetModal>
   );
-}
+});
+
+CreateSessionSheet.displayName = 'CreateSessionSheet';
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: spacing.lg,
-    gap: spacing.md,
+  handleIndicator: {
+    backgroundColor: colors.neutral[300],
+    width: normalize(40),
+  },
+  sheetHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.neutral[100],
   },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
+    fontSize: normalize(20),
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: spacing['3xl'],
+  },
+  scrollContent: {
+    padding: spacing.lg,
+    gap: spacing.md,
+    paddingBottom: spacing['3xl'],
   },
   sectionTitle: {
     ...typography.textStyles.subheading,
     color: lightTheme.text,
-    marginTop: spacing.xs,
+    fontSize: normalize(15),
   },
   pillRow: {
     flexDirection: 'row',
@@ -381,7 +436,10 @@ const styles = StyleSheet.create({
     color: lightTheme.textTertiary,
     fontStyle: 'italic',
   },
-  submitButton: {
-    marginTop: spacing.lg,
+  footer: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: colors.neutral[100],
   },
 });

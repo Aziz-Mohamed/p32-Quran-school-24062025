@@ -167,6 +167,7 @@ export function useCompleteSessionWorkspace() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-sessions'] });
       queryClient.invalidateQueries({ queryKey: ['teacher-upcoming-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-session-history'] });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['attendance'] });
       queryClient.invalidateQueries({ queryKey: ['class-attendance'] });

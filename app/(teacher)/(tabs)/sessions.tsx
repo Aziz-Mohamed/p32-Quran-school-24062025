@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import { I18nManager, StyleSheet, View, Text, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
+import { BottomSheetModalProvider, type BottomSheetModal } from '@gorhom/bottom-sheet';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
@@ -11,12 +12,14 @@ import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedName } from '@/hooks/useLocalizedName';
-import { useSessions } from '@/features/sessions/hooks/useSessions';
-import { useTeacherUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
+import {
+  useTeacherUpcomingSessions,
+  useTeacherSessionHistory,
+} from '@/features/scheduling/hooks/useScheduledSessions';
 import { useCanTeacherCreateSessions } from '@/features/schools';
-import { formatSessionDate } from '@/lib/helpers';
+import { CreateSessionSheet } from '@/features/scheduling/components/CreateSessionSheet';
 import { typography } from '@/theme/typography';
-import { lightTheme, colors, semantic } from '@/theme/colors';
+import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 import { radius } from '@/theme/radius';
@@ -25,42 +28,59 @@ import { radius } from '@/theme/radius';
 
 type ActiveTab = 'upcoming' | 'history';
 
-type UpcomingItem =
+type SessionListItem =
   | { type: 'header'; date: string }
   | { type: 'session'; data: any };
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
+const STATUS_BADGE_VARIANT: Record<string, 'sky' | 'warning' | 'success' | 'default'> = {
+  scheduled: 'sky',
+  in_progress: 'warning',
+  completed: 'success',
+  cancelled: 'default',
+  missed: 'warning',
+};
+
+function groupByDate(sessions: any[]): SessionListItem[] {
+  const grouped = new Map<string, any[]>();
+  for (const session of sessions) {
+    const date = session.session_date;
+    if (!grouped.has(date)) grouped.set(date, []);
+    grouped.get(date)!.push(session);
+  }
+  const items: SessionListItem[] = [];
+  for (const [date, daySessions] of grouped.entries()) {
+    items.push({ type: 'header', date });
+    for (const session of daySessions) {
+      items.push({ type: 'session', data: session });
+    }
+  }
+  return items;
+}
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function SessionsScreen() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const { profile, schoolId } = useAuth();
   const { resolveName } = useLocalizedName();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('upcoming');
+  const createSheetRef = useRef<BottomSheetModal>(null);
 
   const { canCreate } = useCanTeacherCreateSessions(schoolId ?? undefined);
 
-  const upcoming = useTeacherUpcomingSessions(profile?.id, schoolId ?? undefined);
-  const history = useSessions({ teacherId: profile?.id });
+  const handleOpenCreateSheet = useCallback(() => {
+    createSheetRef.current?.present();
+  }, []);
 
-  const upcomingItems = useMemo<UpcomingItem[]>(() => {
-    const sessions = upcoming.data ?? [];
-    const grouped = new Map<string, any[]>();
-    for (const session of sessions) {
-      const date = session.session_date;
-      if (!grouped.has(date)) grouped.set(date, []);
-      grouped.get(date)!.push(session);
-    }
-    const items: UpcomingItem[] = [];
-    for (const [date, daySessions] of grouped.entries()) {
-      items.push({ type: 'header', date });
-      for (const session of daySessions) {
-        items.push({ type: 'session', data: session });
-      }
-    }
-    return items;
-  }, [upcoming.data]);
+  const upcoming = useTeacherUpcomingSessions(profile?.id, schoolId ?? undefined);
+  const history = useTeacherSessionHistory(profile?.id, schoolId ?? undefined);
+
+  const upcomingItems = useMemo(() => groupByDate(upcoming.data ?? []), [upcoming.data]);
+  const historyItems = useMemo(() => groupByDate(history.data ?? []), [history.data]);
 
   const isLoading = activeTab === 'upcoming' ? upcoming.isLoading : history.isLoading;
   const error = activeTab === 'upcoming' ? upcoming.error : history.error;
@@ -70,98 +90,120 @@ export default function SessionsScreen() {
   if (error) return <ErrorState description={(error as Error).message} onRetry={refetch} />;
 
   return (
-    <Screen scroll={false} hasTabBar>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{t('teacher.sessions.title')}</Text>
-          {canCreate && (
-            <Pressable
-              style={styles.addButton}
-              onPress={() => router.push('/(teacher)/schedule/create')}
-              accessibilityLabel={t('scheduling.createSession')}
-            >
-              <Ionicons name="add" size={22} color={colors.primary[600]} />
-            </Pressable>
+    <BottomSheetModalProvider>
+      <Screen scroll={false} hasTabBar>
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.title}>{t('teacher.sessions.title')}</Text>
+            {canCreate && (
+              <Pressable
+                style={styles.addButton}
+                onPress={handleOpenCreateSheet}
+                accessibilityLabel={t('scheduling.createSession')}
+              >
+                <Ionicons name="add" size={22} color={colors.primary[600]} />
+              </Pressable>
+            )}
+          </View>
+
+          {/* Tabs */}
+          <View style={styles.tabBar}>
+            {(['upcoming', 'history'] as const).map((tab) => {
+              const isActive = activeTab === tab;
+              const count = tab === 'upcoming'
+                ? (upcoming.data?.length ?? 0)
+                : (history.data?.length ?? 0);
+              return (
+                <Pressable
+                  key={tab}
+                  style={[styles.tab, isActive && styles.tabActive]}
+                  onPress={() => setActiveTab(tab)}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: isActive }}
+                >
+                  <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
+                    {t(`teacher.sessions.${tab}`)}
+                  </Text>
+                  {count > 0 && (
+                    <View style={[styles.tabCount, isActive && styles.tabCountActive]}>
+                      <Text style={[styles.tabCountText, isActive && styles.tabCountTextActive]}>
+                        {count}
+                      </Text>
+                    </View>
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* Content */}
+          {activeTab === 'upcoming' ? (
+            <SessionList
+              items={upcomingItems}
+              resolveName={resolveName}
+              router={router}
+              t={t}
+              emptyIcon="calendar-outline"
+              emptyTitle={t('teacher.sessions.noUpcoming')}
+              emptyDescription={t('teacher.sessions.noUpcomingDesc')}
+              emptyActionLabel={canCreate ? t('scheduling.createSession') : undefined}
+              onEmptyAction={canCreate ? handleOpenCreateSheet : undefined}
+              showScore={false}
+            />
+          ) : (
+            <SessionList
+              items={historyItems}
+              resolveName={resolveName}
+              router={router}
+              t={t}
+              emptyIcon="clipboard-outline"
+              emptyTitle={t('teacher.sessions.emptyTitle')}
+              emptyDescription={t('teacher.sessions.emptyDescription')}
+              showScore
+            />
           )}
         </View>
+      </Screen>
 
-        {/* Tabs */}
-        <View style={styles.tabBar}>
-          {(['upcoming', 'history'] as const).map((tab) => {
-            const isActive = activeTab === tab;
-            const count = tab === 'upcoming'
-              ? (upcoming.data?.length ?? 0)
-              : (history.data?.length ?? 0);
-            return (
-              <Pressable
-                key={tab}
-                style={[styles.tab, isActive && styles.tabActive]}
-                onPress={() => setActiveTab(tab)}
-                accessibilityRole="tab"
-                accessibilityState={{ selected: isActive }}
-              >
-                <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
-                  {t(`teacher.sessions.${tab}`)}
-                </Text>
-                {count > 0 && (
-                  <View style={[styles.tabCount, isActive && styles.tabCountActive]}>
-                    <Text style={[styles.tabCountText, isActive && styles.tabCountTextActive]}>
-                      {count}
-                    </Text>
-                  </View>
-                )}
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* Content */}
-        {activeTab === 'upcoming' ? (
-          <UpcomingList
-            items={upcomingItems}
-            canCreate={canCreate}
-            resolveName={resolveName}
-            router={router}
-            t={t}
-          />
-        ) : (
-          <HistoryList
-            sessions={history.data ?? []}
-            resolveName={resolveName}
-            router={router}
-            t={t}
-            language={i18n.language}
-          />
-        )}
-      </View>
-    </Screen>
+      {canCreate && <CreateSessionSheet ref={createSheetRef} />}
+    </BottomSheetModalProvider>
   );
 }
 
-// ─── Upcoming List ───────────────────────────────────────────────────────────
+// ─── Shared Session List ────────────────────────────────────────────────────
 
-function UpcomingList({
+function SessionList({
   items,
-  canCreate,
   resolveName,
   router,
   t,
+  emptyIcon,
+  emptyTitle,
+  emptyDescription,
+  emptyActionLabel,
+  onEmptyAction,
+  showScore,
 }: {
-  items: UpcomingItem[];
-  canCreate: boolean;
+  items: SessionListItem[];
   resolveName: (localized: any, fallback: any) => string | undefined;
   router: ReturnType<typeof useRouter>;
-  t: (key: string) => string;
+  t: (key: string, opts?: any) => string;
+  emptyIcon: string;
+  emptyTitle: string;
+  emptyDescription: string;
+  emptyActionLabel?: string;
+  onEmptyAction?: () => void;
+  showScore: boolean;
 }) {
   if (items.length === 0) {
     return (
       <EmptyState
-        icon="calendar-outline"
-        title={t('teacher.sessions.noUpcoming')}
-        description={t('teacher.sessions.noUpcomingDesc')}
-        actionLabel={canCreate ? t('scheduling.createSession') : undefined}
-        onAction={canCreate ? () => router.push('/(teacher)/schedule/create') : undefined}
+        icon={emptyIcon as any}
+        title={emptyTitle}
+        description={emptyDescription}
+        actionLabel={emptyActionLabel}
+        onAction={onEmptyAction}
       />
     );
   }
@@ -186,6 +228,8 @@ function UpcomingList({
         }
 
         const session = item.data;
+        const score = session.evaluation?.memorization_score ?? session.memorization_score;
+
         return (
           <Card
             variant="default"
@@ -204,9 +248,16 @@ function UpcomingList({
                     : ''}
                 </Text>
               </View>
+              {showScore && score != null && (
+                <Badge
+                  label={`${score}/5`}
+                  variant={score >= 4 ? 'success' : 'warning'}
+                  size="sm"
+                />
+              )}
               <Badge
                 label={t(`scheduling.status.${session.status}`)}
-                variant={session.status === 'scheduled' ? 'sky' : session.status === 'in_progress' ? 'warning' : 'success'}
+                variant={STATUS_BADGE_VARIANT[session.status] ?? 'default'}
                 size="sm"
               />
               <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={16} color={colors.neutral[300]} />
@@ -214,73 +265,6 @@ function UpcomingList({
           </Card>
         );
       }}
-    />
-  );
-}
-
-// ─── History List ────────────────────────────────────────────────────────────
-
-function HistoryList({
-  sessions,
-  resolveName,
-  router,
-  t,
-  language,
-}: {
-  sessions: any[];
-  resolveName: (localized: any, fallback: any) => string | undefined;
-  router: ReturnType<typeof useRouter>;
-  t: (key: string) => string;
-  language: string;
-}) {
-  if (sessions.length === 0) {
-    return (
-      <EmptyState
-        icon="clipboard-outline"
-        title={t('teacher.sessions.emptyTitle')}
-        description={t('teacher.sessions.emptyDescription')}
-      />
-    );
-  }
-
-  return (
-    <FlashList
-      data={sessions}
-      keyExtractor={(item: any) => item.id}
-      contentContainerStyle={styles.listContent}
-      renderItem={({ item }: { item: any }) => (
-        <Card
-          variant="default"
-          onPress={() => router.push(`/(teacher)/sessions/${item.id}`)}
-          style={styles.card}
-        >
-          <View style={styles.cardRow}>
-            <View style={styles.avatar}>
-              <Text style={styles.avatarText}>
-                {resolveName(item.student?.profiles?.name_localized, item.student?.profiles?.full_name)?.[0]?.toUpperCase()}
-              </Text>
-            </View>
-            <View style={styles.cardInfo}>
-              <Text style={styles.cardTitle} numberOfLines={1}>
-                {resolveName(item.student?.profiles?.name_localized, item.student?.profiles?.full_name) ?? '—'}
-              </Text>
-              <Text style={styles.cardMeta}>
-                {formatSessionDate(item.session_date, language).date}
-                {' · '}
-                {formatSessionDate(item.session_date, language).weekday}
-              </Text>
-            </View>
-            {item.memorization_score != null && (
-              <Badge
-                label={`${item.memorization_score}/5`}
-                variant={item.memorization_score >= 4 ? 'success' : 'warning'}
-                size="sm"
-              />
-            )}
-            <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={16} color={colors.neutral[300]} />
-          </View>
-        </Card>
-      )}
     />
   );
 }
@@ -398,18 +382,5 @@ const styles = StyleSheet.create({
   cardMeta: {
     ...typography.textStyles.caption,
     color: colors.neutral[400],
-  },
-  avatar: {
-    width: normalize(40),
-    height: normalize(40),
-    borderRadius: normalize(12),
-    backgroundColor: colors.neutral[100],
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[600],
-    fontSize: normalize(15),
   },
 });
