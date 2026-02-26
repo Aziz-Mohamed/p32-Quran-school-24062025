@@ -12,6 +12,11 @@ export const none: ViewStyle = {
   boxShadow: '0px 0px 0px rgba(0, 0, 0, 0)',
 };
 
+/** Minimal border-like depth for list rows and inline elements */
+export const xs: ViewStyle = {
+  boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
+};
+
 /** Very subtle lift for chips and flat buttons */
 export const sm: ViewStyle = {
   boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.04)',
@@ -37,15 +42,34 @@ export const glow: ViewStyle = {
   boxShadow: '0px 0px 12px rgba(34, 197, 94, 0.3)',
 };
 
+/** Toast / snackbar notifications */
+export const toast: ViewStyle = {
+  boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.15)',
+};
+
+/** 2-layer green + subtle black for rub building blocks */
+export const rubCard: ViewStyle = {
+  boxShadow: '0px 4px 14px rgba(22, 163, 74, 0.15), 0px 2px 6px rgba(0, 0, 0, 0.08)',
+};
+
+/** Indigo glow for FAB buttons */
+export const indigo: ViewStyle = {
+  boxShadow: '0px 4px 12px rgba(99, 102, 241, 0.4)',
+};
+
 // ─── Aggregate Export ────────────────────────────────────────────────────────
 
 export const shadows = {
   none,
+  xs,
   sm,
   md,
   lg,
   xl,
   glow,
+  toast,
+  rubCard,
+  indigo,
 } as const;
 
 // ─── Types ───────────────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import type { AttendanceStatus } from '@/types/common.types';
 import { LEVELS } from '@/lib/constants';
+import { semantic } from '@/theme/colors';
 
 // ─── String Helpers ─────────────────────────────────────────────────────────
 
@@ -126,10 +127,10 @@ export const calculateLevel = (points: number): LevelInfo => {
 // ─── Attendance Color Mapping ───────────────────────────────────────────────
 
 const ATTENDANCE_COLORS: Record<AttendanceStatus, string> = {
-  present: '#10B981', // semantic.success
-  absent: '#EF4444', // semantic.error
-  late: '#F59E0B', // semantic.warning
-  excused: '#3B82F6', // semantic.info
+  present: semantic.success,
+  absent: semantic.error,
+  late: semantic.warning,
+  excused: semantic.info,
 };
 
 /**

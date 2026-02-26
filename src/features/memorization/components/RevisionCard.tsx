@@ -36,11 +36,11 @@ const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
   },
   memorized: {
     color: colors.semantic.success,
-    bg: '#DCFCE7',
+    bg: colors.primary[100],
   },
   needs_review: {
     color: colors.semantic.warning,
-    bg: '#FEF3C7',
+    bg: colors.secondary[100],
   },
 };
 

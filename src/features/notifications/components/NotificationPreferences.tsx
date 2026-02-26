@@ -10,6 +10,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
 
+import { colors, lightTheme, primary, neutral } from '@/theme/colors';
+import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
 import { useAuthStore } from '@/stores/authStore';
 import {
@@ -78,7 +80,7 @@ export function NotificationPreferencesScreen() {
   if (isLoading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#2F9E44" />
+        <ActivityIndicator size="large" color={primary[600]} />
       </View>
     );
   }
@@ -100,8 +102,8 @@ export function NotificationPreferencesScreen() {
                 <Switch
                   value={value as boolean}
                   onValueChange={onChange}
-                  trackColor={{ true: '#2F9E44', false: '#ccc' }}
-                  thumbColor="#fff"
+                  trackColor={{ true: primary[600], false: neutral[300] }}
+                  thumbColor={colors.white}
                 />
               )}
             />
@@ -128,8 +130,8 @@ export function NotificationPreferencesScreen() {
               <Switch
                 value={value}
                 onValueChange={onChange}
-                trackColor={{ true: '#2F9E44', false: '#ccc' }}
-                thumbColor="#fff"
+                trackColor={{ true: primary[600], false: neutral[300] }}
+                thumbColor={colors.white}
               />
             )}
           />
@@ -142,7 +144,7 @@ export function NotificationPreferencesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: lightTheme.background,
   },
   content: {
     padding: normalize(16),
@@ -155,17 +157,17 @@ const styles = StyleSheet.create({
   title: {
     fontSize: normalize(22),
     fontWeight: '700',
-    color: '#1B1B1B',
+    color: lightTheme.text,
     marginBlockEnd: normalize(4),
   },
   subtitle: {
     fontSize: normalize(14),
-    color: '#666',
+    color: lightTheme.textSecondary,
     marginBlockEnd: normalize(24),
   },
   section: {
-    backgroundColor: '#fff',
-    borderRadius: normalize(12),
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
     paddingHorizontal: normalize(16),
     paddingVertical: normalize(8),
     marginBlockEnd: normalize(16),
@@ -173,12 +175,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: normalize(16),
     fontWeight: '600',
-    color: '#1B1B1B',
+    color: lightTheme.text,
     paddingVertical: normalize(12),
   },
   sectionDescription: {
     fontSize: normalize(13),
-    color: '#888',
+    color: lightTheme.textTertiary,
     marginBlockEnd: normalize(8),
   },
   row: {
@@ -187,11 +189,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: normalize(12),
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E8E8E8',
+    borderBottomColor: lightTheme.border,
   },
   label: {
     fontSize: normalize(15),
-    color: '#333',
+    color: neutral[700],
     flex: 1,
     marginInlineEnd: normalize(12),
   },

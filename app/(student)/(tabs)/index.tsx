@@ -10,12 +10,13 @@ import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashboard';
-import { useRubCertifications, useRevisionHomework } from '@/features/gamification';
+import { useRubCertifications, useRevisionHomework, FRESHNESS_DOT_COLORS } from '@/features/gamification';
 import type { EnrichedCertification } from '@/features/gamification';
+import { getAttendanceBadge } from '@/features/attendance/utils/attendance-badge';
 import { useMemorizationStats } from '@/features/memorization';
 import { useStudentUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
 import { typography } from '@/theme/typography';
-import { lightTheme, colors } from '@/theme/colors';
+import { lightTheme, colors, secondary } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
@@ -26,36 +27,15 @@ import { useLocalizedName } from '@/hooks/useLocalizedName';
 const MAX_PREVIEW_ITEMS = 4;
 const MAX_SESSION_PREVIEW = 3;
 
-const FRESHNESS_DOT_COLORS: Record<string, string> = {
-  fresh: '#22C55E',
-  fading: '#EAB308',
-  warning: '#F97316',
-  critical: '#EF4444',
-  dormant: '#9CA3AF',
-};
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getAttendanceBadge(status: string | null | undefined, t: (key: string) => string) {
-  switch (status) {
-    case 'present':
-      return { label: t('admin.attendance.status.present'), variant: 'success' as const };
-    case 'absent':
-      return { label: t('admin.attendance.status.absent'), variant: 'error' as const };
-    case 'late':
-      return { label: t('admin.attendance.status.late'), variant: 'warning' as const };
-    case 'excused':
-      return { label: t('admin.attendance.status.excused'), variant: 'info' as const };
-    default:
-      return { label: t('parent.dashboard.notMarked'), variant: 'default' as const };
-  }
-}
-
-function HomeworkRow({ item, enriched, t }: {
+interface HomeworkRowProps {
   item: { assignmentId: string; rubNumber: number; juz: number };
   enriched: EnrichedCertification[];
-  t: (key: string, opts?: any) => string;
-}) {
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}
+
+const HomeworkRow = React.memo(function HomeworkRow({ item, enriched, t }: HomeworkRowProps) {
   const cert = enriched.find((c) => c.rub_number === item.rubNumber);
   const dotColor = cert
     ? (FRESHNESS_DOT_COLORS[cert.freshness.state] ?? colors.primary[400])
@@ -74,7 +54,7 @@ function HomeworkRow({ item, enriched, t }: {
       </View>
     </View>
   );
-}
+});
 
 function getRelativeDateLabel(dateStr: string, t: (key: string) => string): string {
   const today = new Date();
@@ -86,12 +66,14 @@ function getRelativeDateLabel(dateStr: string, t: (key: string) => string): stri
   return target.toLocaleDateString(undefined, { weekday: 'long' });
 }
 
-function SessionPreviewRow({ session, t, resolveName, onPress }: {
-  session: any;
+interface SessionPreviewRowProps {
+  session: { id: string; class?: { name_localized?: unknown; name?: string }; start_time?: string; end_time?: string; teacher?: { full_name?: string } };
   t: (key: string) => string;
-  resolveName: (localized: any, fallback: any) => string;
+  resolveName: (localized: Record<string, string> | unknown, fallback: string | null | undefined) => string;
   onPress: () => void;
-}) {
+}
+
+const SessionPreviewRow = React.memo(function SessionPreviewRow({ session, t, resolveName, onPress }: SessionPreviewRowProps) {
   return (
     <Pressable onPress={onPress} style={styles.sessionPreviewRow}>
       <View style={styles.sessionPreviewDot} />
@@ -106,7 +88,7 @@ function SessionPreviewRow({ session, t, resolveName, onPress }: {
       </View>
     </Pressable>
   );
-}
+});
 
 // ─── Student Dashboard ────────────────────────────────────────────────────────
 
@@ -243,11 +225,11 @@ export default function StudentDashboard() {
             style={styles.tasksCard}
           >
             <View style={styles.tasksHeader}>
-              <View style={[styles.tasksIcon, { backgroundColor: hasWarning ? '#FEF3C7' : colors.primary[50] }]}>
+              <View style={[styles.tasksIcon, { backgroundColor: hasWarning ? secondary[100] : colors.primary[50] }]}>
                 <Ionicons
                   name={hasWarning ? 'alert-circle' : 'pulse'}
                   size={20}
-                  color={hasWarning ? '#92400E' : colors.primary[500]}
+                  color={hasWarning ? secondary[800] : colors.primary[500]}
                 />
               </View>
               <View style={styles.healthTitleCol}>

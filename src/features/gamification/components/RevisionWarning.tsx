@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import { secondary } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
@@ -17,7 +18,7 @@ export function RevisionWarning({ count }: RevisionWarningProps) {
 
   return (
     <View style={styles.container}>
-      <Ionicons name="alert-circle" size={18} color="#92400E" />
+      <Ionicons name="alert-circle" size={18} color={secondary[800]} />
       <Text style={styles.text}>
         {t('gamification.revisionWarning', { count })}
       </Text>
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: secondary[100],
     borderRadius: normalize(8),
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: typography.fontFamily.semiBold,
     fontSize: normalize(13),
-    color: '#92400E',
+    color: secondary[800],
     flex: 1,
   },
 });

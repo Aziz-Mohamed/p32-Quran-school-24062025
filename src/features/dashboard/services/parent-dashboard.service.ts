@@ -6,6 +6,36 @@ import type {
   RecentSessionEntry,
 } from '../types/dashboard.types';
 
+/** Shape returned by the children query with FK joins */
+interface ChildRow {
+  id: string;
+  parent_id: string | null;
+  current_level: number;
+  current_streak: number;
+  is_active: boolean;
+  profiles: {
+    full_name: string;
+    name_localized: Record<string, string> | null;
+    username: string | null;
+    avatar_url: string | null;
+  };
+  classes: {
+    name: string;
+    name_localized: Record<string, string> | null;
+  } | null;
+}
+
+/** Shape returned by the sessions query */
+interface SessionRow {
+  id: string;
+  student_id: string;
+  session_date: string;
+  memorization_score: number | null;
+  tajweed_score: number | null;
+  recitation_quality: number | null;
+  notes: string | null;
+}
+
 const DEFAULT_STATS: ParentAggregateStats = {
   totalChildren: 0,
   presentToday: 0,
@@ -22,7 +52,7 @@ class ParentDashboardService {
    * Returns children quick status, aggregate stats, and recent sessions.
    * Uses batched IN-clause queries instead of per-child N+1.
    */
-  async getDashboard(parentId: string): Promise<{ data: ParentDashboardData | null; error: any }> {
+  async getDashboard(parentId: string): Promise<{ data: ParentDashboardData | null; error: Error | null }> {
     const today = new Date().toISOString().split('T')[0];
 
     // Step 1: Fetch children with profile, class, level
@@ -90,14 +120,17 @@ class ParentDashboardService {
       attendanceCounts.set(row.student_id, entry);
     }
 
+    // Cast to our explicit interface (Supabase FK join inference)
+    const typedChildren = children as unknown as ChildRow[];
+
     // Child name lookup for sessions
     const childNameMap = new Map<string, string>();
-    for (const child of children) {
-      childNameMap.set(child.id, (child as any).profiles?.full_name ?? '');
+    for (const child of typedChildren) {
+      childNameMap.set(child.id, child.profiles?.full_name ?? '');
     }
 
     // Step 4: Build children quick status
-    const childrenStatus: ChildQuickStatus[] = children.map((child: any) => {
+    const childrenStatus: ChildQuickStatus[] = typedChildren.map((child) => {
       const counts = attendanceCounts.get(child.id);
       const rate = counts && counts.total > 0 ? Math.round((counts.present / counts.total) * 100) : -1;
 
@@ -136,7 +169,7 @@ class ParentDashboardService {
     };
 
     // Step 6: Build recent sessions
-    const recentSessions: RecentSessionEntry[] = (recentSessionsRes.data ?? []).map((s: any) => ({
+    const recentSessions: RecentSessionEntry[] = ((recentSessionsRes.data ?? []) as SessionRow[]).map((s) => ({
       id: s.id,
       studentId: s.student_id,
       childName: childNameMap.get(s.student_id) ?? '',

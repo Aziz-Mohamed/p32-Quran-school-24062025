@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { invalidateSessionWorkspaceQueries } from './invalidateSessionWorkspaceQueries';
 import { attendanceService } from '@/features/attendance/services/attendance.service';
 import { sessionsService } from '@/features/sessions/services/sessions.service';
 import { recitationService } from '@/features/memorization/services/recitation.service';
@@ -165,21 +166,7 @@ export function useCompleteSessionWorkspace() {
       if (statusError) throw statusError;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scheduled-sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['teacher-upcoming-sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['teacher-session-history'] });
-      queryClient.invalidateQueries({ queryKey: ['sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance'] });
-      queryClient.invalidateQueries({ queryKey: ['class-attendance'] });
-      queryClient.invalidateQueries({ queryKey: ['teacher-dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['student-dashboard'] });
-      queryClient.invalidateQueries({ queryKey: ['scheduled-session'] });
-      queryClient.invalidateQueries({ queryKey: ['recitations'] });
-      queryClient.invalidateQueries({ queryKey: ['memorization-progress'] });
-      queryClient.invalidateQueries({ queryKey: ['memorization-stats'] });
-      queryClient.invalidateQueries({ queryKey: ['revision-schedule'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
-      queryClient.invalidateQueries({ queryKey: ['assignments'] });
+      invalidateSessionWorkspaceQueries(queryClient);
     },
   });
 }

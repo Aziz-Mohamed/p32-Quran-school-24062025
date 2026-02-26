@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
-import { lightTheme } from '@/theme/colors';
+import { lightTheme, accent, secondary } from '@/theme/colors';
 import { normalize } from '@/theme/normalize';
 import { ChartContainer } from './ChartContainer';
 import { ChartLegend } from './ChartLegend';
@@ -13,9 +13,9 @@ import type { ScoreTrendPoint } from '../types/reports.types';
 
 // Chart colors per NFR-002 and research.md
 const COLORS = {
-  memorization: '#0D9488', // teal - solid
-  tajweed: '#F5A623', // gold - dashed
-  recitation: '#3B82F6', // blue - dotted
+  memorization: accent.teal[600],
+  tajweed: secondary[500],
+  recitation: accent.blue[500],
 } as const;
 
 interface ScoreTrendChartProps {

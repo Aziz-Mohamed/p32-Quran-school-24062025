@@ -17,7 +17,7 @@ import Animated, {
   useSharedValue,
 } from 'react-native-reanimated';
 
-import { colors } from '@/theme/colors';
+import { colors, glass } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
@@ -164,13 +164,13 @@ const styles = StyleSheet.create({
   },
   container: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255, 255, 255, 0.98)',
+    backgroundColor: glass.white.opaque,
     borderRadius: radius.xl,
     paddingVertical: normalize(6),
     paddingHorizontal: spacing.xs,
     ...shadows.lg,
     borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
+    borderColor: glass.white.high,
     alignItems: 'center',
     justifyContent: 'space-around',
   },

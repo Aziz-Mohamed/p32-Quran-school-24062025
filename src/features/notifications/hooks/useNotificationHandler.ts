@@ -25,9 +25,9 @@ export function useNotificationHandler({
 
       try {
         if (data.params) {
-          router.push({ pathname: data.screen as any, params: data.params });
+          router.push({ pathname: data.screen as `/${string}`, params: data.params });
         } else {
-          router.push(data.screen as any);
+          router.push(data.screen as `/${string}`);
         }
       } catch (error) {
         if (__DEV__) {

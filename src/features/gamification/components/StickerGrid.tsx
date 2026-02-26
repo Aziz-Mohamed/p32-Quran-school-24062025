@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useRTL } from '@/hooks/useRTL';
 import { getStickerImageUrl } from '@/lib/storage';
-import { colors } from '@/theme/colors';
+import { colors, gamification } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
@@ -16,11 +16,11 @@ import type { StickerCollectionItem, StickerTier } from '../types/gamification.t
 // ─── Tier Config ──────────────────────────────────────────────────────────────
 
 export const TIER_COLORS: Record<StickerTier, string> = {
-  bronze: '#8B6C42',  // true antique bronze
-  silver: '#6B7B8D',  // cool metallic silver
-  gold: '#B8860B',    // deep real gold
-  diamond: '#4E97B8', // ice-blue diamond
-  seasonal: '#8B5E83',  // muted plum
+  bronze: gamification.tierAccent.bronze,
+  silver: gamification.tierAccent.silver,
+  gold: gamification.tierAccent.gold,
+  diamond: gamification.tierAccent.diamond,
+  seasonal: colors.accent.violet[500],
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────

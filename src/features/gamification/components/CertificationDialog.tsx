@@ -112,7 +112,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: lightTheme.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: spacing.xl,

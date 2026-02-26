@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useRTL } from '@/hooks/useRTL';
 import { getStickerImageUrl } from '@/lib/storage';
-import { colors, lightTheme } from '@/theme/colors';
+import { colors, darkTheme, gamification } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
@@ -27,11 +27,11 @@ import type { AwardedSticker, StickerTier } from '../types/gamification.types';
 // ─── Tier Glow Colors ─────────────────────────────────────────────────────────
 
 const TIER_GLOW: Record<StickerTier, string> = {
-  bronze: '#C9A87C',   // warm bronze glow
-  silver: '#B0BEC5',   // cool steel glow
-  gold: '#D4A843',     // rich gold glow
-  diamond: '#90CAE8',  // ice diamond glow
-  seasonal: '#C9A3C3',  // soft plum glow
+  bronze: gamification.tierGlow.bronze,
+  silver: gamification.tierGlow.silver,
+  gold: gamification.tierGlow.gold,
+  diamond: gamification.tierGlow.diamond,
+  seasonal: colors.accent.violet[100],
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -176,7 +176,7 @@ export function StickerReveal({ sticker, onDismiss }: StickerRevealProps) {
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: darkTheme.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,

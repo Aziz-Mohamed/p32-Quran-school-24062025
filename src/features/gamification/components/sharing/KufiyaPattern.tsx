@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pattern, Line, Path, Circle } from 'react-native-svg';
+import { neutral } from '@/theme/colors';
 
 /**
  * Kufiya pattern SVG defs — renders inside a parent <Svg>'s <Defs>.
@@ -7,7 +8,7 @@ import { Pattern, Line, Path, Circle } from 'react-native-svg';
  */
 export function KufiyaPatternDefs({
   id = 'kufiya',
-  color = '#4B5563',
+  color = neutral[600],
   tileSize = 20,
 }: {
   id?: string;

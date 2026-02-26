@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { spacing } from '@/theme/spacing';
 import { typography } from '@/theme/typography';
-import { lightTheme } from '@/theme/colors';
+import { lightTheme, accent, secondary, neutral } from '@/theme/colors';
 import { normalize } from '@/theme/normalize';
 import { ChartContainer } from './ChartContainer';
 import { ChartLegend, type LegendItem } from './ChartLegend';
@@ -13,10 +13,10 @@ import type { ChildScoreTrendPoint } from '../types/reports.types';
 
 // Chart colors per NFR-002
 const COLORS = {
-  memorization: '#0D9488',
-  tajweed: '#F5A623',
-  recitation: '#3B82F6',
-  classAvg: '#9CA3AF', // neutral gray for reference lines
+  memorization: accent.teal[600],
+  tajweed: secondary[500],
+  recitation: accent.blue[500],
+  classAvg: neutral[400],
 } as const;
 
 interface ChildScoreTrendChartProps {
