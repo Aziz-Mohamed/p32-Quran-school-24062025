@@ -7,9 +7,14 @@ import {
   Pressable,
   ScrollView,
   ActivityIndicator,
+  Modal,
+  Platform,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -31,24 +36,154 @@ import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 import { radius } from '@/theme/radius';
+import i18n from '@/i18n/config';
 
 // ─── Time Helpers ─────────────────────────────────────────────────────────────
 
-function formatTimeHHMM(hours: number, minutes: number): string {
-  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+function formatTimeHHMM(date: Date): string {
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
-function formatTimeDisplay(hours: number, minutes: number): string {
+function formatTimeDisplay(date: Date): string {
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
   const period = hours >= 12 ? 'PM' : 'AM';
   const displayHour = hours % 12 || 12;
   return `${displayHour}:${String(minutes).padStart(2, '0')} ${period}`;
 }
 
-const TIME_OPTIONS = Array.from({ length: 28 }, (_, i) => {
-  const totalMinutes = 6 * 60 + i * 30; // 6:00 AM to 19:30 PM
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return { hours, minutes, label: formatTimeDisplay(hours, minutes), value: formatTimeHHMM(hours, minutes) };
+// ─── Time Trigger ─────────────────────────────────────────────────────────────
+
+function TimePicker({
+  label,
+  value,
+  onChange,
+  minimumDate,
+}: {
+  label: string;
+  value: Date | null;
+  onChange: (date: Date) => void;
+  minimumDate?: Date;
+}) {
+  const [showPicker, setShowPicker] = useState(false);
+  const placeholder = i18n.t('common.select');
+
+  const handleChange = useCallback(
+    (_event: DateTimePickerEvent, selectedDate?: Date) => {
+      if (Platform.OS === 'android') setShowPicker(false);
+      if (selectedDate) onChange(selectedDate);
+    },
+    [onChange],
+  );
+
+  return (
+    <View style={timeStyles.root}>
+      <Text style={timeStyles.label}>{label}</Text>
+      <Pressable
+        style={timeStyles.trigger}
+        onPress={() => setShowPicker(true)}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+      >
+        <Ionicons name="time-outline" size={normalize(18)} color={lightTheme.textTertiary} />
+        <Text style={[timeStyles.triggerText, !value && timeStyles.placeholderText]}>
+          {value ? formatTimeDisplay(value) : placeholder}
+        </Text>
+      </Pressable>
+
+      {showPicker && Platform.OS === 'android' && (
+        <DateTimePicker
+          value={value ?? new Date()}
+          mode="time"
+          is24Hour={false}
+          minuteInterval={5}
+          onChange={handleChange}
+          minimumDate={minimumDate}
+        />
+      )}
+
+      {showPicker && Platform.OS === 'ios' && (
+        <Modal visible transparent animationType="fade" onRequestClose={() => setShowPicker(false)}>
+          <Pressable style={timeStyles.overlay} onPress={() => setShowPicker(false)}>
+            <View style={timeStyles.pickerContainer}>
+              <DateTimePicker
+                value={value ?? new Date()}
+                mode="time"
+                display="spinner"
+                minuteInterval={5}
+                onChange={handleChange}
+                minimumDate={minimumDate}
+              />
+              <Pressable onPress={() => setShowPicker(false)} style={timeStyles.doneButton}>
+                <Text style={timeStyles.doneText}>{i18n.t('common.done')}</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Modal>
+      )}
+    </View>
+  );
+}
+
+const timeStyles = StyleSheet.create({
+  root: { width: '100%' },
+  label: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(13),
+    lineHeight: normalize(18),
+    color: colors.neutral[500],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.sm,
+  },
+  trigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: lightTheme.border,
+    borderRadius: radius.md,
+    backgroundColor: lightTheme.background,
+    minHeight: normalize(48),
+    paddingHorizontal: spacing.md,
+  },
+  triggerText: {
+    flex: 1,
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.base,
+    lineHeight: typography.lineHeight.base,
+    color: lightTheme.text,
+  },
+  placeholderText: {
+    color: lightTheme.textTertiary,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+  },
+  pickerContainer: {
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
+    width: '100%',
+    maxWidth: normalize(360),
+    padding: spacing.lg,
+  },
+  doneButton: {
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: lightTheme.border,
+    marginTop: spacing.sm,
+  },
+  doneText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: typography.fontSize.base,
+    lineHeight: typography.lineHeight.base,
+    color: colors.primary[500],
+  },
 });
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -66,8 +201,8 @@ export const CreateSessionSheet = forwardRef<BottomSheetModal>((_props, ref) => 
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [sessionDate, setSessionDate] = useState<Date | null>(null);
-  const [startTimeIdx, setStartTimeIdx] = useState<number | null>(null);
-  const [endTimeIdx, setEndTimeIdx] = useState<number | null>(null);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+  const [endTime, setEndTime] = useState<Date | null>(null);
 
   // ── Student list (filtered by selected class) ───────────────────────────
   const { data: students = [], isLoading: studentsLoading } = useStudents(
@@ -75,7 +210,7 @@ export const CreateSessionSheet = forwardRef<BottomSheetModal>((_props, ref) => 
   );
 
   const classes = useMemo(() => teacherClasses.data ?? [], [teacherClasses.data]);
-  const snapPoints = useMemo(() => ['90%'], []);
+  const snapPoints = useMemo(() => ['75%'], []);
 
   // Reset downstream when session type changes
   const handleTypeChange = useCallback((type: SessionType) => {
@@ -89,39 +224,43 @@ export const CreateSessionSheet = forwardRef<BottomSheetModal>((_props, ref) => 
     setSelectedStudentId(null);
   }, []);
 
+  const handleStartTimeChange = useCallback((date: Date) => {
+    setStartTime(date);
+    // Clear end time if it's now before start
+    if (endTime && date >= endTime) setEndTime(null);
+  }, [endTime]);
+
   const resetForm = useCallback(() => {
     setSessionType('class');
     setSelectedClassId(null);
     setSelectedStudentId(null);
     setSessionDate(null);
-    setStartTimeIdx(null);
-    setEndTimeIdx(null);
+    setStartTime(null);
+    setEndTime(null);
   }, []);
 
   // ── Validation ──────────────────────────────────────────────────────────
   const canSubmit = useMemo(() => {
-    if (!sessionDate || startTimeIdx == null || endTimeIdx == null) return false;
-    if (startTimeIdx >= endTimeIdx) return false;
+    if (!sessionDate || !startTime || !endTime) return false;
+    if (startTime >= endTime) return false;
     if (sessionType === 'class' && !selectedClassId) return false;
     if (sessionType === 'individual' && !selectedStudentId) return false;
     return true;
-  }, [sessionDate, startTimeIdx, endTimeIdx, sessionType, selectedClassId, selectedStudentId]);
+  }, [sessionDate, startTime, endTime, sessionType, selectedClassId, selectedStudentId]);
 
   // ── Submit ──────────────────────────────────────────────────────────────
   const handleSubmit = useCallback(() => {
-    if (!canSubmit || !profile?.id || !schoolId) return;
+    if (!canSubmit || !profile?.id || !schoolId || !startTime || !endTime) return;
 
     const dateStr = sessionDate!.toISOString().split('T')[0];
-    const start = TIME_OPTIONS[startTimeIdx!];
-    const end = TIME_OPTIONS[endTimeIdx!];
 
     createMutation.mutate(
       {
         teacherId: profile.id,
         schoolId,
         sessionDate: dateStr,
-        startTime: start.value,
-        endTime: end.value,
+        startTime: formatTimeHHMM(startTime),
+        endTime: formatTimeHHMM(endTime),
         sessionType,
         classId: selectedClassId ?? undefined,
         studentId: selectedStudentId ?? undefined,
@@ -136,7 +275,7 @@ export const CreateSessionSheet = forwardRef<BottomSheetModal>((_props, ref) => 
         },
       },
     );
-  }, [canSubmit, profile, schoolId, sessionDate, startTimeIdx, endTimeIdx, sessionType, selectedClassId, selectedStudentId, createMutation, t, ref, resetForm]);
+  }, [canSubmit, profile, schoolId, sessionDate, startTime, endTime, sessionType, selectedClassId, selectedStudentId, createMutation, t, ref, resetForm]);
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -151,17 +290,20 @@ export const CreateSessionSheet = forwardRef<BottomSheetModal>((_props, ref) => 
       snapPoints={snapPoints}
       backdropComponent={renderBackdrop}
       onDismiss={resetForm}
+      enableDynamicSizing={false}
       enablePanDownToClose
       handleIndicatorStyle={styles.handleIndicator}
+      backgroundStyle={styles.sheetBackground}
     >
       {/* Header */}
       <View style={styles.sheetHeader}>
         <Text style={styles.title}>{t('scheduling.createSessionTitle')}</Text>
         <Pressable
+          style={styles.closeButton}
           onPress={() => (ref as React.RefObject<BottomSheetModal>)?.current?.dismiss()}
           hitSlop={8}
         >
-          <Ionicons name="close" size={24} color={colors.neutral[500]} />
+          <Ionicons name="close" size={20} color={colors.neutral[500]} />
         </Pressable>
       </View>
 
@@ -174,58 +316,65 @@ export const CreateSessionSheet = forwardRef<BottomSheetModal>((_props, ref) => 
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* ── Session Type ── */}
-          <Text style={styles.sectionTitle}>{t('scheduling.selectSessionType')}</Text>
-          <View style={styles.pillRow}>
-            {(['class', 'individual'] as const).map((type) => (
-              <Pressable
-                key={type}
-                style={[styles.pill, sessionType === type && styles.pillActive]}
-                onPress={() => handleTypeChange(type)}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: sessionType === type }}
-              >
-                <Ionicons
-                  name={type === 'class' ? 'people' : 'person'}
-                  size={16}
-                  color={sessionType === type ? colors.white : colors.neutral[600]}
-                />
-                <Text style={[styles.pillText, sessionType === type && styles.pillTextActive]}>
-                  {t(`scheduling.${type === 'class' ? 'classSession' : 'individualSessionType'}`)}
-                </Text>
-              </Pressable>
-            ))}
+          {/* ── Session Type — Segmented Control ── */}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>{t('scheduling.selectSessionType')}</Text>
+            <View style={styles.segmentedControl}>
+              {(['class', 'individual'] as const).map((type) => {
+                const isActive = sessionType === type;
+                return (
+                  <Pressable
+                    key={type}
+                    style={[styles.segment, isActive && styles.segmentActive]}
+                    onPress={() => handleTypeChange(type)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ selected: isActive }}
+                  >
+                    <Ionicons
+                      name={type === 'class' ? 'people-outline' : 'person-outline'}
+                      size={18}
+                      color={isActive ? colors.primary[600] : colors.neutral[400]}
+                    />
+                    <Text style={[styles.segmentText, isActive && styles.segmentTextActive]}>
+                      {t(`scheduling.${type === 'class' ? 'classSession' : 'individualSessionType'}`)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
           {/* ── Class Selector ── */}
-          <Text style={styles.sectionTitle}>{t('scheduling.selectClass')}</Text>
-          {classes.length === 0 ? (
-            <Text style={styles.emptyText}>{t('common.noResults')}</Text>
-          ) : (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-              <View style={styles.chipRow}>
-                {classes.map((cls) => {
-                  const isSelected = selectedClassId === cls.id;
-                  return (
-                    <Pressable
-                      key={cls.id}
-                      style={[styles.chip, isSelected && styles.chipActive]}
-                      onPress={() => handleClassChange(cls.id)}
-                    >
-                      <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
-                        {resolveName(cls.name_localized, cls.name)}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </ScrollView>
-          )}
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>{t('scheduling.selectClass')}</Text>
+            {classes.length === 0 ? (
+              <Text style={styles.emptyText}>{t('common.noResults')}</Text>
+            ) : (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
+                <View style={styles.chipRow}>
+                  {classes.map((cls) => {
+                    const isSelected = selectedClassId === cls.id;
+                    return (
+                      <Pressable
+                        key={cls.id}
+                        style={[styles.chip, isSelected && styles.chipActive]}
+                        onPress={() => handleClassChange(cls.id)}
+                      >
+                        <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
+                          {resolveName(cls.name_localized, cls.name)}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </ScrollView>
+            )}
+          </View>
 
           {/* ── Student Selector (individual only) ── */}
           {sessionType === 'individual' && selectedClassId && (
-            <>
-              <Text style={styles.sectionTitle}>{t('scheduling.selectStudent')}</Text>
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>{t('scheduling.selectStudent')}</Text>
               {studentsLoading ? (
                 <LoadingState />
               ) : students.length === 0 ? (
@@ -249,62 +398,37 @@ export const CreateSessionSheet = forwardRef<BottomSheetModal>((_props, ref) => 
                   })}
                 </View>
               )}
-            </>
+            </View>
           )}
 
           {/* ── Date ── */}
-          <DatePicker
-            label={t('scheduling.selectDate')}
-            value={sessionDate}
-            onChange={setSessionDate}
-            minimumDate={new Date()}
-          />
+          <View style={styles.section}>
+            <DatePicker
+              label={t('scheduling.selectDate')}
+              value={sessionDate}
+              onChange={setSessionDate}
+              minimumDate={new Date()}
+            />
+          </View>
 
-          {/* ── Start Time ── */}
-          <Text style={styles.sectionTitle}>{t('scheduling.startTime')}</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-            <View style={styles.chipRow}>
-              {TIME_OPTIONS.map((opt, idx) => {
-                const isSelected = startTimeIdx === idx;
-                return (
-                  <Pressable
-                    key={opt.value}
-                    style={[styles.timeChip, isSelected && styles.chipActive]}
-                    onPress={() => {
-                      setStartTimeIdx(idx);
-                      if (endTimeIdx != null && endTimeIdx <= idx) setEndTimeIdx(null);
-                    }}
-                  >
-                    <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
-                      {opt.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+          {/* ── Time Row ── */}
+          <View style={styles.timeRow}>
+            <View style={styles.timeField}>
+              <TimePicker
+                label={t('scheduling.startTime')}
+                value={startTime}
+                onChange={handleStartTimeChange}
+              />
             </View>
-          </ScrollView>
-
-          {/* ── End Time ── */}
-          <Text style={styles.sectionTitle}>{t('scheduling.endTime')}</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipScroll}>
-            <View style={styles.chipRow}>
-              {TIME_OPTIONS.filter((_, idx) => startTimeIdx != null ? idx > startTimeIdx : true).map((opt, idx) => {
-                const realIdx = startTimeIdx != null ? idx + startTimeIdx + 1 : idx;
-                const isSelected = endTimeIdx === realIdx;
-                return (
-                  <Pressable
-                    key={opt.value}
-                    style={[styles.timeChip, isSelected && styles.chipActive]}
-                    onPress={() => setEndTimeIdx(realIdx)}
-                  >
-                    <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
-                      {opt.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+            <View style={styles.timeField}>
+              <TimePicker
+                label={t('scheduling.endTime')}
+                value={endTime}
+                onChange={setEndTime}
+                minimumDate={startTime ?? undefined}
+              />
             </View>
-          </ScrollView>
+          </View>
         </BottomSheetScrollView>
       )}
 
@@ -328,23 +452,37 @@ CreateSessionSheet.displayName = 'CreateSessionSheet';
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
+  sheetBackground: {
+    borderTopLeftRadius: normalize(20),
+    borderTopRightRadius: normalize(20),
+  },
   handleIndicator: {
     backgroundColor: colors.neutral[300],
-    width: normalize(40),
+    width: normalize(36),
+    height: normalize(4),
   },
   sheetHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.neutral[100],
+    paddingBottom: spacing.base,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.neutral[200],
   },
   title: {
-    ...typography.textStyles.heading,
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(18),
+    lineHeight: normalize(24),
     color: lightTheme.text,
-    fontSize: normalize(20),
+  },
+  closeButton: {
+    width: normalize(32),
+    height: normalize(32),
+    borderRadius: normalize(16),
+    backgroundColor: colors.neutral[100],
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   loadingContainer: {
     flex: 1,
@@ -353,43 +491,56 @@ const styles = StyleSheet.create({
     paddingVertical: spacing['3xl'],
   },
   scrollContent: {
-    padding: spacing.lg,
-    gap: spacing.md,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.lg,
     paddingBottom: spacing['3xl'],
   },
-  sectionTitle: {
-    ...typography.textStyles.subheading,
-    color: lightTheme.text,
-    fontSize: normalize(15),
+
+  // ── Sections ──
+  section: {
+    marginBottom: spacing.lg,
   },
-  pillRow: {
+  sectionLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(13),
+    lineHeight: normalize(18),
+    color: colors.neutral[500],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing.sm,
+  },
+
+  // ── Segmented Control (Session Type) ──
+  segmentedControl: {
     flexDirection: 'row',
-    gap: spacing.sm,
+    backgroundColor: colors.neutral[100],
+    borderRadius: radius.md,
+    padding: normalize(3),
   },
-  pill: {
+  segment: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: colors.neutral[100],
-    borderWidth: 1.5,
-    borderColor: colors.neutral[200],
+    borderRadius: radius.md - normalize(2),
   },
-  pillActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
+  segmentActive: {
+    backgroundColor: colors.white,
+    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)',
   },
-  pillText: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[600],
+  segmentText: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(14),
+    lineHeight: normalize(20),
+    color: colors.neutral[400],
   },
-  pillTextActive: {
-    color: colors.white,
+  segmentTextActive: {
+    color: colors.primary[600],
   },
+
+  // ── Chips ──
   chipScroll: {
     marginHorizontal: -spacing.lg,
     paddingHorizontal: spacing.lg,
@@ -406,31 +557,36 @@ const styles = StyleSheet.create({
   },
   chip: {
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
-    backgroundColor: colors.neutral[100],
-    borderWidth: 1.5,
+    paddingHorizontal: spacing.base,
+    borderRadius: radius.full,
+    backgroundColor: colors.neutral[50],
+    borderWidth: 1,
     borderColor: colors.neutral[200],
   },
   chipActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
+    backgroundColor: colors.primary[50],
+    borderColor: colors.primary[400],
   },
   chipText: {
-    ...typography.textStyles.label,
-    color: colors.neutral[700],
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(13),
+    lineHeight: normalize(18),
+    color: colors.neutral[600],
   },
   chipTextActive: {
-    color: colors.white,
+    color: colors.primary[700],
   },
-  timeChip: {
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.md,
-    backgroundColor: colors.neutral[100],
-    borderWidth: 1.5,
-    borderColor: colors.neutral[200],
+
+  // ── Time Row ──
+  timeRow: {
+    flexDirection: 'row',
+    gap: spacing.md,
+    marginBottom: spacing.lg,
   },
+  timeField: {
+    flex: 1,
+  },
+
   emptyText: {
     ...typography.textStyles.body,
     color: lightTheme.textTertiary,
@@ -439,7 +595,9 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.neutral[100],
+    paddingBottom: spacing.xl,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.neutral[200],
+    backgroundColor: colors.white,
   },
 });
