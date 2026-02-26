@@ -1,11 +1,18 @@
 import { supabase } from '@/lib/supabase';
+import type { Tables } from '@/types/database.types';
+
+interface TeacherRecentSession extends Tables<'sessions'> {
+  student: {
+    profiles: Pick<Tables<'profiles'>, 'full_name' | 'name_localized' | 'avatar_url'> | null;
+  } | null;
+}
 
 interface TeacherDashboardResult {
   todaySessionCount: number;
   todayStudentsSeen: number;
   totalStudents: number;
-  recentSessions: any[];
-  checkin: any | null;
+  recentSessions: TeacherRecentSession[];
+  checkin: Tables<'teacher_checkins'> | null;
 }
 
 class TeacherDashboardService {
@@ -52,7 +59,7 @@ class TeacherDashboardService {
 
     // Count total students across teacher's classes
     const totalStudents = (classesRes.data ?? []).reduce(
-      (sum, c: any) => sum + (c.students?.length ?? 0),
+      (sum, c) => sum + ((c.students as unknown[] | null)?.length ?? 0),
       0,
     );
 
@@ -60,7 +67,7 @@ class TeacherDashboardService {
       todaySessionCount: todaySessions.length,
       todayStudentsSeen: uniqueStudents.size,
       totalStudents,
-      recentSessions: recentSessionsRes.data ?? [],
+      recentSessions: (recentSessionsRes.data ?? []) as unknown as TeacherRecentSession[],
       checkin: checkinRes.data,
     };
   }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Alert, I18nManager, Pressable, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -27,6 +27,7 @@ import { MemorizationProgressBar } from '@/features/memorization';
 import { useAssignments, useCompleteRevisionHomework } from '@/features/memorization';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { useLocalizedName } from '@/hooks/useLocalizedName';
+import { useUndoTimer } from '@/hooks/useUndoTimer';
 import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
@@ -99,8 +100,7 @@ export default function TeacherStudentDetailScreen() {
   }, [homeworkAssignments, reverseRubMap]);
 
   // Undo state
-  const [undoInfo, setUndoInfo] = useState<{ certId: string; rubNumber: number } | null>(null);
-  const undoTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const undo = useUndoTimer<{ certId: string; rubNumber: number }>();
 
   // Revision sheet state
   const [revisionCert, setRevisionCert] = useState<EnrichedCertification | null>(null);
@@ -115,25 +115,20 @@ export default function TeacherStudentDetailScreen() {
           certifiedBy: profile.id,
         });
         if (result.data) {
-          // Clear previous undo timer
-          if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
-          setUndoInfo({ certId: result.data.id, rubNumber });
-          // Auto-dismiss after 30 seconds
-          undoTimerRef.current = setTimeout(() => setUndoInfo(null), 30_000);
+          undo.set({ certId: result.data.id, rubNumber });
         }
       } catch {
         // Mutation error handled by TanStack Query
       }
     },
-    [id, profile?.id, certifyMutation],
+    [id, profile?.id, certifyMutation, undo],
   );
 
   const handleUndo = useCallback(() => {
-    if (!undoInfo || !id) return;
-    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
-    undoMutation.mutate({ certificationId: undoInfo.certId, studentId: id });
-    setUndoInfo(null);
-  }, [undoInfo, id, undoMutation]);
+    if (!undo.data || !id) return;
+    undoMutation.mutate({ certificationId: undo.data.certId, studentId: id });
+    undo.clear();
+  }, [undo, id, undoMutation]);
 
   const handleCertifiedRubPress = useCallback((cert: EnrichedCertification) => {
     setRevisionCert(cert);
@@ -192,19 +187,12 @@ export default function TeacherStudentDetailScreen() {
     [id, enriched, batchGoodRevision, batchPoorRevision],
   );
 
-  // Cleanup timer
-  useEffect(() => {
-    return () => {
-      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
-    };
-  }, []);
-
   if (studentLoading) return <LoadingState />;
   if (studentError) return <ErrorState description={(studentError as Error).message} onRetry={refetch} />;
   if (!student) return null;
 
-  const studentProfile = (student as any).profiles;
-  const studentClass = (student as any).classes;
+  const studentProfile = (student as unknown as { profiles: { full_name: string; name_localized: Record<string, string> | null; avatar_url: string | null; phone: string | null } }).profiles;
+  const studentClass = (student as unknown as { classes: { id: string; name: string; name_localized: Record<string, string> | null } | null }).classes;
   const attendanceRate = attendanceData?.rate ?? 0;
 
   return (
@@ -379,10 +367,10 @@ export default function TeacherStudentDetailScreen() {
         />
 
         {/* Undo Banner */}
-        {undoInfo && (
+        {undo.data && (
           <View style={styles.undoBanner}>
             <Text style={styles.undoText}>
-              {t('gamification.certifiedSuccess', { rub: undoInfo.rubNumber })}
+              {t('gamification.certifiedSuccess', { rub: undo.data.rubNumber })}
             </Text>
             <Pressable onPress={handleUndo} style={styles.undoButton}>
               <Text style={styles.undoButtonText}>{t('common.undo')}</Text>

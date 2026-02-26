@@ -232,7 +232,7 @@ export function SessionRecitationPlanList({
         {
           sessionId,
           studentId: userId,
-          inputs: inputs.map((i) => ({ ...i, source: 'student_suggestion' as any })),
+          inputs: inputs.map((i) => ({ ...i, source: 'student_suggestion' as const })),
         },
         {
           onSuccess: () => setSuggestionFormVisible(false),

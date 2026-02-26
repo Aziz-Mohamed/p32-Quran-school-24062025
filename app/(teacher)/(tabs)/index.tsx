@@ -148,7 +148,7 @@ export default function TeacherDashboard() {
             <Text style={styles.emptyText}>{t('teacher.dashboard.noRecentSessions')}</Text>
           </Card>
         ) : (
-          data?.recentSessions.map((session: any) => (
+          data?.recentSessions.map((session) => (
             <Card
               key={session.id}
               variant="default"
