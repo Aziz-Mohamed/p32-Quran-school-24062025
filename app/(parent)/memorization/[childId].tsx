@@ -24,8 +24,8 @@ import { normalize } from '@/theme/normalize';
 const STATUS_COLORS: Record<string, { color: string; bg: string }> = {
   new: { color: colors.accent.indigo[600], bg: colors.accent.indigo[50] },
   learning: { color: colors.secondary[700], bg: colors.secondary[50] },
-  memorized: { color: colors.semantic.success, bg: '#DCFCE7' },
-  needs_review: { color: colors.semantic.warning, bg: '#FEF3C7' },
+  memorized: { color: colors.semantic.success, bg: colors.primary[100] },
+  needs_review: { color: colors.semantic.warning, bg: colors.secondary[100] },
 };
 
 // ─── Parent Memorization View (Read-Only) ────────────────────────────────────

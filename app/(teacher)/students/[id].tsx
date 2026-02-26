@@ -18,7 +18,7 @@ import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
-import { lightTheme, colors, semantic } from '@/theme/colors';
+import { lightTheme, colors, semantic, semanticSurface } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     width: normalize(40),
     height: normalize(40),
     borderRadius: normalize(20),
-    backgroundColor: '#FFFBEB',
+    backgroundColor: semanticSurface.warning,
     alignItems: 'center',
     justifyContent: 'center',
   },

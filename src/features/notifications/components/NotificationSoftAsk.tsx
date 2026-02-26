@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
+import { colors, lightTheme, primary, neutral, semanticSurface } from '@/theme/colors';
+import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
 import type { UserRole } from '../types/notifications.types';
 
@@ -76,8 +78,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize(24),
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: normalize(16),
+    backgroundColor: colors.white,
+    borderRadius: radius.lg,
     paddingVertical: normalize(32),
     paddingHorizontal: normalize(24),
     width: '100%',
@@ -88,7 +90,7 @@ const styles = StyleSheet.create({
     width: normalize(64),
     height: normalize(64),
     borderRadius: normalize(32),
-    backgroundColor: '#E8F5E9',
+    backgroundColor: semanticSurface.success,
     justifyContent: 'center',
     alignItems: 'center',
     marginBlockEnd: normalize(16),
@@ -99,20 +101,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: normalize(20),
     fontWeight: '700',
-    color: '#1B1B1B',
+    color: lightTheme.text,
     textAlign: 'center',
     marginBlockEnd: normalize(8),
   },
   body: {
     fontSize: normalize(15),
     lineHeight: normalize(22),
-    color: '#555',
+    color: lightTheme.textSecondary,
     textAlign: 'center',
     marginBlockEnd: normalize(24),
   },
   enableButton: {
-    backgroundColor: '#2F9E44',
-    borderRadius: normalize(12),
+    backgroundColor: primary[600],
+    borderRadius: radius.md,
     paddingVertical: normalize(14),
     paddingHorizontal: normalize(24),
     width: '100%',
@@ -120,7 +122,7 @@ const styles = StyleSheet.create({
     marginBlockEnd: normalize(12),
   },
   enableButtonText: {
-    color: '#fff',
+    color: colors.white,
     fontSize: normalize(16),
     fontWeight: '600',
   },
@@ -129,7 +131,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: normalize(24),
   },
   skipButtonText: {
-    color: '#888',
+    color: neutral[400],
     fontSize: normalize(14),
   },
 });

@@ -5,6 +5,7 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { primary } from '@/theme/colors';
 import { notificationsService } from '../services/notifications.service';
 
 const SOFT_ASK_SHOWN_KEY = 'notifications_soft_ask_shown';
@@ -143,7 +144,7 @@ export function useNotificationSetup({
           name: 'Default',
           importance: Notifications.AndroidImportance.HIGH,
           vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#2F9E44',
+          lightColor: primary[600],
         });
       }
 

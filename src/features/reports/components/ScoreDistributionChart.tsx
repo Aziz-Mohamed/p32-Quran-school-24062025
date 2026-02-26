@@ -3,16 +3,17 @@ import { StyleSheet, View } from 'react-native';
 import { CartesianChart, Bar } from 'victory-native';
 import { useTranslation } from 'react-i18next';
 
+import { accent, primary, secondary, neutral } from '@/theme/colors';
 import { normalize } from '@/theme/normalize';
 import { ChartContainer } from './ChartContainer';
 import { ChartLegend, type LegendItem } from './ChartLegend';
 import type { ScoreDistributionBucket } from '../types/reports.types';
 
 const RANGE_COLORS: Record<string, string> = {
-  '1-2': '#EF4444', // red
-  '2-3': '#F59E0B', // amber
-  '3-4': '#3B82F6', // blue
-  '4-5': '#22C55E', // green
+  '1-2': accent.red[500],
+  '2-3': secondary[500],
+  '3-4': accent.blue[500],
+  '4-5': primary[500],
 };
 
 interface ScoreDistributionChartProps {
@@ -34,12 +35,12 @@ export function ScoreDistributionChart({
   const chartData = data.map((bucket) => ({
     range: bucket.range,
     count: bucket.count,
-    color: RANGE_COLORS[bucket.range] ?? '#9CA3AF',
+    color: RANGE_COLORS[bucket.range] ?? neutral[400],
   }));
 
   const legendItems: LegendItem[] = data.map((bucket) => ({
     label: bucket.label,
-    color: RANGE_COLORS[bucket.range] ?? '#9CA3AF',
+    color: RANGE_COLORS[bucket.range] ?? neutral[400],
   }));
 
   const totalStudents = data.reduce((sum, b) => sum + b.count, 0);

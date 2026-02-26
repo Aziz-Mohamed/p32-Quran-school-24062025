@@ -16,7 +16,7 @@ import { getAttendanceBadge } from '@/features/attendance/utils/attendance-badge
 import { useMemorizationStats } from '@/features/memorization';
 import { useStudentUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
 import { typography } from '@/theme/typography';
-import { lightTheme, colors } from '@/theme/colors';
+import { lightTheme, colors, secondary } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
@@ -225,11 +225,11 @@ export default function StudentDashboard() {
             style={styles.tasksCard}
           >
             <View style={styles.tasksHeader}>
-              <View style={[styles.tasksIcon, { backgroundColor: hasWarning ? '#FEF3C7' : colors.primary[50] }]}>
+              <View style={[styles.tasksIcon, { backgroundColor: hasWarning ? secondary[100] : colors.primary[50] }]}>
                 <Ionicons
                   name={hasWarning ? 'alert-circle' : 'pulse'}
                   size={20}
-                  color={hasWarning ? '#92400E' : colors.primary[500]}
+                  color={hasWarning ? secondary[800] : colors.primary[500]}
                 />
               </View>
               <View style={styles.healthTitleCol}>

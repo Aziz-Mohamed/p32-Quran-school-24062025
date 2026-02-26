@@ -13,7 +13,7 @@ import { LanguageToggleButton } from '@/components/ui/LanguageToggleButton';
 import { useLogin } from '@/features/auth/hooks/useLogin';
 import { useAuthStore } from '@/stores/authStore';
 import { typography } from '@/theme/typography';
-import { lightTheme } from '@/theme/colors';
+import { lightTheme, accent, semantic, secondary } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
@@ -21,10 +21,10 @@ import { normalize } from '@/theme/normalize';
 // ─── Dev Quick Login ──────────────────────────────────────────────────────────
 
 const DEV_ACCOUNTS = [
-  { label: 'Admin', role: 'admin' as const, username: 'aliomar', schoolSlug: 'ahl-elquran', password: 'Test#123', color: '#8B5CF6' },
-  { label: 'Teacher', role: 'teacher' as const, username: 'teacher_123', schoolSlug: 'ahl-elquran', password: 'Test#123', color: '#3B82F6' },
-  { label: 'Student', role: 'student' as const, username: 'student_123', schoolSlug: 'ahl-elquran', password: 'Test#123', color: '#10B981' },
-  { label: 'Parent', role: 'parent' as const, username: 'parent_123', schoolSlug: 'ahl-elquran', password: 'Test#123', color: '#F59E0B' },
+  { label: 'Admin', role: 'admin' as const, username: 'aliomar', schoolSlug: 'ahl-elquran', password: 'Test#123', color: accent.violet[500] },
+  { label: 'Teacher', role: 'teacher' as const, username: 'teacher_123', schoolSlug: 'ahl-elquran', password: 'Test#123', color: accent.blue[500] },
+  { label: 'Student', role: 'student' as const, username: 'student_123', schoolSlug: 'ahl-elquran', password: 'Test#123', color: semantic.success },
+  { label: 'Parent', role: 'parent' as const, username: 'parent_123', schoolSlug: 'ahl-elquran', password: 'Test#123', color: secondary[500] },
 ] as const;
 
 // ─── Validation Schema ────────────────────────────────────────────────────────

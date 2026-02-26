@@ -7,6 +7,7 @@ import {
   getAttendanceColor,
   clamp,
 } from './helpers';
+import { semantic } from '@/theme/colors';
 
 beforeEach(() => {
   jest.useFakeTimers();
@@ -168,19 +169,19 @@ describe('calculateLevel', () => {
 
 describe('getAttendanceColor', () => {
   it('returns green for present', () => {
-    expect(getAttendanceColor('present')).toBe('#10B981');
+    expect(getAttendanceColor('present')).toBe(semantic.success);
   });
 
   it('returns red for absent', () => {
-    expect(getAttendanceColor('absent')).toBe('#EF4444');
+    expect(getAttendanceColor('absent')).toBe(semantic.error);
   });
 
   it('returns yellow for late', () => {
-    expect(getAttendanceColor('late')).toBe('#F59E0B');
+    expect(getAttendanceColor('late')).toBe(semantic.warning);
   });
 
   it('returns blue for excused', () => {
-    expect(getAttendanceColor('excused')).toBe('#3B82F6');
+    expect(getAttendanceColor('excused')).toBe(semantic.info);
   });
 });
 
