@@ -18,15 +18,9 @@ import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 import type { ChildQuickStatus, RecentSessionEntry } from '@/features/dashboard/types/dashboard.types';
+import { getAttendanceBadge } from '@/features/attendance/utils/attendance-badge';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const ATTENDANCE_BADGE_VARIANT: Record<string, 'success' | 'warning' | 'error' | 'info'> = {
-  present: 'success',
-  late: 'warning',
-  absent: 'error',
-  excused: 'info',
-};
 
 function formatRate(rate: number): string {
   return rate >= 0 ? `${rate}%` : 'N/A';
@@ -217,15 +211,10 @@ function ChildStatusRow({
           </Text>
         </View>
         <View style={styles.childBadges}>
-          {child.todayStatus ? (
-            <Badge
-              label={t(`admin.attendance.status.${child.todayStatus}`)}
-              variant={ATTENDANCE_BADGE_VARIANT[child.todayStatus] ?? 'default'}
-              size="sm"
-            />
-          ) : (
-            <Badge label={t('parent.dashboard.notMarked')} variant="default" size="sm" />
-          )}
+          {(() => {
+            const badge = getAttendanceBadge(child.todayStatus, t);
+            return <Badge label={badge.label} variant={badge.variant} size="sm" />;
+          })()}
           <Text style={styles.rateText}>{formatRate(child.attendanceRate)}</Text>
         </View>
         <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.neutral[300]} />

@@ -3,6 +3,7 @@ import { ActivityIndicator, Modal, Pressable, StyleSheet, Text, View } from 'rea
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import type { EnrichedCertification, RubReference } from '../types/gamification.types';
+import { FRESHNESS_BG_COLORS, FRESHNESS_DOT_COLORS } from '../utils/freshness-colors';
 import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
@@ -110,7 +111,7 @@ export function RevisionSheet(props: RevisionSheetProps) {
             <View
               style={[
                 styles.freshnessChip,
-                { backgroundColor: FRESHNESS_CHIP_COLORS[certification.freshness.state] },
+                { backgroundColor: FRESHNESS_BG_COLORS[certification.freshness.state] },
               ]}
             >
               <Text style={styles.freshnessText}>
@@ -156,7 +157,7 @@ export function RevisionSheet(props: RevisionSheetProps) {
                     {
                       width: `${certification.freshness.percentage}%`,
                       backgroundColor:
-                        FRESHNESS_BAR_COLORS[certification.freshness.state] ?? colors.neutral[300],
+                        FRESHNESS_DOT_COLORS[certification.freshness.state] ?? colors.neutral[300],
                     },
                   ]}
                 />
@@ -365,25 +366,6 @@ function ActionButton({
     </Pressable>
   );
 }
-
-// ─── Constants ─────────────────────────────────────────────────────────────────
-
-const FRESHNESS_CHIP_COLORS: Record<string, string> = {
-  fresh: '#DCFCE7',
-  fading: '#FEF9C3',
-  warning: '#FFEDD5',
-  critical: '#FEE2E2',
-  dormant: '#F3F4F6',
-  uncertified: '#F3F4F6',
-};
-
-const FRESHNESS_BAR_COLORS: Record<string, string> = {
-  fresh: '#22C55E',
-  fading: '#EAB308',
-  warning: '#F97316',
-  critical: '#EF4444',
-  dormant: '#9CA3AF',
-};
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
 
