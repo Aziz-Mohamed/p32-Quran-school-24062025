@@ -415,7 +415,11 @@
       "pending": "Pending",
       "emptyTitle": "No Sessions Yet",
       "emptyDescription": "Session evaluations will appear here after completing scheduled sessions",
-      "viewHistory": "View History"
+      "viewHistory": "View History",
+      "upcoming": "Upcoming",
+      "history": "History",
+      "noUpcoming": "No upcoming sessions",
+      "noUpcomingDesc": "Your scheduled sessions will appear here"
     },
     "students": {
       "title": "My Students",

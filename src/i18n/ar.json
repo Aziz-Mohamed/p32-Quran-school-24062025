@@ -415,7 +415,11 @@
       "pending": "قيد الانتظار",
       "emptyTitle": "لا توجد حصص بعد",
       "emptyDescription": "ستظهر تقييمات الحصص هنا بعد إكمال الحصص المجدولة",
-      "viewHistory": "عرض السجل"
+      "viewHistory": "عرض السجل",
+      "upcoming": "القادمة",
+      "history": "السجل",
+      "noUpcoming": "لا توجد حصص قادمة",
+      "noUpcomingDesc": "ستظهر هنا حصصك المجدولة"
     },
     "students": {
       "title": "طلابي",
