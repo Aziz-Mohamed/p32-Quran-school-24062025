@@ -11,14 +11,17 @@ export {
   colors,
   primary,
   secondary,
+  accent,
   neutral,
   semantic,
+  semanticSurface,
+  chart,
   gamification,
   lightTheme,
   darkTheme,
 } from './colors';
 
-export type { ShadeScale, SemanticColors, GamificationColors, ThemeColors } from './colors';
+export type { ShadeScale, SemanticColors, SemanticSurface, ChartColors, GamificationColors, ThemeColors } from './colors';
 
 export {
   typography,

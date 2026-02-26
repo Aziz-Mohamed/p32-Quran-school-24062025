@@ -76,6 +76,46 @@ export const accent = {
     600: '#059669',
     700: '#047857',
   },
+  red: {
+    50: '#FEF2F2',
+    100: '#FEE2E2',
+    200: '#FECACA',
+    500: '#EF4444',
+    600: '#DC2626',
+    700: '#B91C1C',
+  },
+  orange: {
+    50: '#FFF7ED',
+    100: '#FFEDD5',
+    200: '#FED7AA',
+    500: '#F97316',
+    600: '#EA580C',
+    700: '#C2410C',
+  },
+  yellow: {
+    50: '#FEFCE8',
+    100: '#FEF9C3',
+    200: '#FEF08A',
+    500: '#EAB308',
+    600: '#CA8A04',
+    700: '#A16207',
+  },
+  blue: {
+    50: '#EFF6FF',
+    100: '#DBEAFE',
+    200: '#BFDBFE',
+    500: '#3B82F6',
+    600: '#2563EB',
+    700: '#1D4ED8',
+  },
+  teal: {
+    50: '#F0FDFA',
+    100: '#CCFBF1',
+    200: '#99F6E4',
+    500: '#14B8A6',
+    600: '#0D9488',
+    700: '#0F766E',
+  },
 } as const;
 
 export const neutral = {
@@ -100,6 +140,26 @@ export const semantic = {
   info: '#3B82F6',
 } as const;
 
+// ─── Semantic Surfaces ──────────────────────────────────────────────────────
+
+export const semanticSurface = {
+  success: '#F0FDF4',  // primary[50]
+  warning: '#FFFBEB',  // secondary[50]
+  error: '#FEF2F2',    // accent.red[50]
+  info: '#EFF6FF',     // accent.blue[50]
+} as const;
+
+// ─── Chart / Heatmap Palette ────────────────────────────────────────────────
+
+export const chart = {
+  empty: '#F3F4F6',    // neutral[100]
+  low: '#D1FAE5',
+  medium: '#6EE7B7',
+  high: '#34D399',
+  veryHigh: '#10B981',
+  max: '#059669',
+} as const;
+
 // ─── Gamification Colors ─────────────────────────────────────────────────────
 
 export const gamification = {
@@ -108,6 +168,20 @@ export const gamification = {
   bronze: '#CD7F32',
   diamond: '#B9E2F5',
   platinum: '#E5E4E2',
+  tierAccent: {
+    gold: '#D97706',
+    silver: '#6B7280',
+    bronze: '#B45309',
+    diamond: '#7C3AED',
+    platinum: '#0891B2',
+  },
+  tierGlow: {
+    gold: '#FDE68A',
+    silver: '#E5E7EB',
+    bronze: '#FED7AA',
+    diamond: '#DDD6FE',
+    platinum: '#A5F3FC',
+  },
 } as const;
 
 // ─── Transparency / Glass ───────────────────────────────────────────────────
@@ -144,6 +218,8 @@ export const colors = {
   accent,
   neutral,
   semantic,
+  semanticSurface,
+  chart,
   gamification,
   glass,
   gradients,
@@ -194,5 +270,7 @@ export const darkTheme = {
 
 export type ShadeScale = typeof primary;
 export type SemanticColors = typeof semantic;
+export type SemanticSurface = typeof semanticSurface;
+export type ChartColors = typeof chart;
 export type GamificationColors = typeof gamification;
 export type ThemeColors = typeof lightTheme;
