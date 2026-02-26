@@ -171,7 +171,8 @@
     "totalClasses": "Total Classes",
     "attendanceRate": "Attendance Rate",
     "quickActions": "Quick Actions",
-    "recentActivity": "Recent Activity"
+    "recentActivity": "Recent Activity",
+    "recentSessions": "Recent Sessions"
   },
   "student": {
     "tabs": {

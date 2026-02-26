@@ -171,7 +171,8 @@
     "totalClasses": "إجمالي الفصول",
     "attendanceRate": "نسبة الحضور",
     "quickActions": "إجراءات سريعة",
-    "recentActivity": "النشاط الأخير"
+    "recentActivity": "النشاط الأخير",
+    "recentSessions": "الحصص الأخيرة"
   },
   "student": {
     "tabs": {

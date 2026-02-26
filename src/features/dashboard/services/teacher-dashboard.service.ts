@@ -1,10 +1,12 @@
 import { supabase } from '@/lib/supabase';
 import type { Tables } from '@/types/database.types';
 
-interface TeacherRecentSession extends Tables<'sessions'> {
+interface TeacherRecentSession extends Tables<'scheduled_sessions'> {
+  class: Pick<Tables<'classes'>, 'name' | 'name_localized'> | null;
   student: {
     profiles: Pick<Tables<'profiles'>, 'full_name' | 'name_localized' | 'avatar_url'> | null;
   } | null;
+  evaluation: Pick<Tables<'sessions'>, 'memorization_score'> | null;
 }
 
 interface TeacherDashboardResult {
@@ -35,14 +37,20 @@ class TeacherDashboardService {
           .select('id, students(id)')
           .eq('teacher_id', teacherId),
 
-        // Recent sessions (last 5)
+        // Recent scheduled sessions (last 5)
         supabase
-          .from('sessions')
-          .select(
-            '*, student:students!sessions_student_id_fkey(profiles!students_id_fkey(full_name, name_localized, avatar_url))',
-          )
+          .from('scheduled_sessions')
+          .select(`
+            *,
+            class:classes!scheduled_sessions_class_id_fkey(name, name_localized),
+            student:students!scheduled_sessions_student_id_fkey(
+              profiles!students_id_fkey(full_name, name_localized, avatar_url)
+            ),
+            evaluation:sessions!scheduled_sessions_evaluation_session_id_fkey(memorization_score)
+          `)
           .eq('teacher_id', teacherId)
           .order('session_date', { ascending: false })
+          .order('start_time', { ascending: false })
           .limit(5),
 
         // Today's check-in
