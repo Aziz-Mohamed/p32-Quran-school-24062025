@@ -7,7 +7,6 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { Screen } from '@/components/layout';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui';
 import { LoadingState, ErrorState, EmptyState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
@@ -52,7 +51,6 @@ export default function SessionsScreen() {
 
   const { canCreate } = useCanTeacherCreateSessions(schoolId ?? undefined);
 
-  // Both queries run on mount for instant tab switching
   const upcoming = useTeacherUpcomingSessions(profile?.id, schoolId ?? undefined);
   const history = useSessions({ teacherId: profile?.id });
 
@@ -75,7 +73,6 @@ export default function SessionsScreen() {
     return items;
   }, [upcoming.data]);
 
-  // ── Active tab data ────────────────────────────────────────────────────
   const isLoading = activeTab === 'upcoming' ? upcoming.isLoading : history.isLoading;
   const error = activeTab === 'upcoming' ? upcoming.error : history.error;
   const refetch = activeTab === 'upcoming' ? upcoming.refetch : history.refetch;
@@ -88,53 +85,46 @@ export default function SessionsScreen() {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.title}>{t('teacher.sessions.title')}</Text>
-            <Text style={styles.subtitle}>{t('teacher.sessions.subtitle')}</Text>
-          </View>
+          <Text style={styles.title}>{t('teacher.sessions.title')}</Text>
           {canCreate && (
-            <Button
-              title={t('scheduling.createSession')}
+            <Pressable
+              style={styles.addButton}
               onPress={() => router.push('/(teacher)/schedule/create')}
-              variant="primary"
-              size="sm"
-              icon={<Ionicons name="add-circle-outline" size={normalize(16)} color={colors.white} />}
-            />
+              accessibilityLabel={t('scheduling.createSession')}
+            >
+              <Ionicons name="add" size={22} color={colors.primary[600]} />
+            </Pressable>
           )}
         </View>
 
-        {/* Pill Toggle */}
-        <View style={styles.pillRow}>
-          <Pressable
-            style={[styles.pill, activeTab === 'upcoming' && styles.pillActive]}
-            onPress={() => setActiveTab('upcoming')}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: activeTab === 'upcoming' }}
-          >
-            <Ionicons
-              name="calendar-outline"
-              size={16}
-              color={activeTab === 'upcoming' ? colors.white : colors.neutral[600]}
-            />
-            <Text style={[styles.pillText, activeTab === 'upcoming' && styles.pillTextActive]}>
-              {t('teacher.sessions.upcoming')}
-            </Text>
-          </Pressable>
-          <Pressable
-            style={[styles.pill, activeTab === 'history' && styles.pillActive]}
-            onPress={() => setActiveTab('history')}
-            accessibilityRole="tab"
-            accessibilityState={{ selected: activeTab === 'history' }}
-          >
-            <Ionicons
-              name="time-outline"
-              size={16}
-              color={activeTab === 'history' ? colors.white : colors.neutral[600]}
-            />
-            <Text style={[styles.pillText, activeTab === 'history' && styles.pillTextActive]}>
-              {t('teacher.sessions.history')}
-            </Text>
-          </Pressable>
+        {/* Segment Tabs */}
+        <View style={styles.tabBar}>
+          {(['upcoming', 'history'] as const).map((tab) => {
+            const isActive = activeTab === tab;
+            const count = tab === 'upcoming'
+              ? (upcoming.data?.length ?? 0)
+              : (history.data?.length ?? 0);
+            return (
+              <Pressable
+                key={tab}
+                style={[styles.tab, isActive && styles.tabActive]}
+                onPress={() => setActiveTab(tab)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+              >
+                <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
+                  {t(`teacher.sessions.${tab}`)}
+                </Text>
+                {count > 0 && (
+                  <View style={[styles.tabCount, isActive && styles.tabCountActive]}>
+                    <Text style={[styles.tabCountText, isActive && styles.tabCountTextActive]}>
+                      {count}
+                    </Text>
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
         </View>
 
         {/* Content */}
@@ -190,7 +180,7 @@ function UpcomingList({
   return (
     <FlashList
       data={items}
-      keyExtractor={(item, idx) => (item.type === 'header' ? `h-${item.date}` : `s-${item.data.id}`)}
+      keyExtractor={(item, _idx) => (item.type === 'header' ? `h-${item.date}` : `s-${item.data.id}`)}
       getItemType={(item) => item.type}
       contentContainerStyle={styles.listContent}
       renderItem={({ item }) => {
@@ -198,7 +188,7 @@ function UpcomingList({
           return (
             <Text style={styles.dateHeader}>
               {new Date(item.date + 'T00:00:00').toLocaleDateString(undefined, {
-                weekday: 'long',
+                weekday: 'short',
                 month: 'short',
                 day: 'numeric',
               })}
@@ -207,35 +197,42 @@ function UpcomingList({
         }
 
         const session = item.data;
+        const statusColor = STATUS_COLORS[session.status] ?? colors.neutral[400];
         return (
-          <Card
-            variant="default"
-            style={styles.sessionCard}
+          <Pressable
+            style={styles.upcomingCard}
             onPress={() => router.push(`/(teacher)/schedule/${session.id}`)}
           >
-            <View style={styles.sessionRow}>
-              <View style={[styles.statusDot, { backgroundColor: STATUS_COLORS[session.status] ?? colors.neutral[400] }]} />
-              <View style={styles.sessionInfo}>
-                <Text style={styles.sessionTitle}>
+            <View style={[styles.accentBar, { backgroundColor: statusColor }]} />
+            <View style={styles.upcomingBody}>
+              <View style={styles.upcomingTop}>
+                <Text style={styles.upcomingTitle} numberOfLines={1}>
                   {resolveName(session.class?.name_localized, session.class?.name) ?? t('scheduling.individualSession')}
                 </Text>
-                <Text style={styles.sessionTime}>
+                <Badge
+                  label={t(`scheduling.status.${session.status}`)}
+                  variant={session.status === 'scheduled' ? 'sky' : session.status === 'in_progress' ? 'warning' : 'success'}
+                  size="sm"
+                />
+              </View>
+              <View style={styles.upcomingMeta}>
+                <Ionicons name="time-outline" size={13} color={colors.neutral[400]} />
+                <Text style={styles.upcomingTime}>
                   {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}
                 </Text>
                 {session.student?.profiles?.full_name && (
-                  <Text style={styles.studentNameUpcoming}>
-                    {resolveName(session.student.profiles?.name_localized, session.student.profiles.full_name)}
-                  </Text>
+                  <>
+                    <Text style={styles.metaDivider}>·</Text>
+                    <Ionicons name="person-outline" size={13} color={colors.neutral[400]} />
+                    <Text style={styles.upcomingStudent} numberOfLines={1}>
+                      {resolveName(session.student.profiles?.name_localized, session.student.profiles.full_name)}
+                    </Text>
+                  </>
                 )}
               </View>
-              <Badge
-                label={t(`scheduling.status.${session.status}`)}
-                variant={session.status === 'scheduled' ? 'sky' : session.status === 'in_progress' ? 'warning' : 'success'}
-                size="sm"
-              />
-              <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.neutral[300]} />
             </View>
-          </Card>
+            <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={16} color={colors.neutral[300]} />
+          </Pressable>
         );
       }}
     />
@@ -276,36 +273,32 @@ function HistoryList({
         <Card
           variant="default"
           onPress={() => router.push(`/(teacher)/sessions/${item.id}`)}
-          style={styles.sessionCard}
+          style={styles.historyCard}
         >
-          <View style={styles.sessionRow}>
+          <View style={styles.historyRow}>
             <View style={styles.studentAvatar}>
               <Text style={styles.avatarText}>
                 {resolveName(item.student?.profiles?.name_localized, item.student?.profiles?.full_name)?.[0]?.toUpperCase()}
               </Text>
             </View>
-            <View style={styles.sessionInfo}>
-              <Text style={styles.sessionTitle} numberOfLines={1}>
+            <View style={styles.historyInfo}>
+              <Text style={styles.historyName} numberOfLines={1}>
                 {resolveName(item.student?.profiles?.name_localized, item.student?.profiles?.full_name) ?? '—'}
               </Text>
-              <View style={styles.dateRow}>
-                <Ionicons name="calendar-outline" size={12} color={colors.neutral[400]} />
-                <Text style={styles.sessionTime}>
-                  {formatSessionDate(item.session_date, language).date}{' '}
-                  <Text style={styles.sessionWeekday}>({formatSessionDate(item.session_date, language).weekday})</Text>
-                </Text>
-              </View>
+              <Text style={styles.historyDate}>
+                {formatSessionDate(item.session_date, language).date}
+                {' · '}
+                {formatSessionDate(item.session_date, language).weekday}
+              </Text>
             </View>
-            <View style={styles.scores}>
-              {item.memorization_score != null && (
-                <Badge
-                  label={`${t('common.scoreAbbrev.memorization')}: ${item.memorization_score}/5`}
-                  variant={item.memorization_score >= 4 ? 'success' : 'warning'}
-                  size="sm"
-                />
-              )}
-              <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.neutral[300]} />
-            </View>
+            {item.memorization_score != null && (
+              <Badge
+                label={`${item.memorization_score}/5`}
+                variant={item.memorization_score >= 4 ? 'success' : 'warning'}
+                size="sm"
+              />
+            )}
+            <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={16} color={colors.neutral[300]} />
           </View>
         </Card>
       )}
@@ -319,97 +312,161 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+
+  // ── Header ──
   header: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.sm,
+    justifyContent: 'space-between',
+    marginBottom: spacing.md,
   },
   title: {
     ...typography.textStyles.heading,
     color: lightTheme.text,
     fontSize: normalize(24),
   },
-  subtitle: {
-    ...typography.textStyles.caption,
-    color: lightTheme.textSecondary,
+  addButton: {
+    width: normalize(38),
+    height: normalize(38),
+    borderRadius: radius.sm,
+    backgroundColor: colors.primary[50],
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  pillRow: {
+
+  // ── Segment Tabs ──
+  tabBar: {
     flexDirection: 'row',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    marginBottom: spacing.md,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.base,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.neutral[200],
   },
-  pill: {
+  tab: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
     paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: colors.neutral[100],
-    borderWidth: 1.5,
-    borderColor: colors.neutral[200],
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
   },
-  pillActive: {
-    backgroundColor: colors.primary[500],
-    borderColor: colors.primary[500],
+  tabActive: {
+    borderBottomColor: colors.primary[500],
   },
-  pillText: {
+  tabText: {
     ...typography.textStyles.bodyMedium,
-    color: colors.neutral[600],
+    color: colors.neutral[400],
+    fontSize: normalize(15),
   },
-  pillTextActive: {
-    color: colors.white,
+  tabTextActive: {
+    color: colors.primary[600],
   },
+  tabCount: {
+    minWidth: normalize(20),
+    height: normalize(20),
+    borderRadius: normalize(10),
+    backgroundColor: colors.neutral[100],
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xs,
+  },
+  tabCountActive: {
+    backgroundColor: colors.primary[50],
+  },
+  tabCountText: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[400],
+    fontSize: normalize(11),
+    fontWeight: '600',
+  },
+  tabCountTextActive: {
+    color: colors.primary[600],
+  },
+
+  // ── List ──
   listContent: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
   },
   dateHeader: {
-    ...typography.textStyles.subheading,
-    color: colors.neutral[700],
-    marginTop: spacing.sm,
-    marginBottom: spacing.xs,
+    ...typography.textStyles.label,
+    color: colors.neutral[500],
+    fontSize: normalize(13),
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: spacing.md,
+    marginBottom: spacing.sm,
   },
-  sessionCard: {
+
+  // ── Upcoming Card ──
+  upcomingCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.white,
+    borderRadius: radius.md,
+    marginBottom: spacing.sm,
+    paddingEnd: spacing.md,
+    overflow: 'hidden',
+    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
+  },
+  accentBar: {
+    width: normalize(4),
+    alignSelf: 'stretch',
+  },
+  upcomingBody: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
+    gap: spacing.xs,
+  },
+  upcomingTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
+  },
+  upcomingTitle: {
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[900],
+    flex: 1,
+  },
+  upcomingMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: normalize(4),
+  },
+  upcomingTime: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[500],
+  },
+  metaDivider: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[300],
+    marginHorizontal: normalize(2),
+  },
+  upcomingStudent: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[500],
+    flexShrink: 1,
+  },
+
+  // ── History Card ──
+  historyCard: {
     padding: spacing.md,
     marginBottom: spacing.sm,
   },
-  sessionRow: {
+  historyRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
   },
-  statusDot: {
-    width: normalize(10),
-    height: normalize(10),
-    borderRadius: normalize(5),
-  },
-  sessionInfo: {
-    flex: 1,
-    gap: normalize(2),
-  },
-  sessionTitle: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[900],
-  },
-  sessionTime: {
-    ...typography.textStyles.label,
-    color: colors.neutral[500],
-  },
-  studentNameUpcoming: {
-    ...typography.textStyles.label,
-    color: colors.accent.indigo[500],
-    marginTop: normalize(2),
-  },
   studentAvatar: {
-    width: normalize(44),
-    height: normalize(44),
+    width: normalize(40),
+    height: normalize(40),
     borderRadius: normalize(12),
     backgroundColor: colors.neutral[100],
     alignItems: 'center',
@@ -418,19 +475,18 @@ const styles = StyleSheet.create({
   avatarText: {
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[600],
+    fontSize: normalize(15),
   },
-  dateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: normalize(4),
+  historyInfo: {
+    flex: 1,
+    gap: normalize(2),
   },
-  sessionWeekday: {
+  historyName: {
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[900],
+  },
+  historyDate: {
     ...typography.textStyles.caption,
     color: colors.neutral[400],
-  },
-  scores: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
   },
 });
