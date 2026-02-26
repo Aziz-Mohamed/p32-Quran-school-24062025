@@ -188,14 +188,17 @@ export const gamification = {
 
 export const glass = {
   white: {
+    veryLow: 'rgba(255, 255, 255, 0.25)',
     low: 'rgba(255, 255, 255, 0.4)',
     medium: 'rgba(255, 255, 255, 0.6)',
     high: 'rgba(255, 255, 255, 0.8)',
+    opaque: 'rgba(255, 255, 255, 0.98)',
   },
   black: {
     low: 'rgba(0, 0, 0, 0.05)',
     medium: 'rgba(0, 0, 0, 0.1)',
     high: 'rgba(0, 0, 0, 0.2)',
+    overlay: 'rgba(0, 0, 0, 0.6)',
   }
 } as const;
 

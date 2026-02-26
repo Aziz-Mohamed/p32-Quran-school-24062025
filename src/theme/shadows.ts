@@ -47,6 +47,16 @@ export const toast: ViewStyle = {
   boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.15)',
 };
 
+/** 2-layer green + subtle black for rub building blocks */
+export const rubCard: ViewStyle = {
+  boxShadow: '0px 4px 14px rgba(22, 163, 74, 0.15), 0px 2px 6px rgba(0, 0, 0, 0.08)',
+};
+
+/** Indigo glow for FAB buttons */
+export const indigo: ViewStyle = {
+  boxShadow: '0px 4px 12px rgba(99, 102, 241, 0.4)',
+};
+
 // ─── Aggregate Export ────────────────────────────────────────────────────────
 
 export const shadows = {
@@ -58,6 +68,8 @@ export const shadows = {
   xl,
   glow,
   toast,
+  rubCard,
+  indigo,
 } as const;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
