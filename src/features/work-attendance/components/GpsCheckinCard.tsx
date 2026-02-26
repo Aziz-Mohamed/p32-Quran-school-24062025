@@ -15,7 +15,7 @@ import {
   useRequestOverride,
 } from '../hooks/useGpsCheckin';
 import type { SchoolVerificationSettings } from '../types/work-attendance.types';
-import { colors, semantic } from '@/theme/colors';
+import { colors, semantic, lightTheme } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: lightTheme.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.lg,

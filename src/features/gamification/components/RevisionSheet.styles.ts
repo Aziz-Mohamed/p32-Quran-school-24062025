@@ -8,7 +8,7 @@ import { normalize } from '@/theme/normalize';
 export const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: lightTheme.overlay,
     justifyContent: 'flex-end',
   },
   sheet: {

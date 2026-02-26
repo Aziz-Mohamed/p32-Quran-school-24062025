@@ -5,6 +5,7 @@ import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
+import { shadows } from '@/theme/shadows';
 
 export const styles = StyleSheet.create({
   container: {
@@ -51,7 +52,7 @@ export const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingVertical: normalize(4),
     minWidth: normalize(100),
-    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.12)',
+    ...shadows.lg,
   },
   viewModeOption: {
     paddingVertical: spacing.sm,
@@ -227,7 +228,7 @@ export const styles = StyleSheet.create({
     borderRadius: radius.md,
     marginBottom: spacing.sm,
     gap: spacing.md,
-    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
+    ...shadows.xs,
   },
   rubRowPressed: {
     opacity: 0.7,

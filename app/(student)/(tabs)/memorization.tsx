@@ -23,6 +23,7 @@ import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
+import { shadows } from '@/theme/shadows';
 
 // ─── Memorization Screen (Block Builder) ────────────────────────────────────
 
@@ -325,6 +326,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent.indigo[500],
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0px 4px 12px rgba(99, 102, 241, 0.4)',
+    ...shadows.indigo,
   },
 });

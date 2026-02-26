@@ -8,7 +8,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, lightTheme } from '@/theme/colors';
+import { colors, lightTheme, glass } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { shadows } from '@/theme/shadows';
@@ -42,9 +42,9 @@ const variantStyles: Record<CardVariant, ViewStyle> = {
     ...shadows.none,
   },
   glass: {
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: glass.white.medium,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
+    borderColor: glass.white.veryLow,
     ...shadows.sm,
   },
   'primary-glow': {

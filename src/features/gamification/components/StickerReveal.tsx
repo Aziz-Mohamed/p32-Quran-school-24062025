@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useRTL } from '@/hooks/useRTL';
 import { getStickerImageUrl } from '@/lib/storage';
-import { colors, lightTheme, gamification } from '@/theme/colors';
+import { colors, darkTheme, gamification } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
@@ -176,7 +176,7 @@ export function StickerReveal({ sticker, onDismiss }: StickerRevealProps) {
 const styles = StyleSheet.create({
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    backgroundColor: darkTheme.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 1000,

@@ -32,6 +32,7 @@ import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 import { radius } from '@/theme/radius';
+import { shadows } from '@/theme/shadows';
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -375,7 +376,7 @@ const styles = StyleSheet.create({
   },
   segmentActive: {
     backgroundColor: colors.white,
-    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.08)',
+    ...shadows.xs,
   },
   segmentText: {
     fontFamily: typography.fontFamily.medium,
