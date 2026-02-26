@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { mutationTracker } from '@/features/realtime';
 import { recitationPlanService } from '../services/recitation-plan.service';
+import { invalidateRecitationPlanQueries } from './invalidateRecitationPlanQueries';
 import type { CreateRecitationPlanInput, UpdateRecitationPlanInput } from '../types/recitation-plan.types';
 
 /**
@@ -67,9 +68,7 @@ export function useUpsertRecitationPlan() {
       if (data?.id) {
         mutationTracker.record('session_recitation_plans', data.id);
       }
-      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plan'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plan-default'] });
+      invalidateRecitationPlanQueries(queryClient);
     },
   });
 }
@@ -90,9 +89,7 @@ export function useUpdateRecitationPlan() {
       if (data?.id) {
         mutationTracker.record('session_recitation_plans', data.id);
       }
-      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plan'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plan-default'] });
+      invalidateRecitationPlanQueries(queryClient);
     },
   });
 }
@@ -109,9 +106,7 @@ export function useDeleteRecitationPlan() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plan'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plan-default'] });
+      invalidateRecitationPlanQueries(queryClient);
     },
   });
 }
@@ -143,9 +138,7 @@ export function useSetUnifiedPlan() {
       if (data?.id) {
         mutationTracker.record('session_recitation_plans', data.id);
       }
-      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plan'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plan-default'] });
+      invalidateRecitationPlanQueries(queryClient);
     },
   });
 }
@@ -166,8 +159,7 @@ export function useUpsertStudentSuggestion() {
       if (data?.id) {
         mutationTracker.record('session_recitation_plans', data.id);
       }
-      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plan'] });
+      invalidateRecitationPlanQueries(queryClient);
     },
   });
 }
@@ -197,8 +189,7 @@ export function useReplaceStudentSuggestions() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plan'] });
+      invalidateRecitationPlanQueries(queryClient);
     },
   });
 }
@@ -215,8 +206,7 @@ export function useDeleteStudentSuggestion() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
-      queryClient.invalidateQueries({ queryKey: ['recitation-plan'] });
+      invalidateRecitationPlanQueries(queryClient);
     },
   });
 }
