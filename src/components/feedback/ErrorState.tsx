@@ -9,7 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
-import { colors, lightTheme } from '@/theme/colors';
+import { colors, lightTheme, semanticSurface } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
     width: normalize(80),
     height: normalize(80),
     borderRadius: radius.full,
-    backgroundColor: '#FEF2F2', // very light red tint
+    backgroundColor: semanticSurface.error, // very light red tint
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   retryButtonPressed: {
     opacity: 0.7,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: semanticSurface.error,
   },
   retryIcon: {
     marginEnd: spacing.xs,

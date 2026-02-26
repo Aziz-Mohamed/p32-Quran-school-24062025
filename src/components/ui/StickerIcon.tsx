@@ -6,6 +6,7 @@ import {
   DEFAULT_STICKER_ICON,
   isEmojiValue,
 } from '@/lib/islamicIcons';
+import { accent } from '@/theme/colors';
 
 interface StickerIconProps {
   value: string | null | undefined;
@@ -13,7 +14,7 @@ interface StickerIconProps {
   color?: ColorValue;
 }
 
-export function StickerIcon({ value, size = 32, color = '#0D9488' }: StickerIconProps) {
+export function StickerIcon({ value, size = 32, color = accent.teal[600] }: StickerIconProps) {
   if (!value) {
     const DefaultIcon = ISLAMIC_ICON_REGISTRY[DEFAULT_STICKER_ICON];
     return <DefaultIcon size={size} color={color} />;

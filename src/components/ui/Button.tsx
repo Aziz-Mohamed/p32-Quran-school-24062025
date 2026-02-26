@@ -9,7 +9,7 @@ import {
   type TextStyle,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
-import { colors, lightTheme } from '@/theme/colors';
+import { colors, lightTheme, accent } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
@@ -209,7 +209,7 @@ const variantStyles: Record<
       color: colors.white,
     },
     pressedContainer: {
-      backgroundColor: '#DC2626',
+      backgroundColor: accent.red[600],
     },
   },
 };

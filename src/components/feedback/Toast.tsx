@@ -8,6 +8,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
+import { shadows } from '@/theme/shadows';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -36,23 +37,23 @@ interface VariantConfig {
 
 const VARIANT_MAP: Record<ToastVariant, VariantConfig> = {
   success: {
-    backgroundColor: '#ECFDF5',
-    textColor: '#065F46',
+    backgroundColor: colors.accent.emerald[50],
+    textColor: colors.accent.emerald[700],
     icon: 'checkmark-circle',
   },
   error: {
-    backgroundColor: '#FEF2F2',
-    textColor: '#991B1B',
+    backgroundColor: colors.semanticSurface.error,
+    textColor: colors.accent.red[700],
     icon: 'close-circle',
   },
   warning: {
-    backgroundColor: '#FFFBEB',
-    textColor: '#92400E',
+    backgroundColor: colors.semanticSurface.warning,
+    textColor: colors.secondary[800],
     icon: 'warning',
   },
   info: {
-    backgroundColor: '#EFF6FF',
-    textColor: '#1E40AF',
+    backgroundColor: colors.accent.blue[50],
+    textColor: colors.accent.blue[700],
     icon: 'information-circle',
   },
 } as const;
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
     paddingStart: spacing.md,
     paddingEnd: spacing.md,
     borderRadius: radius.md,
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
+    ...shadows.md,
   },
   icon: {
     marginEnd: spacing.sm,
