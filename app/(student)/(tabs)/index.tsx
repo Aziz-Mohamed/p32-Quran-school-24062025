@@ -13,6 +13,7 @@ import { useStudentDashboard } from '@/features/dashboard/hooks/useStudentDashbo
 import { useRubCertifications, useRevisionHomework } from '@/features/gamification';
 import type { EnrichedCertification } from '@/features/gamification';
 import { useMemorizationStats } from '@/features/memorization';
+import { useStudentUpcomingSessions } from '@/features/scheduling/hooks/useScheduledSessions';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -23,6 +24,7 @@ import { useLocalizedName } from '@/hooks/useLocalizedName';
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const MAX_PREVIEW_ITEMS = 4;
+const MAX_SESSION_PREVIEW = 3;
 
 const FRESHNESS_DOT_COLORS: Record<string, string> = {
   fresh: '#22C55E',
@@ -74,6 +76,38 @@ function HomeworkRow({ item, enriched, t }: {
   );
 }
 
+function getRelativeDateLabel(dateStr: string, t: (key: string) => string): string {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const target = new Date(dateStr + 'T00:00:00');
+  const diff = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  if (diff === 0) return t('student.dashboard.today');
+  if (diff === 1) return t('student.dashboard.tomorrow');
+  return target.toLocaleDateString(undefined, { weekday: 'long' });
+}
+
+function SessionPreviewRow({ session, t, resolveName, onPress }: {
+  session: any;
+  t: (key: string) => string;
+  resolveName: (localized: any, fallback: any) => string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable onPress={onPress} style={styles.sessionPreviewRow}>
+      <View style={styles.sessionPreviewDot} />
+      <View style={styles.sessionPreviewInfo}>
+        <Text style={styles.sessionPreviewTitle} numberOfLines={1}>
+          {resolveName(session.class?.name_localized, session.class?.name) ?? t('scheduling.individualSession')}
+        </Text>
+        <Text style={styles.sessionPreviewMeta}>
+          {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}
+          {session.teacher?.full_name ? `  ·  ${session.teacher.full_name}` : ''}
+        </Text>
+      </View>
+    </Pressable>
+  );
+}
+
 // ─── Student Dashboard ────────────────────────────────────────────────────────
 
 export default function StudentDashboard() {
@@ -86,7 +120,15 @@ export default function StudentDashboard() {
   const { enriched } = useRubCertifications(profile?.id);
   const { homeworkItems } = useRevisionHomework(profile?.id);
   const { data: memStats } = useMemorizationStats(profile?.id);
-  const { resolveFirstName } = useLocalizedName();
+  const { resolveFirstName, resolveName } = useLocalizedName();
+
+  const studentClassId = data?.student?.class_id;
+  const classIds = useMemo(() => studentClassId ? [studentClassId] : [], [studentClassId]);
+  const { data: upcomingSessions = [] } = useStudentUpcomingSessions(
+    profile?.id,
+    classIds,
+    profile?.school_id ?? undefined,
+  );
 
   const homeworkRubSet = useMemo(
     () => new Set(homeworkItems.map((h) => h.rubNumber)),
@@ -245,7 +287,48 @@ export default function StudentDashboard() {
           </Card>
         )}
 
-        {/* 3b. Revision Homework */}
+        {/* 3b. Upcoming Sessions */}
+        {upcomingSessions.length > 0 && (
+          <Card
+            variant="default"
+            onPress={() => router.push('/(student)/schedule')}
+            style={styles.tasksCard}
+          >
+            <View style={styles.tasksHeader}>
+              <View style={[styles.tasksIcon, { backgroundColor: colors.accent.sky[50] }]}>
+                <Ionicons name="calendar-outline" size={20} color={colors.accent.sky[500]} />
+              </View>
+              <Text style={styles.tasksTitle}>{t('student.dashboard.upcomingSessions')}</Text>
+              <View style={styles.homeworkBadge}>
+                <Text style={styles.homeworkBadgeText}>{upcomingSessions.length}</Text>
+              </View>
+              <Ionicons name={chevron} size={18} color={colors.neutral[300]} />
+            </View>
+
+            <View style={styles.tasksList}>
+              {upcomingSessions.slice(0, MAX_SESSION_PREVIEW).map((session: any) => (
+                <View key={session.id}>
+                  <Text style={styles.sessionDateLabel}>
+                    {getRelativeDateLabel(session.session_date, t)}
+                  </Text>
+                  <SessionPreviewRow
+                    session={session}
+                    t={t}
+                    resolveName={resolveName}
+                    onPress={() => router.push(`/(student)/schedule/${session.id}`)}
+                  />
+                </View>
+              ))}
+            </View>
+            {upcomingSessions.length > MAX_SESSION_PREVIEW && (
+              <Text style={styles.seeAll}>
+                {t('student.dashboard.viewAllSchedule')} {isRTL ? '←' : '→'}
+              </Text>
+            )}
+          </Card>
+        )}
+
+        {/* 3c. Revision Homework */}
         {homeworkItems.length > 0 && (
           <Card
             variant="default"
@@ -282,16 +365,25 @@ export default function StudentDashboard() {
             style={[styles.explorePill, { backgroundColor: colors.accent.violet[50] }]}
             onPress={() => router.push('/(student)/(tabs)/journey')}
           >
-            <Ionicons name="map" size={16} color={colors.accent.violet[500]} />
+            <Ionicons name="map" size={14} color={colors.accent.violet[500]} />
             <Text style={[styles.explorePillText, { color: colors.accent.violet[600] }]}>
-              {t('gamification.progressMap')}
+              {t('student.dashboard.journey')}
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.explorePill, { backgroundColor: colors.accent.sky[50] }]}
+            onPress={() => router.push('/(student)/schedule')}
+          >
+            <Ionicons name="calendar-outline" size={14} color={colors.accent.sky[500]} />
+            <Text style={[styles.explorePillText, { color: colors.accent.sky[600] }]}>
+              {t('student.dashboard.mySchedule')}
             </Text>
           </Pressable>
           <Pressable
             style={[styles.explorePill, { backgroundColor: colors.secondary[50] }]}
             onPress={() => router.push('/(student)/leaderboard')}
           >
-            <Ionicons name="podium" size={16} color={colors.secondary[500]} />
+            <Ionicons name="podium" size={14} color={colors.secondary[500]} />
             <Text style={[styles.explorePillText, { color: colors.secondary[600] }]}>
               {t('student.dashboard.viewLeaderboard')}
             </Text>
@@ -501,22 +593,56 @@ const styles = StyleSheet.create({
     color: colors.secondary[600],
   },
 
+  // Session Preview
+  sessionDateLabel: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(11),
+    color: colors.neutral[400],
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: normalize(2),
+  },
+  sessionPreviewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  sessionPreviewDot: {
+    width: normalize(6),
+    height: normalize(6),
+    borderRadius: normalize(3),
+    backgroundColor: colors.accent.sky[500],
+  },
+  sessionPreviewInfo: {
+    flex: 1,
+  },
+  sessionPreviewTitle: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: normalize(13),
+    color: colors.neutral[900],
+  },
+  sessionPreviewMeta: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: normalize(11),
+    color: colors.neutral[500],
+  },
+
   // Explore Pills
   exploreRow: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
   },
   explorePill: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-    paddingVertical: spacing.md,
+    gap: normalize(4),
+    paddingVertical: spacing.sm,
     borderRadius: radius.full,
   },
   explorePillText: {
     fontFamily: typography.fontFamily.semiBold,
-    fontSize: normalize(13),
+    fontSize: normalize(11),
   },
 });

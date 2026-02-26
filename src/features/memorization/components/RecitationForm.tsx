@@ -29,6 +29,7 @@ export interface RecitationFormData {
   fluency_score: number | null;
   needs_repeat: boolean;
   mistake_notes: string;
+  assignment_id?: string | null;
 }
 
 interface RecitationFormProps {
@@ -51,6 +52,7 @@ export const EMPTY_RECITATION: RecitationFormData = {
   fluency_score: null,
   needs_repeat: false,
   mistake_notes: '',
+  assignment_id: null,
 };
 
 // ─── Validation ──────────────────────────────────────────────────────────────

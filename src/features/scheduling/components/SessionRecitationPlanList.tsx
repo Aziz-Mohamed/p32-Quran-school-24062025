@@ -11,10 +11,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
-import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
-import { shadows } from '@/theme/shadows';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { RecitationPlanCard } from './RecitationPlanCard';
@@ -24,13 +22,54 @@ import {
   useUpsertRecitationPlan,
   useDeleteRecitationPlan,
   useSetUnifiedPlan,
+  useReplaceStudentSuggestions,
+  useDeleteStudentSuggestion,
 } from '@/features/scheduling/hooks/useRecitationPlans';
 import type {
   CreateRecitationPlanInput,
   RecitationPlanWithDetails,
+  SelectionMode,
+  RecitationPlanType,
 } from '@/features/scheduling/types/recitation-plan.types';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Convert DB plan rows to SelectedPlanItem[] for form pre-population */
+function plansToSelectedItems(
+  plans: RecitationPlanWithDetails[],
+): Array<{
+  id: string;
+  surah_number: number;
+  from_ayah: number;
+  to_ayah: number;
+  recitation_type: RecitationPlanType;
+  source: 'manual' | 'from_assignment';
+  assignment_id: string | null;
+  selection_mode: SelectionMode;
+  rub_number?: number | null;
+  juz_number?: number | null;
+  hizb_number?: number | null;
+  end_surah?: number;
+  end_ayah?: number;
+}> {
+  return plans.map((p) => ({
+    id: p.id,
+    surah_number: p.start_surah,
+    from_ayah: p.start_ayah,
+    to_ayah: p.end_ayah,
+    recitation_type: p.recitation_type as RecitationPlanType,
+    source: (p.source === 'from_assignment' ? 'from_assignment' : 'manual') as 'manual' | 'from_assignment',
+    assignment_id: p.assignment_id ?? null,
+    selection_mode: (p.selection_mode as SelectionMode) ?? 'ayah_range',
+    rub_number: p.rub_number,
+    juz_number: p.juz_number,
+    hizb_number: p.hizb_number,
+    end_surah: p.end_surah,
+    end_ayah: p.end_ayah,
+  }));
+}
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SessionRecitationPlanListProps {
   sessionId: string;
@@ -42,7 +81,7 @@ interface SessionRecitationPlanListProps {
   students?: Array<{ id: string; name: string }>;
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function SessionRecitationPlanList({
   sessionId,
@@ -60,12 +99,17 @@ export function SessionRecitationPlanList({
   const upsertMutation = useUpsertRecitationPlan();
   const deleteMutation = useDeleteRecitationPlan();
   const setUnifiedMutation = useSetUnifiedPlan();
+  const replaceSuggestionsMutation = useReplaceStudentSuggestions();
+  const deleteSuggestionMutation = useDeleteStudentSuggestion();
 
-  // ── Form state ────────────────────────────────────────────────────────
+  // ── Form state (teacher) ────────────────────────────────────────────
   const [formVisible, setFormVisible] = useState(false);
   const [editingPlan, setEditingPlan] = useState<RecitationPlanWithDetails | null>(null);
   const [formStudentId, setFormStudentId] = useState<string | null>(null);
   const [isSetForAll, setIsSetForAll] = useState(false);
+
+  // ── Form state (student suggestion) ─────────────────────────────────
+  const [suggestionFormVisible, setSuggestionFormVisible] = useState(false);
 
   // ── Derived data ──────────────────────────────────────────────────────
   const sessionDefaultPlan = useMemo(
@@ -81,8 +125,21 @@ export function SessionRecitationPlanList({
   const studentPlanMap = useMemo(() => {
     const map = new Map<string, RecitationPlanWithDetails>();
     for (const plan of studentPlans) {
-      if (plan.student_id) {
+      if (plan.student_id && plan.source !== 'student_suggestion') {
         map.set(plan.student_id, plan);
+      }
+    }
+    return map;
+  }, [studentPlans]);
+
+  // Now holds arrays — multiple suggestions per student
+  const studentSuggestionsMap = useMemo(() => {
+    const map = new Map<string, RecitationPlanWithDetails[]>();
+    for (const plan of studentPlans) {
+      if (plan.student_id && plan.source === 'student_suggestion') {
+        const existing = map.get(plan.student_id) ?? [];
+        existing.push(plan);
+        map.set(plan.student_id, existing);
       }
     }
     return map;
@@ -90,7 +147,7 @@ export function SessionRecitationPlanList({
 
   const isTeacher = role === 'teacher';
 
-  // ── Handlers ──────────────────────────────────────────────────────────
+  // ── Teacher handlers ────────────────────────────────────────────────
   const openFormForStudent = useCallback(
     (studentId: string | null, existing?: RecitationPlanWithDetails) => {
       setFormStudentId(studentId);
@@ -108,7 +165,7 @@ export function SessionRecitationPlanList({
       [
         { text: t('common.cancel'), style: 'cancel' },
         {
-          text: t('common.continue'),
+          text: t('common.confirm'),
           onPress: () => {
             setFormStudentId(null);
             setEditingPlan(sessionDefaultPlan);
@@ -120,19 +177,19 @@ export function SessionRecitationPlanList({
     );
   }, [t, sessionDefaultPlan]);
 
-  const handleSave = useCallback(
-    (input: CreateRecitationPlanInput) => {
+  const handleTeacherSave = useCallback(
+    (inputs: CreateRecitationPlanInput[]) => {
+      // Teacher plans are constrained to one per (session, student) — use the first item
+      const input = inputs[0];
+      if (!input) return;
+
       if (isSetForAll) {
         setUnifiedMutation.mutate(input, {
-          onSuccess: () => {
-            setFormVisible(false);
-          },
+          onSuccess: () => setFormVisible(false),
         });
       } else {
         upsertMutation.mutate(input, {
-          onSuccess: () => {
-            setFormVisible(false);
-          },
+          onSuccess: () => setFormVisible(false),
         });
       }
     },
@@ -149,9 +206,7 @@ export function SessionRecitationPlanList({
           {
             text: t('common.delete'),
             style: 'destructive',
-            onPress: () => {
-              deleteMutation.mutate(plan.id);
-            },
+            onPress: () => deleteMutation.mutate(plan.id),
           },
         ],
       );
@@ -166,24 +221,71 @@ export function SessionRecitationPlanList({
     setIsSetForAll(false);
   }, []);
 
+  // ── Student suggestion handlers ─────────────────────────────────────
+  const openSuggestionForm = useCallback(() => {
+    setSuggestionFormVisible(true);
+  }, []);
+
+  const handleSaveSuggestions = useCallback(
+    (inputs: CreateRecitationPlanInput[]) => {
+      replaceSuggestionsMutation.mutate(
+        {
+          sessionId,
+          studentId: userId,
+          inputs: inputs.map((i) => ({ ...i, source: 'student_suggestion' as any })),
+        },
+        {
+          onSuccess: () => setSuggestionFormVisible(false),
+          onError: (err) => Alert.alert(t('common.error'), err.message),
+        },
+      );
+    },
+    [replaceSuggestionsMutation, sessionId, userId],
+  );
+
+  const handleDeleteSuggestions = useCallback(() => {
+    Alert.alert(
+      t('scheduling.recitationPlan.removeSuggestion'),
+      '',
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => deleteSuggestionMutation.mutate({ sessionId, studentId: userId }),
+        },
+      ],
+    );
+  }, [t, deleteSuggestionMutation, sessionId, userId]);
+
+  const handleCloseSuggestionForm = useCallback(() => {
+    setSuggestionFormVisible(false);
+  }, []);
+
   // ── Form initial data ─────────────────────────────────────────────────
-  const formInitialData = useMemo(() => {
-    if (editingPlan == null) return undefined;
-    return {
-      selection_mode: editingPlan.selection_mode as CreateRecitationPlanInput['selection_mode'],
-      start_surah: editingPlan.start_surah,
-      start_ayah: editingPlan.start_ayah,
-      end_surah: editingPlan.end_surah,
-      end_ayah: editingPlan.end_ayah,
-      rub_number: editingPlan.rub_number,
-      hizb_number: editingPlan.hizb_number,
-      juz_number: editingPlan.juz_number,
-      recitation_type: editingPlan.recitation_type as CreateRecitationPlanInput['recitation_type'],
-      notes: editingPlan.notes,
-      source: editingPlan.source as CreateRecitationPlanInput['source'],
-      assignment_id: editingPlan.assignment_id,
-    };
+  const teacherFormInitialItems = useMemo(() => {
+    if (!editingPlan) return undefined;
+    return plansToSelectedItems([editingPlan]);
   }, [editingPlan]);
+
+  const teacherFormInitialNotes = useMemo(() => {
+    return editingPlan?.notes ?? undefined;
+  }, [editingPlan]);
+
+  const mySuggestions = useMemo(
+    () => studentSuggestionsMap.get(userId) ?? [],
+    [studentSuggestionsMap, userId],
+  );
+
+  const suggestionInitialItems = useMemo(() => {
+    if (mySuggestions.length === 0) return undefined;
+    return plansToSelectedItems(mySuggestions);
+  }, [mySuggestions]);
+
+  const suggestionInitialNotes = useMemo(() => {
+    // Use notes from the first suggestion (shared across items)
+    return mySuggestions[0]?.notes ?? undefined;
+  }, [mySuggestions]);
 
   // ── Loading state ─────────────────────────────────────────────────────
   if (isLoading) {
@@ -196,48 +298,112 @@ export function SessionRecitationPlanList({
 
   // ── Student view ──────────────────────────────────────────────────────
   if (!isTeacher) {
-    // Find the student's own plan or fallback to session default
-    const myPlan = studentPlans.find((p) => p.set_by === userId) ?? sessionDefaultPlan;
+    const teacherPlan = studentPlans.find(
+      (p) => p.student_id === userId && p.source !== 'student_suggestion',
+    ) ?? sessionDefaultPlan;
 
-    if (myPlan == null) {
-      return (
-        <View style={styles.section}>
+    return (
+      <View style={styles.section}>
+        {/* Teacher's plan (read-only) */}
+        {teacherPlan != null && (
+          <>
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>
+                {t('scheduling.recitationPlan.myPlan')}
+              </Text>
+              {teacherPlan.student_id == null && (
+                <Badge
+                  label={t('scheduling.recitationPlan.sessionDefault')}
+                  variant="info"
+                  size="sm"
+                />
+              )}
+            </View>
+            <RecitationPlanCard
+              plan={teacherPlan}
+              canManage={false}
+              onEdit={() => {}}
+              onDelete={() => {}}
+            />
+          </>
+        )}
+
+        {/* Student suggestion section */}
+        <View style={styles.sectionHeaderRow}>
           <Text style={styles.sectionTitle}>
-            {t('scheduling.recitationPlan.myPlan')}
+            {t('scheduling.recitationPlan.mySuggestion')}
           </Text>
+          {mySuggestions.length > 0 && (
+            <Button
+              title={t('scheduling.recitationPlan.editPlan')}
+              onPress={openSuggestionForm}
+              variant="ghost"
+              size="sm"
+              icon={
+                <Ionicons
+                  name="create-outline"
+                  size={normalize(16)}
+                  color={colors.primary[600]}
+                />
+              }
+            />
+          )}
+        </View>
+
+        {mySuggestions.length > 0 ? (
+          <View style={styles.suggestionsContainer}>
+            {mySuggestions.map((suggestion) => (
+              <RecitationPlanCard
+                key={suggestion.id}
+                plan={suggestion}
+                canManage
+                onEdit={openSuggestionForm}
+                onDelete={handleDeleteSuggestions}
+              />
+            ))}
+          </View>
+        ) : (
           <View style={styles.emptyState}>
             <Ionicons
-              name="document-text-outline"
+              name="bulb-outline"
               size={normalize(24)}
               color={lightTheme.textTertiary}
             />
             <Text style={styles.emptyText}>
-              {t('scheduling.recitationPlan.noPlanSet')}
+              {t('scheduling.recitationPlan.noSuggestionYet')}
             </Text>
-          </View>
-        </View>
-      );
-    }
-
-    return (
-      <View style={styles.section}>
-        <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>
-            {t('scheduling.recitationPlan.myPlan')}
-          </Text>
-          {myPlan.student_id == null && (
-            <Badge
-              label={t('scheduling.recitationPlan.sessionDefault')}
-              variant="info"
+            <Text style={styles.hintText}>
+              {t('scheduling.recitationPlan.suggestionHint')}
+            </Text>
+            <Button
+              title={t('scheduling.recitationPlan.suggestPlan')}
+              onPress={openSuggestionForm}
+              variant="primary"
               size="sm"
+              icon={
+                <Ionicons
+                  name="add-circle-outline"
+                  size={normalize(16)}
+                  color={colors.white}
+                />
+              }
+              style={styles.emptyButton}
             />
-          )}
-        </View>
-        <RecitationPlanCard
-          plan={myPlan}
-          canManage={false}
-          onEdit={() => {}}
-          onDelete={() => {}}
+          </View>
+        )}
+
+        {/* Suggestion form modal */}
+        <RecitationPlanForm
+          visible={suggestionFormVisible}
+          onClose={handleCloseSuggestionForm}
+          onSave={handleSaveSuggestions}
+          sessionId={sessionId}
+          studentId={userId}
+          schoolId={schoolId}
+          userId={userId}
+          sessionDate={sessionDate}
+          initialItems={suggestionInitialItems}
+          initialNotes={suggestionInitialNotes}
         />
       </View>
     );
@@ -289,6 +455,7 @@ export function SessionRecitationPlanList({
       {students != null &&
         students.map((student) => {
           const studentPlan = studentPlanMap.get(student.id);
+          const studentSuggestions = studentSuggestionsMap.get(student.id) ?? [];
 
           return (
             <View key={student.id} style={styles.studentRow}>
@@ -343,6 +510,26 @@ export function SessionRecitationPlanList({
                   </Text>
                 </View>
               )}
+
+              {/* Student suggestions (read-only for teacher) */}
+              {studentSuggestions.length > 0 && (
+                <View style={styles.suggestionContainer}>
+                  <Badge
+                    label={t('scheduling.recitationPlan.studentSuggestion')}
+                    variant="warning"
+                    size="sm"
+                  />
+                  {studentSuggestions.map((suggestion) => (
+                    <RecitationPlanCard
+                      key={suggestion.id}
+                      plan={suggestion}
+                      canManage={false}
+                      onEdit={() => {}}
+                      onDelete={() => {}}
+                    />
+                  ))}
+                </View>
+              )}
             </View>
           );
         })}
@@ -379,13 +566,14 @@ export function SessionRecitationPlanList({
       <RecitationPlanForm
         visible={formVisible}
         onClose={handleCloseForm}
-        onSave={handleSave}
+        onSave={handleTeacherSave}
         sessionId={sessionId}
         studentId={formStudentId}
         schoolId={schoolId}
         userId={userId}
         sessionDate={sessionDate}
-        initialData={formInitialData}
+        initialItems={teacherFormInitialItems}
+        initialNotes={teacherFormInitialNotes}
       />
     </View>
   );
@@ -454,6 +642,13 @@ const styles = StyleSheet.create({
     color: lightTheme.textTertiary,
     fontStyle: 'italic',
   },
+  suggestionContainer: {
+    gap: spacing.sm,
+    paddingStart: spacing.xl,
+  },
+  suggestionsContainer: {
+    gap: spacing.sm,
+  },
   emptyState: {
     alignItems: 'center',
     gap: spacing.sm,
@@ -464,6 +659,14 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     lineHeight: typography.lineHeight.sm,
     color: lightTheme.textTertiary,
+  },
+  hintText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.xs,
+    lineHeight: typography.lineHeight.xs,
+    color: lightTheme.textTertiary,
+    textAlign: 'center',
+    paddingHorizontal: spacing.xl,
   },
   emptyButton: {
     marginTop: spacing.sm,

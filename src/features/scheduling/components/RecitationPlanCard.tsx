@@ -5,15 +5,12 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
-import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
-import { shadows } from '@/theme/shadows';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { RecitationTypeChip } from '@/features/memorization/components/RecitationTypeChip';
 import { getSurah } from '@/lib/quran-metadata';
+import { useAllRubReferences, findRubForAyah } from '@/features/scheduling/hooks/useQuranRubReference';
 import type { RecitationPlanWithDetails } from '@/features/scheduling/types/recitation-plan.types';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -33,25 +30,32 @@ export function RecitationPlanCard({
   onEdit,
   onDelete,
 }: RecitationPlanCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isArabic = i18n.language === 'ar';
+  const { data: rubData = [] } = useAllRubReferences();
 
   const rangeText = useMemo(() => {
     const startSurah = getSurah(plan.start_surah);
     const endSurah = getSurah(plan.end_surah);
-    const startName = startSurah?.nameEnglish ?? String(plan.start_surah);
-    const endName = endSurah?.nameEnglish ?? String(plan.end_surah);
+    const startName = isArabic
+      ? (startSurah?.nameArabic ?? startSurah?.nameEnglish ?? String(plan.start_surah))
+      : (startSurah?.nameEnglish ?? String(plan.start_surah));
+    const endName = isArabic
+      ? (endSurah?.nameArabic ?? endSurah?.nameEnglish ?? String(plan.end_surah))
+      : (endSurah?.nameEnglish ?? String(plan.end_surah));
 
     if (plan.start_surah === plan.end_surah) {
       return `${startName} ${plan.start_ayah}–${plan.end_ayah}`;
     }
     return `${startName} ${plan.start_ayah} – ${endName} ${plan.end_ayah}`;
-  }, [plan.start_surah, plan.start_ayah, plan.end_surah, plan.end_ayah]);
+  }, [plan.start_surah, plan.start_ayah, plan.end_surah, plan.end_ayah, isArabic]);
 
-  const modeBadgeLabel = t(`scheduling.recitationPlan.modes.${plan.selection_mode}`);
-  const sourceBadgeLabel =
-    plan.source === 'from_assignment'
-      ? t('scheduling.recitationPlan.fromAssignment')
-      : t('scheduling.recitationPlan.manual');
+  const rubContext = useMemo(() => {
+    if (rubData.length === 0) return null;
+    const info = findRubForAyah(rubData, plan.start_surah, plan.start_ayah);
+    if (!info) return null;
+    return `${t('gamification.rub')} ${info.rub_number} · ${t('gamification.juz')} ${info.juz_number}`;
+  }, [rubData, plan.start_surah, plan.start_ayah, t]);
 
   const setterName = plan.setter?.full_name;
 
@@ -71,18 +75,10 @@ export function RecitationPlanCard({
         </View>
       </View>
 
-      {/* Badges row */}
-      <View style={styles.badgeRow}>
-        <Badge label={modeBadgeLabel} variant="info" size="sm" />
-        <Badge
-          label={sourceBadgeLabel}
-          variant={plan.source === 'from_assignment' ? 'indigo' : 'default'}
-          size="sm"
-        />
-        <RecitationTypeChip
-          type={plan.recitation_type as 'new_hifz' | 'recent_review' | 'old_review'}
-        />
-      </View>
+      {/* Rub/Juz context */}
+      {rubContext != null && (
+        <Text style={styles.rubContextText}>{rubContext}</Text>
+      )}
 
       {/* Set-by attribution */}
       {setterName != null && (
@@ -166,11 +162,11 @@ const styles = StyleSheet.create({
     color: lightTheme.text,
     flex: 1,
   },
-  badgeRow: {
-    flexDirection: 'row',
-    gap: spacing.xs,
-    flexWrap: 'wrap',
-    alignItems: 'center',
+  rubContextText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.sm,
+    lineHeight: typography.lineHeight.sm,
+    color: lightTheme.textTertiary,
   },
   attributionRow: {
     flexDirection: 'row',

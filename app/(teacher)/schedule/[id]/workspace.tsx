@@ -121,7 +121,7 @@ export default function SessionWorkspaceScreen() {
   const [recitations, setRecitations] = useState<Record<string, RecitationFormData[]>>({});
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
 
-  // Pre-fill recitations from plans (once)
+  // Pre-fill recitations from plans (once) — supports multiple plans per student
   useEffect(() => {
     if (prefillApplied.current || plans.length === 0 || studentList.length === 0) return;
     prefillApplied.current = true;
@@ -130,23 +130,28 @@ export default function SessionWorkspaceScreen() {
     const prefilled: Record<string, RecitationFormData[]> = {};
 
     for (const student of studentList) {
-      const studentPlan = plans.find((p: any) => p.student_id === student.id);
-      const effectivePlan = studentPlan ?? sessionDefault;
-      if (!effectivePlan) continue;
+      // Collect all plans for this student (teacher plans + student suggestions)
+      const studentPlans = plans.filter((p: any) => p.student_id === student.id);
+      const effectivePlans = studentPlans.length > 0
+        ? studentPlans
+        : sessionDefault ? [sessionDefault] : [];
 
-      const isSameSurah = effectivePlan.start_surah === effectivePlan.end_surah;
-      const surah = getSurah(effectivePlan.start_surah);
-      const toAyah = isSameSurah ? effectivePlan.end_ayah : (surah?.ayahCount ?? effectivePlan.end_ayah);
+      if (effectivePlans.length === 0) continue;
 
-      prefilled[student.id] = [
-        {
+      prefilled[student.id] = effectivePlans.map((plan: any) => {
+        const isSameSurah = plan.start_surah === plan.end_surah;
+        const surah = getSurah(plan.start_surah);
+        const toAyah = isSameSurah ? plan.end_ayah : (surah?.ayahCount ?? plan.end_ayah);
+
+        return {
           ...EMPTY_RECITATION,
-          surah_number: effectivePlan.start_surah,
-          from_ayah: effectivePlan.start_ayah,
+          surah_number: plan.start_surah,
+          from_ayah: plan.start_ayah,
           to_ayah: toAyah,
-          recitation_type: effectivePlan.recitation_type as RecitationType,
-        },
-      ];
+          recitation_type: plan.recitation_type as RecitationType,
+          assignment_id: plan.assignment_id ?? null,
+        };
+      });
     }
 
     if (Object.keys(prefilled).length > 0) {

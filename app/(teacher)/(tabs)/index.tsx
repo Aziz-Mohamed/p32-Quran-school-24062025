@@ -38,7 +38,7 @@ export default function TeacherDashboard() {
     if (nextSession) {
       router.push(`/(teacher)/schedule/${nextSession.id}`);
     } else {
-      router.push('/(teacher)/schedule');
+      router.navigate('/(teacher)/(tabs)/sessions');
     }
   };
 
@@ -98,7 +98,7 @@ export default function TeacherDashboard() {
         {/* My Schedule */}
         <Card
           variant="glass"
-          onPress={() => router.push('/(teacher)/schedule')}
+          onPress={() => router.navigate('/(teacher)/(tabs)/sessions')}
           style={styles.scheduleCard}
         >
           <View style={styles.scheduleRow}>

@@ -3,6 +3,7 @@ import { attendanceService } from '@/features/attendance/services/attendance.ser
 import { sessionsService } from '@/features/sessions/services/sessions.service';
 import { recitationService } from '@/features/memorization/services/recitation.service';
 import { memorizationProgressService } from '@/features/memorization/services/memorization-progress.service';
+import { assignmentService } from '@/features/memorization/services/assignment.service';
 import { calculateSM2, calculateQualityGrade } from '@/features/memorization/utils/spaced-repetition';
 import { scheduledSessionService } from '../services/scheduled-session.service';
 import type { BulkAttendanceInput } from '@/features/attendance/types/attendance.types';
@@ -104,8 +105,19 @@ export function useCompleteSessionWorkspace() {
           recitation_date: input.sessionDate,
         }));
 
-        const { error: recitationError } = await recitationService.createRecitations(recitationInputs);
+        const { data: createdRecitations, error: recitationError } = await recitationService.createRecitations(recitationInputs);
         if (recitationError) throw recitationError;
+
+        // Auto-complete linked assignments
+        if (createdRecitations) {
+          for (let i = 0; i < recitationForms.length; i++) {
+            const form = recitationForms[i];
+            const created = createdRecitations[i];
+            if (form.assignment_id && created?.id) {
+              await assignmentService.completeAssignment(form.assignment_id, created.id);
+            }
+          }
+        }
 
         // Update memorization progress for each recitation
         for (const r of recitationForms) {
@@ -155,6 +167,7 @@ export function useCompleteSessionWorkspace() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['scheduled-sessions'] });
       queryClient.invalidateQueries({ queryKey: ['teacher-upcoming-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['teacher-session-history'] });
       queryClient.invalidateQueries({ queryKey: ['sessions'] });
       queryClient.invalidateQueries({ queryKey: ['attendance'] });
       queryClient.invalidateQueries({ queryKey: ['class-attendance'] });
@@ -166,6 +179,7 @@ export function useCompleteSessionWorkspace() {
       queryClient.invalidateQueries({ queryKey: ['memorization-stats'] });
       queryClient.invalidateQueries({ queryKey: ['revision-schedule'] });
       queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['assignments'] });
     },
   });
 }

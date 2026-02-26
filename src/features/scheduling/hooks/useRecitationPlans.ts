@@ -151,6 +151,77 @@ export function useSetUnifiedPlan() {
 }
 
 /**
+ * Upsert a student suggestion for a session.
+ */
+export function useUpsertStudentSuggestion() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: CreateRecitationPlanInput) => {
+      const { data, error } = await recitationPlanService.upsertStudentSuggestion(input);
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      if (data?.id) {
+        mutationTracker.record('session_recitation_plans', data.id);
+      }
+      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['recitation-plan'] });
+    },
+  });
+}
+
+/**
+ * Replace all student suggestions for a session with a new batch.
+ */
+export function useReplaceStudentSuggestions() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      sessionId,
+      studentId,
+      inputs,
+    }: {
+      sessionId: string;
+      studentId: string;
+      inputs: CreateRecitationPlanInput[];
+    }) => {
+      const { data, error } = await recitationPlanService.replaceStudentSuggestions(
+        sessionId,
+        studentId,
+        inputs,
+      );
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['recitation-plan'] });
+    },
+  });
+}
+
+/**
+ * Delete a student's own suggestion.
+ */
+export function useDeleteStudentSuggestion() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ sessionId, studentId }: { sessionId: string; studentId: string }) => {
+      const { error } = await recitationPlanService.deleteStudentSuggestion(sessionId, studentId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recitation-plans'] });
+      queryClient.invalidateQueries({ queryKey: ['recitation-plan'] });
+    },
+  });
+}
+
+/**
  * Get pending assignments that can be suggested as plans.
  */
 export function usePendingAssignments(studentId: string | undefined, sessionDate: string | undefined) {

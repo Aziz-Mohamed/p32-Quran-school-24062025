@@ -32,6 +32,7 @@
     "notFound": "Page not found",
     "goHome": "Go Home",
     "close": "Close",
+    "notes": "Notes",
     "undo": "Undo",
     "select": "Select...",
     "selectDate": "Select date...",
@@ -260,6 +261,12 @@
       "viewSessions": "View Sessions",
       "viewTrophies": "View Trophies",
       "viewLeaderboard": "Leaderboard",
+      "upcomingSessions": "Upcoming Sessions",
+      "viewAllSchedule": "View all schedule",
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "mySchedule": "Schedule",
+      "journey": "Journey",
       "recentAchievements": "Recent Achievements",
       "noAchievements": "No achievements yet",
       "readyToLearn": "Ready to learn today?",
@@ -408,7 +415,11 @@
       "pending": "Pending",
       "emptyTitle": "No Sessions Yet",
       "emptyDescription": "Session evaluations will appear here after completing scheduled sessions",
-      "viewHistory": "View History"
+      "viewHistory": "View History",
+      "upcoming": "Upcoming",
+      "history": "History",
+      "noUpcoming": "No upcoming sessions",
+      "noUpcomingDesc": "Your scheduled sessions will appear here"
     },
     "students": {
       "title": "My Students",
@@ -727,6 +738,13 @@
       "wifiRequired": "WiFi SSID is required when WiFi verification is enabled.",
       "saved": "Verification settings updated successfully."
     },
+    "permissions": {
+      "title": "Permissions",
+      "description": "Control what teachers can do in the app.",
+      "teacherCanCreateSessions": "Teachers Can Create Sessions",
+      "teacherCanCreateSessionsHint": "When enabled, teachers can schedule their own class and individual sessions.",
+      "saved": "Permissions updated successfully."
+    },
     "attendance": {
       "title": "Attendance",
       "subtitle": "Manage attendance records",
@@ -939,6 +957,17 @@
     "noUpcomingSessions": "No upcoming sessions scheduled.",
     "childScheduleTitle": "{{name}}'s Schedule",
     "individualSession": "Individual Session",
+    "createSession": "Create Session",
+    "createSessionTitle": "New Session",
+    "selectSessionType": "Session Type",
+    "selectClass": "Select Class",
+    "selectStudent": "Select Student",
+    "selectDate": "Select Date",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "sessionCreated": "Session created successfully.",
+    "classSession": "Class",
+    "individualSessionType": "Individual",
     "nextSession": "Next Session",
     "date": "Date",
     "time": "Time",
@@ -997,7 +1026,21 @@
       "planSaved": "Plan saved successfully",
       "planDeleted": "Plan removed",
       "setForAllWarning": "This will replace all individual student plans with a single session plan.",
-      "prefilledFromPlan": "Pre-filled from recitation plan"
+      "prefilledFromPlan": "Pre-filled from recitation plan",
+      "mySuggestion": "My Suggestion",
+      "suggestion": "Suggestion",
+      "studentSuggestion": "Student Suggestion",
+      "suggestPlan": "Suggest a Plan",
+      "noSuggestionYet": "You haven't suggested a recitation plan yet.",
+      "removeSuggestion": "Remove Suggestion?",
+      "suggestionHint": "Your teacher will see this suggestion when planning the session.",
+      "memorizationSection": "Memorization",
+      "revisionSection": "Revision",
+      "customRange": "Custom Range",
+      "noProgress": "No memorization progress yet",
+      "noHomework": "No revision homework pending",
+      "selectedCount": "Selected ({{count}})",
+      "addCustomRange": "Add to Selection"
     }
   },
   "workAttendance": {
@@ -1063,6 +1106,7 @@
     "status": {
       "new": "New",
       "learning": "Learning",
+      "in_progress": "In Progress",
       "memorized": "Memorized",
       "needs_review": "Needs Revision"
     },

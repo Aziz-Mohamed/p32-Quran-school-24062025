@@ -4,7 +4,7 @@ export type SessionRecitationPlan = Tables<'session_recitation_plans'>;
 
 export type SelectionMode = 'ayah_range' | 'rub' | 'hizb' | 'juz';
 export type RecitationPlanType = 'new_hifz' | 'recent_review' | 'old_review';
-export type PlanSource = 'manual' | 'from_assignment';
+export type PlanSource = 'manual' | 'from_assignment' | 'student_suggestion';
 
 export interface CreateRecitationPlanInput {
   school_id: string;

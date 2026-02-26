@@ -95,6 +95,28 @@ class ScheduledSessionService {
   }
 
   /**
+   * Get completed/cancelled/missed sessions for a teacher (history).
+   */
+  async getTeacherHistory(teacherId: string, schoolId: string) {
+    return supabase
+      .from('scheduled_sessions')
+      .select(`
+        *,
+        class:classes!scheduled_sessions_class_id_fkey(name, name_localized),
+        student:students!scheduled_sessions_student_id_fkey(
+          profiles!students_id_fkey(full_name, name_localized, avatar_url)
+        ),
+        evaluation:sessions!scheduled_sessions_evaluation_session_id_fkey(memorization_score)
+      `)
+      .eq('teacher_id', teacherId)
+      .eq('school_id', schoolId)
+      .in('status', ['completed', 'cancelled', 'missed'])
+      .order('session_date', { ascending: false })
+      .order('start_time', { ascending: false })
+      .limit(50);
+  }
+
+  /**
    * Create a scheduled session (manual/individual).
    */
   async createSession(input: ScheduleSessionInput) {

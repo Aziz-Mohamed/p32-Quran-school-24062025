@@ -2,7 +2,8 @@ import 'react-native-reanimated';
 import 'react-native-gesture-handler';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { I18nManager, View } from 'react-native';
+import { I18nManager } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import * as SplashScreen from 'expo-splash-screen';
@@ -70,7 +71,7 @@ export default function RootLayout() {
   // `I18nManager.forceRTL()` (called above) handles native components outside
   // this tree (tab bar, navigation transitions) and persists for next launch.
   return (
-    <View style={{ flex: 1, direction: isRTL ? 'rtl' : 'ltr' }}>
+    <GestureHandlerRootView style={{ flex: 1, direction: isRTL ? 'rtl' : 'ltr' }}>
       <QueryClientProvider client={queryClient}>
         <I18nextProvider i18n={i18n}>
           <AuthGuard>
@@ -86,7 +87,7 @@ export default function RootLayout() {
           </AuthGuard>
         </I18nextProvider>
       </QueryClientProvider>
-    </View>
+    </GestureHandlerRootView>
   );
 }
 
