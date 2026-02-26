@@ -7,14 +7,9 @@ import {
   Pressable,
   ScrollView,
   ActivityIndicator,
-  Modal,
-  Platform,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker, {
-  type DateTimePickerEvent,
-} from '@react-native-community/datetimepicker';
 import {
   BottomSheetModal,
   BottomSheetScrollView,
@@ -24,6 +19,7 @@ import {
 
 import { Button } from '@/components/ui/Button';
 import { DatePicker } from '@/components/forms/DatePicker';
+import { TimePicker, formatTimeHHMM } from '@/components/forms/TimePicker';
 import { LoadingState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocalizedName } from '@/hooks/useLocalizedName';
@@ -36,155 +32,6 @@ import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 import { radius } from '@/theme/radius';
-import i18n from '@/i18n/config';
-
-// ─── Time Helpers ─────────────────────────────────────────────────────────────
-
-function formatTimeHHMM(date: Date): string {
-  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
-}
-
-function formatTimeDisplay(date: Date): string {
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
-  const period = hours >= 12 ? 'PM' : 'AM';
-  const displayHour = hours % 12 || 12;
-  return `${displayHour}:${String(minutes).padStart(2, '0')} ${period}`;
-}
-
-// ─── Time Trigger ─────────────────────────────────────────────────────────────
-
-function TimePicker({
-  label,
-  value,
-  onChange,
-  minimumDate,
-}: {
-  label: string;
-  value: Date | null;
-  onChange: (date: Date) => void;
-  minimumDate?: Date;
-}) {
-  const [showPicker, setShowPicker] = useState(false);
-  const placeholder = i18n.t('common.select');
-
-  const handleChange = useCallback(
-    (_event: DateTimePickerEvent, selectedDate?: Date) => {
-      if (Platform.OS === 'android') setShowPicker(false);
-      if (selectedDate) onChange(selectedDate);
-    },
-    [onChange],
-  );
-
-  return (
-    <View style={timeStyles.root}>
-      <Text style={timeStyles.label}>{label}</Text>
-      <Pressable
-        style={timeStyles.trigger}
-        onPress={() => setShowPicker(true)}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-      >
-        <Ionicons name="time-outline" size={normalize(18)} color={lightTheme.textTertiary} />
-        <Text style={[timeStyles.triggerText, !value && timeStyles.placeholderText]}>
-          {value ? formatTimeDisplay(value) : placeholder}
-        </Text>
-      </Pressable>
-
-      {showPicker && Platform.OS === 'android' && (
-        <DateTimePicker
-          value={value ?? new Date()}
-          mode="time"
-          is24Hour={false}
-          minuteInterval={5}
-          onChange={handleChange}
-          minimumDate={minimumDate}
-        />
-      )}
-
-      {showPicker && Platform.OS === 'ios' && (
-        <Modal visible transparent animationType="fade" onRequestClose={() => setShowPicker(false)}>
-          <Pressable style={timeStyles.overlay} onPress={() => setShowPicker(false)}>
-            <View style={timeStyles.pickerContainer}>
-              <DateTimePicker
-                value={value ?? new Date()}
-                mode="time"
-                display="spinner"
-                minuteInterval={5}
-                onChange={handleChange}
-                minimumDate={minimumDate}
-              />
-              <Pressable onPress={() => setShowPicker(false)} style={timeStyles.doneButton}>
-                <Text style={timeStyles.doneText}>{i18n.t('common.done')}</Text>
-              </Pressable>
-            </View>
-          </Pressable>
-        </Modal>
-      )}
-    </View>
-  );
-}
-
-const timeStyles = StyleSheet.create({
-  root: { width: '100%' },
-  label: {
-    fontFamily: typography.fontFamily.medium,
-    fontSize: normalize(13),
-    lineHeight: normalize(18),
-    color: colors.neutral[500],
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: spacing.sm,
-  },
-  trigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: lightTheme.border,
-    borderRadius: radius.md,
-    backgroundColor: lightTheme.background,
-    minHeight: normalize(48),
-    paddingHorizontal: spacing.md,
-  },
-  triggerText: {
-    flex: 1,
-    fontFamily: typography.fontFamily.regular,
-    fontSize: typography.fontSize.base,
-    lineHeight: typography.lineHeight.base,
-    color: lightTheme.text,
-  },
-  placeholderText: {
-    color: lightTheme.textTertiary,
-  },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: spacing.xl,
-  },
-  pickerContainer: {
-    backgroundColor: colors.white,
-    borderRadius: radius.lg,
-    width: '100%',
-    maxWidth: normalize(360),
-    padding: spacing.lg,
-  },
-  doneButton: {
-    alignItems: 'center',
-    paddingVertical: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: lightTheme.border,
-    marginTop: spacing.sm,
-  },
-  doneText: {
-    fontFamily: typography.fontFamily.semiBold,
-    fontSize: typography.fontSize.base,
-    lineHeight: typography.lineHeight.base,
-    color: colors.primary[500],
-  },
-});
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
