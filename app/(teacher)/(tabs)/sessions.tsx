@@ -21,16 +21,6 @@ import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 import { radius } from '@/theme/radius';
 
-// ─── Status Colors ───────────────────────────────────────────────────────────
-
-const STATUS_COLORS: Record<string, string> = {
-  scheduled: colors.accent.sky[500],
-  in_progress: semantic.warning,
-  completed: semantic.success,
-  cancelled: colors.neutral[400],
-  missed: semantic.error,
-};
-
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 type ActiveTab = 'upcoming' | 'history';
@@ -54,7 +44,6 @@ export default function SessionsScreen() {
   const upcoming = useTeacherUpcomingSessions(profile?.id, schoolId ?? undefined);
   const history = useSessions({ teacherId: profile?.id });
 
-  // ── Upcoming: group by date and flatten for FlashList ──────────────────
   const upcomingItems = useMemo<UpcomingItem[]>(() => {
     const sessions = upcoming.data ?? [];
     const grouped = new Map<string, any[]>();
@@ -97,7 +86,7 @@ export default function SessionsScreen() {
           )}
         </View>
 
-        {/* Segment Tabs */}
+        {/* Tabs */}
         <View style={styles.tabBar}>
           {(['upcoming', 'history'] as const).map((tab) => {
             const isActive = activeTab === tab;
@@ -197,42 +186,32 @@ function UpcomingList({
         }
 
         const session = item.data;
-        const statusColor = STATUS_COLORS[session.status] ?? colors.neutral[400];
         return (
-          <Pressable
-            style={styles.upcomingCard}
+          <Card
+            variant="default"
+            style={styles.card}
             onPress={() => router.push(`/(teacher)/schedule/${session.id}`)}
           >
-            <View style={[styles.accentBar, { backgroundColor: statusColor }]} />
-            <View style={styles.upcomingBody}>
-              <View style={styles.upcomingTop}>
-                <Text style={styles.upcomingTitle} numberOfLines={1}>
+            <View style={styles.cardRow}>
+              <View style={styles.cardInfo}>
+                <Text style={styles.cardTitle} numberOfLines={1}>
                   {resolveName(session.class?.name_localized, session.class?.name) ?? t('scheduling.individualSession')}
                 </Text>
-                <Badge
-                  label={t(`scheduling.status.${session.status}`)}
-                  variant={session.status === 'scheduled' ? 'sky' : session.status === 'in_progress' ? 'warning' : 'success'}
-                  size="sm"
-                />
-              </View>
-              <View style={styles.upcomingMeta}>
-                <Ionicons name="time-outline" size={13} color={colors.neutral[400]} />
-                <Text style={styles.upcomingTime}>
+                <Text style={styles.cardMeta}>
                   {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}
+                  {session.student?.profiles?.full_name
+                    ? `  ·  ${resolveName(session.student.profiles?.name_localized, session.student.profiles.full_name)}`
+                    : ''}
                 </Text>
-                {session.student?.profiles?.full_name && (
-                  <>
-                    <Text style={styles.metaDivider}>·</Text>
-                    <Ionicons name="person-outline" size={13} color={colors.neutral[400]} />
-                    <Text style={styles.upcomingStudent} numberOfLines={1}>
-                      {resolveName(session.student.profiles?.name_localized, session.student.profiles.full_name)}
-                    </Text>
-                  </>
-                )}
               </View>
+              <Badge
+                label={t(`scheduling.status.${session.status}`)}
+                variant={session.status === 'scheduled' ? 'sky' : session.status === 'in_progress' ? 'warning' : 'success'}
+                size="sm"
+              />
+              <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={16} color={colors.neutral[300]} />
             </View>
-            <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={16} color={colors.neutral[300]} />
-          </Pressable>
+          </Card>
         );
       }}
     />
@@ -273,19 +252,19 @@ function HistoryList({
         <Card
           variant="default"
           onPress={() => router.push(`/(teacher)/sessions/${item.id}`)}
-          style={styles.historyCard}
+          style={styles.card}
         >
-          <View style={styles.historyRow}>
-            <View style={styles.studentAvatar}>
+          <View style={styles.cardRow}>
+            <View style={styles.avatar}>
               <Text style={styles.avatarText}>
                 {resolveName(item.student?.profiles?.name_localized, item.student?.profiles?.full_name)?.[0]?.toUpperCase()}
               </Text>
             </View>
-            <View style={styles.historyInfo}>
-              <Text style={styles.historyName} numberOfLines={1}>
+            <View style={styles.cardInfo}>
+              <Text style={styles.cardTitle} numberOfLines={1}>
                 {resolveName(item.student?.profiles?.name_localized, item.student?.profiles?.full_name) ?? '—'}
               </Text>
-              <Text style={styles.historyDate}>
+              <Text style={styles.cardMeta}>
                 {formatSessionDate(item.session_date, language).date}
                 {' · '}
                 {formatSessionDate(item.session_date, language).weekday}
@@ -312,8 +291,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-
-  // ── Header ──
   header: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
@@ -336,7 +313,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // ── Segment Tabs ──
+  // ── Tabs ──
   tabBar: {
     flexDirection: 'row',
     marginHorizontal: spacing.lg,
@@ -387,7 +364,7 @@ const styles = StyleSheet.create({
     color: colors.primary[600],
   },
 
-  // ── List ──
+  // ── Shared ──
   listContent: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
@@ -401,70 +378,28 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     marginBottom: spacing.sm,
   },
-
-  // ── Upcoming Card ──
-  upcomingCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: radius.md,
-    marginBottom: spacing.sm,
-    paddingEnd: spacing.md,
-    overflow: 'hidden',
-    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
-  },
-  accentBar: {
-    width: normalize(4),
-    alignSelf: 'stretch',
-  },
-  upcomingBody: {
-    flex: 1,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    gap: spacing.xs,
-  },
-  upcomingTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  upcomingTitle: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[900],
-    flex: 1,
-  },
-  upcomingMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: normalize(4),
-  },
-  upcomingTime: {
-    ...typography.textStyles.caption,
-    color: colors.neutral[500],
-  },
-  metaDivider: {
-    ...typography.textStyles.caption,
-    color: colors.neutral[300],
-    marginHorizontal: normalize(2),
-  },
-  upcomingStudent: {
-    ...typography.textStyles.caption,
-    color: colors.neutral[500],
-    flexShrink: 1,
-  },
-
-  // ── History Card ──
-  historyCard: {
+  card: {
     padding: spacing.md,
     marginBottom: spacing.sm,
   },
-  historyRow: {
+  cardRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
   },
-  studentAvatar: {
+  cardInfo: {
+    flex: 1,
+    gap: normalize(3),
+  },
+  cardTitle: {
+    ...typography.textStyles.bodyMedium,
+    color: colors.neutral[900],
+  },
+  cardMeta: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[400],
+  },
+  avatar: {
     width: normalize(40),
     height: normalize(40),
     borderRadius: normalize(12),
@@ -476,17 +411,5 @@ const styles = StyleSheet.create({
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[600],
     fontSize: normalize(15),
-  },
-  historyInfo: {
-    flex: 1,
-    gap: normalize(2),
-  },
-  historyName: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[900],
-  },
-  historyDate: {
-    ...typography.textStyles.caption,
-    color: colors.neutral[400],
   },
 });
