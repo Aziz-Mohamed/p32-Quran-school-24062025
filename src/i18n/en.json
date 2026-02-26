@@ -32,6 +32,7 @@
     "notFound": "Page not found",
     "goHome": "Go Home",
     "close": "Close",
+    "notes": "Notes",
     "undo": "Undo",
     "select": "Select...",
     "selectDate": "Select date...",
@@ -1033,7 +1034,9 @@
       "revisionSection": "Revision",
       "customRange": "Custom Range",
       "noProgress": "No memorization progress yet",
-      "noHomework": "No revision homework pending"
+      "noHomework": "No revision homework pending",
+      "selectedCount": "Selected ({{count}})",
+      "addCustomRange": "Add to Selection"
     }
   },
   "workAttendance": {
@@ -1099,6 +1102,7 @@
     "status": {
       "new": "New",
       "learning": "Learning",
+      "in_progress": "In Progress",
       "memorized": "Memorized",
       "needs_review": "Needs Revision"
     },

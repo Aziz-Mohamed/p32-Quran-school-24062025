@@ -32,6 +32,7 @@
     "notFound": "الصفحة غير موجودة",
     "goHome": "الرئيسية",
     "close": "إغلاق",
+    "notes": "ملاحظات",
     "undo": "تراجع",
     "select": "...اختر",
     "selectDate": "...اختر التاريخ",
@@ -1033,7 +1034,9 @@
       "revisionSection": "المراجعة",
       "customRange": "نطاق مخصص",
       "noProgress": "لا يوجد تقدم في الحفظ بعد",
-      "noHomework": "لا توجد واجبات مراجعة معلقة"
+      "noHomework": "لا توجد واجبات مراجعة معلقة",
+      "selectedCount": "تم اختيار ({{count}})",
+      "addCustomRange": "أضف إلى الاختيار"
     }
   },
   "workAttendance": {
@@ -1099,6 +1102,7 @@
     "status": {
       "new": "جديد",
       "learning": "قيد التعلّم",
+      "in_progress": "قيد التعلم",
       "memorized": "محفوظ",
       "needs_review": "تحتاج مراجعة"
     },
