@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { Alert, I18nManager, Pressable, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -10,24 +10,12 @@ import { Button } from '@/components/ui/Button';
 import { Badge, Avatar } from '@/components/ui';
 import { LoadingState, ErrorState } from '@/components/feedback';
 import { useAuth } from '@/hooks/useAuth';
-import { useStudentById } from '@/features/students/hooks/useStudents';
-import { useSessions } from '@/features/sessions/hooks/useSessions';
-import { useStudentStickers } from '@/features/gamification/hooks/useStickers';
-import { useRubCertifications } from '@/features/gamification/hooks/useRubCertifications';
-import { useCertifyRub } from '@/features/gamification/hooks/useCertifyRub';
-import { useUndoCertification } from '@/features/gamification/hooks/useUndoCertification';
 import { RubProgressMap } from '@/features/gamification/components/RubProgressMap';
 import { RevisionSheet } from '@/features/gamification/components/RevisionSheet';
-import { useRecordRevision, type RevisionInput } from '@/features/gamification/hooks/useRecordRevision';
-import { useRubReference } from '@/features/gamification/hooks/useRubReference';
-import type { EnrichedCertification, RubReference } from '@/features/gamification/types/gamification.types';
-import { useAttendanceRate } from '@/features/attendance/hooks/useAttendance';
-import { useMemorizationStats } from '@/features/memorization/hooks/useMemorizationStats';
 import { MemorizationProgressBar } from '@/features/memorization';
-import { useAssignments, useCompleteRevisionHomework } from '@/features/memorization';
+import { useTeacherStudentDetail } from '@/features/students/hooks/useTeacherStudentDetail';
 import { useRoleTheme } from '@/hooks/useRoleTheme';
 import { useLocalizedName } from '@/hooks/useLocalizedName';
-import { useUndoTimer } from '@/hooks/useUndoTimer';
 import { formatSessionDate } from '@/lib/helpers';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
@@ -45,155 +33,13 @@ export default function TeacherStudentDetailScreen() {
   const theme = useRoleTheme();
   const { resolveName } = useLocalizedName();
 
-  const { data: student, isLoading: studentLoading, error: studentError, refetch } = useStudentById(id);
-  const { data: sessions = [] } = useSessions({
-    studentId: id,
-    teacherId: profile?.id,
-    pageSize: 10,
-  });
-  const { data: stickers = [] } = useStudentStickers(id);
-  const { data: attendanceData } = useAttendanceRate(id);
-  const { data: memStats } = useMemorizationStats(id);
-  const { enriched, activeCount } = useRubCertifications(id);
-  const certifyMutation = useCertifyRub();
-  const undoMutation = useUndoCertification();
-  const { goodRevision, poorRevision, recertify, batchGoodRevision, batchPoorRevision } = useRecordRevision();
+  const detail = useTeacherStudentDetail(id, profile?.id);
 
-  // Rubʿ reference data for verse ranges in RevisionSheet
-  const { data: rubReferenceList } = useRubReference();
-  const rubReferenceMap = React.useMemo(() => {
-    const map = new Map<number, RubReference>();
-    if (rubReferenceList) {
-      for (const ref of rubReferenceList) {
-        map.set(ref.rub_number, ref);
-      }
-    }
-    return map;
-  }, [rubReferenceList]);
+  if (detail.isLoading) return <LoadingState />;
+  if (detail.error) return <ErrorState description={(detail.error as Error).message} onRetry={detail.refetch} />;
+  if (!detail.student) return null;
 
-  // Revision homework data
-  const { data: homeworkAssignments = [] } = useAssignments({
-    studentId: id,
-    status: 'pending',
-    assignmentType: 'old_review',
-  });
-  const completeHomework = useCompleteRevisionHomework();
-
-  const reverseRubMap = React.useMemo(() => {
-    const map = new Map<string, number>();
-    if (rubReferenceList) {
-      for (const ref of rubReferenceList) {
-        map.set(`${ref.start_surah}:${ref.start_ayah}`, ref.rub_number);
-      }
-    }
-    return map;
-  }, [rubReferenceList]);
-
-  const homeworkItems = React.useMemo(() => {
-    const items: { assignmentId: string; rubNumber: number; juz: number }[] = [];
-    for (const a of homeworkAssignments) {
-      const rubNumber = reverseRubMap.get(`${a.surah_number}:${a.from_ayah}`);
-      if (!rubNumber) continue;
-      items.push({ assignmentId: a.id, rubNumber, juz: Math.ceil(rubNumber / 8) });
-    }
-    return items;
-  }, [homeworkAssignments, reverseRubMap]);
-
-  // Undo state
-  const undo = useUndoTimer<{ certId: string; rubNumber: number }>();
-
-  // Revision sheet state
-  const [revisionCert, setRevisionCert] = useState<EnrichedCertification | null>(null);
-
-  const handleCertify = useCallback(
-    async (rubNumber: number) => {
-      if (!id || !profile?.id) return;
-      try {
-        const result = await certifyMutation.mutateAsync({
-          studentId: id,
-          rubNumber,
-          certifiedBy: profile.id,
-        });
-        if (result.data) {
-          undo.set({ certId: result.data.id, rubNumber });
-        }
-      } catch {
-        // Mutation error handled by TanStack Query
-      }
-    },
-    [id, profile?.id, certifyMutation, undo],
-  );
-
-  const handleUndo = useCallback(() => {
-    if (!undo.data || !id) return;
-    undoMutation.mutate({ certificationId: undo.data.certId, studentId: id });
-    undo.clear();
-  }, [undo, id, undoMutation]);
-
-  const handleCertifiedRubPress = useCallback((cert: EnrichedCertification) => {
-    setRevisionCert(cert);
-  }, []);
-
-  const handleRevisionAction = useCallback(
-    (action: 'good' | 'poor' | 'recertify') => {
-      if (!revisionCert || !id) return;
-      const base = {
-        certificationId: revisionCert.id,
-        studentId: id,
-        reviewCount: revisionCert.review_count,
-        dormantSince: revisionCert.dormant_since,
-      };
-
-      if (action === 'good') {
-        goodRevision.mutate(base);
-      } else if (action === 'poor') {
-        poorRevision.mutate(base);
-      } else if (action === 'recertify' && profile?.id) {
-        recertify.mutate({
-          certificationId: revisionCert.id,
-          studentId: id,
-          certifiedBy: profile.id,
-        });
-      }
-      setRevisionCert(null);
-    },
-    [revisionCert, id, profile?.id, goodRevision, poorRevision, recertify],
-  );
-
-  const handleJuzAction = useCallback(
-    (juzNumber: number, action: 'good' | 'poor') => {
-      if (!id) return;
-      // Find all certified non-dormant rubʿ in this juz
-      const targets = enriched.filter(
-        (cert) =>
-          Math.ceil(cert.rub_number / 8) === juzNumber &&
-          cert.freshness.state !== 'dormant',
-      );
-      if (targets.length === 0) return;
-
-      const inputs: RevisionInput[] = targets.map((cert) => ({
-        certificationId: cert.id,
-        studentId: id,
-        reviewCount: cert.review_count,
-        dormantSince: cert.dormant_since,
-      }));
-
-      if (action === 'good') {
-        batchGoodRevision.mutate(inputs);
-      } else {
-        batchPoorRevision.mutate(inputs);
-      }
-    },
-    [id, enriched, batchGoodRevision, batchPoorRevision],
-  );
-
-  if (studentLoading) return <LoadingState />;
-  if (studentError) return <ErrorState description={(studentError as Error).message} onRetry={refetch} />;
-  if (!student) return null;
-
-  const studentProfile = (student as unknown as { profiles: { full_name: string; name_localized: Record<string, string> | null; avatar_url: string | null; phone: string | null } }).profiles;
-  const studentClass = (student as unknown as { classes: { id: string; name: string; name_localized: Record<string, string> | null } | null }).classes;
-  const attendanceRate = attendanceData?.rate ?? 0;
+  const { studentProfile, studentClass } = detail;
 
   return (
     <Screen scroll>
@@ -214,7 +60,7 @@ export default function TeacherStudentDetailScreen() {
             name={resolveName(studentProfile?.name_localized, studentProfile?.full_name)}
             size="xl"
             ring
-            variant="indigo" // Student is always indigo themed
+            variant="indigo"
           />
           <View style={styles.profileInfo}>
             <Text style={styles.studentName}>{resolveName(studentProfile?.name_localized, studentProfile?.full_name) ?? '—'}</Text>
@@ -222,7 +68,7 @@ export default function TeacherStudentDetailScreen() {
               {studentClass?.name && (
                 <Badge label={resolveName(studentClass.name_localized, studentClass.name) ?? studentClass.name} variant="sky" size="sm" />
               )}
-              <Badge label={`${t('common.level')} ${activeCount}/240`} variant="indigo" size="sm" />
+              <Badge label={`${t('common.level')} ${detail.activeCount}/240`} variant="indigo" size="sm" />
             </View>
           </View>
         </Card>
@@ -230,25 +76,25 @@ export default function TeacherStudentDetailScreen() {
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <Card variant="default" style={styles.statCard}>
-            <Text style={[styles.statValue, { color: colors.primary[500] }]}>{activeCount}/240</Text>
+            <Text style={[styles.statValue, { color: colors.primary[500] }]}>{detail.activeCount}/240</Text>
             <Text style={styles.statLabel}>{t('common.level')}</Text>
           </Card>
           <Card variant="default" style={styles.statCard}>
-            <Text style={[styles.statValue, { color: colors.accent.rose[500] }]}>{student.current_streak ?? 0}</Text>
+            <Text style={[styles.statValue, { color: colors.accent.rose[500] }]}>{detail.student.current_streak ?? 0}</Text>
             <Text style={styles.statLabel}>{t('student.streak')}</Text>
           </Card>
           <Card variant="default" style={styles.statCard}>
-            <Text style={[styles.statValue, { color: theme.primary }]}>{stickers.length}</Text>
+            <Text style={[styles.statValue, { color: theme.primary }]}>{detail.stickers.length}</Text>
             <Text style={styles.statLabel}>{t('navigation.stickers')}</Text>
           </Card>
           <Card variant="default" style={styles.statCard}>
-            <Text style={[styles.statValue, { color: colors.accent.sky[500] }]}>{Math.round(attendanceRate)}%</Text>
+            <Text style={[styles.statValue, { color: colors.accent.sky[500] }]}>{Math.round(detail.attendanceRate)}%</Text>
             <Text style={styles.statLabel}>{t('navigation.attendance')}</Text>
           </Card>
         </View>
 
         {/* Memorization Progress */}
-        {memStats && (
+        {detail.memStats && (
           <>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{t('memorization.title')}</Text>
@@ -260,7 +106,7 @@ export default function TeacherStudentDetailScreen() {
               />
             </View>
             <Card variant="default" style={styles.memorizationCard}>
-              <MemorizationProgressBar stats={memStats} compact />
+              <MemorizationProgressBar stats={detail.memStats} compact />
               <View style={styles.memorizationActions}>
                 <Button
                   title={t('memorization.assignHifz')}
@@ -275,14 +121,14 @@ export default function TeacherStudentDetailScreen() {
         )}
 
         {/* Revision Homework */}
-        {homeworkItems.length > 0 && (
+        {detail.homeworkItems.length > 0 && (
           <>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{t('student.revision.revisionHomework')}</Text>
-              <Badge label={String(homeworkItems.length)} variant="warning" />
+              <Badge label={String(detail.homeworkItems.length)} variant="warning" />
             </View>
             <Card variant="default" style={styles.homeworkCard}>
-              {homeworkItems.map((item) => (
+              {detail.homeworkItems.map((item) => (
                 <View key={item.assignmentId} style={styles.homeworkRow}>
                   <View style={styles.homeworkInfo}>
                     <Text style={styles.homeworkTitle}>
@@ -292,7 +138,7 @@ export default function TeacherStudentDetailScreen() {
                   <Pressable
                     style={({ pressed }) => [styles.homeworkAction, pressed && { opacity: 0.7 }]}
                     onPress={() => {
-                      completeHomework.mutate(item.assignmentId, {
+                      detail.completeHomework.mutate(item.assignmentId, {
                         onSuccess: () => {
                           Alert.alert('', t('student.revision.homeworkCompleted'));
                         },
@@ -311,14 +157,14 @@ export default function TeacherStudentDetailScreen() {
         {/* Recent Sessions */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>{t('teacher.insights.recentSessions')}</Text>
-          <Badge label={String(sessions.length)} variant="default" />
+          <Badge label={String(detail.sessions.length)} variant="default" />
         </View>
-        {sessions.length === 0 ? (
+        {detail.sessions.length === 0 ? (
           <Card variant="outlined" style={styles.emptyCard}>
             <Text style={styles.emptyText}>{t('teacher.dashboard.noRecentSessions')}</Text>
           </Card>
         ) : (
-          sessions.map((session: any) => (
+          detail.sessions.map((session) => (
             <Card key={session.id} variant="default" style={styles.sessionCard}>
               <View style={styles.sessionRow}>
                 <View style={styles.sessionHeaderRow}>
@@ -331,7 +177,7 @@ export default function TeacherStudentDetailScreen() {
                   </View>
                   <Ionicons name={I18nManager.isRTL ? "chevron-back" : "chevron-forward"} size={18} color={colors.neutral[300]} />
                 </View>
-                
+
                 <View style={styles.scoresRow}>
                   <ScoreItem label={t('teacher.sessions.memorization')} value={session.memorization_score} color={theme.primary} />
                   <ScoreItem label={t('teacher.sessions.tajweed')} value={session.tajweed_score} color={colors.accent.sky[500]} />
@@ -350,29 +196,29 @@ export default function TeacherStudentDetailScreen() {
           <RubProgressMap
             studentId={id!}
             mode="interactive"
-            onCertify={handleCertify}
-            onCertifiedRubPress={handleCertifiedRubPress}
-            onJuzAction={handleJuzAction}
+            onCertify={detail.handleCertify}
+            onCertifiedRubPress={detail.handleCertifiedRubPress}
+            onJuzAction={detail.handleJuzAction}
           />
         </View>
 
         {/* Revision Sheet */}
         <RevisionSheet
           mode="teacher"
-          visible={!!revisionCert}
-          certification={revisionCert}
-          reference={revisionCert ? rubReferenceMap.get(revisionCert.rub_number) ?? null : null}
-          onAction={handleRevisionAction}
-          onClose={() => setRevisionCert(null)}
+          visible={!!detail.revisionCert}
+          certification={detail.revisionCert}
+          reference={detail.revisionCert ? detail.rubReferenceMap.get(detail.revisionCert.rub_number) ?? null : null}
+          onAction={detail.handleRevisionAction}
+          onClose={detail.closeRevisionSheet}
         />
 
         {/* Undo Banner */}
-        {undo.data && (
+        {detail.undo.data && (
           <View style={styles.undoBanner}>
             <Text style={styles.undoText}>
-              {t('gamification.certifiedSuccess', { rub: undo.data.rubNumber })}
+              {t('gamification.certifiedSuccess', { rub: detail.undo.data.rubNumber })}
             </Text>
-            <Pressable onPress={handleUndo} style={styles.undoButton}>
+            <Pressable onPress={detail.handleUndo} style={styles.undoButton}>
               <Text style={styles.undoButtonText}>{t('common.undo')}</Text>
             </Pressable>
           </View>
@@ -381,14 +227,14 @@ export default function TeacherStudentDetailScreen() {
         {/* Sticker History */}
         <View style={[styles.sectionHeader, { marginTop: spacing.md }]}>
           <Text style={styles.sectionTitle}>{t('teacher.insights.stickerHistory')}</Text>
-          <Badge label={String(stickers.length)} variant="default" />
+          <Badge label={String(detail.stickers.length)} variant="default" />
         </View>
-        {stickers.length === 0 ? (
+        {detail.stickers.length === 0 ? (
           <Card variant="outlined" style={styles.emptyCard}>
             <Text style={styles.emptyText}>{t('student.stickers.emptyDescription')}</Text>
           </Card>
         ) : (
-          stickers.slice(0, 5).map((sticker: any) => (
+          detail.stickers.slice(0, 5).map((sticker) => (
             <Card key={sticker.id} variant="glass" style={styles.stickerCard}>
               <View style={styles.stickerRow}>
                 <View style={styles.stickerIconContainer}>
