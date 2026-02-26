@@ -2,11 +2,12 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import type { FreshnessState } from '../types/gamification.types';
-import { colors } from '@/theme/colors';
+import { colors, primary, secondary, accent, neutral } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
 import { radius } from '@/theme/radius';
 import { spacing } from '@/theme/spacing';
+import { shadows } from '@/theme/shadows';
 
 interface RubBlockProps {
   rubNumber: number;
@@ -15,12 +16,12 @@ interface RubBlockProps {
 }
 
 const STATE_COLORS: Record<FreshnessState, { bg: string; border: string; text: string }> = {
-  fresh: { bg: '#DCFCE7', border: '#22C55E', text: '#166534' },
-  fading: { bg: '#FEF9C3', border: '#EAB308', text: '#854D0E' },
-  warning: { bg: '#FFEDD5', border: '#F97316', text: '#9A3412' },
-  critical: { bg: '#FEE2E2', border: '#EF4444', text: '#991B1B' },
-  dormant: { bg: '#F3F4F6', border: '#9CA3AF', text: '#6B7280' },
-  uncertified: { bg: '#FFFFFF', border: '#E5E7EB', text: '#D1D5DB' },
+  fresh: { bg: primary[100], border: primary[500], text: primary[800] },
+  fading: { bg: accent.yellow[100], border: accent.yellow[500], text: accent.yellow[700] },
+  warning: { bg: accent.orange[100], border: accent.orange[500], text: accent.orange[700] },
+  critical: { bg: accent.red[100], border: accent.red[500], text: accent.red[700] },
+  dormant: { bg: neutral[100], border: neutral[400], text: neutral[500] },
+  uncertified: { bg: colors.white, border: neutral[200], text: neutral[300] },
 };
 
 export function RubBlock({ rubNumber, state, onPress }: RubBlockProps) {
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
-    boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.04)',
+    ...shadows.xs,
   },
   number: {
     fontFamily: typography.fontFamily.bold,

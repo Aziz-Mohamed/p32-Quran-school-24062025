@@ -3,14 +3,15 @@
 // green (fresh) → yellow (fading) → orange (warning) → red (critical) → gray (dormant/uncertified).
 
 import type { FreshnessState } from '../types/gamification.types';
+import { primary, accent, neutral } from '@/theme/colors';
 
 const FRESHNESS_COLORS: Record<FreshnessState, string> = {
-  fresh: '#22C55E',
-  fading: '#EAB308',
-  warning: '#F97316',
-  critical: '#EF4444',
-  dormant: '#9CA3AF',
-  uncertified: '#EBEDF0',
+  fresh: primary[500],
+  fading: accent.yellow[500],
+  warning: accent.orange[500],
+  critical: accent.red[500],
+  dormant: neutral[400],
+  uncertified: neutral[200],
 };
 
 /**

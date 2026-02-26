@@ -1,20 +1,21 @@
 import { getHeatMapColor, HEATMAP_LEGEND } from './heatmap-colors';
+import { primary, accent, neutral } from '@/theme/colors';
 import type { FreshnessState } from '../types/gamification.types';
 
 describe('getHeatMapColor', () => {
   it.each([
-    ['fresh', '#22C55E'],
-    ['fading', '#EAB308'],
-    ['warning', '#F97316'],
-    ['critical', '#EF4444'],
-    ['dormant', '#9CA3AF'],
-    ['uncertified', '#EBEDF0'],
-  ] as const)('returns correct color for state "%s"', (state, expected) => {
+    ['fresh', primary[500]],
+    ['fading', accent.yellow[500]],
+    ['warning', accent.orange[500]],
+    ['critical', accent.red[500]],
+    ['dormant', neutral[400]],
+    ['uncertified', neutral[200]],
+  ] as [FreshnessState, string][])('returns correct color for state "%s"', (state, expected) => {
     expect(getHeatMapColor(state)).toBe(expected);
   });
 
   it('returns uncertified color for null', () => {
-    expect(getHeatMapColor(null)).toBe('#EBEDF0');
+    expect(getHeatMapColor(null)).toBe(neutral[200]);
   });
 });
 

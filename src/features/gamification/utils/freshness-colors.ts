@@ -1,23 +1,24 @@
 import type { FreshnessState } from '../types/gamification.types';
+import { primary, accent, neutral } from '@/theme/colors';
 
 /** Solid indicator colors (dots, bars, accents) */
 export const FRESHNESS_DOT_COLORS: Record<FreshnessState, string> = {
-  fresh: '#22C55E',
-  fading: '#EAB308',
-  warning: '#F97316',
-  critical: '#EF4444',
-  dormant: '#9CA3AF',
-  uncertified: '#D1D5DB',
+  fresh: primary[500],
+  fading: accent.yellow[500],
+  warning: accent.orange[500],
+  critical: accent.red[500],
+  dormant: neutral[400],
+  uncertified: neutral[300],
 };
 
 /** Light background colors (chips, pill backgrounds) */
 export const FRESHNESS_BG_COLORS: Record<FreshnessState, string> = {
-  fresh: '#DCFCE7',
-  fading: '#FEF9C3',
-  warning: '#FFEDD5',
-  critical: '#FEE2E2',
-  dormant: '#F3F4F6',
-  uncertified: '#F3F4F6',
+  fresh: primary[100],
+  fading: accent.yellow[100],
+  warning: accent.orange[100],
+  critical: accent.red[100],
+  dormant: neutral[100],
+  uncertified: neutral[100],
 };
 
 /** Priority ordering for "worst state" calculations (higher = worse) */
