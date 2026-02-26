@@ -4,11 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 
 import { SURAHS } from '@/lib/quran-metadata';
-import { colors } from '@/theme/colors';
+import { colors, primary, accent } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
+import { shadows } from '@/theme/shadows';
 import type { RevisionScheduleItem } from '../types/memorization.types';
 
 // ─── Status Colors ───────────────────────────────────────────────────────────
@@ -16,15 +17,15 @@ import type { RevisionScheduleItem } from '../types/memorization.types';
 const STATUS_DOT_COLORS: Record<string, string> = {
   new: colors.accent.indigo[500],
   learning: colors.secondary[500],
-  memorized: '#22C55E',
-  needs_review: '#F97316',
+  memorized: primary[500],
+  needs_review: accent.orange[500],
 };
 
 const STATUS_BG_COLORS: Record<string, string> = {
   new: colors.accent.indigo[50],
   learning: colors.secondary[50],
-  memorized: '#DCFCE7',
-  needs_review: '#FFEDD5',
+  memorized: primary[100],
+  needs_review: accent.orange[100],
 };
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -84,7 +85,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     marginBottom: spacing.sm,
     gap: spacing.md,
-    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
+    ...shadows.xs,
   },
   pressed: {
     opacity: 0.7,

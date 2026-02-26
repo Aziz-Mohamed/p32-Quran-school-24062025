@@ -15,6 +15,7 @@ import { colors } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
+import { shadows } from '@/theme/shadows';
 import { normalize } from '@/theme/normalize';
 
 interface JuzRowProps {
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.sm,
     paddingHorizontal: spacing.base,
     paddingVertical: spacing.md,
-    boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.04)',
+    ...shadows.sm,
   },
   header: {
     flexDirection: 'row',

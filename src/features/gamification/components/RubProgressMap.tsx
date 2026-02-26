@@ -13,7 +13,7 @@ import type {
   RubReference,
   EnrichedCertification,
 } from '../types/gamification.types';
-import { colors } from '@/theme/colors';
+import { colors, secondary } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     color: colors.neutral[500],
   },
   warningBanner: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: secondary[100],
     borderRadius: normalize(8),
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
   warningText: {
     fontFamily: typography.fontFamily.semiBold,
     fontSize: normalize(13),
-    color: '#92400E',
+    color: secondary[800],
   },
   separator: {
     height: spacing.sm,

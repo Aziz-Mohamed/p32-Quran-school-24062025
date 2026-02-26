@@ -20,6 +20,7 @@ import type {
   RubReference,
   FreshnessState,
 } from '../../types/gamification.types';
+import { primary, accent, neutral } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 
 // ─── Card ────────────────────────────────────────────────────────────────────
@@ -55,11 +56,11 @@ const D_Y = BLK - 6;                      // 40
 
 // ─── State colors ────────────────────────────────────────────────────────────
 const SC: Record<FreshnessState, string> = {
-  fresh: '#22C55E',
-  fading: '#EAB308',
-  warning: '#F97316',
-  critical: '#EF4444',
-  dormant: '#6B7280',
+  fresh: primary[500],
+  fading: accent.yellow[500],
+  warning: accent.orange[500],
+  critical: accent.red[500],
+  dormant: neutral[500],
   uncertified: 'rgba(255,255,255,0.04)',
 };
 

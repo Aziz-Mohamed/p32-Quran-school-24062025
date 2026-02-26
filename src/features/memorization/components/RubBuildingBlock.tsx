@@ -17,10 +17,12 @@ import Svg, {
 } from 'react-native-svg';
 
 import type { RubCoverage } from '../utils/rub-coverage';
+import { primary } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 import { radius } from '@/theme/radius';
+import { shadows } from '@/theme/shadows';
 
 // ─── Layout ──────────────────────────────────────────────────────────────────
 
@@ -105,14 +107,14 @@ function RubBuildingBlockInner({ coverage, onPress }: RubBuildingBlockProps) {
   });
 
   // Meniscus color: lighter green when uncertified is the top layer
-  const meniscusColor = hasUncertified ? '#BBF7D0' : '#86EFAC';
+  const meniscusColor = hasUncertified ? primary[200] : primary[300];
 
   // Border + shadow — always green family
   const borderColor = 'rgba(187, 247, 208, 0.5)';
   const shadowStyle = '0px 4px 14px rgba(22, 163, 74, 0.15), 0px 2px 6px rgba(0, 0, 0, 0.08)';
 
   // Text color — always green-dark
-  const textColor = '#14532D';
+  const textColor = primary[900];
 
   const handlePress = () => {
     if (onPress) {
@@ -127,17 +129,17 @@ function RubBuildingBlockInner({ coverage, onPress }: RubBuildingBlockProps) {
         <Defs>
           {/* Card background — green-tinted */}
           <LinearGradient id={`${uid}bg`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#F0FDF4" />
-            <Stop offset="0.5" stopColor="#ECFDF5" />
-            <Stop offset="1" stopColor="#D1FAE5" />
+            <Stop offset="0" stopColor={primary[50]} />
+            <Stop offset="0.5" stopColor={primary[50]} />
+            <Stop offset="1" stopColor={primary[100]} />
           </LinearGradient>
 
           {/* Green fill — rich multi-stop (certified) */}
           <LinearGradient id={`${uid}fg`} x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor="#4ADE80" />
-            <Stop offset="0.35" stopColor="#22C55E" />
-            <Stop offset="0.7" stopColor="#1DB954" />
-            <Stop offset="1" stopColor="#16A34A" />
+            <Stop offset="0" stopColor={primary[400]} />
+            <Stop offset="0.35" stopColor={primary[500]} />
+            <Stop offset="0.7" stopColor={primary[500]} />
+            <Stop offset="1" stopColor={primary[600]} />
           </LinearGradient>
 
           {/* Striped pattern — diagonal green stripes (uncertified / pending) */}
@@ -148,8 +150,8 @@ function RubBuildingBlockInner({ coverage, onPress }: RubBuildingBlockProps) {
             height={8}
             patternTransform="rotate(45)"
           >
-            <Rect x={0} y={0} width={8} height={8} fill="#BBF7D0" />
-            <Line x1={0} y1={0} x2={0} y2={8} stroke="#86EFAC" strokeWidth={3} />
+            <Rect x={0} y={0} width={8} height={8} fill={primary[200]} />
+            <Line x1={0} y1={0} x2={0} y2={8} stroke={primary[300]} strokeWidth={3} />
           </Pattern>
 
           {/* Fill gloss — specular highlight on filled area */}
@@ -265,7 +267,7 @@ const styles = StyleSheet.create({
     paddingVertical: normalize(2),
     alignSelf: 'flex-start',
     marginTop: normalize(18),
-    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.06)',
+    ...shadows.xs,
   },
   rubNum: {
     fontFamily: typography.fontFamily.bold,

@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import type { FreshnessState } from '../types/gamification.types';
 import { getHeatMapColor } from '../utils/heatmap-colors';
+import { colors, neutral } from '@/theme/colors';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
 import { radius } from '@/theme/radius';
@@ -40,12 +41,12 @@ export const HeatMapCell = memo(function HeatMapCell({
       width: size,
       height: size,
       backgroundColor: bgColor,
-      borderColor: isCertified ? bgColor : '#D1D5DB',
+      borderColor: isCertified ? bgColor : neutral[300],
       borderStyle: isCertified ? ('solid' as const) : ('dashed' as const),
     },
   ];
 
-  const textColor = isCertified && DARK_BG_STATES.has(freshnessState!) ? '#FFFFFF' : '#6B7280';
+  const textColor = isCertified && DARK_BG_STATES.has(freshnessState!) ? colors.white : neutral[500];
   const fontSize = size > 30 ? normalize(10) : normalize(8);
 
   const stateLabel = freshnessState ?? 'uncertified';

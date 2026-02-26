@@ -5,7 +5,7 @@ import i18next from 'i18next';
 
 import type { RubCoverage } from '../utils/rub-coverage';
 import { formatRubVerseRange, getMushafPage } from '@/lib/quran-metadata';
-import { colors, lightTheme } from '@/theme/colors';
+import { colors, lightTheme, primary, accent, semanticSurface } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
@@ -46,8 +46,8 @@ export function RubDetailSheet({ visible, coverage, onClose, onCancelAssignments
   const isFullyCovered = totalPct === 100;
 
   // Chip styling — green family
-  const chipBg = isFullyCovered ? '#DCFCE7' : '#DBEAFE';
-  const chipColor = isFullyCovered ? '#166534' : '#1E40AF';
+  const chipBg = isFullyCovered ? primary[100] : accent.blue[100];
+  const chipColor = isFullyCovered ? primary[800] : accent.blue[700];
 
   const hasPendingAssignments = (coverage.pendingAssignmentIds?.length ?? 0) > 0;
 
@@ -93,7 +93,7 @@ export function RubDetailSheet({ visible, coverage, onClose, onCancelAssignments
             {hasCertified && (
               <View style={styles.infoRow}>
                 <View style={styles.dotLabelRow}>
-                  <View style={[styles.dot, { backgroundColor: '#22C55E' }]} />
+                  <View style={[styles.dot, { backgroundColor: primary[500] }]} />
                   <Text style={styles.infoLabel}>
                     {t('memorization.detail.certified')}
                   </Text>
@@ -108,7 +108,7 @@ export function RubDetailSheet({ visible, coverage, onClose, onCancelAssignments
             {hasUncertified && (
               <View style={styles.infoRow}>
                 <View style={styles.dotLabelRow}>
-                  <View style={[styles.dot, { backgroundColor: '#86EFAC' }]} />
+                  <View style={[styles.dot, { backgroundColor: primary[300] }]} />
                   <Text style={styles.infoLabel}>
                     {t('memorization.detail.pendingCertification')}
                   </Text>
@@ -135,7 +135,7 @@ export function RubDetailSheet({ visible, coverage, onClose, onCancelAssignments
                   <View
                     style={[
                       styles.progressFill,
-                      { width: `${certifiedPct}%`, backgroundColor: '#22C55E' },
+                      { width: `${certifiedPct}%`, backgroundColor: primary[500] },
                     ]}
                   />
                 )}
@@ -143,7 +143,7 @@ export function RubDetailSheet({ visible, coverage, onClose, onCancelAssignments
                   <View
                     style={[
                       styles.progressFill,
-                      { width: `${uncertifiedPct}%`, backgroundColor: '#86EFAC' },
+                      { width: `${uncertifiedPct}%`, backgroundColor: primary[300] },
                     ]}
                   />
                 )}
@@ -301,13 +301,13 @@ const styles = StyleSheet.create({
   cancelButton: {
     alignItems: 'center',
     paddingVertical: spacing.md,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: semanticSurface.error,
     borderRadius: radius.md,
     marginBottom: spacing.xs,
   },
   cancelLabel: {
     ...typography.textStyles.bodyMedium,
-    color: '#DC2626',
+    color: accent.red[600],
   },
 
   // Close
