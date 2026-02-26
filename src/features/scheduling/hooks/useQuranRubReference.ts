@@ -138,6 +138,40 @@ export function resolveRubRange(rubData: RubReference[], rubNumber: number) {
   };
 }
 
+/**
+ * Reverse lookup: given a surah + ayah, find which rub'/juz/hizb it belongs to.
+ * rubData must be sorted by rub_number ascending.
+ */
+export function findRubForAyah(
+  rubData: RubReference[],
+  surah: number,
+  ayah: number,
+): { rub_number: number; juz_number: number; hizb_number: number } | null {
+  if (rubData.length === 0) return null;
+
+  // Compare (surah, ayah) tuples: returns negative if a < b, 0 if equal, positive if a > b
+  const cmp = (s1: number, a1: number, s2: number, a2: number) =>
+    s1 !== s2 ? s1 - s2 : a1 - a2;
+
+  // Find the last rub whose start <= (surah, ayah)
+  let result: RubReference | null = null;
+  for (const rub of rubData) {
+    if (cmp(rub.start_surah, rub.start_ayah, surah, ayah) <= 0) {
+      result = rub;
+    } else {
+      break;
+    }
+  }
+
+  if (!result) return null;
+
+  return {
+    rub_number: result.rub_number,
+    juz_number: result.juz_number,
+    hizb_number: result.hizb_number,
+  };
+}
+
 // Surah ayah counts (index 0 = surah 1)
 const SURAH_AYAH_COUNTS = [
   7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99, 128, 111,

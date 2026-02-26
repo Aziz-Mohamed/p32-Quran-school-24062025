@@ -148,7 +148,7 @@ class RecitationPlanService {
   }
 
   /**
-   * Delete a student's own suggestion.
+   * Delete a student's own suggestion(s).
    */
   async deleteStudentSuggestion(sessionId: string, studentId: string) {
     return supabase
@@ -157,6 +157,47 @@ class RecitationPlanService {
       .eq('scheduled_session_id', sessionId)
       .eq('student_id', studentId)
       .eq('source', 'student_suggestion');
+  }
+
+  /**
+   * Replace all student suggestions for a session with a new batch.
+   * Deletes existing suggestions first, then inserts new ones.
+   */
+  async replaceStudentSuggestions(
+    sessionId: string,
+    studentId: string,
+    inputs: CreateRecitationPlanInput[],
+  ) {
+    // 1. Delete all existing student suggestions
+    const { error: deleteError } = await this.deleteStudentSuggestion(sessionId, studentId);
+    if (deleteError) throw deleteError;
+
+    if (inputs.length === 0) return { data: [], error: null };
+
+    // 2. Batch insert all new ones
+    const planData = inputs.map((input) => ({
+      school_id: input.school_id,
+      scheduled_session_id: input.scheduled_session_id,
+      student_id: studentId,
+      set_by: input.set_by,
+      selection_mode: input.selection_mode,
+      start_surah: input.start_surah,
+      start_ayah: input.start_ayah,
+      end_surah: input.end_surah,
+      end_ayah: input.end_ayah,
+      rub_number: input.rub_number ?? null,
+      juz_number: input.juz_number ?? null,
+      hizb_number: input.hizb_number ?? null,
+      recitation_type: input.recitation_type,
+      source: 'student_suggestion' as const,
+      assignment_id: input.assignment_id ?? null,
+      notes: input.notes ?? null,
+    }));
+
+    return supabase
+      .from('session_recitation_plans')
+      .insert(planData)
+      .select('*');
   }
 
   /**
