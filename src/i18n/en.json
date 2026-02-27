@@ -1101,8 +1101,12 @@
         "ayah_range": "Ayah Range",
         "rub": "Rubʿ",
         "hizb": "Hizb",
-        "juz": "Juz"
+        "juz": "Juz",
+        "surah": "Surah"
       },
+      "openInQuran": "Open in Quran",
+      "openInQuranError": "Could not open Quran app",
+      "openInQuranErrorMessage": "Unable to open the Quran app. Please make sure the Quran.com app is installed or try opening the link manually.",
       "rubNumber": "Rubʿ Number",
       "hizbNumber": "Hizb Number",
       "juzNumber": "Juz Number",

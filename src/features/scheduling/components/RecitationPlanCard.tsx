@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,7 @@ import { normalize } from '@/theme/normalize';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { getSurah } from '@/lib/quran-metadata';
+import { openInQuranApp } from '@/utils/open-quran';
 import { useAllRubReferences, findRubForAyah } from '@/features/scheduling/hooks/useQuranRubReference';
 import type { RecitationPlanWithDetails } from '@/features/scheduling/types/recitation-plan.types';
 
@@ -59,6 +60,15 @@ export function RecitationPlanCard({
 
   const setterName = plan.setter?.full_name;
 
+  const handleOpenInQuran = useCallback(() => {
+    openInQuranApp({
+      startSurah: plan.start_surah,
+      startAyah: plan.start_ayah,
+      endSurah: plan.end_surah,
+      endAyah: plan.end_ayah,
+    });
+  }, [plan.start_surah, plan.start_ayah, plan.end_surah, plan.end_ayah]);
+
   return (
     <Card variant="outlined" style={styles.card}>
       {/* Header row: range + badges */}
@@ -100,6 +110,22 @@ export function RecitationPlanCard({
           {plan.notes}
         </Text>
       )}
+
+      {/* Open in Quran button */}
+      <Button
+        title={t('scheduling.recitationPlan.openInQuran')}
+        onPress={handleOpenInQuran}
+        variant="secondary"
+        size="sm"
+        icon={
+          <Ionicons
+            name="open-outline"
+            size={normalize(16)}
+            color={colors.primary[600]}
+          />
+        }
+        style={styles.openQuranButton}
+      />
 
       {/* Action buttons */}
       {canManage && (
@@ -185,6 +211,9 @@ const styles = StyleSheet.create({
     lineHeight: typography.lineHeight.sm,
     color: lightTheme.textSecondary,
     fontStyle: 'italic',
+  },
+  openQuranButton: {
+    alignSelf: 'flex-start',
   },
   actionRow: {
     flexDirection: 'row',

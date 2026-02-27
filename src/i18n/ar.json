@@ -1101,8 +1101,12 @@
         "ayah_range": "نطاق الآيات",
         "rub": "ربع",
         "hizb": "حزب",
-        "juz": "جزء"
+        "juz": "جزء",
+        "surah": "سورة"
       },
+      "openInQuran": "فتح في تطبيق القرآن",
+      "openInQuranError": "تعذّر الفتح",
+      "openInQuranErrorMessage": "لم نتمكن من فتح تطبيق القرآن. يرجى التأكد من تثبيت تطبيق Quran.com أو فتح الرابط يدوياً.",
       "rubNumber": "رقم الربع",
       "hizbNumber": "رقم الحزب",
       "juzNumber": "رقم الجزء",

@@ -1373,6 +1373,28 @@ export type Database = {
           class_avg_tajweed: number
         }[]
       }
+      get_period_comparison: {
+        Args: {
+          p_class_id?: string
+          p_current_end: string
+          p_current_start: string
+          p_previous_end: string
+          p_previous_start: string
+          p_school_id: string
+        }
+        Returns: {
+          current_attendance_rate: number
+          current_avg_memorization: number
+          current_avg_recitation: number
+          current_avg_tajweed: number
+          current_stickers: number
+          previous_attendance_rate: number
+          previous_avg_memorization: number
+          previous_avg_recitation: number
+          previous_avg_tajweed: number
+          previous_stickers: number
+        }[]
+      }
       get_score_trend: {
         Args: {
           p_class_id?: string
