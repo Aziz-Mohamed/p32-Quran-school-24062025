@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -40,6 +40,15 @@ export default function AdminReportsScreen() {
   }, [queryClient]);
 
   const pulse = schoolPulse.data;
+
+  // Reorder alerts: celebrations first, then info, warnings, danger
+  const orderedAlerts = useMemo(() => {
+    if (!pulse?.alerts) return [];
+    const order: Record<string, number> = { success: 0, info: 1, warning: 2, danger: 3 };
+    return [...pulse.alerts].sort(
+      (a, b) => (order[a.severity] ?? 2) - (order[b.severity] ?? 2),
+    );
+  }, [pulse?.alerts]);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
@@ -141,10 +150,10 @@ export default function AdminReportsScreen() {
         )}
 
         {/* Section 3: Alerts & Actions */}
-        {pulse && pulse.alerts.length > 0 && (
+        {orderedAlerts.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>{t('insights.alertsTitle')}</Text>
-            {pulse.alerts.map((alert) => (
+            {orderedAlerts.map((alert) => (
               <View key={alert.id} style={styles.alertWrapper}>
                 <InsightActionCard
                   insight={alert}

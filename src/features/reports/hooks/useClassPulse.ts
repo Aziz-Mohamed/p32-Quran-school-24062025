@@ -133,6 +133,7 @@ export function useClassPulse(
       attentionStudents,
       currentStickers,
       previousStickers,
+      studentStatus.data ?? [],
       t,
     );
 

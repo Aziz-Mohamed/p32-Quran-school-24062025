@@ -5,6 +5,7 @@ import type {
   HealthMetric,
   ClassAnalytics,
   StudentNeedingAttention,
+  StudentQuickStatus,
   SchoolKPISummary,
   TeacherActivitySummary,
   SessionCompletionStat,
@@ -29,6 +30,7 @@ export function generateTeacherInsights(
   attentionStudents: StudentNeedingAttention[],
   stickersCount: number,
   previousStickersCount: number | null,
+  studentStatuses: StudentQuickStatus[],
   t: TFunction,
 ): InsightData[] {
   if (!analytics) return [];
@@ -113,7 +115,123 @@ export function generateTeacherInsights(
     }
   }
 
-  // Rule 6: All healthy -- fallback
+  // Rule 6: Weakest dimension (one dimension ≥0.5 below the others AND below 3.5)
+  const dims = [
+    { key: 'memorization', val: analytics.averageMemorization },
+    { key: 'tajweed', val: analytics.averageTajweed },
+    { key: 'recitation', val: analytics.averageRecitation },
+  ].sort((a, b) => a.val - b.val);
+
+  if (dims[0].val < 3.5 && dims[1].val - dims[0].val >= 0.5) {
+    insights.push({
+      id: 'weakest-dimension',
+      severity: 'warning',
+      icon: 'book-outline',
+      title: t('insights.weakestDimension', {
+        dimension: t(`insights.dimension.${dims[0].key}`),
+      }),
+      description: t('insights.weakestDimensionDetail', {
+        score: dims[0].val.toFixed(1),
+      }),
+    });
+  }
+
+  // Rule 7: Top performers (students with score ≥ 4.0, show top 3)
+  const topStudents = studentStatuses
+    .filter((s) => s.recentAvgScore >= 4.0)
+    .sort((a, b) => b.recentAvgScore - a.recentAvgScore)
+    .slice(0, 3);
+
+  if (topStudents.length > 0) {
+    const names = topStudents
+      .map((s) => `${s.fullName} (${s.recentAvgScore.toFixed(1)})`)
+      .join(', ');
+    insights.push({
+      id: 'top-performers',
+      severity: 'info',
+      icon: 'star',
+      title: t('insights.topPerformers'),
+      description: names,
+    });
+  }
+
+  // Rule 8: Streak leaders (students with streak ≥ 5)
+  const streakLeaders = studentStatuses
+    .filter((s) => s.currentStreak >= 5)
+    .sort((a, b) => b.currentStreak - a.currentStreak)
+    .slice(0, 3);
+
+  if (streakLeaders.length > 0) {
+    const names = streakLeaders
+      .map((s) => `${s.fullName}: ${s.currentStreak}`)
+      .join(', ');
+    insights.push({
+      id: 'streak-leaders',
+      severity: 'info',
+      icon: 'flame',
+      title: t('insights.streakLeaders'),
+      description: names,
+    });
+  }
+
+  // Rule 9: Engagement drop (stickers down >50%)
+  if (
+    previousStickersCount != null &&
+    previousStickersCount > 0 &&
+    stickersCount < previousStickersCount * 0.5
+  ) {
+    insights.push({
+      id: 'engagement-drop',
+      severity: 'warning',
+      icon: 'ribbon-outline',
+      title: t('insights.engagementDrop'),
+      description: t('insights.engagementDropDetail', {
+        current: stickersCount,
+        previous: previousStickersCount,
+      }),
+    });
+  }
+
+  // Rule 10: Engagement surge (stickers up >50% and at least 3)
+  if (
+    previousStickersCount != null &&
+    stickersCount > previousStickersCount * 1.5 &&
+    stickersCount >= 3
+  ) {
+    insights.push({
+      id: 'engagement-surge',
+      severity: 'success',
+      icon: 'ribbon',
+      title: t('insights.engagementSurge'),
+      description: t('insights.engagementSurgeDetail', {
+        current: stickersCount,
+        previous: previousStickersCount,
+      }),
+    });
+  }
+
+  // Rule 11: Students at risk (red status, not already covered by declining/low-scores)
+  const decliningIds = new Set(declining.map((s) => s.studentId));
+  const lowScoreIds = new Set(lowScores.map((s) => s.studentId));
+  const atRiskStudents = studentStatuses.filter(
+    (s) => s.status === 'red' && !decliningIds.has(s.studentId) && !lowScoreIds.has(s.studentId),
+  );
+
+  if (atRiskStudents.length > 0) {
+    const names = atRiskStudents
+      .slice(0, 3)
+      .map((s) => s.fullName)
+      .join(', ');
+    insights.push({
+      id: 'students-at-risk',
+      severity: 'warning',
+      icon: 'warning-outline',
+      title: t('insights.studentsAtRisk', { count: atRiskStudents.length }),
+      description: t('insights.studentsAtRiskDetail', { names }),
+    });
+  }
+
+  // Rule 12: All healthy -- fallback
   if (insights.length === 0) {
     insights.push({
       id: 'all-good',

@@ -7,6 +7,7 @@ import { lightTheme, semantic, semanticSurface } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+import { shadows } from '@/theme/shadows';
 
 const SEVERITY_CONFIG = {
   success: { color: semantic.success, bg: semanticSurface.success },
@@ -24,7 +25,7 @@ export function InsightActionCard({ insight, onPress }: InsightActionCardProps) 
   const config = SEVERITY_CONFIG[insight.severity];
 
   const content = (
-    <View style={[styles.card, { backgroundColor: config.bg, borderLeftColor: config.color }]}>
+    <View style={[styles.card, { backgroundColor: config.bg, borderColor: config.color + '26' }]}>
       <View style={[styles.iconContainer, { backgroundColor: config.color + '1A' }]}>
         <Ionicons name={insight.icon as any} size={20} color={config.color} />
       </View>
@@ -67,9 +68,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.md,
     borderRadius: radius.md,
-    borderLeftWidth: 4,
+    borderWidth: 1,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.base,
+    ...shadows.xs,
   },
   iconContainer: {
     width: 36,
