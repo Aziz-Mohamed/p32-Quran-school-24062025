@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { I18nManager, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
@@ -118,7 +118,12 @@ export default function SessionCompletionReportScreen() {
           </Card>
         ) : (
           stats.map((stat) => (
-            <SessionCompletionCard key={stat.teacherId} stat={stat} />
+            <Pressable
+              key={stat.teacherId}
+              onPress={() => router.push(`/(admin)/teachers/${stat.teacherId}` as any)}
+            >
+              <SessionCompletionCard stat={stat} />
+            </Pressable>
           ))
         )}
       </ScrollView>
@@ -151,6 +156,7 @@ function SessionCompletionCard({ stat }: { stat: SessionCompletionStat }) {
             size="sm"
           />
         </View>
+        <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.neutral[300]} />
       </View>
 
       <View style={styles.statsGrid}>

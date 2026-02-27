@@ -150,6 +150,8 @@ export function useClassPulse(
 
   return {
     data: pulse,
+    analytics: analytics.data,
+    comparison: comparison.data,
     isLoading,
     isError,
     refetch: async () => {

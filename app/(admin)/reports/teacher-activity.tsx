@@ -84,6 +84,7 @@ export default function TeacherActivityScreen() {
           isLoading={teacherActivity.isLoading}
           isError={teacherActivity.isError}
           onRetry={() => teacherActivity.refetch()}
+          onTeacherPress={(id) => router.push(`/(admin)/teachers/${id}` as any)}
         />
       </ScrollView>
     </SafeAreaView>

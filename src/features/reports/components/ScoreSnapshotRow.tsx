@@ -7,7 +7,7 @@ import Svg, { Circle } from 'react-native-svg';
 import type { TrendDirection } from '../types/reports.types';
 import { TrendArrow } from './TrendArrow';
 import { SkeletonLoader } from '@/components/feedback';
-import { lightTheme, accent } from '@/theme/colors';
+import { lightTheme, accent, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
@@ -26,21 +26,31 @@ const SCORE_COLORS = {
   recitation: accent.blue[500],
 } as const;
 
+const LABEL_COLORS: Record<string, string> = {
+  excellent: colors.semantic.success,
+  good: accent.teal[600],
+  developing: colors.semantic.warning,
+  needsWork: colors.semantic.error,
+};
+
 interface ScoreRingProps {
   value: number; // 0-5 scale
-  label: string;
+  dimension: string; // "Memorization", "Tajweed", "Recitation"
+  scoreLabel: string; // "Good", "Developing", etc.
+  scoreLabelKey: string; // "good", "developing", etc. (for color lookup)
   color: string;
   trend: TrendDirection;
-  trendLabel: string;
 }
 
-function ScoreRing({ value, label, color, trend, trendLabel }: ScoreRingProps) {
+function ScoreRing({ value, dimension, scoreLabel, scoreLabelKey, color, trend }: ScoreRingProps) {
   const progress = Math.min(value / 5, 1);
   const strokeDashoffset = CIRCUMFERENCE * (1 - progress);
 
   const animatedProps = useAnimatedProps(() => ({
     strokeDashoffset: withTiming(strokeDashoffset, { duration: 800 }),
   }));
+
+  const labelColor = LABEL_COLORS[scoreLabelKey] ?? lightTheme.textSecondary;
 
   return (
     <View style={styles.ringContainer}>
@@ -74,8 +84,11 @@ function ScoreRing({ value, label, color, trend, trendLabel }: ScoreRingProps) {
           <Text style={styles.valueText}>{value.toFixed(1)}</Text>
         </View>
       </View>
-      <Text style={styles.ringLabel} numberOfLines={1}>{label}</Text>
-      <TrendArrow direction={trend} label={trendLabel} size={normalize(12)} />
+      <Text style={[styles.scoreLabelText, { color: labelColor }]} numberOfLines={1}>
+        {scoreLabel}
+      </Text>
+      <Text style={styles.dimensionLabel} numberOfLines={1}>{dimension}</Text>
+      <TrendArrow direction={trend} label="" size={normalize(12)} />
     </View>
   );
 }
@@ -87,9 +100,12 @@ interface ScoreSnapshotRowProps {
   memTrend: TrendDirection;
   tajTrend: TrendDirection;
   recTrend: TrendDirection;
-  memTrendLabel: string;
-  tajTrendLabel: string;
-  recTrendLabel: string;
+  memLabel: string;
+  tajLabel: string;
+  recLabel: string;
+  memLabelKey: string;
+  tajLabelKey: string;
+  recLabelKey: string;
   isLoading?: boolean;
 }
 
@@ -100,9 +116,12 @@ export function ScoreSnapshotRow({
   memTrend,
   tajTrend,
   recTrend,
-  memTrendLabel,
-  tajTrendLabel,
-  recTrendLabel,
+  memLabel,
+  tajLabel,
+  recLabel,
+  memLabelKey,
+  tajLabelKey,
+  recLabelKey,
   isLoading,
 }: ScoreSnapshotRowProps) {
   const { t } = useTranslation();
@@ -126,24 +145,27 @@ export function ScoreSnapshotRow({
       <View style={styles.row}>
         <ScoreRing
           value={memorization}
-          label={t('insights.dimension.memorization')}
+          dimension={t('insights.dimension.memorization')}
+          scoreLabel={memLabel}
+          scoreLabelKey={memLabelKey}
           color={SCORE_COLORS.memorization}
           trend={memTrend}
-          trendLabel={memTrendLabel}
         />
         <ScoreRing
           value={tajweed}
-          label={t('insights.dimension.tajweed')}
+          dimension={t('insights.dimension.tajweed')}
+          scoreLabel={tajLabel}
+          scoreLabelKey={tajLabelKey}
           color={SCORE_COLORS.tajweed}
           trend={tajTrend}
-          trendLabel={tajTrendLabel}
         />
         <ScoreRing
           value={recitation}
-          label={t('insights.dimension.recitation')}
+          dimension={t('insights.dimension.recitation')}
+          scoreLabel={recLabel}
+          scoreLabelKey={recLabelKey}
           color={SCORE_COLORS.recitation}
           trend={recTrend}
-          trendLabel={recTrendLabel}
         />
       </View>
     </View>
@@ -188,8 +210,13 @@ const styles = StyleSheet.create({
     lineHeight: typography.lineHeight.md,
     color: lightTheme.text,
   },
-  ringLabel: {
-    fontFamily: typography.fontFamily.medium,
+  scoreLabelText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: typography.fontSize.sm,
+    lineHeight: typography.lineHeight.sm,
+  },
+  dimensionLabel: {
+    fontFamily: typography.fontFamily.regular,
     fontSize: typography.fontSize.xs,
     lineHeight: typography.lineHeight.xs,
     color: lightTheme.textSecondary,
