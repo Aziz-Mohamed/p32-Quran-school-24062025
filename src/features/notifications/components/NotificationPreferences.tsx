@@ -9,11 +9,13 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useForm, Controller } from 'react-hook-form';
+import { Ionicons } from '@expo/vector-icons';
 
 import { colors, lightTheme, primary, neutral } from '@/theme/colors';
 import { radius } from '@/theme/radius';
 import { normalize } from '@/theme/normalize';
 import { useAuthStore } from '@/stores/authStore';
+import { TimePicker, formatTimeHHMM, parseTimeString } from '@/components/forms/TimePicker';
 import {
   useNotificationPreferences,
   useUpdateNotificationPreferences,
@@ -46,6 +48,8 @@ export function NotificationPreferencesScreen() {
   const { control, reset, watch } = useForm<NotificationPreferencesForm>({
     defaultValues: DEFAULT_PREFS,
   });
+
+  const quietHoursEnabled = watch('quiet_hours_enabled');
 
   // Sync fetched preferences into the form
   useEffect(() => {
@@ -94,7 +98,18 @@ export function NotificationPreferencesScreen() {
       <View style={styles.section}>
         {categories.map((cat) => (
           <View key={cat.id} style={styles.row}>
-            <Text style={styles.label}>{t(cat.labelKey)}</Text>
+            <View style={styles.rowLeading}>
+              <Ionicons
+                name={cat.icon as any}
+                size={normalize(20)}
+                color={primary[600]}
+                style={styles.rowIcon}
+              />
+              <View style={styles.rowText}>
+                <Text style={styles.label}>{t(cat.labelKey)}</Text>
+                <Text style={styles.description}>{t(cat.descriptionKey)}</Text>
+              </View>
+            </View>
             <Controller
               control={control}
               name={cat.preferenceColumn as keyof NotificationPreferencesForm}
@@ -136,6 +151,34 @@ export function NotificationPreferencesScreen() {
             )}
           />
         </View>
+        {quietHoursEnabled && (
+          <View style={styles.timePickerRow}>
+            <Controller
+              control={control}
+              name="quiet_hours_start"
+              render={({ field: { value, onChange } }) => (
+                <TimePicker
+                  label={t('notifications.preferences.quietHoursStart')}
+                  value={value ? parseTimeString(value) : null}
+                  onChange={(date) => onChange(formatTimeHHMM(date))}
+                  style={styles.timePicker}
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="quiet_hours_end"
+              render={({ field: { value, onChange } }) => (
+                <TimePicker
+                  label={t('notifications.preferences.quietHoursEnd')}
+                  value={value ? parseTimeString(value) : null}
+                  onChange={(date) => onChange(formatTimeHHMM(date))}
+                  style={styles.timePicker}
+                />
+              )}
+            />
+          </View>
+        )}
       </View>
     </ScrollView>
   );
@@ -186,15 +229,41 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingVertical: normalize(12),
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: lightTheme.border,
   },
-  label: {
-    fontSize: normalize(15),
-    color: neutral[700],
+  rowLeading: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     flex: 1,
     marginInlineEnd: normalize(12),
+  },
+  rowIcon: {
+    marginTop: normalize(2),
+    marginInlineEnd: normalize(12),
+  },
+  rowText: {
+    flex: 1,
+  },
+  label: {
+    fontSize: normalize(15),
+    fontWeight: '600',
+    color: neutral[700],
+  },
+  description: {
+    fontSize: normalize(12),
+    color: lightTheme.textTertiary,
+    marginTop: normalize(2),
+    lineHeight: normalize(16),
+  },
+  timePickerRow: {
+    flexDirection: 'row',
+    gap: normalize(12),
+    paddingVertical: normalize(12),
+  },
+  timePicker: {
+    flex: 1,
   },
 });

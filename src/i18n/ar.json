@@ -790,12 +790,19 @@
     },
     "categories": {
       "stickerAwarded": "ملصق ممنوح",
+      "stickerAwardedDesc": "عندما يمنحك معلمك ملصقًا جديدًا",
       "trophyEarned": "جائزة مُكتسبة",
+      "trophyEarnedDesc": "عندما تحصل على جائزة لبلوغ إنجاز معين",
       "achievementUnlocked": "إنجاز مُحقّق",
+      "achievementUnlockedDesc": "عندما تفتح شارة إنجاز جديدة",
       "attendanceMarked": "حضور مُسجَّل",
+      "attendanceMarkedDesc": "عندما يتم تسجيل حضور طفلك في حصّة",
       "sessionCompleted": "حصّة مكتملة",
+      "sessionCompletedDesc": "عندما تُكتمل حصّة حضرتها",
       "dailySummary": "ملخّص يومي",
-      "studentAlert": "تنبيه طالب"
+      "dailySummaryDesc": "نظرة صباحية على حصص اليوم وإحصائيات الطلاب",
+      "studentAlert": "تنبيه طالب",
+      "studentAlertDesc": "عندما يتغيّب طالب عن حصص أو يحتاج اهتمامك"
     }
   },
   "reports": {

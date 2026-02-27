@@ -790,12 +790,19 @@
     },
     "categories": {
       "stickerAwarded": "Sticker Awarded",
+      "stickerAwardedDesc": "When your teacher gives you a new sticker",
       "trophyEarned": "Trophy Earned",
+      "trophyEarnedDesc": "When you earn a trophy for reaching a milestone",
       "achievementUnlocked": "Achievement Unlocked",
+      "achievementUnlockedDesc": "When you unlock a new achievement badge",
       "attendanceMarked": "Attendance Marked",
+      "attendanceMarkedDesc": "When your child's attendance is recorded",
       "sessionCompleted": "Session Completed",
+      "sessionCompletedDesc": "When a session you attended is marked complete",
       "dailySummary": "Daily Summary",
-      "studentAlert": "Student Alert"
+      "dailySummaryDesc": "A morning overview of today's sessions and students",
+      "studentAlert": "Student Alert",
+      "studentAlertDesc": "When a student misses sessions or needs attention"
     }
   },
   "reports": {

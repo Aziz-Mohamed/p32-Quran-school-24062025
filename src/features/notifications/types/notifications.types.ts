@@ -40,6 +40,10 @@ export interface CategoryConfig {
   id: NotificationCategory;
   /** i18n key for the category display name */
   labelKey: string;
+  /** i18n key for the description subtitle */
+  descriptionKey: string;
+  /** Ionicons icon name */
+  icon: string;
   /** Which roles receive this notification type */
   roles: UserRole[];
   /** Column name on notification_preferences table */

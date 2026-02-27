@@ -4,6 +4,8 @@ export const NOTIFICATION_CATEGORIES: CategoryConfig[] = [
   {
     id: 'sticker_awarded',
     labelKey: 'notifications.categories.stickerAwarded',
+    descriptionKey: 'notifications.categories.stickerAwardedDesc',
+    icon: 'star-outline',
     roles: ['student', 'parent'],
     preferenceColumn: 'sticker_awarded',
     deepLink: { screen: '/(student)/(tabs)/stickers' },
@@ -11,6 +13,8 @@ export const NOTIFICATION_CATEGORIES: CategoryConfig[] = [
   {
     id: 'trophy_earned',
     labelKey: 'notifications.categories.trophyEarned',
+    descriptionKey: 'notifications.categories.trophyEarnedDesc',
+    icon: 'trophy-outline',
     roles: ['student', 'parent'],
     preferenceColumn: 'trophy_earned',
     deepLink: { screen: '/(student)/trophy-room' },
@@ -18,6 +22,8 @@ export const NOTIFICATION_CATEGORIES: CategoryConfig[] = [
   {
     id: 'achievement_unlocked',
     labelKey: 'notifications.categories.achievementUnlocked',
+    descriptionKey: 'notifications.categories.achievementUnlockedDesc',
+    icon: 'ribbon-outline',
     roles: ['student', 'parent'],
     preferenceColumn: 'achievement_unlocked',
     deepLink: { screen: '/(student)/(tabs)/stickers' },
@@ -25,6 +31,8 @@ export const NOTIFICATION_CATEGORIES: CategoryConfig[] = [
   {
     id: 'attendance_marked',
     labelKey: 'notifications.categories.attendanceMarked',
+    descriptionKey: 'notifications.categories.attendanceMarkedDesc',
+    icon: 'checkmark-circle-outline',
     roles: ['parent'],
     preferenceColumn: 'attendance_marked',
     deepLink: { screen: '/(parent)/(tabs)/children' },
@@ -32,6 +40,8 @@ export const NOTIFICATION_CATEGORIES: CategoryConfig[] = [
   {
     id: 'session_completed',
     labelKey: 'notifications.categories.sessionCompleted',
+    descriptionKey: 'notifications.categories.sessionCompletedDesc',
+    icon: 'book-outline',
     roles: ['student', 'parent'],
     preferenceColumn: 'session_completed',
     deepLink: { screen: '/(student)/sessions/index' },
@@ -39,6 +49,8 @@ export const NOTIFICATION_CATEGORIES: CategoryConfig[] = [
   {
     id: 'daily_summary',
     labelKey: 'notifications.categories.dailySummary',
+    descriptionKey: 'notifications.categories.dailySummaryDesc',
+    icon: 'newspaper-outline',
     roles: ['teacher'],
     preferenceColumn: 'daily_summary',
     deepLink: { screen: '/(teacher)/(tabs)/index' },
@@ -46,6 +58,8 @@ export const NOTIFICATION_CATEGORIES: CategoryConfig[] = [
   {
     id: 'student_alert',
     labelKey: 'notifications.categories.studentAlert',
+    descriptionKey: 'notifications.categories.studentAlertDesc',
+    icon: 'alert-circle-outline',
     roles: ['teacher'],
     preferenceColumn: 'student_alert',
     deepLink: { screen: '/(teacher)/(tabs)/students' },
