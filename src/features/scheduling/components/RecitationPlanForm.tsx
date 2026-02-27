@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -33,6 +33,7 @@ import {
   useRecitationPlanFormState,
   type SelectedPlanItem,
 } from '@/features/scheduling/hooks/useRecitationPlanFormState';
+import { useUIStore } from '@/stores/uiStore';
 import { PlanSuggestionItem } from './PlanSuggestionItem';
 
 export type { SelectedPlanItem };
@@ -83,6 +84,17 @@ export function RecitationPlanForm({
 }: RecitationPlanFormProps) {
   const { t, i18n } = useTranslation();
   const isArabic = i18n.language === 'ar';
+
+  // ── Hide tab bar while modal is open ────────────────────────────────
+  const pushModal = useUIStore((s) => s.pushModal);
+  const popModal = useUIStore((s) => s.popModal);
+
+  useEffect(() => {
+    if (visible) {
+      pushModal();
+      return () => popModal();
+    }
+  }, [visible, pushModal, popModal]);
 
   // ── Data sources ────────────────────────────────────────────────────
   const { data: memorizationAssignments = [], isLoading: loadingMemo } = useQuery({
@@ -368,30 +380,30 @@ export function RecitationPlanForm({
               multiline
               style={styles.section}
             />
-          </ScrollView>
 
-          {/* Footer buttons */}
-          <View style={styles.footer}>
-            <Button
-              title={t('common.cancel')}
-              onPress={onClose}
-              variant="ghost"
-              size="md"
-              style={styles.footerButton}
-            />
-            <Button
-              title={
-                form.selectedItems.length > 0
-                  ? `${t('common.save')} (${form.selectedItems.length})`
-                  : t('common.save')
-              }
-              onPress={form.handleSave}
-              variant="primary"
-              size="md"
-              disabled={!form.isValid}
-              style={styles.footerButton}
-            />
-          </View>
+            {/* Footer buttons */}
+            <View style={styles.footer}>
+              <Button
+                title={t('common.cancel')}
+                onPress={onClose}
+                variant="ghost"
+                size="md"
+                style={styles.footerButton}
+              />
+              <Button
+                title={
+                  form.selectedItems.length > 0
+                    ? `${t('common.save')} (${form.selectedItems.length})`
+                    : t('common.save')
+                }
+                onPress={form.handleSave}
+                variant="primary"
+                size="md"
+                disabled={!form.isValid}
+                style={styles.footerButton}
+              />
+            </View>
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -549,8 +561,8 @@ const styles = StyleSheet.create({
   footer: {
     flexDirection: 'row',
     gap: spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.base,
+    paddingTop: spacing.md,
+    marginTop: spacing.sm,
     borderTopWidth: 1,
     borderTopColor: lightTheme.border,
   },
