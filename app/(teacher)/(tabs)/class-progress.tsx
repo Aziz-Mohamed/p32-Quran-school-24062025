@@ -195,12 +195,14 @@ export default function TeacherClassProgressScreen() {
             tajLabelKey={tajLabelKey}
             recLabelKey={recLabelKey}
             isLoading={classPulse.isLoading}
+            onPress={() => setActiveSheet('scores')}
           />
         </View>
 
         {/* Insight Feed — tappable cards mapped to appropriate bottom sheets */}
         {orderedInsights.length > 0 && (
           <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('insights.actionItems')}</Text>
             {orderedInsights.map((insight) => (
               <View key={insight.id} style={styles.insightCardWrapper}>
                 <InsightActionCard
@@ -284,6 +286,11 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: spacing.base,
+  },
+  sectionTitle: {
+    ...typography.textStyles.bodyMedium,
+    color: lightTheme.text,
+    marginBottom: spacing.md,
   },
   summaryContainer: {
     marginTop: spacing.md,

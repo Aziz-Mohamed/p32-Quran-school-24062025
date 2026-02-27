@@ -6,6 +6,7 @@ import Svg, { Circle } from 'react-native-svg';
 
 import type { TrendDirection } from '../types/reports.types';
 import { TrendArrow } from './TrendArrow';
+import { Card } from '@/components/ui/Card';
 import { SkeletonLoader } from '@/components/feedback';
 import { lightTheme, accent, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -107,6 +108,7 @@ interface ScoreSnapshotRowProps {
   tajLabelKey: string;
   recLabelKey: string;
   isLoading?: boolean;
+  onPress?: () => void;
 }
 
 export function ScoreSnapshotRow({
@@ -123,6 +125,7 @@ export function ScoreSnapshotRow({
   tajLabelKey,
   recLabelKey,
   isLoading,
+  onPress,
 }: ScoreSnapshotRowProps) {
   const { t } = useTranslation();
 
@@ -140,7 +143,7 @@ export function ScoreSnapshotRow({
   }
 
   return (
-    <View style={styles.container}>
+    <Card variant="glass" onPress={onPress} style={styles.container}>
       <Text style={styles.sectionTitle}>{t('insights.scoreSnapshot')}</Text>
       <View style={styles.row}>
         <ScoreRing
@@ -168,22 +171,29 @@ export function ScoreSnapshotRow({
           trend={recTrend}
         />
       </View>
-    </View>
+      {onPress && (
+        <Text style={styles.tapHint}>{t('insights.tapForDetails')}</Text>
+      )}
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: lightTheme.surfaceElevated,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: lightTheme.border,
     padding: spacing.base,
   },
   sectionTitle: {
     ...typography.textStyles.bodyMedium,
     color: lightTheme.text,
     marginBottom: spacing.md,
+  },
+  tapHint: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.xs,
+    lineHeight: typography.lineHeight.xs,
+    color: lightTheme.textTertiary,
+    textAlign: 'center',
+    marginTop: spacing.md,
   },
   row: {
     flexDirection: 'row',

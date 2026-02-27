@@ -5,11 +5,19 @@ import { Ionicons } from '@expo/vector-icons';
 
 import type { StudentQuickStatus } from '../types/reports.types';
 import { StatusDot } from './StatusDot';
+import { getScoreLabel } from '../utils/thresholds';
 import { SkeletonLoader } from '@/components/feedback';
-import { lightTheme, secondary } from '@/theme/colors';
+import { lightTheme, secondary, accent, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
+
+const SCORE_LABEL_COLORS: Record<string, string> = {
+  excellent: colors.semantic.success,
+  good: accent.teal[600],
+  developing: colors.semantic.warning,
+  needsWork: colors.semantic.error,
+};
 
 interface StudentStatusGridProps {
   students: StudentQuickStatus[];
@@ -62,7 +70,10 @@ export function StudentStatusGrid({
                 <Text style={styles.streakText}>{student.currentStreak}</Text>
               </View>
             )}
-            <Text style={styles.scoreText}>
+            <Text style={[
+              styles.scoreText,
+              student.recentAvgScore > 0 && { color: SCORE_LABEL_COLORS[getScoreLabel(student.recentAvgScore)] ?? lightTheme.text },
+            ]}>
               {student.recentAvgScore > 0 ? student.recentAvgScore.toFixed(1) : '--'}
             </Text>
           </View>

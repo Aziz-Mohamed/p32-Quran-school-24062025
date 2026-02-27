@@ -1001,6 +1001,8 @@
     "memorizationNeedsReview": "{{count}} of {{total}} students have items needing revision.",
     "scoreSnapshot": "Score Snapshot",
     "studentsAtGlance": "Students at a Glance",
+    "actionItems": "Action Items",
+    "tapForDetails": "Tap for details",
     "alertsTitle": "Needs Attention",
     "detailedReports": "Detailed Reports",
     "viewDetails": "View details",

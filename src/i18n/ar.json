@@ -1001,6 +1001,8 @@
     "memorizationNeedsReview": "{{count}} من {{total}} طالب لديهم مواد تحتاج مراجعة.",
     "scoreSnapshot": "لمحة الدرجات",
     "studentsAtGlance": "الطلاب بنظرة سريعة",
+    "actionItems": "بنود العمل",
+    "tapForDetails": "اضغط للتفاصيل",
     "alertsTitle": "يحتاج انتباه",
     "detailedReports": "تقارير مفصلة",
     "viewDetails": "عرض التفاصيل",
