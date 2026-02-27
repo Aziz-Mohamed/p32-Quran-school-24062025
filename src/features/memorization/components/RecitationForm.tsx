@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, Switch, type ViewStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/Button';
 import { TextField } from '@/components/ui/TextField';
 import { ScoreInput } from '@/components/forms/ScoreInput';
 import { SurahAyahPicker } from './SurahAyahPicker';
-import { RecitationTypeChips } from './RecitationTypeChip';
+import { RecitationTypeChip } from './RecitationTypeChip';
+import { useAutoRecitationType } from '../hooks/useAutoRecitationType';
 
 import { colors, lightTheme } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
@@ -37,6 +38,7 @@ interface RecitationFormProps {
   data: RecitationFormData;
   onChange: (data: RecitationFormData) => void;
   onRemove: () => void;
+  studentId?: string;
   style?: ViewStyle;
 }
 
@@ -89,9 +91,29 @@ export function validateRecitationForm(
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function RecitationForm({ index, data, onChange, onRemove, style }: RecitationFormProps) {
+export function RecitationForm({ index, data, onChange, onRemove, studentId, style }: RecitationFormProps) {
   const { t } = useTranslation();
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const isFromPlan = data.assignment_id != null;
+  const { recitationType: autoType } = useAutoRecitationType({
+    studentId,
+    surahNumber: data.surah_number,
+    fromAyah: data.from_ayah,
+    toAyah: data.to_ayah,
+    planType: isFromPlan ? data.recitation_type : null,
+  });
+
+  // Sync auto-determined type back into form data
+  const prevAutoType = useRef(autoType);
+  useEffect(() => {
+    if (autoType !== prevAutoType.current) {
+      prevAutoType.current = autoType;
+      if (autoType !== data.recitation_type) {
+        onChange({ ...data, recitation_type: autoType });
+      }
+    }
+  }, [autoType]);
 
   const update = <K extends keyof RecitationFormData>(field: K, value: RecitationFormData[K]) => {
     const next = { ...data, [field]: value };
@@ -133,11 +155,11 @@ export function RecitationForm({ index, data, onChange, onRemove, style }: Recit
         toAyahError={errors.to_ayah}
       />
 
-      {/* Recitation Type */}
-      <RecitationTypeChips
-        value={data.recitation_type}
-        onChange={(v) => update('recitation_type', v)}
-      />
+      {/* Recitation Type (auto-determined) */}
+      <View style={styles.typeRow}>
+        <Text style={styles.typeLabel}>{t('memorization.recitationType.title')}</Text>
+        <RecitationTypeChip type={data.recitation_type} />
+      </View>
 
       {/* Scores */}
       <ScoreInput
@@ -200,6 +222,16 @@ const styles = StyleSheet.create({
     ...typography.textStyles.subheading,
     color: lightTheme.text,
     fontSize: normalize(14),
+  },
+  typeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  typeLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: typography.fontSize.sm,
+    color: lightTheme.text,
   },
   toggleRow: {
     flexDirection: 'row',

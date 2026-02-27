@@ -415,6 +415,7 @@ export default function SessionWorkspaceScreen() {
                           data={recitation}
                           onChange={(data) => updateRecitation(student.id, idx, data)}
                           onRemove={() => removeRecitation(student.id, idx)}
+                          studentId={student.id}
                         />
                       ))}
 

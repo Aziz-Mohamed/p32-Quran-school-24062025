@@ -97,6 +97,53 @@ export function classifyReviewType(
   return diffDays <= RECENT_REVIEW_DAYS ? 'recent_review' : 'old_review';
 }
 
+/**
+ * Classify recitation type from a student's memorization progress entries
+ * for a given ayah range within a single surah.
+ *
+ * Strategy:
+ * 1. Exact match on (from_ayah, to_ayah) → use its first_memorized_at
+ * 2. Any overlapping entry with first_memorized_at → use the most recent
+ * 3. No match → new_hifz
+ */
+export function classifyRangeType(
+  progressEntries: readonly { from_ayah: number; to_ayah: number; first_memorized_at: string | null }[],
+  fromAyah: number,
+  toAyah: number,
+): 'new_hifz' | 'recent_review' | 'old_review' {
+  if (progressEntries.length === 0 || fromAyah < 1 || toAyah < 1) {
+    return 'new_hifz';
+  }
+
+  // 1. Exact match
+  const exact = progressEntries.find(
+    (p) => p.from_ayah === fromAyah && p.to_ayah === toAyah,
+  );
+  if (exact) {
+    return classifyReviewType(exact.first_memorized_at);
+  }
+
+  // 2. Overlapping entries (ranges that intersect with [fromAyah, toAyah])
+  const withMemorizedAt = progressEntries
+    .filter(
+      (p) =>
+        p.from_ayah <= toAyah &&
+        p.to_ayah >= fromAyah &&
+        p.first_memorized_at != null,
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.first_memorized_at!).getTime() -
+        new Date(a.first_memorized_at!).getTime(),
+    );
+
+  if (withMemorizedAt.length === 0) {
+    return 'new_hifz';
+  }
+
+  return classifyReviewType(withMemorizedAt[0].first_memorized_at);
+}
+
 function addDays(date: Date, days: number): Date {
   const result = new Date(date);
   result.setDate(result.getDate() + days);
