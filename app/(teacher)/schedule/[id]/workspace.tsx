@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { StyleSheet, View, Text, Pressable, Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -19,24 +19,17 @@ import { useStudents } from '@/features/students/hooks/useStudents';
 import { useCompleteSessionWorkspace } from '@/features/scheduling/hooks/useCompleteSessionWorkspace';
 import { scheduledSessionService } from '@/features/scheduling/services/scheduled-session.service';
 import { useSessionRecitationPlans } from '@/features/scheduling/hooks/useRecitationPlans';
+import { useWorkspaceDraft } from '@/features/scheduling/hooks/useWorkspaceDraft';
 import { getSurah } from '@/lib/quran-metadata';
-import type { RecitationType } from '@/types/common.types';
+import type { RecitationType, AttendanceStatus } from '@/types/common.types';
+import type { EvalData } from '@/stores/workspaceDraftStore';
 import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
 import { lightTheme, colors } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
-type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
-
-interface EvalData {
-  memorization_score: number | null;
-  tajweed_score: number | null;
-  recitation_quality: number | null;
-  notes: string;
-}
+// ─── Constants ───────────────────────────────────────────────────────────────
 
 const STATUS_COLORS: Record<AttendanceStatus, string> = {
   present: colors.semantic.success,
@@ -113,12 +106,15 @@ export default function SessionWorkspaceScreen() {
 
   // Fetch recitation plans for pre-fill
   const { data: plans = [] } = useSessionRecitationPlans(id);
-  const prefillApplied = useRef(false);
 
-  // Local state
-  const [attendanceStatuses, setAttendanceStatuses] = useState<Record<string, AttendanceStatus>>({});
-  const [evaluations, setEvaluations] = useState<Record<string, EvalData>>({});
-  const [recitations, setRecitations] = useState<Record<string, RecitationFormData[]>>({});
+  // Persistent draft state (survives navigation)
+  const {
+    attendanceStatuses, setAttendanceStatuses,
+    evaluations, setEvaluations,
+    recitations, setRecitations,
+    restoredFromDraft, clearDraft,
+  } = useWorkspaceDraft(id);
+  const prefillApplied = useRef(restoredFromDraft);
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
 
   // Pre-fill recitations from plans (once) — supports multiple plans per student
@@ -267,6 +263,7 @@ export default function SessionWorkspaceScreen() {
       },
       {
         onSuccess: () => {
+          clearDraft();
           Alert.alert(t('common.success'), t('scheduling.sessionCompleted'), [
             { text: t('common.done'), onPress: () => router.back() },
           ]);
