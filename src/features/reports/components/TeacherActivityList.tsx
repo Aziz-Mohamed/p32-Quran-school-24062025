@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
 
@@ -16,6 +16,7 @@ interface TeacherActivityListProps {
   isLoading?: boolean;
   isError?: boolean;
   onRetry?: () => void;
+  onTeacherPress?: (teacherId: string) => void;
 }
 
 export function TeacherActivityList({
@@ -23,6 +24,7 @@ export function TeacherActivityList({
   isLoading,
   isError,
   onRetry,
+  onTeacherPress,
 }: TeacherActivityListProps) {
   const { t } = useTranslation();
   const isEmpty = !isLoading && !isError && teachers.length === 0;
@@ -74,12 +76,21 @@ export function TeacherActivityList({
                 <Text style={styles.sectionHeader}>{item.title}</Text>
               );
             }
+            const card = (
+              <TeacherActivityCard
+                teacher={item.teacher}
+                inactive={item.inactive}
+              />
+            );
             return (
               <View style={styles.cardWrapper}>
-                <TeacherActivityCard
-                  teacher={item.teacher}
-                  inactive={item.inactive}
-                />
+                {onTeacherPress ? (
+                  <Pressable onPress={() => onTeacherPress(item.teacher.teacherId)}>
+                    {card}
+                  </Pressable>
+                ) : (
+                  card
+                )}
               </View>
             );
           }}

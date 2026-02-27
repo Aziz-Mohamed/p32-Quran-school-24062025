@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { I18nManager, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
@@ -19,6 +19,7 @@ import { normalize } from '@/theme/normalize';
 import { useTimePeriod } from '@/features/reports/hooks/useTimePeriod';
 import { useSessionCompletionStats } from '@/features/reports/hooks/useAdminReports';
 import { TimePeriodFilter } from '@/features/reports/components/TimePeriodFilter';
+import { PulseCard } from '@/features/reports/components/PulseCard';
 import type { SessionCompletionStat } from '@/features/reports/types/reports.types';
 
 // ─── Session Completion Report ───────────────────────────────────────────────
@@ -71,6 +72,23 @@ export default function SessionCompletionReportScreen() {
 
         <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
 
+        {/* Insight Header */}
+        {!isLoading && stats.length > 0 && (
+          <View style={{ marginBottom: spacing.base }}>
+            <PulseCard
+              status={overallRate >= 90 ? 'green' : overallRate >= 75 ? 'yellow' : 'red'}
+              message={
+                overallRate >= 90
+                  ? t('insights.sessionCompletionStrong', { rate: overallRate })
+                  : t('insights.sessionCompletionLow', {
+                      rate: overallRate,
+                      count: stats.filter((s) => s.completionRate < 70).length,
+                    })
+              }
+            />
+          </View>
+        )}
+
         {/* Summary KPIs */}
         <View style={styles.kpiRow}>
           <Card variant="default" style={styles.kpiCard}>
@@ -100,7 +118,12 @@ export default function SessionCompletionReportScreen() {
           </Card>
         ) : (
           stats.map((stat) => (
-            <SessionCompletionCard key={stat.teacherId} stat={stat} />
+            <Pressable
+              key={stat.teacherId}
+              onPress={() => router.push(`/(admin)/teachers/${stat.teacherId}` as any)}
+            >
+              <SessionCompletionCard stat={stat} />
+            </Pressable>
           ))
         )}
       </ScrollView>
@@ -133,6 +156,7 @@ function SessionCompletionCard({ stat }: { stat: SessionCompletionStat }) {
             size="sm"
           />
         </View>
+        <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.neutral[300]} />
       </View>
 
       <View style={styles.statsGrid}>

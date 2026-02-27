@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import { I18nManager, StyleSheet, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +19,14 @@ import { typography } from '@/theme/typography';
 import { lightTheme, colors, semantic } from '@/theme/colors';
 import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
+
+const STATUS_BADGE_VARIANT: Record<string, 'sky' | 'warning' | 'success' | 'default'> = {
+  scheduled: 'sky',
+  in_progress: 'warning',
+  completed: 'success',
+  cancelled: 'default',
+  missed: 'warning',
+};
 
 // ─── Teacher Dashboard ────────────────────────────────────────────────────────
 
@@ -138,9 +146,9 @@ export default function TeacherDashboard() {
           </Card>
         </View>
 
-        {/* Recent Activity */}
+        {/* Recent Sessions */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>{t('dashboard.recentActivity')}</Text>
+          <Text style={styles.sectionTitle}>{t('dashboard.recentSessions')}</Text>
           <Badge label={String(data?.totalStudents ?? 0)} variant="sky" />
         </View>
         {(data?.recentSessions ?? []).length === 0 ? (
@@ -148,38 +156,48 @@ export default function TeacherDashboard() {
             <Text style={styles.emptyText}>{t('teacher.dashboard.noRecentSessions')}</Text>
           </Card>
         ) : (
-          data?.recentSessions.map((session) => (
-            <Card
-              key={session.id}
-              variant="default"
-              onPress={() => router.push(`/(teacher)/sessions/${session.id}`)}
-              style={styles.sessionCard}
-            >
-              <View style={styles.sessionRow}>
-                <View style={[styles.sessionAvatar, { backgroundColor: colors.neutral[100] }]}>
-                  <Text style={styles.avatarText}>
-                    {resolveName(session.student?.profiles?.name_localized, session.student?.profiles?.full_name)?.[0]?.toUpperCase()}
-                  </Text>
-                </View>
-                <View style={styles.sessionInfo}>
-                  <Text style={styles.sessionStudentName} numberOfLines={1}>
-                    {resolveName(session.student?.profiles?.name_localized, session.student?.profiles?.full_name) ?? t('common.noResults')}
-                  </Text>
-                  <Text style={styles.sessionDate}>{session.session_date}</Text>
-                </View>
-                <View style={styles.sessionScores}>
-                  {session.memorization_score != null && (
-                    <Badge 
-                      label={`${session.memorization_score}/5`} 
-                      variant={session.memorization_score >= 4 ? "success" : "warning"} 
-                      size="sm" 
+          data?.recentSessions.map((session) => {
+            const score = session.evaluation?.memorization_score;
+            return (
+              <Card
+                key={session.id}
+                variant="default"
+                onPress={() => router.push(`/(teacher)/schedule/${session.id}`)}
+                style={styles.recentCard}
+              >
+                <View style={styles.recentCardRow}>
+                  <View style={styles.recentCardInfo}>
+                    <Text style={styles.recentCardTitle} numberOfLines={1}>
+                      {resolveName(session.class?.name_localized, session.class?.name) ?? t('scheduling.individualSession')}
+                    </Text>
+                    <Text style={styles.recentCardMeta}>
+                      {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}
+                      {session.student?.profiles?.full_name
+                        ? `  ·  ${resolveName(session.student.profiles?.name_localized, session.student.profiles.full_name)}`
+                        : ''}
+                    </Text>
+                  </View>
+                  {score != null && (
+                    <Badge
+                      label={`${score}/5`}
+                      variant={score >= 4 ? 'success' : 'warning'}
+                      size="sm"
                     />
                   )}
-                  <Ionicons name="chevron-forward" size={18} color={colors.neutral[300]} />
+                  <Badge
+                    label={t(`scheduling.status.${session.status}`)}
+                    variant={STATUS_BADGE_VARIANT[session.status] ?? 'default'}
+                    size="sm"
+                  />
+                  <Ionicons
+                    name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'}
+                    size={16}
+                    color={colors.neutral[300]}
+                  />
                 </View>
-              </View>
-            </Card>
-          ))
+              </Card>
+            );
+          })
         )}
       </View>
     </Screen>
@@ -287,41 +305,26 @@ const styles = StyleSheet.create({
     color: colors.neutral[700],
     textAlign: 'center',
   },
-  sessionCard: {
+  recentCard: {
     padding: spacing.md,
+    marginBottom: spacing.sm,
   },
-  sessionRow: {
+  recentCardRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
   },
-  sessionAvatar: {
-    width: normalize(40),
-    height: normalize(40),
-    borderRadius: normalize(20),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    ...typography.textStyles.bodyMedium,
-    color: colors.neutral[600],
-  },
-  sessionInfo: {
+  recentCardInfo: {
     flex: 1,
+    gap: normalize(3),
   },
-  sessionStudentName: {
+  recentCardTitle: {
     ...typography.textStyles.bodyMedium,
     color: colors.neutral[900],
   },
-  sessionDate: {
-    ...typography.textStyles.label,
-    color: colors.neutral[500],
-    marginTop: normalize(2),
-  },
-  sessionScores: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+  recentCardMeta: {
+    ...typography.textStyles.caption,
+    color: colors.neutral[400],
   },
   emptyCard: {
     padding: spacing.xl,

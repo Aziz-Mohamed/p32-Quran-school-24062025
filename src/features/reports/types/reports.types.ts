@@ -131,3 +131,77 @@ export interface SessionCompletionStat {
   missedCount: number;
   completionRate: number; // 0-100
 }
+
+// ─── Insight-First Report Types ─────────────────────────────────────────────
+
+export type HealthStatus = 'green' | 'yellow' | 'red';
+export type TrendDirection = 'up' | 'down' | 'steady';
+
+export interface InsightData {
+  id: string;
+  severity: 'success' | 'warning' | 'danger' | 'info';
+  icon: string; // Ionicons name
+  title: string;
+  description?: string;
+  actionRoute?: string;
+  actionParams?: Record<string, string>;
+}
+
+export interface HealthMetric {
+  label: string;
+  value: number;
+  displayValue: string;
+  status: HealthStatus;
+  trend: TrendDirection;
+  trendLabel: string; // e.g. "+3%", "-0.2", "--"
+}
+
+export interface ClassPulse {
+  status: HealthStatus;
+  message: string;
+  attendance: HealthMetric;
+  scores: HealthMetric;
+  engagement: HealthMetric;
+  insights: InsightData[];
+  students: StudentQuickStatus[];
+}
+
+export interface StudentQuickStatus {
+  studentId: string;
+  fullName: string;
+  status: HealthStatus;
+  currentLevel: number;
+  currentStreak: number;
+  recentAvgScore: number;
+}
+
+export interface SchoolPulse {
+  status: HealthStatus;
+  message: string;
+  studentHealth: {
+    status: HealthStatus;
+    activeStudents: number;
+    attendanceRate: number;
+    attendanceTrend: TrendDirection;
+    attendanceTrendLabel: string;
+    avgScore: number;
+    scoreTrend: TrendDirection;
+    scoreTrendLabel: string;
+  };
+  teacherEngagement: {
+    status: HealthStatus;
+    activeTeachers: number;
+    inactiveTeachers: number;
+    inactiveNames: string[];
+    punctualityRate: number;
+    sessionCompletionRate: number;
+  };
+  academicProgress: {
+    status: HealthStatus;
+    totalStudents: number;
+    avgScore: number;
+    scoreLabel: string;
+    stickersAwarded: number;
+  };
+  alerts: InsightData[];
+}

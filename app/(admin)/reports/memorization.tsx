@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { I18nManager, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
@@ -19,6 +19,7 @@ import { radius } from '@/theme/radius';
 import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { supabase } from '@/lib/supabase';
 import { TOTAL_QURAN_AYAHS } from '@/lib/quran-metadata';
+import { PulseCard } from '@/features/reports/components/PulseCard';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -178,6 +179,32 @@ export default function MemorizationReportScreen() {
           {t('reports.memorization.title')}
         </Text>
 
+        {/* Insight Header */}
+        {!isLoading && kpis && (
+          <View style={{ marginBottom: spacing.base }}>
+            <PulseCard
+              status={
+                kpis.studentsNeedingReview === 0
+                  ? 'green'
+                  : kpis.studentsNeedingReview <= 3
+                    ? 'yellow'
+                    : 'red'
+              }
+              message={
+                kpis.studentsNeedingReview === 0
+                  ? t('insights.memorizationHealthy', {
+                      count: kpis.totalStudentsWithProgress,
+                      ayahs: kpis.totalAyahsMemorized,
+                    })
+                  : t('insights.memorizationNeedsReview', {
+                      count: kpis.studentsNeedingReview,
+                      total: kpis.totalStudentsWithProgress,
+                    })
+              }
+            />
+          </View>
+        )}
+
         {/* Summary KPIs */}
         {kpis && (
           <>
@@ -239,7 +266,12 @@ export default function MemorizationReportScreen() {
           </Card>
         ) : (
           summaries.map((student) => (
-            <StudentMemCard key={student.student_id} student={student} />
+            <Pressable
+              key={student.student_id}
+              onPress={() => router.push(`/(admin)/students/${student.student_id}` as any)}
+            >
+              <StudentMemCard student={student} />
+            </Pressable>
           ))
         )}
       </ScrollView>
@@ -267,6 +299,7 @@ function StudentMemCard({ student }: { student: StudentMemSummary }) {
           )}
         </View>
         <Text style={styles.percentage}>{student.quran_percentage.toFixed(1)}%</Text>
+        <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.neutral[300]} />
       </View>
 
       <ProgressBar progress={progress} variant="primary" height={6} />

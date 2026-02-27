@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { I18nManager, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useQueryClient } from '@tanstack/react-query';
@@ -19,6 +19,7 @@ import { normalize } from '@/theme/normalize';
 import { useTimePeriod } from '@/features/reports/hooks/useTimePeriod';
 import { useTeacherAttendanceKPIs } from '@/features/reports/hooks/useAdminReports';
 import { TimePeriodFilter } from '@/features/reports/components/TimePeriodFilter';
+import { PulseCard } from '@/features/reports/components/PulseCard';
 import type { TeacherAttendanceKPI } from '@/features/reports/types/reports.types';
 
 // ─── Teacher Attendance Report ───────────────────────────────────────────────
@@ -72,6 +73,23 @@ export default function TeacherAttendanceReportScreen() {
 
         <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
 
+        {/* Insight Header */}
+        {!isLoading && teachers.length > 0 && (
+          <View style={{ marginBottom: spacing.base }}>
+            <PulseCard
+              status={avgPunctuality >= 90 ? 'green' : avgPunctuality >= 70 ? 'yellow' : 'red'}
+              message={
+                avgPunctuality >= 90
+                  ? t('insights.punctualityStrong', { rate: avgPunctuality })
+                  : t('insights.punctualityNeedsWork', {
+                      rate: avgPunctuality,
+                      lateCount: teachers.filter((tt) => tt.punctualityRate < 70).length,
+                    })
+              }
+            />
+          </View>
+        )}
+
         {/* Summary KPIs */}
         <View style={styles.kpiRow}>
           <Card variant="default" style={styles.kpiCard}>
@@ -101,7 +119,12 @@ export default function TeacherAttendanceReportScreen() {
           </Card>
         ) : (
           teachers.map((teacher) => (
-            <TeacherAttendanceCard key={teacher.teacherId} teacher={teacher} />
+            <Pressable
+              key={teacher.teacherId}
+              onPress={() => router.push(`/(admin)/teachers/${teacher.teacherId}` as any)}
+            >
+              <TeacherAttendanceCard teacher={teacher} />
+            </Pressable>
           ))
         )}
       </ScrollView>
@@ -134,6 +157,7 @@ function TeacherAttendanceCard({ teacher }: { teacher: TeacherAttendanceKPI }) {
             size="sm"
           />
         </View>
+        <Ionicons name={I18nManager.isRTL ? 'chevron-back' : 'chevron-forward'} size={18} color={colors.neutral[300]} />
       </View>
 
       <View style={styles.statsGrid}>
