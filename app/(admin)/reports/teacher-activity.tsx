@@ -15,6 +15,7 @@ import { useTimePeriod } from '@/features/reports/hooks/useTimePeriod';
 import { useTeacherActivity } from '@/features/reports/hooks/useAdminReports';
 import { TimePeriodFilter } from '@/features/reports/components/TimePeriodFilter';
 import { TeacherActivityList } from '@/features/reports/components/TeacherActivityList';
+import { PulseCard } from '@/features/reports/components/PulseCard';
 
 export default function TeacherActivityScreen() {
   const { t } = useTranslation();
@@ -54,6 +55,29 @@ export default function TeacherActivityScreen() {
         </Text>
 
         <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
+
+        {/* Insight Header */}
+        {!teacherActivity.isLoading && teacherActivity.data && (
+          <View style={{ marginBottom: spacing.base }}>
+            <PulseCard
+              status={
+                teacherActivity.data.every((ta) => ta.sessionsLogged > 0)
+                  ? 'green'
+                  : teacherActivity.data.filter((ta) => ta.sessionsLogged === 0).length <= 1
+                    ? 'yellow'
+                    : 'red'
+              }
+              message={
+                teacherActivity.data.every((ta) => ta.sessionsLogged > 0)
+                  ? t('insights.allTeachersActiveDetail', { count: teacherActivity.data.length })
+                  : t('insights.teachersInactiveDetail', {
+                      count: teacherActivity.data.filter((ta) => ta.sessionsLogged === 0).length,
+                      total: teacherActivity.data.length,
+                    })
+              }
+            />
+          </View>
+        )}
 
         <TeacherActivityList
           teachers={teacherActivity.data ?? []}

@@ -19,6 +19,7 @@ import { radius } from '@/theme/radius';
 import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { supabase } from '@/lib/supabase';
 import { TOTAL_QURAN_AYAHS } from '@/lib/quran-metadata';
+import { PulseCard } from '@/features/reports/components/PulseCard';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -177,6 +178,32 @@ export default function MemorizationReportScreen() {
         <Text style={styles.title}>
           {t('reports.memorization.title')}
         </Text>
+
+        {/* Insight Header */}
+        {!isLoading && kpis && (
+          <View style={{ marginBottom: spacing.base }}>
+            <PulseCard
+              status={
+                kpis.studentsNeedingReview === 0
+                  ? 'green'
+                  : kpis.studentsNeedingReview <= 3
+                    ? 'yellow'
+                    : 'red'
+              }
+              message={
+                kpis.studentsNeedingReview === 0
+                  ? t('insights.memorizationHealthy', {
+                      count: kpis.totalStudentsWithProgress,
+                      ayahs: kpis.totalAyahsMemorized,
+                    })
+                  : t('insights.memorizationNeedsReview', {
+                      count: kpis.studentsNeedingReview,
+                      total: kpis.totalStudentsWithProgress,
+                    })
+              }
+            />
+          </View>
+        )}
 
         {/* Summary KPIs */}
         {kpis && (

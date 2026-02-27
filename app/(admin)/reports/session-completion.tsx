@@ -19,6 +19,7 @@ import { normalize } from '@/theme/normalize';
 import { useTimePeriod } from '@/features/reports/hooks/useTimePeriod';
 import { useSessionCompletionStats } from '@/features/reports/hooks/useAdminReports';
 import { TimePeriodFilter } from '@/features/reports/components/TimePeriodFilter';
+import { PulseCard } from '@/features/reports/components/PulseCard';
 import type { SessionCompletionStat } from '@/features/reports/types/reports.types';
 
 // ─── Session Completion Report ───────────────────────────────────────────────
@@ -70,6 +71,23 @@ export default function SessionCompletionReportScreen() {
         </Text>
 
         <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
+
+        {/* Insight Header */}
+        {!isLoading && stats.length > 0 && (
+          <View style={{ marginBottom: spacing.base }}>
+            <PulseCard
+              status={overallRate >= 90 ? 'green' : overallRate >= 75 ? 'yellow' : 'red'}
+              message={
+                overallRate >= 90
+                  ? t('insights.sessionCompletionStrong', { rate: overallRate })
+                  : t('insights.sessionCompletionLow', {
+                      rate: overallRate,
+                      count: stats.filter((s) => s.completionRate < 70).length,
+                    })
+              }
+            />
+          </View>
+        )}
 
         {/* Summary KPIs */}
         <View style={styles.kpiRow}>

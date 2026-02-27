@@ -19,6 +19,7 @@ import { normalize } from '@/theme/normalize';
 import { useTimePeriod } from '@/features/reports/hooks/useTimePeriod';
 import { useTeacherAttendanceKPIs } from '@/features/reports/hooks/useAdminReports';
 import { TimePeriodFilter } from '@/features/reports/components/TimePeriodFilter';
+import { PulseCard } from '@/features/reports/components/PulseCard';
 import type { TeacherAttendanceKPI } from '@/features/reports/types/reports.types';
 
 // ─── Teacher Attendance Report ───────────────────────────────────────────────
@@ -71,6 +72,23 @@ export default function TeacherAttendanceReportScreen() {
         </Text>
 
         <TimePeriodFilter value={timePeriod} onChange={setTimePeriod} />
+
+        {/* Insight Header */}
+        {!isLoading && teachers.length > 0 && (
+          <View style={{ marginBottom: spacing.base }}>
+            <PulseCard
+              status={avgPunctuality >= 90 ? 'green' : avgPunctuality >= 70 ? 'yellow' : 'red'}
+              message={
+                avgPunctuality >= 90
+                  ? t('insights.punctualityStrong', { rate: avgPunctuality })
+                  : t('insights.punctualityNeedsWork', {
+                      rate: avgPunctuality,
+                      lateCount: teachers.filter((tt) => tt.punctualityRate < 70).length,
+                    })
+              }
+            />
+          </View>
+        )}
 
         {/* Summary KPIs */}
         <View style={styles.kpiRow}>
