@@ -168,6 +168,47 @@ class ScheduledSessionService {
   async cancelSession(sessionId: string) {
     return this.updateStatus(sessionId, 'cancelled');
   }
+
+  /**
+   * Fetch the full completion summary for a scheduled session:
+   * attendance records + evaluation sessions with nested recitations.
+   */
+  async getCompletedSessionSummary(scheduledSessionId: string) {
+    const [attendanceResult, evaluationsResult] = await Promise.all([
+      supabase
+        .from('attendance')
+        .select(`
+          id, student_id, status, notes,
+          students!inner(
+            id,
+            profiles!students_id_fkey!inner(full_name, name_localized, avatar_url)
+          )
+        `)
+        .eq('scheduled_session_id', scheduledSessionId)
+        .order('student_id'),
+      supabase
+        .from('sessions')
+        .select(`
+          id, student_id, memorization_score, tajweed_score, recitation_quality, notes,
+          student:students!sessions_student_id_fkey(
+            id,
+            profiles!students_id_fkey(full_name, name_localized, avatar_url)
+          ),
+          recitations(
+            id, surah_number, from_ayah, to_ayah, recitation_type,
+            accuracy_score, tajweed_score, fluency_score,
+            needs_repeat, mistake_notes, created_at
+          )
+        `)
+        .eq('scheduled_session_id', scheduledSessionId)
+        .order('created_at', { ascending: true }),
+    ]);
+
+    return {
+      attendance: { data: attendanceResult.data, error: attendanceResult.error },
+      evaluations: { data: evaluationsResult.data, error: evaluationsResult.error },
+    };
+  }
 }
 
 export const scheduledSessionService = new ScheduledSessionService();

@@ -32,6 +32,7 @@ class SessionsService {
         tajweed_score: input.tajweed_score ?? null,
         recitation_quality: input.recitation_quality ?? null,
         notes: input.notes ?? null,
+        scheduled_session_id: input.scheduled_session_id ?? null,
         school_id: schoolId,
       })
       .select()

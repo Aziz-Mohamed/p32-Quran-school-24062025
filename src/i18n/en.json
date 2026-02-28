@@ -1136,6 +1136,21 @@
       "noHomework": "No revision homework pending",
       "selectedCount": "Selected ({{count}})",
       "addCustomRange": "Add to Selection"
+    },
+    "summary": {
+      "attendance": "Attendance",
+      "present": "Present",
+      "absent": "Absent",
+      "late": "Late",
+      "excused": "Excused",
+      "studentResults": "Student Results",
+      "scores": "Scores",
+      "memorization": "Memorization",
+      "tajweed": "Tajweed",
+      "fluency": "Fluency",
+      "teacherNotes": "Teacher Notes",
+      "recitations": "Recitations",
+      "noEvaluations": "No evaluations recorded"
     }
   },
   "workAttendance": {

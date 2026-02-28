@@ -74,6 +74,7 @@ export function useCompleteSessionWorkspace() {
           tajweed_score: evalData.tajweed_score,
           recitation_quality: evalData.recitation_quality,
           notes: evalData.notes.trim() || null,
+          scheduled_session_id: input.scheduledSessionId,
         });
 
         if (sessionError) throw sessionError;

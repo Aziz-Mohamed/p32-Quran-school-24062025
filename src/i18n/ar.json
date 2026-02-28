@@ -1136,6 +1136,21 @@
       "noHomework": "لا توجد واجبات مراجعة معلقة",
       "selectedCount": "تم اختيار ({{count}})",
       "addCustomRange": "أضف إلى الاختيار"
+    },
+    "summary": {
+      "attendance": "الحضور",
+      "present": "حاضر",
+      "absent": "غائب",
+      "late": "متأخر",
+      "excused": "معذور",
+      "studentResults": "نتائج الطلاب",
+      "scores": "الدرجات",
+      "memorization": "الحفظ",
+      "tajweed": "التجويد",
+      "fluency": "الطلاقة",
+      "teacherNotes": "ملاحظات المعلم",
+      "recitations": "التسميعات",
+      "noEvaluations": "لا توجد تقييمات مسجلة"
     }
   },
   "workAttendance": {

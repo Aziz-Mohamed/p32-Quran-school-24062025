@@ -13,6 +13,7 @@ export interface CreateSessionInput {
   tajweed_score?: number | null;
   recitation_quality?: number | null;
   notes?: string | null;
+  scheduled_session_id?: string | null;
 }
 
 /** Filters for querying sessions */

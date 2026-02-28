@@ -904,6 +904,7 @@ export type Database = {
           memorization_score: number | null
           notes: string | null
           recitation_quality: number | null
+          scheduled_session_id: string | null
           school_id: string
           session_date: string
           student_id: string
@@ -917,6 +918,7 @@ export type Database = {
           memorization_score?: number | null
           notes?: string | null
           recitation_quality?: number | null
+          scheduled_session_id?: string | null
           school_id: string
           session_date?: string
           student_id: string
@@ -930,6 +932,7 @@ export type Database = {
           memorization_score?: number | null
           notes?: string | null
           recitation_quality?: number | null
+          scheduled_session_id?: string | null
           school_id?: string
           session_date?: string
           student_id?: string
@@ -942,6 +945,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sessions_scheduled_session_id_fkey"
+            columns: ["scheduled_session_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_sessions"
             referencedColumns: ["id"]
           },
           {
@@ -1631,3 +1641,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
