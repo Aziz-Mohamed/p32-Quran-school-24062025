@@ -300,7 +300,7 @@ export default function SessionWorkspaceScreen() {
               {resolveName(session.class?.name_localized, session.class?.name) ?? t('scheduling.individualSession')}
             </Text>
             <Text style={styles.subtitle}>
-              {session.session_date} | {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}
+              {new Date(session.session_date + 'T00:00:00').toLocaleDateString(undefined, { day: 'numeric', month: 'short' })} | {session.start_time?.slice(0, 5)} – {session.end_time?.slice(0, 5)}
             </Text>
           </View>
           <Badge label={t('scheduling.status.in_progress')} variant="warning" size="md" />
