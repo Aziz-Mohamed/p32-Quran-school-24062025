@@ -1150,6 +1150,7 @@
       "fluency": "Fluency",
       "teacherNotes": "Teacher Notes",
       "recitations": "Recitations",
+      "needsRepeat": "Needs Repeat",
       "noEvaluations": "No evaluations recorded"
     }
   },

@@ -202,10 +202,18 @@ function StudentResultCard({ student }: { student: MergedStudentResult }) {
             <View style={styles.recitationsSection}>
               <Text style={styles.subsectionTitle}>{t('scheduling.summary.recitations')}</Text>
               {eval_!.recitations.map((rec) => (
-                <RevisionCard
-                  key={rec.id}
-                  item={recitationToRevisionItem(rec)}
-                />
+                <View key={rec.id} style={styles.recitationItem}>
+                  <RevisionCard item={recitationToRevisionItem(rec)} />
+                  {rec.needs_repeat && (
+                    <View style={styles.needsRepeatRow}>
+                      <Ionicons name="repeat" size={normalize(14)} color={colors.semantic.warning} />
+                      <Text style={styles.needsRepeatText}>{t('scheduling.summary.needsRepeat')}</Text>
+                    </View>
+                  )}
+                  {rec.mistake_notes && (
+                    <Text style={styles.mistakeNotesText}>{rec.mistake_notes}</Text>
+                  )}
+                </View>
               ))}
             </View>
           )}
@@ -411,5 +419,28 @@ const styles = StyleSheet.create({
   // ── Recitations ──
   recitationsSection: {
     gap: spacing.sm,
+  },
+  recitationItem: {
+    gap: spacing.xs,
+  },
+  needsRepeatRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    borderRadius: radius.sm,
+  },
+  needsRepeatText: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: typography.fontSize.xs,
+    color: colors.semantic.warning,
+  },
+  mistakeNotesText: {
+    ...typography.textStyles.caption,
+    color: lightTheme.textSecondary,
+    fontStyle: 'italic',
+    paddingHorizontal: spacing.sm,
   },
 });
