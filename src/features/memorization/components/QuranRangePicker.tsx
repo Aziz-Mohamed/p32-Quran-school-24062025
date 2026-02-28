@@ -5,6 +5,7 @@ import {
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
   type ViewStyle,
 } from 'react-native';
@@ -17,7 +18,7 @@ import { spacing } from '@/theme/spacing';
 import { radius } from '@/theme/radius';
 import { typography } from '@/theme/typography';
 import { normalize } from '@/theme/normalize';
-import { getSurah } from '@/lib/quran-metadata';
+import { getSurah, SURAHS } from '@/lib/quran-metadata';
 import { SurahAyahPicker } from './SurahAyahPicker';
 import {
   useAllRubReferences,
@@ -49,7 +50,7 @@ interface QuranRangePickerProps {
   style?: ViewStyle;
 }
 
-const MODES: SelectionMode[] = ['ayah_range', 'rub', 'hizb', 'juz'];
+const MODES: SelectionMode[] = ['ayah_range', 'rub', 'hizb', 'juz', 'surah'];
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -127,6 +128,23 @@ export function QuranRangePicker({
     [selectionMode, rubData, onChangeRub, onChangeHizb, onChangeJuz, onResolvedRange],
   );
 
+  const handleSurahSelect = useCallback(
+    (surahNum: number) => {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      onChangeSurah(surahNum);
+      const surah = getSurah(surahNum);
+      if (surah) {
+        onResolvedRange({
+          start_surah: surahNum,
+          start_ayah: 1,
+          end_surah: surahNum,
+          end_ayah: surah.ayahCount,
+        });
+      }
+    },
+    [onChangeSurah, onResolvedRange],
+  );
+
   return (
     <View style={[styles.root, style]}>
       {/* Mode Selector */}
@@ -159,8 +177,16 @@ export function QuranRangePicker({
         />
       )}
 
+      {/* Surah Picker (whole surah mode) */}
+      {selectionMode === 'surah' && (
+        <SurahPicker
+          value={surahNumber}
+          onSelect={handleSurahSelect}
+        />
+      )}
+
       {/* Rub' / Hizb / Juz Number Picker */}
-      {selectionMode !== 'ayah_range' && (
+      {selectionMode !== 'ayah_range' && selectionMode !== 'surah' && (
         <NumberPicker
           mode={selectionMode}
           value={
@@ -173,12 +199,128 @@ export function QuranRangePicker({
       )}
 
       {/* Resolved Range Display */}
-      {resolvedRangeText && selectionMode !== 'ayah_range' && (
+      {resolvedRangeText && selectionMode !== 'ayah_range' && selectionMode !== 'surah' && (
         <View style={styles.resolvedRow}>
           <Ionicons name="location-outline" size={normalize(14)} color={colors.primary[500]} />
           <Text style={styles.resolvedText}>{resolvedRangeText}</Text>
         </View>
       )}
+    </View>
+  );
+}
+
+// ─── SurahPicker Sub-component ───────────────────────────────────────────────
+
+interface SurahPickerProps {
+  value: number | null;
+  onSelect: (surahNumber: number) => void;
+}
+
+function SurahPicker({ value, onSelect }: SurahPickerProps) {
+  const { t } = useTranslation();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [search, setSearch] = useState('');
+
+  const selectedSurah = value ? getSurah(value) : null;
+
+  const filteredSurahs = useMemo(() => {
+    if (!search.trim()) return SURAHS;
+    const q = search.trim().toLowerCase();
+    return SURAHS.filter(
+      (s) =>
+        s.nameEnglish.toLowerCase().includes(q) ||
+        s.nameArabic.includes(q) ||
+        String(s.number).includes(q),
+    );
+  }, [search]);
+
+  const handleSelect = useCallback(
+    (num: number) => {
+      onSelect(num);
+      setModalVisible(false);
+      setSearch('');
+    },
+    [onSelect],
+  );
+
+  return (
+    <View style={styles.field}>
+      <Text style={styles.label}>{t('scheduling.recitationPlan.modes.surah')}</Text>
+      <Pressable
+        onPress={() => setModalVisible(true)}
+        style={styles.trigger}
+        accessibilityRole="combobox"
+      >
+        {selectedSurah ? (
+          <View style={styles.surahDisplay}>
+            <Text style={styles.surahDisplayNumber}>{selectedSurah.number}.</Text>
+            <Text style={styles.surahDisplayName}>{selectedSurah.nameEnglish}</Text>
+            <Text style={styles.surahDisplayArabic}>{selectedSurah.nameArabic}</Text>
+          </View>
+        ) : (
+          <Text style={styles.placeholderText}>{t('common.select')}</Text>
+        )}
+        <Ionicons name="chevron-down" size={normalize(20)} color={lightTheme.textTertiary} />
+      </Pressable>
+
+      {selectedSurah && (
+        <View style={styles.resolvedRow}>
+          <Ionicons name="document-text-outline" size={normalize(14)} color={colors.primary[500]} />
+          <Text style={styles.resolvedText}>
+            {selectedSurah.nameArabic} — {selectedSurah.ayahCount} {t('memorization.surahPicker.ayahCount', { count: selectedSurah.ayahCount })}
+          </Text>
+        </View>
+      )}
+
+      <Modal
+        visible={modalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => { setModalVisible(false); setSearch(''); }}
+      >
+        <Pressable
+          style={styles.overlay}
+          onPress={() => { setModalVisible(false); setSearch(''); }}
+        >
+          <View style={styles.dropdown} onStartShouldSetResponder={() => true}>
+            <View style={styles.surahSearchContainer}>
+              <Ionicons name="search" size={normalize(18)} color={lightTheme.textTertiary} />
+              <TextInput
+                style={styles.surahSearchInput}
+                value={search}
+                onChangeText={setSearch}
+                placeholder={t('memorization.surahPicker.searchSurahs')}
+                placeholderTextColor={lightTheme.textTertiary}
+                autoFocus
+              />
+            </View>
+            <FlatList
+              data={filteredSurahs}
+              keyExtractor={(item) => String(item.number)}
+              renderItem={({ item }) => {
+                const isSelected = item.number === value;
+                return (
+                  <Pressable
+                    onPress={() => handleSelect(item.number)}
+                    style={[styles.surahOption, isSelected && styles.surahOptionSelected]}
+                  >
+                    <Text style={styles.surahOptionNumber}>{item.number}</Text>
+                    <View style={styles.surahOptionNames}>
+                      <Text style={[styles.surahOptionText, isSelected && styles.surahOptionTextSelected]}>
+                        {item.nameEnglish}
+                      </Text>
+                      <Text style={styles.surahOptionArabic}>{item.nameArabic}</Text>
+                    </View>
+                    {isSelected && (
+                      <Ionicons name="checkmark" size={normalize(20)} color={colors.primary[500]} />
+                    )}
+                  </Pressable>
+                );
+              }}
+            />
+          </View>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -382,5 +524,79 @@ const styles = StyleSheet.create({
   },
   gridTextSelected: {
     color: colors.white,
+  },
+  // ── SurahPicker styles ──
+  surahDisplay: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  surahDisplayNumber: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: typography.fontSize.sm,
+    color: lightTheme.textSecondary,
+  },
+  surahDisplayName: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: typography.fontSize.base,
+    color: lightTheme.text,
+  },
+  surahDisplayArabic: {
+    fontFamily: typography.fontFamily.arabic,
+    fontSize: typography.fontSize.base,
+    color: lightTheme.textSecondary,
+  },
+  surahSearchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: colors.neutral[50],
+    borderRadius: radius.md,
+  },
+  surahSearchInput: {
+    flex: 1,
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.base,
+    color: lightTheme.text,
+    padding: 0,
+  },
+  surahOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
+  },
+  surahOptionSelected: {
+    backgroundColor: colors.primary[50],
+  },
+  surahOptionNumber: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: typography.fontSize.sm,
+    color: lightTheme.textSecondary,
+    width: normalize(28),
+    textAlign: 'center',
+  },
+  surahOptionNames: {
+    flex: 1,
+  },
+  surahOptionText: {
+    fontFamily: typography.fontFamily.regular,
+    fontSize: typography.fontSize.base,
+    color: lightTheme.text,
+  },
+  surahOptionTextSelected: {
+    fontFamily: typography.fontFamily.medium,
+    color: colors.primary[700],
+  },
+  surahOptionArabic: {
+    fontFamily: typography.fontFamily.arabic,
+    fontSize: typography.fontSize.sm,
+    color: lightTheme.textSecondary,
   },
 });

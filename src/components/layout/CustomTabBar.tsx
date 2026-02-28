@@ -24,6 +24,7 @@ import { typography } from '@/theme/typography';
 import { shadows } from '@/theme/shadows';
 import { normalize } from '@/theme/normalize';
 import { useRTL } from '@/hooks/useRTL';
+import { useUIStore } from '@/stores/uiStore';
 
 // ─── Sub-Component: Tab Item ────────────────────────────────────────────────
 
@@ -101,6 +102,9 @@ function TabItem({ isFocused, label, icon, onPress, onLongPress }: TabItemProps)
 export function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const { isRTL } = useRTL();
+  const modalOpen = useUIStore((s) => s.openModalCount > 0);
+
+  if (modalOpen) return null;
 
   return (
     <View style={[styles.wrapper, { paddingBottom: Math.max(insets.bottom, spacing.md) }]}>

@@ -790,12 +790,19 @@
     },
     "categories": {
       "stickerAwarded": "Sticker Awarded",
+      "stickerAwardedDesc": "When your teacher gives you a new sticker",
       "trophyEarned": "Trophy Earned",
+      "trophyEarnedDesc": "When you earn a trophy for reaching a milestone",
       "achievementUnlocked": "Achievement Unlocked",
+      "achievementUnlockedDesc": "When you unlock a new achievement badge",
       "attendanceMarked": "Attendance Marked",
+      "attendanceMarkedDesc": "When your child's attendance is recorded",
       "sessionCompleted": "Session Completed",
+      "sessionCompletedDesc": "When a session you attended is marked complete",
       "dailySummary": "Daily Summary",
-      "studentAlert": "Student Alert"
+      "dailySummaryDesc": "A morning overview of today's sessions and students",
+      "studentAlert": "Student Alert",
+      "studentAlertDesc": "When a student misses sessions or needs attention"
     }
   },
   "reports": {
@@ -1101,8 +1108,12 @@
         "ayah_range": "Ayah Range",
         "rub": "Rubʿ",
         "hizb": "Hizb",
-        "juz": "Juz"
+        "juz": "Juz",
+        "surah": "Surah"
       },
+      "openInQuran": "Open in Quran",
+      "openInQuranError": "Could not open Quran app",
+      "openInQuranErrorMessage": "Unable to open the Quran app. Please make sure the Quran.com app is installed or try opening the link manually.",
       "rubNumber": "Rubʿ Number",
       "hizbNumber": "Hizb Number",
       "juzNumber": "Juz Number",
@@ -1125,6 +1136,22 @@
       "noHomework": "No revision homework pending",
       "selectedCount": "Selected ({{count}})",
       "addCustomRange": "Add to Selection"
+    },
+    "summary": {
+      "attendance": "Attendance",
+      "present": "Present",
+      "absent": "Absent",
+      "late": "Late",
+      "excused": "Excused",
+      "studentResults": "Student Results",
+      "scores": "Scores",
+      "memorization": "Memorization",
+      "tajweed": "Tajweed",
+      "fluency": "Fluency",
+      "teacherNotes": "Teacher Notes",
+      "recitations": "Recitations",
+      "needsRepeat": "Needs Repeat",
+      "noEvaluations": "No evaluations recorded"
     }
   },
   "workAttendance": {

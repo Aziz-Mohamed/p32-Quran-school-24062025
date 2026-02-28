@@ -790,12 +790,19 @@
     },
     "categories": {
       "stickerAwarded": "ملصق ممنوح",
+      "stickerAwardedDesc": "عندما يمنحك معلمك ملصقًا جديدًا",
       "trophyEarned": "جائزة مُكتسبة",
+      "trophyEarnedDesc": "عندما تحصل على جائزة لبلوغ إنجاز معين",
       "achievementUnlocked": "إنجاز مُحقّق",
+      "achievementUnlockedDesc": "عندما تفتح شارة إنجاز جديدة",
       "attendanceMarked": "حضور مُسجَّل",
+      "attendanceMarkedDesc": "عندما يتم تسجيل حضور طفلك في حصّة",
       "sessionCompleted": "حصّة مكتملة",
+      "sessionCompletedDesc": "عندما تُكتمل حصّة حضرتها",
       "dailySummary": "ملخّص يومي",
-      "studentAlert": "تنبيه طالب"
+      "dailySummaryDesc": "نظرة صباحية على حصص اليوم وإحصائيات الطلاب",
+      "studentAlert": "تنبيه طالب",
+      "studentAlertDesc": "عندما يتغيّب طالب عن حصص أو يحتاج اهتمامك"
     }
   },
   "reports": {
@@ -1101,8 +1108,12 @@
         "ayah_range": "نطاق الآيات",
         "rub": "ربع",
         "hizb": "حزب",
-        "juz": "جزء"
+        "juz": "جزء",
+        "surah": "سورة"
       },
+      "openInQuran": "فتح في تطبيق القرآن",
+      "openInQuranError": "تعذّر الفتح",
+      "openInQuranErrorMessage": "لم نتمكن من فتح تطبيق القرآن. يرجى التأكد من تثبيت تطبيق Quran.com أو فتح الرابط يدوياً.",
       "rubNumber": "رقم الربع",
       "hizbNumber": "رقم الحزب",
       "juzNumber": "رقم الجزء",
@@ -1125,6 +1136,22 @@
       "noHomework": "لا توجد واجبات مراجعة معلقة",
       "selectedCount": "تم اختيار ({{count}})",
       "addCustomRange": "أضف إلى الاختيار"
+    },
+    "summary": {
+      "attendance": "الحضور",
+      "present": "حاضر",
+      "absent": "غائب",
+      "late": "متأخر",
+      "excused": "معذور",
+      "studentResults": "نتائج الطلاب",
+      "scores": "الدرجات",
+      "memorization": "الحفظ",
+      "tajweed": "التجويد",
+      "fluency": "الطلاقة",
+      "teacherNotes": "ملاحظات المعلم",
+      "recitations": "التسميعات",
+      "needsRepeat": "يحتاج إعادة",
+      "noEvaluations": "لا توجد تقييمات مسجلة"
     }
   },
   "workAttendance": {

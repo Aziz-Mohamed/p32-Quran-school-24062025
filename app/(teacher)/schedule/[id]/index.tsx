@@ -14,6 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useUpdateSessionStatus } from '@/features/scheduling/hooks/useScheduledSessions';
 import { scheduledSessionService } from '@/features/scheduling/services/scheduled-session.service';
 import { SessionRecitationPlanList } from '@/features/scheduling/components/SessionRecitationPlanList';
+import { CompletedSessionSummary } from '@/features/scheduling/components/CompletedSessionSummary';
 import { useStudents } from '@/features/students/hooks/useStudents';
 import { useLocalizedName } from '@/hooks/useLocalizedName';
 import { typography } from '@/theme/typography';
@@ -157,49 +158,57 @@ export default function SessionDetailScreen() {
           )}
         </Card>
 
-        {/* Recitation Plans */}
-        {profile?.id && schoolId && session.status !== 'cancelled' && (
-          <SessionRecitationPlanList
-            sessionId={id!}
-            schoolId={schoolId}
-            userId={profile.id}
-            sessionDate={session.session_date}
-            role="teacher"
-            isClassSession={!!isClassSession}
-            students={studentList.length > 0 ? studentList : undefined}
-          />
+        {/* Completed: show summary */}
+        {session.status === 'completed' && (
+          <CompletedSessionSummary scheduledSessionId={id!} />
         )}
 
-        {/* Actions */}
-        <View style={styles.actions}>
-          {session.status === 'scheduled' && (
-            <>
-              <Button
-                title={t('scheduling.startSession')}
-                onPress={handleStart}
-                variant="primary"
-                size="lg"
-                icon={<Ionicons name="play" size={20} color={colors.white} />}
-                loading={updateStatus.isPending}
+        {/* Non-completed: show plans + actions */}
+        {session.status !== 'completed' && session.status !== 'cancelled' && (
+          <>
+            {profile?.id && schoolId && (
+              <SessionRecitationPlanList
+                sessionId={id!}
+                schoolId={schoolId}
+                userId={profile.id}
+                sessionDate={session.session_date}
+                role="teacher"
+                isClassSession={!!isClassSession}
+                students={studentList.length > 0 ? studentList : undefined}
               />
-              <Button
-                title={t('scheduling.cancelSession')}
-                onPress={handleCancel}
-                variant="ghost"
-                size="md"
-              />
-            </>
-          )}
-          {session.status === 'in_progress' && (
-            <Button
-              title={t('scheduling.workspace.openWorkspace')}
-              onPress={handleOpenWorkspace}
-              variant="primary"
-              size="lg"
-              icon={<Ionicons name="easel-outline" size={20} color={colors.white} />}
-            />
-          )}
-        </View>
+            )}
+
+            <View style={styles.actions}>
+              {session.status === 'scheduled' && (
+                <>
+                  <Button
+                    title={t('scheduling.startSession')}
+                    onPress={handleStart}
+                    variant="primary"
+                    size="lg"
+                    icon={<Ionicons name="play" size={20} color={colors.white} />}
+                    loading={updateStatus.isPending}
+                  />
+                  <Button
+                    title={t('scheduling.cancelSession')}
+                    onPress={handleCancel}
+                    variant="ghost"
+                    size="md"
+                  />
+                </>
+              )}
+              {session.status === 'in_progress' && (
+                <Button
+                  title={t('scheduling.workspace.openWorkspace')}
+                  onPress={handleOpenWorkspace}
+                  variant="primary"
+                  size="lg"
+                  icon={<Ionicons name="easel-outline" size={20} color={colors.white} />}
+                />
+              )}
+            </View>
+          </>
+        )}
       </View>
     </Screen>
   );

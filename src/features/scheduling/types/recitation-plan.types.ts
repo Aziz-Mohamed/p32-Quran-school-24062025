@@ -2,7 +2,7 @@ import type { Tables } from '@/types/database.types';
 
 export type SessionRecitationPlan = Tables<'session_recitation_plans'>;
 
-export type SelectionMode = 'ayah_range' | 'rub' | 'hizb' | 'juz';
+export type SelectionMode = 'ayah_range' | 'rub' | 'hizb' | 'juz' | 'surah';
 export type RecitationPlanType = 'new_hifz' | 'recent_review' | 'old_review';
 export type PlanSource = 'manual' | 'from_assignment' | 'student_suggestion';
 

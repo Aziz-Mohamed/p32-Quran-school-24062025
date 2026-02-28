@@ -11,6 +11,7 @@ import { I18nextProvider } from 'react-i18next';
 
 import { useAuthStore, type Profile } from '@/stores/authStore';
 import { useLocaleStore } from '@/stores/localeStore';
+import { useWorkspaceDraftStore } from '@/stores/workspaceDraftStore';
 import { useAuth } from '@/hooks/useAuth';
 import i18n from '@/i18n/config';
 import { supabase } from '@/lib/supabase';
@@ -60,6 +61,8 @@ export default function RootLayout() {
   useEffect(() => {
     if (storeHydrated) {
       SplashScreen.hideAsync();
+      // Clean up workspace drafts older than 7 days
+      useWorkspaceDraftStore.getState().clearStaleDrafts();
     }
   }, [storeHydrated]);
 

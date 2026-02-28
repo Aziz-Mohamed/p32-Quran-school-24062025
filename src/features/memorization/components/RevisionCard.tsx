@@ -47,21 +47,29 @@ const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export function RevisionCard({ item, onPress, style }: RevisionCardProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const surah = getSurah(item.surah_number);
   const statusConfig = STATUS_STYLES[item.status] ?? STATUS_STYLES.new;
+  const isArabic = i18n.language === 'ar';
 
-  const verseRange = formatVerseRange(item.surah_number, item.from_ayah, item.to_ayah);
+  const verseRange = formatVerseRange(item.surah_number, item.from_ayah, item.to_ayah, isArabic ? 'ar' : 'en');
   const hasScores =
     item.avg_accuracy != null || item.avg_tajweed != null || item.avg_fluency != null;
+
+  const primaryName = isArabic
+    ? (surah?.nameArabic ?? '')
+    : (surah?.nameEnglish ?? `Surah ${item.surah_number}`);
+  const secondaryName = isArabic
+    ? (surah?.nameEnglish ?? `Surah ${item.surah_number}`)
+    : (surah?.nameArabic ?? '');
 
   const content = (
     <Card variant="default" style={StyleSheet.flatten([styles.root, style])}>
       {/* Top Row: Surah Info + Type Chip */}
       <View style={styles.topRow}>
         <View style={styles.surahInfo}>
-          <Text style={styles.surahArabic}>{surah?.nameArabic ?? ''}</Text>
-          <Text style={styles.surahName}>{surah?.nameEnglish ?? `Surah ${item.surah_number}`}</Text>
+          <Text style={isArabic ? styles.surahArabic : styles.surahPrimary}>{primaryName}</Text>
+          <Text style={isArabic ? styles.surahSecondary : styles.surahArabicSecondary}>{secondaryName}</Text>
         </View>
         <RecitationTypeChip type={item.review_type} />
       </View>
@@ -69,46 +77,46 @@ export function RevisionCard({ item, onPress, style }: RevisionCardProps) {
       {/* Verse Range */}
       <Text style={styles.verseRange}>{verseRange}</Text>
 
-      {/* Bottom Row: Status + Scores */}
-      <View style={styles.bottomRow}>
-        {/* Status Badge */}
+      {/* Status Row */}
+      <View style={styles.statusRow}>
         <View style={[styles.statusBadge, { backgroundColor: statusConfig.bg }]}>
           <Text style={[styles.statusText, { color: statusConfig.color }]}>
             {t(`memorization.status.${item.status}`)}
           </Text>
         </View>
-
-        {/* Scores (if available) */}
-        {hasScores && (
-          <View style={styles.scoresRow}>
-            {item.avg_accuracy != null && (
-              <View style={styles.scoreItem}>
-                <Ionicons name="checkmark-circle-outline" size={normalize(14)} color={colors.primary[500]} />
-                <Text style={styles.scoreValue}>{item.avg_accuracy.toFixed(1)}</Text>
-              </View>
-            )}
-            {item.avg_tajweed != null && (
-              <View style={styles.scoreItem}>
-                <Ionicons name="musical-notes-outline" size={normalize(14)} color={colors.accent.violet[500]} />
-                <Text style={styles.scoreValue}>{item.avg_tajweed.toFixed(1)}</Text>
-              </View>
-            )}
-            {item.avg_fluency != null && (
-              <View style={styles.scoreItem}>
-                <Ionicons name="water-outline" size={normalize(14)} color={colors.accent.sky[500]} />
-                <Text style={styles.scoreValue}>{item.avg_fluency.toFixed(1)}</Text>
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* Review Count */}
         {item.review_count > 0 && (
           <Text style={styles.reviewCount}>
             {t('memorization.reviewCount', { count: item.review_count })}
           </Text>
         )}
       </View>
+
+      {/* Scores Row */}
+      {hasScores && (
+        <View style={styles.scoresRow}>
+          {item.avg_accuracy != null && (
+            <View style={styles.scoreItem}>
+              <Ionicons name="locate-outline" size={normalize(14)} color={colors.primary[500]} />
+              <Text style={styles.scoreLabel}>Acc</Text>
+              <Text style={styles.scoreValue}>{item.avg_accuracy.toFixed(1)}</Text>
+            </View>
+          )}
+          {item.avg_tajweed != null && (
+            <View style={styles.scoreItem}>
+              <Ionicons name="book-outline" size={normalize(14)} color={colors.accent.violet[500]} />
+              <Text style={styles.scoreLabel}>Taj</Text>
+              <Text style={styles.scoreValue}>{item.avg_tajweed.toFixed(1)}</Text>
+            </View>
+          )}
+          {item.avg_fluency != null && (
+            <View style={styles.scoreItem}>
+              <Ionicons name="mic-outline" size={normalize(14)} color={colors.accent.sky[500]} />
+              <Text style={styles.scoreLabel}>Flu</Text>
+              <Text style={styles.scoreValue}>{item.avg_fluency.toFixed(1)}</Text>
+            </View>
+          )}
+        </View>
+      )}
     </Card>
   );
 
@@ -151,8 +159,18 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.lg,
     color: lightTheme.text,
   },
-  surahName: {
+  surahPrimary: {
+    fontFamily: typography.fontFamily.semiBold,
+    fontSize: typography.fontSize.lg,
+    color: lightTheme.text,
+  },
+  surahSecondary: {
     fontFamily: typography.fontFamily.medium,
+    fontSize: typography.fontSize.sm,
+    color: lightTheme.textSecondary,
+  },
+  surahArabicSecondary: {
+    fontFamily: typography.fontFamily.arabic,
     fontSize: typography.fontSize.sm,
     color: lightTheme.textSecondary,
   },
@@ -161,11 +179,10 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.sm,
     color: colors.primary[600],
   },
-  bottomRow: {
+  statusRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    flexWrap: 'wrap',
   },
   statusBadge: {
     paddingHorizontal: spacing.sm,
@@ -180,12 +197,20 @@ const styles = StyleSheet.create({
   scoresRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.md,
+    paddingTop: spacing.sm,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.neutral[100],
   },
   scoreItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: normalize(2),
+  },
+  scoreLabel: {
+    fontFamily: typography.fontFamily.medium,
+    fontSize: normalize(10),
+    color: lightTheme.textTertiary,
   },
   scoreValue: {
     fontFamily: typography.fontFamily.semiBold,

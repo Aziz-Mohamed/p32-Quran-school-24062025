@@ -22,7 +22,7 @@ import i18n from '@/i18n/config';
 
 import { formatTimeHHMM, formatTimeDisplay } from './time-format';
 
-export { formatTimeHHMM } from './time-format';
+export { formatTimeHHMM, parseTimeString } from './time-format';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

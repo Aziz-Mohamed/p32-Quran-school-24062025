@@ -258,8 +258,9 @@ export function useRecitationPlanFormState(options: UseRecitationPlanFormStateOp
     if (selectionMode === 'rub') return rubNumber != null;
     if (selectionMode === 'hizb') return hizbNumber != null;
     if (selectionMode === 'juz') return juzNumber != null;
+    if (selectionMode === 'surah') return surahNumber != null && resolvedStart != null && resolvedEnd != null;
     return false;
-  }, [selectionMode, surahNumber, fromAyah, toAyah, rubNumber, hizbNumber, juzNumber]);
+  }, [selectionMode, surahNumber, fromAyah, toAyah, rubNumber, hizbNumber, juzNumber, resolvedStart, resolvedEnd]);
 
   const isValid = selectedItems.length > 0;
 

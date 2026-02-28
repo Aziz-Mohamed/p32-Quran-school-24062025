@@ -24,9 +24,10 @@ export { useMemorizationProgress, useUpsertProgress } from './hooks/useMemorizat
 export { useCreateAssignment, useAssignments, useCompleteAssignment, useCompleteRevisionHomework, useCancelAssignment } from './hooks/useAssignments';
 export { useRevisionSchedule } from './hooks/useRevisionSchedule';
 export { useMemorizationStats } from './hooks/useMemorizationStats';
+export { useAutoRecitationType } from './hooks/useAutoRecitationType';
 
 // ─── Utils ───────────────────────────────────────────────────────────────────
-export { calculateSM2, calculateQualityGrade, classifyReviewType } from './utils/spaced-repetition';
+export { calculateSM2, calculateQualityGrade, classifyReviewType, classifyRangeType } from './utils/spaced-repetition';
 export { recitationSchema, assignmentSchema } from './utils/validation';
 
 // ─── Components ──────────────────────────────────────────────────────────────

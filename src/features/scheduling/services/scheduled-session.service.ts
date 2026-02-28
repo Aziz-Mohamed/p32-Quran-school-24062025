@@ -168,6 +168,82 @@ class ScheduledSessionService {
   async cancelSession(sessionId: string) {
     return this.updateStatus(sessionId, 'cancelled');
   }
+
+  /**
+   * Fetch the full completion summary for a scheduled session:
+   * attendance records + evaluation sessions with nested recitations.
+   *
+   * Uses `scheduled_session_id` FK (new flow). Falls back to the legacy
+   * `evaluation_session_id` linkage for sessions completed before the migration.
+   */
+  async getCompletedSessionSummary(scheduledSessionId: string) {
+    const evalSelect = `
+      id, student_id, memorization_score, tajweed_score, recitation_quality, notes,
+      student:students!sessions_student_id_fkey(
+        id,
+        profiles!students_id_fkey(full_name, name_localized, avatar_url)
+      ),
+      recitations(
+        id, surah_number, from_ayah, to_ayah, recitation_type,
+        accuracy_score, tajweed_score, fluency_score,
+        needs_repeat, mistake_notes, created_at
+      )
+    `;
+
+    const [attendanceResult, evaluationsResult] = await Promise.all([
+      supabase
+        .from('attendance')
+        .select(`
+          id, student_id, status, notes,
+          students!inner(
+            id,
+            profiles!students_id_fkey!inner(full_name, name_localized, avatar_url)
+          )
+        `)
+        .eq('scheduled_session_id', scheduledSessionId)
+        .order('student_id'),
+      supabase
+        .from('sessions')
+        .select(evalSelect)
+        .eq('scheduled_session_id', scheduledSessionId)
+        .order('created_at', { ascending: true }),
+    ]);
+
+    // Fallback for sessions completed before the scheduled_session_id migration:
+    // use the legacy evaluation_session_id FK to find evaluation records.
+    if (!evaluationsResult.error && (evaluationsResult.data?.length ?? 0) === 0) {
+      const { data: scheduled } = await supabase
+        .from('scheduled_sessions')
+        .select('evaluation_session_id, teacher_id, class_id, session_date')
+        .eq('id', scheduledSessionId)
+        .single();
+
+      if (scheduled?.evaluation_session_id) {
+        // Find all evaluation sessions by the same teacher/class/date
+        let fallbackQuery = supabase
+          .from('sessions')
+          .select(evalSelect)
+          .eq('teacher_id', scheduled.teacher_id)
+          .eq('session_date', scheduled.session_date)
+          .order('created_at', { ascending: true });
+
+        if (scheduled.class_id) {
+          fallbackQuery = fallbackQuery.eq('class_id', scheduled.class_id);
+        }
+
+        const fallbackResult = await fallbackQuery;
+        return {
+          attendance: { data: attendanceResult.data, error: attendanceResult.error },
+          evaluations: { data: fallbackResult.data, error: fallbackResult.error },
+        };
+      }
+    }
+
+    return {
+      attendance: { data: attendanceResult.data, error: attendanceResult.error },
+      evaluations: { data: evaluationsResult.data, error: evaluationsResult.error },
+    };
+  }
 }
 
 export const scheduledSessionService = new ScheduledSessionService();

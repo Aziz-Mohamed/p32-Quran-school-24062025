@@ -33,6 +33,7 @@ import { spacing } from '@/theme/spacing';
 import { normalize } from '@/theme/normalize';
 import { radius } from '@/theme/radius';
 import { shadows } from '@/theme/shadows';
+import { useUIStore } from '@/stores/uiStore';
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -125,6 +126,17 @@ export const CreateSessionSheet = forwardRef<BottomSheetModal>((_props, ref) => 
     );
   }, [canSubmit, profile, schoolId, sessionDate, startTime, endTime, sessionType, selectedClassId, selectedStudentId, createMutation, t, ref, resetForm]);
 
+  const pushModal = useUIStore((s) => s.pushModal);
+  const popModal = useUIStore((s) => s.popModal);
+
+  const handleSheetChange = useCallback(
+    (index: number) => {
+      if (index >= 0) pushModal();
+      else popModal();
+    },
+    [pushModal, popModal],
+  );
+
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} />
@@ -137,6 +149,7 @@ export const CreateSessionSheet = forwardRef<BottomSheetModal>((_props, ref) => 
       ref={ref}
       snapPoints={snapPoints}
       backdropComponent={renderBackdrop}
+      onChange={handleSheetChange}
       onDismiss={resetForm}
       enableDynamicSizing={false}
       enablePanDownToClose
